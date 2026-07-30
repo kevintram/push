@@ -1,36 +1,13 @@
+import { api } from '@convex/_generated/api'
 import * as stylex from '@stylexjs/stylex'
+import { useQuery } from 'convex/react'
 import { Plus } from 'lucide-react'
 
 import { Button } from '~/components/ui'
-import type { TopicWithChildren } from '~/modules/library/types/topic.types'
 import { fontWeights, iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { TopicLink } from './TopicLink'
 
-const topics = Array.from({ length: 20 }, (_, index): TopicWithChildren => {
-	const number = index + 1
-	const id = index === 0 ? 'learning-typescript' : `mock-topic-${number}`
-
-	return {
-		id,
-		title: index === 0 ? 'Learning TypeScript' : `Mock topic ${number}`,
-		body: `Overflow test notes for mock topic ${number}.`,
-		children: [
-			{
-				id: `${id}-fundamentals`,
-				parentId: id,
-				title: 'Fundamentals',
-				body: `Fundamentals for mock topic ${number}.`,
-			},
-			{
-				id: `${id}-practice`,
-				parentId: id,
-				title: 'Practice',
-				body: `Practice notes for mock topic ${number}.`,
-			},
-		],
-	}
-})
 const styles = stylex.create({
 	container: { overflowY: 'auto' },
 	header: {
@@ -62,6 +39,8 @@ const styles = stylex.create({
 })
 
 export function LibrarySidebar() {
+	const topics = useQuery(api.topics.get)
+
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.header)}>
@@ -78,8 +57,8 @@ export function LibrarySidebar() {
 			</div>
 			<nav aria-label='Library topics' {...stylex.props(styles.nav)}>
 				<ul {...stylex.props(styles.list)}>
-					{topics.map(topic => (
-						<TopicLink key={topic.id} {...topic} />
+					{topics?.map(topic => (
+						<TopicLink key={topic._id} {...topic} />
 					))}
 				</ul>
 			</nav>

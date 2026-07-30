@@ -10,7 +10,7 @@ import {
 } from '~/components/ui'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
-import { type TopicWithChildren } from '../../types/topic.types'
+import { type Topic } from '../../types/topic.types'
 
 const styles = stylex.create({
 	container: {
@@ -19,17 +19,17 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 	},
-	childrenList: {
-		gap: spacing.xs,
+	// childrenList: {
+	// 	gap: spacing.xs,
 
-		display: 'flex',
-		flexDirection: 'column',
+	// 	display: 'flex',
+	// 	flexDirection: 'column',
 
-		paddingInlineStart: spacing.md,
-	},
+	// 	paddingInlineStart: spacing.md,
+	// },
 })
 
-export function TopicLink({ id, title, children }: TopicWithChildren) {
+export function TopicLink({ _id, title }: Topic) {
 	const topicTitle = title.trim() || 'Untitled'
 
 	return (
@@ -39,7 +39,7 @@ export function TopicLink({ id, title, children }: TopicWithChildren) {
 					render={
 						<SidebarLink
 							to='/library/$topicId'
-							params={{ topicId: id }}
+							params={{ topicId: _id }}
 							text={topicTitle}
 						/>
 					}
@@ -58,13 +58,13 @@ export function TopicLink({ id, title, children }: TopicWithChildren) {
 				</ContextMenuContent>
 			</ContextMenu>
 
-			{children && children.length > 0 ? (
+			{/* {children && children.length > 0 ? (
 				<ul {...stylex.props(styles.childrenList)}>
 					{children.map(child => (
 						<TopicLink key={child.id} {...child} />
 					))}
 				</ul>
-			) : null}
+			) : null} */}
 		</li>
 	)
 }
