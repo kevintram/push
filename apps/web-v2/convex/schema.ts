@@ -5,5 +5,6 @@ export default defineSchema({
 	topics: defineTable({
 		title: v.string(),
 		description: v.string(),
+		parentId: v.optional(v.id('topics')),
 	}),
 })

@@ -2,10 +2,12 @@ import { api } from '@convex/_generated/api'
 import * as stylex from '@stylexjs/stylex'
 import { useQuery } from 'convex/react'
 import { Plus } from 'lucide-react'
+import { useMemo } from 'react'
 
 import { Button } from '~/components/ui'
 import { fontWeights, iconSizes, spacing } from '~/styles/tokens.stylex'
 
+import { treeifyTopics } from '../../utils/treeifyTopics'
 import { TopicLink } from './TopicLink'
 
 const styles = stylex.create({
@@ -40,6 +42,7 @@ const styles = stylex.create({
 
 export function LibrarySidebar() {
 	const topics = useQuery(api.topics.get)
+	const topicTree = useMemo(() => treeifyTopics(topics ?? []), [topics])
 
 	return (
 		<div {...stylex.props(styles.container)}>
@@ -57,7 +60,7 @@ export function LibrarySidebar() {
 			</div>
 			<nav aria-label='Library topics' {...stylex.props(styles.nav)}>
 				<ul {...stylex.props(styles.list)}>
-					{topics?.map(topic => (
+					{topicTree.map(topic => (
 						<TopicLink key={topic._id} {...topic} />
 					))}
 				</ul>
