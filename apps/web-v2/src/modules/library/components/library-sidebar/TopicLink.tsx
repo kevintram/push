@@ -12,18 +12,6 @@ import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { type TopicWithChildren } from '../../types/topic.types'
 
-export type TopicDeleteTarget = Pick<
-	TopicWithChildren,
-	'children' | 'id' | 'parentId' | 'title'
->
-
-type TopicLinkProps = TopicWithChildren & {
-	isAddingTopic: boolean
-	isDeletingTopic: boolean
-	onAddSubtopic: (parentId: string) => void
-	onDeleteTopic: (topic: TopicDeleteTarget) => void
-}
-
 const styles = stylex.create({
 	container: {
 		gap: spacing.xs,
@@ -41,16 +29,7 @@ const styles = stylex.create({
 	},
 })
 
-export function TopicLink({
-	id,
-	parentId,
-	title,
-	children,
-	isAddingTopic,
-	isDeletingTopic,
-	onAddSubtopic,
-	onDeleteTopic,
-}: TopicLinkProps) {
+export function TopicLink({ id, title, children }: TopicWithChildren) {
 	const topicTitle = title.trim() || 'Untitled'
 
 	return (
@@ -68,19 +47,11 @@ export function TopicLink({
 					{topicTitle}
 				</ContextMenuTrigger>
 				<ContextMenuContent>
-					<ContextMenuItem
-						disabled={isAddingTopic}
-						onClick={() => onAddSubtopic(id)}
-					>
+					<ContextMenuItem disabled>
 						<Plus aria-hidden='true' size={iconSizes.md} />
 						Add subtopic
 					</ContextMenuItem>
-					<ContextMenuItem
-						disabled={isDeletingTopic}
-						onClick={() =>
-							onDeleteTopic({ children, id, parentId, title })
-						}
-					>
+					<ContextMenuItem disabled>
 						<Trash2 aria-hidden='true' size={iconSizes.md} />
 						Delete
 					</ContextMenuItem>
@@ -90,14 +61,7 @@ export function TopicLink({
 			{children && children.length > 0 ? (
 				<ul {...stylex.props(styles.childrenList)}>
 					{children.map(child => (
-						<TopicLink
-							key={child.id}
-							{...child}
-							isAddingTopic={isAddingTopic}
-							isDeletingTopic={isDeletingTopic}
-							onAddSubtopic={onAddSubtopic}
-							onDeleteTopic={onDeleteTopic}
-						/>
+						<TopicLink key={child.id} {...child} />
 					))}
 				</ul>
 			) : null}
