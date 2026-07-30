@@ -24,22 +24,29 @@ const topic = {
 	title: 'Learning TypeScript',
 	body: 'Notes and flashcards for TypeScript fundamentals.',
 }
-const reviewCards: Array<ReviewCardModel> = [
-	{
-		id: 'typescript-generics',
+const reviewCards = Array.from({ length: 18 }, (_, index): ReviewCardModel => {
+	const number = index + 1
+
+	return {
+		id: index === 0 ? 'typescript-generics' : `topic-review-card-${number}`,
 		topic_id: topic.id,
-		type: 'flashcard',
-		primary_text: 'What problem do generics solve?',
+		type: index % 4 === 3 ? 'practice' : 'flashcard',
+		primary_text:
+			index === 0
+				? 'What problem do generics solve?'
+				: `Topic mock card ${number}: TypeScript concept`,
 		secondary_text:
-			'They let code work with many types while preserving type safety.',
-		notes: 'Start with simple examples.',
-		stability: 8,
+			index === 0
+				? 'They let code work with many types while preserving type safety.'
+				: `An example answer for topic mock card ${number}.`,
+		notes: `Overflow test notes for topic mock card ${number}.`,
+		stability: 4 + (index % 8),
 		last_reviewed_at: '2026-07-28',
 		next_due_at: '2026-07-30',
-		freshness_tier: 'Fresh',
-		flagged_at: null,
-	},
-]
+		freshness_tier: index % 5 === 4 ? 'Needs attention' : 'Fresh',
+		flagged_at: index % 5 === 4 ? '2026-07-25' : null,
+	}
+})
 
 const styles = stylex.create({
 	container: {

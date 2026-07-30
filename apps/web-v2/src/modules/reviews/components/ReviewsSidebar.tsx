@@ -8,13 +8,19 @@ import { colors } from '~/styles/colors.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { Review } from './Review'
-const reviews: Array<ReviewModel> = [
-	{
-		id: 'generics-review-1',
+
+const reviews = Array.from({ length: 14 }, (_, index): ReviewModel => {
+	const number = index + 1
+
+	return {
+		id: `sidebar-review-${number}`,
 		review_card_id: 'typescript-generics',
-		rating: 'good',
-		description: 'Correctly described generics.',
-		notes: 'Review again soon.',
+		rating: index % 4 === 0 ? 'easy' : 'good',
+		description:
+			index === 0
+				? 'Correctly described generics.'
+				: `Sidebar mock review ${number}.`,
+		notes: index % 3 === 0 ? `Notes for sidebar review ${number}.` : '',
 		scheduled_at: null,
 		completed_at: '2026-07-28',
 		effective_date: '2026-07-28',
@@ -27,18 +33,19 @@ const reviews: Array<ReviewModel> = [
 			primary_text: 'What problem do generics solve?',
 			secondary_text: 'They preserve type safety across reusable code.',
 		},
-		stability_before: 4,
+		stability_before: 4 + (index % 3),
 		difficulty_before: 5,
 		state_before: 'REVIEW',
 		step_before: null,
 		due_before: '2026-07-28',
-		stability_after: 8,
+		stability_after: 6 + (index % 4),
 		difficulty_after: 4,
 		state_after: 'REVIEW',
 		step_after: null,
 		due_after: '2026-07-30',
-	},
-]
+	}
+})
+
 const styles = stylex.create({
 	container: {
 		padding: spacing.lg,

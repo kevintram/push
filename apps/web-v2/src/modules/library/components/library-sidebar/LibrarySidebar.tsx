@@ -7,21 +7,30 @@ import { fontWeights, iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { TopicLink } from './TopicLink'
 
-const topics: Array<TopicWithChildren> = [
-	{
-		id: 'learning-typescript',
-		title: 'Learning TypeScript',
-		body: 'Notes and flashcards for TypeScript fundamentals.',
+const topics = Array.from({ length: 20 }, (_, index): TopicWithChildren => {
+	const number = index + 1
+	const id = index === 0 ? 'learning-typescript' : `mock-topic-${number}`
+
+	return {
+		id,
+		title: index === 0 ? 'Learning TypeScript' : `Mock topic ${number}`,
+		body: `Overflow test notes for mock topic ${number}.`,
 		children: [
 			{
-				id: 'typescript-functions',
-				parentId: 'learning-typescript',
-				title: 'Functions',
-				body: 'Function notes.',
+				id: `${id}-fundamentals`,
+				parentId: id,
+				title: 'Fundamentals',
+				body: `Fundamentals for mock topic ${number}.`,
+			},
+			{
+				id: `${id}-practice`,
+				parentId: id,
+				title: 'Practice',
+				body: `Practice notes for mock topic ${number}.`,
 			},
 		],
-	},
-]
+	}
+})
 const styles = stylex.create({
 	container: { overflowY: 'auto' },
 	header: {
