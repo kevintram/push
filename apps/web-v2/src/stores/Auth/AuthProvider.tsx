@@ -1,16 +1,11 @@
 import { AuthKitProvider } from '@workos-inc/authkit-react'
-import { ConvexProviderWithAuth, ConvexReactClient } from 'convex/react'
+import { ConvexProviderWithAuth } from 'convex/react'
 import type { ComponentProps, ReactNode } from 'react'
 
-import { readPublicAuthConfig } from './authConfig'
-import { useAuthFromAuthKit } from './useAuthFromAuthKit'
+import { config } from '~/lib/config'
+import { convexClient } from '~/lib/convex'
 
-const authConfig = readPublicAuthConfig({
-	VITE_CONVEX_URL: import.meta.env.VITE_CONVEX_URL,
-	VITE_WORKOS_CLIENT_ID: import.meta.env.VITE_WORKOS_CLIENT_ID,
-	VITE_WORKOS_REDIRECT_URI: import.meta.env.VITE_WORKOS_REDIRECT_URI,
-})
-const convexClient = new ConvexReactClient(authConfig.convexUrl)
+import { useAuthFromAuthKit } from './useAuthFromAuthKit'
 
 type AuthProviderProps = {
 	children: ReactNode
@@ -25,9 +20,9 @@ export function AuthProvider({
 }: AuthProviderProps) {
 	return (
 		<AuthKitProvider
-			clientId={authConfig.workOsClientId}
+			clientId={config.workOs.clientId}
 			onRedirectCallback={onRedirectCallback}
-			redirectUri={authConfig.workOsRedirectUri}
+			redirectUri={config.workOs.redirectUri}
 		>
 			<ConvexProviderWithAuth
 				client={convexClient}

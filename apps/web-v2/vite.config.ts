@@ -62,6 +62,7 @@ export default defineConfig(() => ({
 			exclude: [
 				'src/**/*.stylex.ts',
 				'src/**/*.d.ts',
+				'src/lib/convex.ts',
 				'src/main.tsx',
 				'src/testing/**',
 				'src/app/routeTree.gen.ts',

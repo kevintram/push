@@ -18,10 +18,14 @@ type AdaptedAuthState = {
 
 type RedirectCallback = () => void
 
-const testAuthConfig = vi.hoisted(() => ({
-	convexUrl: 'https://example.convex.cloud',
-	workOsClientId: 'client_example',
-	workOsRedirectUri: 'https://example.com/callback',
+const testConfig = vi.hoisted(() => ({
+	convex: {
+		url: 'https://example.convex.cloud',
+	},
+	workOs: {
+		clientId: 'client_example',
+		redirectUri: 'https://example.com/callback',
+	},
 }))
 
 const authState = vi.hoisted(() => ({
@@ -30,8 +34,8 @@ const authState = vi.hoisted(() => ({
 	onRedirectCallback: undefined as RedirectCallback | undefined,
 }))
 
-vi.mock('../authConfig', () => ({
-	readPublicAuthConfig: () => testAuthConfig,
+vi.mock('~/lib/config', () => ({
+	config: testConfig,
 }))
 
 vi.mock('@workos-inc/authkit-react', () => ({
@@ -67,8 +71,14 @@ vi.mock('@workos-inc/authkit-react', () => ({
 	},
 }))
 
+// The Convex socket and query client are module-scope singletons; stub them so
+// importing the provider does not open a real connection.
+vi.mock('~/lib/convex', () => ({
+	convexClient: {},
+	queryClient: {},
+}))
+
 vi.mock('convex/react', () => ({
-	ConvexReactClient: class ConvexReactClient {},
 	ConvexProviderWithAuth: ({
 		children,
 		useAuth,
@@ -109,11 +119,11 @@ describe('AuthProvider', () => {
 		expect(convexProvider).toContainElement(existingProviders)
 		expect(authKitProvider).toHaveAttribute(
 			'data-client-id',
-			testAuthConfig.workOsClientId,
+			testConfig.workOs.clientId,
 		)
 		expect(authKitProvider).toHaveAttribute(
 			'data-redirect-uri',
-			testAuthConfig.workOsRedirectUri,
+			testConfig.workOs.redirectUri,
 		)
 		expect(authState.convex).toMatchObject({
 			isLoading: true,
