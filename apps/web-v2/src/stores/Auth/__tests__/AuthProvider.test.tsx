@@ -16,29 +16,38 @@ type AdaptedAuthState = {
 	fetchAccessToken: () => Promise<string | null>
 }
 
+type RedirectCallback = () => void
+
 const authState = vi.hoisted(() => ({
 	authKit: undefined as AuthKitState | undefined,
 	convex: undefined as AdaptedAuthState | undefined,
+	onRedirectCallback: undefined as RedirectCallback | undefined,
 }))
 
 vi.mock('@workos-inc/authkit-react', () => ({
 	AuthKitProvider: ({
 		children,
 		clientId,
+		onRedirectCallback,
 		redirectUri,
 	}: {
 		children: ReactNode
 		clientId: string
+		onRedirectCallback?: RedirectCallback
 		redirectUri: string
-	}) => (
-		<div
-			data-client-id={clientId}
-			data-redirect-uri={redirectUri}
-			data-testid='authkit-provider'
-		>
-			{children}
-		</div>
-	),
+	}) => {
+		authState.onRedirectCallback = onRedirectCallback
+
+		return (
+			<div
+				data-client-id={clientId}
+				data-redirect-uri={redirectUri}
+				data-testid='authkit-provider'
+			>
+				{children}
+			</div>
+		)
+	},
 	useAuth: () => {
 		if (!authState.authKit) {
 			throw new Error('AuthKit state was not configured for this test')
@@ -70,11 +79,14 @@ describe('AuthProvider', () => {
 			getAccessToken: vi.fn(async () => null),
 		}
 		authState.convex = undefined
+		authState.onRedirectCallback = undefined
 	})
 
 	it('wraps the existing app with AuthKit and then Convex', () => {
+		const onRedirectCallback = vi.fn()
+
 		render(
-			<AuthProvider>
+			<AuthProvider onRedirectCallback={onRedirectCallback}>
 				<div data-testid='existing-providers'>Application</div>
 			</AuthProvider>,
 		)
@@ -97,6 +109,7 @@ describe('AuthProvider', () => {
 			isLoading: true,
 			isAuthenticated: false,
 		})
+		expect(authState.onRedirectCallback).toBe(onRedirectCallback)
 	})
 
 	it('adapts AuthKit authentication state and access tokens for Convex', async () => {
@@ -117,6 +130,21 @@ describe('AuthProvider', () => {
 			'access-token',
 		)
 		expect(getAccessToken).toHaveBeenCalledOnce()
+	})
+
+	it('waits for AuthKit initialization before authenticating Convex', () => {
+		authState.authKit = {
+			isLoading: true,
+			user: { id: 'user_123' },
+			getAccessToken: vi.fn(async () => 'access-token'),
+		}
+
+		render(<AuthProvider>Application</AuthProvider>)
+
+		expect(authState.convex).toMatchObject({
+			isLoading: true,
+			isAuthenticated: false,
+		})
 	})
 
 	it('returns null without logging token data when token fetching fails', async () => {

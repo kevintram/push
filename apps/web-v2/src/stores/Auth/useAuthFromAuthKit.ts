@@ -19,7 +19,7 @@ export function useAuthFromAuthKit() {
 	return useMemo(
 		() => ({
 			isLoading,
-			isAuthenticated: Boolean(user),
+			isAuthenticated: !isLoading && Boolean(user),
 			fetchAccessToken,
 		}),
 		[fetchAccessToken, isLoading, user],
