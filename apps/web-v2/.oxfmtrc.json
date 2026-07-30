@@ -15,6 +15,7 @@
 		"node_modules",
 		"public",
 		"src/app/routeTree.gen.ts",
+		"convex/_generated",
 		"pnpm-lock.yaml",
 		"*.md"
 	]

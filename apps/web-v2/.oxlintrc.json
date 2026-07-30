@@ -14,7 +14,8 @@
 		"dist",
 		"node_modules",
 		"public",
-		"src/app/routeTree.gen.ts"
+		"src/app/routeTree.gen.ts",
+		"convex/_generated"
 	],
 	"rules": {
 		"constructor-super": "error",
