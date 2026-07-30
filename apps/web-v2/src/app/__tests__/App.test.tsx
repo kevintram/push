@@ -1,3 +1,4 @@
+import { QueryClientProvider } from '@tanstack/react-query'
 import {
 	createMemoryHistory,
 	createRouter,
@@ -7,7 +8,9 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
+import { topicQueries } from '~/modules/library'
 import { HideModeProvider } from '~/stores/HideMode'
+import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
 vi.mock('@workos-inc/authkit-react', () => ({
 	useAuth: () => ({
@@ -18,27 +21,35 @@ vi.mock('@workos-inc/authkit-react', () => ({
 	}),
 }))
 
-vi.mock('convex/react', () => ({
+// Only the auth hook is stubbed. The rest of `convex/react` stays real so that
+// `@convex-dev/react-query` can still import from it.
+vi.mock('convex/react', async importOriginal => ({
+	...(await importOriginal<typeof import('convex/react')>()),
 	useConvexAuth: () => ({
 		isAuthenticated: false,
 		isLoading: false,
 		isRefreshing: false,
 	}),
-	useQuery: () => undefined,
 }))
 
 function renderRoute(path: string) {
+	const queryClient = createTestQueryClient()
+	queryClient.setQueryData(topicQueries.list().queryKey, [])
+
 	const router = createRouter({
 		routeTree,
+		context: { queryClient },
 		history: createMemoryHistory({
 			initialEntries: [path],
 		}),
 	})
 
 	return render(
-		<HideModeProvider>
-			<RouterProvider router={router} />
-		</HideModeProvider>,
+		<QueryClientProvider client={queryClient}>
+			<HideModeProvider>
+				<RouterProvider router={router} />
+			</HideModeProvider>
+		</QueryClientProvider>,
 	)
 }
 

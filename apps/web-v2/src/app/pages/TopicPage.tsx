@@ -1,8 +1,6 @@
-import { api } from '@convex/_generated/api'
-import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
-import { useParams } from '@tanstack/react-router'
-import { useQuery } from 'convex/react'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { notFound, useParams } from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
 
 import {
@@ -13,6 +11,7 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
+import { topicQueries } from '~/modules/library'
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
 import type { ReviewCard as ReviewCardModel } from '~/modules/reviews/types/review.types'
 import {
@@ -81,7 +80,11 @@ const styles = stylex.create({
 
 export function TopicPage() {
 	const { topicId } = useParams({ from: '/library/$topicId' })
-	const topic = useQuery(api.topics.get, { topicId: topicId as Id<'topics'> })
+	const { data: topic } = useSuspenseQuery(topicQueries.detail(topicId))
+
+	// The loader already rejects missing topics; this covers a topic deleted
+	// out from under a live subscription.
+	if (!topic) throw notFound()
 
 	return (
 		<div {...stylex.props(styles.container)}>
@@ -91,7 +94,7 @@ export function TopicPage() {
 						<Textarea
 							aria-label='Topic title'
 							readOnly
-							value={topic?.title}
+							value={topic.title}
 							xstyle={styles.title}
 						/>
 						<DropdownMenu>
@@ -118,9 +121,9 @@ export function TopicPage() {
 						</DropdownMenu>
 					</div>
 					<Textarea
-						aria-label='Topic body'
+						aria-label='Topic description'
 						readOnly
-						value={topic?.description}
+						value={topic.description}
 						xstyle={styles.description}
 					/>
 				</header>

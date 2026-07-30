@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Outlet } from '@tanstack/react-router'
 
-import { LibrarySidebar } from '~/modules/library/components/library-sidebar/LibrarySidebar'
+import { LibrarySidebar } from '~/modules/library'
 
 const styles = stylex.create({
 	container: {

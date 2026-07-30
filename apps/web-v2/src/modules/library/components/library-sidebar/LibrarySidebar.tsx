@@ -1,12 +1,12 @@
-import { api } from '@convex/_generated/api'
 import * as stylex from '@stylexjs/stylex'
-import { useQuery } from 'convex/react'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { useMemo } from 'react'
 
 import { Button } from '~/components/ui'
 import { fontWeights, iconSizes, spacing } from '~/styles/tokens.stylex'
 
+import { topicQueries } from '../../api/topicQueries'
 import { treeifyTopics } from '../../utils/treeifyTopics'
 import { TopicLink } from './TopicLink'
 
@@ -41,8 +41,8 @@ const styles = stylex.create({
 })
 
 export function LibrarySidebar() {
-	const topics = useQuery(api.topics.list)
-	const topicTree = useMemo(() => treeifyTopics(topics ?? []), [topics])
+	const { data: topics } = useSuspenseQuery(topicQueries.list())
+	const topicTree = useMemo(() => treeifyTopics(topics), [topics])
 
 	return (
 		<div {...stylex.props(styles.container)}>

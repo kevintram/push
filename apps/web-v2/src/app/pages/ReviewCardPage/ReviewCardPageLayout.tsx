@@ -1,3 +1,4 @@
+import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { Link, Outlet, useMatchRoute, useParams } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
@@ -50,7 +51,9 @@ export function ReviewCardPageLayout() {
 	const { reviewCardId } = useParams({
 		from: '/review-cards/$reviewCardId',
 	})
-	const topicId = 'learning-typescript'
+	// Mock data: a real topic id will come from the review card once review
+	// cards are backed by Convex.
+	const topicId = 'learning-typescript' as Id<'topics'>
 	const topicTitle = 'Learning TypeScript'
 
 	const matchRoute = useMatchRoute()
