@@ -4,10 +4,28 @@ import {
 	RouterProvider,
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
 import { HideModeProvider } from '~/stores/HideMode'
+
+vi.mock('@workos-inc/authkit-react', () => ({
+	useAuth: () => ({
+		isLoading: false,
+		signIn: vi.fn(),
+		signOut: vi.fn(),
+		user: null,
+	}),
+}))
+
+vi.mock('convex/react', () => ({
+	useConvexAuth: () => ({
+		isAuthenticated: false,
+		isLoading: false,
+		isRefreshing: false,
+	}),
+	useQuery: () => undefined,
+}))
 
 function renderRoute(path: string) {
 	const router = createRouter({
@@ -54,6 +72,17 @@ describe('v2 app setup', () => {
 
 		expect(
 			await screen.findByRole('heading', { name: heading }),
+		).toBeInTheDocument()
+	})
+
+	it('puts sign-in on the settings route', async () => {
+		renderRoute('/settings')
+
+		expect(
+			await screen.findByRole('heading', { name: 'Account' }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Sign in' }),
 		).toBeInTheDocument()
 	})
 

@@ -4,7 +4,6 @@ import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { AuthConnectionProbe } from './app/dev/AuthConnectionProbe'
 import { LoaderPage } from './app/pages/LoaderPage'
 import { routeTree } from './app/routeTree.gen'
 import { TooltipProvider } from './components/ui'
@@ -48,9 +47,6 @@ if (container) {
 						<RouterProvider router={router} />
 					</HideModeProvider>
 				</TooltipProvider>
-				{import.meta.env.DEV && !import.meta.env.VITEST ? (
-					<AuthConnectionProbe />
-				) : null}
 			</AuthProvider>
 		</StrictMode>,
 	)
