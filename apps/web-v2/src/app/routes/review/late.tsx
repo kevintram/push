@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ReviewLatePage } from '~/app/pages/ReviewLatePage'
+import { ReviewListPage } from '~/app/pages/ReviewListPage'
 import { reviewCardQueries } from '~/modules/reviews/api/queries'
 
 export const Route = createFileRoute('/review/late')({
@@ -8,5 +8,5 @@ export const Route = createFileRoute('/review/late')({
 		context.queryClient.ensureQueryData(
 			reviewCardQueries.list({ due: 'late' }),
 		),
-	component: ReviewLatePage,
+	component: () => <ReviewListPage filters={{ due: 'late' }} title='Late' />,
 })

@@ -4,7 +4,6 @@ import { useParams, useRouter } from '@tanstack/react-router'
 import { Check, Ellipsis, Flag, Trash2, Zap } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
-import { ContentColumn } from '~/components/ContentColumn'
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import { Hideable } from '~/components/Hideable'
 import {
@@ -27,6 +26,7 @@ import {
 	fontSizes,
 	fontWeights,
 	iconSizes,
+	layout,
 	spacing,
 } from '~/styles/tokens.stylex'
 import { formatRelativeDate } from '~/utils/date'
@@ -34,28 +34,37 @@ import { formatRelativeDate } from '~/utils/date'
 type EditableField = 'primary_text' | 'secondary_text' | 'notes'
 
 const styles = stylex.create({
-	container: {
+	layout: {
 		display: 'flex',
 
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
+
+		overflow: 'hidden',
 	},
 	main: {
-		padding: spacing.xl,
+		paddingBlock: spacing.xl,
+		paddingInline: spacing.sm,
 
 		display: 'flex',
-		flexDirection: 'column',
+		justifyContent: 'center',
 
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
 		minWidth: 0,
+
+		overflow: 'auto',
 	},
-	column: {
+	content: {
 		gap: spacing.xl,
 		display: 'flex',
 		flexDirection: 'column',
+		flexShrink: 1,
+		maxWidth: layout.contentMaxWidth,
+		minWidth: 0,
+		width: '100%',
 	},
 	primary: {
 		fontSize: fontSizes.xl,
@@ -177,9 +186,9 @@ export function ReviewCardPageOverview() {
 	}
 
 	return (
-		<div {...stylex.props(styles.container)}>
+		<div {...stylex.props(styles.layout)}>
 			<main {...stylex.props(styles.main)}>
-				<ContentColumn xstyle={styles.column}>
+				<div {...stylex.props(styles.content)}>
 					<Textarea
 						aria-label='Review-card primary text'
 						placeholder={
@@ -383,7 +392,7 @@ export function ReviewCardPageOverview() {
 							xstyle={styles.notes}
 						/>
 					</Hideable>
-				</ContentColumn>
+				</div>
 			</main>
 			<aside>
 				<ReviewsSidebar />

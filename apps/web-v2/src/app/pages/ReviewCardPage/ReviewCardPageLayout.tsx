@@ -22,7 +22,9 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 
-		padding: spacing.lg,
+		padding: spacing.sm,
+
+		overflow: 'hidden',
 	},
 	header: {
 		display: 'flex',
