@@ -1,32 +1,44 @@
+import { api } from '@convex/_generated/api'
+import { convexQuery } from '@convex-dev/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAuth } from '@workos-inc/authkit-react'
-import { useConvexAuth, useQuery } from 'convex/react'
+import { useConvexAuth } from 'convex/react'
+import type { ReactElement } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { api } from '../../../../convex/_generated/api'
+import { createTestQueryClient } from '~/testing/createTestQueryClient'
+
 import { AccountSettingsSection } from '../AccountSettingsSection'
 
 vi.mock('@workos-inc/authkit-react', () => ({
 	useAuth: vi.fn(),
 }))
 
-vi.mock('convex/react', () => ({
+// Only the auth hook is stubbed. The rest of `convex/react` stays real so that
+// `@convex-dev/react-query` can still import from it.
+vi.mock('convex/react', async importOriginal => ({
+	...(await importOriginal<typeof import('convex/react')>()),
 	useConvexAuth: vi.fn(),
-	useQuery: vi.fn(),
-}))
-
-vi.mock('../../../../convex/_generated/api', () => ({
-	api: {
-		auth: {
-			getIdentity: 'auth:getIdentity',
-		},
-	},
 }))
 
 const mockedUseAuth = vi.mocked(useAuth)
 const mockedUseConvexAuth = vi.mocked(useConvexAuth)
-const mockedUseQuery = vi.mocked(useQuery)
+
+const identityQuery = convexQuery(api.auth.getIdentity, {})
+
+// The test query client has no working default queryFn, so any read the
+// component makes that was not seeded here fails loudly instead of reaching
+// for a Convex socket.
+function renderWithQueryClient(ui: ReactElement) {
+	const queryClient = createTestQueryClient()
+	queryClient.setQueryData(identityQuery.queryKey, { authenticated: true })
+
+	return render(
+		<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+	)
+}
 
 describe('AccountSettingsSection', () => {
 	const signIn = vi.fn(async () => {})
@@ -45,24 +57,21 @@ describe('AccountSettingsSection', () => {
 			isLoading: false,
 			isRefreshing: false,
 		})
-		mockedUseQuery.mockReturnValue(undefined)
 	})
 
 	it('shows a minimal signed-out state and starts sign-in', async () => {
 		const user = userEvent.setup()
 
-		render(<AccountSettingsSection />)
+		renderWithQueryClient(<AccountSettingsSection />)
 
 		expect(
 			screen.getByText(
 				'Sign in to sync your library and review history.',
 			),
 		).toBeInTheDocument()
+		// Identity data is cached, but the signed-out read is skipped, so the
+		// component must not report a verified session.
 		expect(screen.getByRole('status')).toHaveTextContent('Signed out')
-		expect(mockedUseQuery).toHaveBeenCalledWith(
-			api.auth.getIdentity,
-			'skip',
-		)
 
 		await user.click(screen.getByRole('button', { name: 'Sign in' }))
 		expect(signIn).toHaveBeenCalledOnce()
@@ -86,14 +95,12 @@ describe('AccountSettingsSection', () => {
 			isLoading: false,
 			isRefreshing: false,
 		})
-		mockedUseQuery.mockReturnValue({ authenticated: true })
 
-		render(<AccountSettingsSection />)
+		renderWithQueryClient(<AccountSettingsSection />)
 
 		expect(screen.getByText('Ada Lovelace')).toBeInTheDocument()
 		expect(screen.getByText('reader@example.com')).toBeInTheDocument()
 		expect(screen.getByRole('status')).toHaveTextContent('Connected')
-		expect(mockedUseQuery).toHaveBeenCalledWith(api.auth.getIdentity, {})
 
 		await user.click(screen.getByRole('button', { name: 'Sign out' }))
 		expect(signOut).toHaveBeenCalledOnce()
@@ -108,7 +115,7 @@ describe('AccountSettingsSection', () => {
 			user: null,
 		} as unknown as ReturnType<typeof useAuth>)
 
-		render(<AccountSettingsSection />)
+		renderWithQueryClient(<AccountSettingsSection />)
 
 		expect(screen.getByRole('status')).toHaveTextContent(
 			'Checking your session',

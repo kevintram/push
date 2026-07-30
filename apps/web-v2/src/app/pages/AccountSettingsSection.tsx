@@ -1,6 +1,9 @@
+import { api } from '@convex/_generated/api'
+import { convexQuery } from '@convex-dev/react-query'
 import * as stylex from '@stylexjs/stylex'
+import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@workos-inc/authkit-react'
-import { useConvexAuth, useQuery } from 'convex/react'
+import { useConvexAuth } from 'convex/react'
 import { UserRound } from 'lucide-react'
 
 import { Button } from '~/components/ui'
@@ -12,8 +15,6 @@ import {
 	radii,
 	spacing,
 } from '~/styles/tokens.stylex'
-
-import { api } from '../../../convex/_generated/api'
 
 const styles = stylex.create({
 	section: {
@@ -125,9 +126,10 @@ const styles = stylex.create({
 export function AccountSettingsSection() {
 	const { isLoading: isAuthLoading, signIn, signOut, user } = useAuth()
 	const { isAuthenticated, isLoading, isRefreshing } = useConvexAuth()
-	const identity = useQuery(
-		api.auth.getIdentity,
-		isAuthenticated ? {} : 'skip',
+	// Not suspense: this read is gated on auth state rather than a route
+	// loader, so it has to be able to sit in a disabled state.
+	const { data: identity } = useQuery(
+		convexQuery(api.auth.getIdentity, isAuthenticated ? {} : 'skip'),
 	)
 
 	const identityVerified = identity?.authenticated === true
