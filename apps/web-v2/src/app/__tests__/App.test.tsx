@@ -5,11 +5,13 @@ import {
 	RouterProvider,
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
+import { ConvexProvider } from 'convex/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
 import { topicQueries } from '~/modules/library'
 import { HideModeProvider } from '~/stores/HideMode'
+import { createTestConvexClient } from '~/testing/createTestConvexClient'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
 vi.mock('@workos-inc/authkit-react', () => ({
@@ -35,6 +37,7 @@ vi.mock('convex/react', async importOriginal => ({
 function renderRoute(path: string) {
 	const queryClient = createTestQueryClient()
 	queryClient.setQueryData(topicQueries.list().queryKey, [])
+	const convexClient = createTestConvexClient()
 
 	const router = createRouter({
 		routeTree,
@@ -45,11 +48,13 @@ function renderRoute(path: string) {
 	})
 
 	return render(
-		<QueryClientProvider client={queryClient}>
-			<HideModeProvider>
-				<RouterProvider router={router} />
-			</HideModeProvider>
-		</QueryClientProvider>,
+		<ConvexProvider client={convexClient}>
+			<QueryClientProvider client={queryClient}>
+				<HideModeProvider>
+					<RouterProvider router={router} />
+				</HideModeProvider>
+			</QueryClientProvider>
+		</ConvexProvider>,
 	)
 }
 
