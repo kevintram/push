@@ -19,7 +19,11 @@ vi.mock('@workos-inc/authkit-react', () => ({
 		isLoading: false,
 		signIn: vi.fn(),
 		signOut: vi.fn(),
-		user: null,
+		user: {
+			email: 'test@example.com',
+			firstName: 'Test',
+			lastName: 'User',
+		},
 	}),
 }))
 
@@ -28,7 +32,7 @@ vi.mock('@workos-inc/authkit-react', () => ({
 vi.mock('convex/react', async importOriginal => ({
 	...(await importOriginal<typeof import('convex/react')>()),
 	useConvexAuth: () => ({
-		isAuthenticated: false,
+		isAuthenticated: true,
 		isLoading: false,
 		isRefreshing: false,
 	}),
@@ -91,14 +95,14 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
-	it('puts sign-in on the settings route', async () => {
+	it('puts account settings on the settings route', async () => {
 		renderRoute('/settings')
 
 		expect(
 			await screen.findByRole('heading', { name: 'Account' }),
 		).toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Sign in' }),
+			screen.getByRole('button', { name: 'Sign out' }),
 		).toBeInTheDocument()
 	})
 
