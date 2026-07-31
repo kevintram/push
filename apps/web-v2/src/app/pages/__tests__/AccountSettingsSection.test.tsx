@@ -26,7 +26,7 @@ vi.mock('convex/react', async importOriginal => ({
 const mockedUseAuth = vi.mocked(useAuth)
 const mockedUseConvexAuth = vi.mocked(useConvexAuth)
 
-const identityQuery = convexQuery(api.auth.getIdentity, {})
+const identityQuery = convexQuery(api.auth.verifyIdentity, {})
 
 // The test query client has no working default queryFn, so any read the
 // component makes that was not seeded here fails loudly instead of reaching

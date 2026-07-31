@@ -129,7 +129,7 @@ export function AccountSettingsSection() {
 	// Not suspense: this read is gated on auth state rather than a route
 	// loader, so it has to be able to sit in a disabled state.
 	const { data: identity } = useQuery(
-		convexQuery(api.auth.getIdentity, isAuthenticated ? {} : 'skip'),
+		convexQuery(api.auth.verifyIdentity, isAuthenticated ? {} : 'skip'),
 	)
 
 	const identityVerified = identity?.authenticated === true

@@ -2,7 +2,7 @@ import { useAuth } from '@workos-inc/authkit-react'
 import { useCallback, useMemo } from 'react'
 
 /**
- * Hook for adapting AuthKit's `useAuth` to `ConvexProviderWithAuth`'s `useAuth`.
+ * Fetches token from Authkit
  */
 export function useAuthFromAuthKit() {
 	const { isLoading, user, getAccessToken } = useAuth()
