@@ -1,44 +1,64 @@
+import { QueryClientProvider } from '@tanstack/react-query'
 import {
 	createMemoryHistory,
 	createRouter,
 	RouterProvider,
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
+import { ConvexProvider } from 'convex/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
+import { topicQueries } from '~/modules/library'
 import { HideModeProvider } from '~/stores/HideMode'
+import { createTestConvexClient } from '~/testing/createTestConvexClient'
+import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
 vi.mock('@workos-inc/authkit-react', () => ({
 	useAuth: () => ({
 		isLoading: false,
 		signIn: vi.fn(),
 		signOut: vi.fn(),
-		user: null,
+		user: {
+			email: 'test@example.com',
+			firstName: 'Test',
+			lastName: 'User',
+		},
 	}),
 }))
 
-vi.mock('convex/react', () => ({
+// Only the auth hook is stubbed. The rest of `convex/react` stays real so that
+// `@convex-dev/react-query` can still import from it.
+vi.mock('convex/react', async importOriginal => ({
+	...(await importOriginal<typeof import('convex/react')>()),
 	useConvexAuth: () => ({
-		isAuthenticated: false,
+		isAuthenticated: true,
 		isLoading: false,
 		isRefreshing: false,
 	}),
-	useQuery: () => undefined,
 }))
 
 function renderRoute(path: string) {
+	const queryClient = createTestQueryClient()
+	queryClient.setQueryData(topicQueries.list().queryKey, [])
+	const convexClient = createTestConvexClient()
+
 	const router = createRouter({
 		routeTree,
+		context: { queryClient },
 		history: createMemoryHistory({
 			initialEntries: [path],
 		}),
 	})
 
 	return render(
-		<HideModeProvider>
-			<RouterProvider router={router} />
-		</HideModeProvider>,
+		<ConvexProvider client={convexClient}>
+			<QueryClientProvider client={queryClient}>
+				<HideModeProvider>
+					<RouterProvider router={router} />
+				</HideModeProvider>
+			</QueryClientProvider>
+		</ConvexProvider>,
 	)
 }
 
@@ -75,14 +95,14 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
-	it('puts sign-in on the settings route', async () => {
+	it('puts account settings on the settings route', async () => {
 		renderRoute('/settings')
 
 		expect(
 			await screen.findByRole('heading', { name: 'Account' }),
 		).toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Sign in' }),
+			screen.getByRole('button', { name: 'Sign out' }),
 		).toBeInTheDocument()
 	})
 

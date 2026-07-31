@@ -1,12 +1,15 @@
 import './styles/global.css'
 
+import { QueryClientProvider } from '@tanstack/react-query'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { LoaderPage } from './app/pages/LoaderPage'
+import { LoadingPage } from './app/pages/LoadingPage'
 import { routeTree } from './app/routeTree.gen'
 import { TooltipProvider } from './components/ui'
+import { queryClient } from './lib/convex'
+import { AuthGate } from './stores/Auth/AuthGate'
 import { AuthProvider } from './stores/Auth/AuthProvider'
 import { HideModeProvider } from './stores/HideMode'
 
@@ -20,10 +23,12 @@ if (import.meta.env.DEV && !import.meta.env.VITEST) {
 const router = createRouter({
 	routeTree,
 
+	context: { queryClient },
+
 	defaultPreload: 'intent',
 	defaultPreloadStaleTime: 0,
 
-	defaultPendingComponent: LoaderPage,
+	defaultPendingComponent: LoadingPage,
 	defaultPendingMs: 200,
 	defaultPendingMinMs: 200,
 
@@ -42,11 +47,15 @@ if (container) {
 	createRoot(container).render(
 		<StrictMode>
 			<AuthProvider>
-				<TooltipProvider>
-					<HideModeProvider>
-						<RouterProvider router={router} />
-					</HideModeProvider>
-				</TooltipProvider>
+				<QueryClientProvider client={queryClient}>
+					<TooltipProvider>
+						<HideModeProvider>
+							<AuthGate>
+								<RouterProvider router={router} />
+							</AuthGate>
+						</HideModeProvider>
+					</TooltipProvider>
+				</QueryClientProvider>
 			</AuthProvider>
 		</StrictMode>,
 	)

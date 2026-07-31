@@ -11,21 +11,30 @@ importers:
       '@base-ui/react':
         specifier: ^1.1.0
         version: 1.5.0(@date-fns/tz@1.5.0)(@types/react@19.1.6)(date-fns@4.4.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@convex-dev/react-query':
+        specifier: ^0.1.0
+        version: 0.1.0(@tanstack/react-query@5.101.4(react@19.1.0))(convex@1.42.3(react@19.1.0))
       '@stylexjs/stylex':
         specifier: ^0.19.0
         version: 0.19.0
+      '@tanstack/react-query':
+        specifier: ^5.101.4
+        version: 5.101.4(react@19.1.0)
       '@tanstack/react-router':
         specifier: 1.170.16
         version: 1.170.16(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@workos-inc/authkit-react':
-        specifier: ^0.16.1
-        version: 0.16.1(react@19.1.0)
+        specifier: ^0.16.2
+        version: 0.16.2(react@19.1.0)
       convex:
         specifier: ^1.42.3
         version: 1.42.3(react@19.1.0)
       date-fns:
         specifier: ^4.4.0
         version: 4.4.0
+      lodash.debounce:
+        specifier: ^4.0.8
+        version: 4.0.8
       lucide-react:
         specifier: ^0.525.0
         version: 0.525.0(react@19.1.0)
@@ -54,6 +63,9 @@ importers:
       '@tanstack/eslint-plugin-router':
         specifier: ^1.162.0
         version: 1.162.0(eslint@10.6.0(jiti@2.7.0))(typescript@5.8.3)
+      '@tanstack/react-query-devtools':
+        specifier: ^5.101.4
+        version: 5.101.4(@tanstack/react-query@5.101.4(react@19.1.0))(react@19.1.0)
       '@tanstack/react-router-devtools':
         specifier: ^1.167.0
         version: 1.167.0(@tanstack/react-router@1.170.16(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.171.13)(csstype@3.2.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -72,6 +84,9 @@ importers:
       '@testing-library/user-event':
         specifier: 14.6.1
         version: 14.6.1(@testing-library/dom@10.4.0)
+      '@types/lodash.debounce':
+        specifier: ^4.0.9
+        version: 4.0.9
       '@types/node':
         specifier: 22.15.30
         version: 22.15.30
@@ -240,6 +255,12 @@ packages:
   '@bcoe/v8-coverage@1.0.2':
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
+
+  '@convex-dev/react-query@0.1.0':
+    resolution: {integrity: sha512-ULmBZCtAQDUePdBhUv7hj1Yy4QiCelhi6uEIOtMpjW8db6W9CFKvQwLt9heLngccFyMFfAZdOfSrT+cP4AH0Jw==}
+    peerDependencies:
+      '@tanstack/react-query': ^5.0.0
+      convex: ^1.29.3
 
   '@csstools/css-tokenizer@3.0.4':
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
@@ -1140,6 +1161,23 @@ packages:
     resolution: {integrity: sha512-79pf/RkhteYZTRgcR4F9kbk84P2N8rugQJswxfIqovlbRiT3yI7eBE+5QorIrZaOKktsgzRlXh1l/du/xpl4iA==}
     engines: {node: '>=20.19'}
 
+  '@tanstack/query-core@5.101.4':
+    resolution: {integrity: sha512-gNwcvOJcRbLWPOLG/2OBm+zM+Yv+MKsXKEOWC57USuZDEsI71hEErQsiEGx5wX9rzWWkfwM0fVSPoiIFSsxfiw==}
+
+  '@tanstack/query-devtools@5.101.4':
+    resolution: {integrity: sha512-z5IPHnDX3aUWeTWlRKLyooBQekaCAw4xRpZqPQ390RiWTDBcTynjpPT221BArw0u2+pnQMdGvPQI9YNNubBcmA==}
+
+  '@tanstack/react-query-devtools@5.101.4':
+    resolution: {integrity: sha512-VeK2gtmfj7kvRBjtxS7TKxt/6qKhn8VzabY4UiYMr7NV9CddjSRYRgeYyld+NpjAkgMV9dd+2Qdr8ah5I03NeA==}
+    peerDependencies:
+      '@tanstack/react-query': ^5.101.4
+      react: ^18 || ^19
+
+  '@tanstack/react-query@5.101.4':
+    resolution: {integrity: sha512-yRg2pfOCxIs4ZJW3XYYHU/WgtD04FHSnfHlpRT7h7pR77hwkdRG4wxbKe4aq6P0RvXUTBSQpQeadS1SUYUe+KA==}
+    peerDependencies:
+      react: ^18 || ^19
+
   '@tanstack/react-router-devtools@1.167.0':
     resolution: {integrity: sha512-nGw095EG7IHx0h5NtlEmzf6vcCTaFNPWdTSuDKazajhN0ct/v/TkekJ9J6KYUCeV1a8/2ZmToc58M+0rrOyn7w==}
     engines: {node: '>=20.19'}
@@ -1265,6 +1303,12 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
+  '@types/lodash.debounce@4.0.9':
+    resolution: {integrity: sha512-Ma5JcgTREwpLRwMM+XwBR7DaWe96nC38uCBDFKZWbNKD+osjVzdpnUSwBcqCptrp16sSOLBAUb50Car5I0TCsQ==}
+
+  '@types/lodash@4.17.24':
+    resolution: {integrity: sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==}
+
   '@types/node@22.15.30':
     resolution: {integrity: sha512-6Q7lr06bEHdlfplU6YRbgG1SFBdlsfNC4/lX+SkhiTs0cpJkOElmWls8PxDFv4yY/xKb8Y6SO0OmSX4wgqTZbA==}
 
@@ -1364,11 +1408,11 @@ packages:
   '@vitest/utils@4.1.9':
     resolution: {integrity: sha512-A51o8ymO5PpqlWNnBP9ZHPXDIpuMtTLlGSjN7la4US+LJzoUMyhwjA5QXlm39JexgwHKW4Xjs8Z2d3dLCXOeuA==}
 
-  '@workos-inc/authkit-js@0.20.0':
-    resolution: {integrity: sha512-8+sw8eH1+XCt3NDoIB2bKKbHvq1N7CVFJeyq1uVrUWG83GCIbNNrFwWrocVNfeQJyhKsVVuDpRcp03iSVsK5Gg==}
+  '@workos-inc/authkit-js@0.20.2':
+    resolution: {integrity: sha512-EEo8VitBko7ON5shVRS4AMmgezWhWfxKKtGV7QpJMgsejKBXi0DujCFf7blR7z46z3xr3Ge55yVEMSrOMtMOzg==}
 
-  '@workos-inc/authkit-react@0.16.1':
-    resolution: {integrity: sha512-u8IJsAAyZFFM02+3JhvvNTopSNQoJk/hjOoBlmOkh6j+AnVYrR8hjzJn8j3m9Vi5tRE0il7mpsEDT9fI2xRNjg==}
+  '@workos-inc/authkit-react@0.16.2':
+    resolution: {integrity: sha512-Q10bTJ3sd8zfbIlxl8KavLeHLuW7v2aJLfq+syyWsVa9VzbrBVFyr7HNxt3aAVJq1kcMfTJu1p9gSJT3Gswulg==}
     peerDependencies:
       react: '>=17'
 
@@ -1843,6 +1887,9 @@ packages:
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
+
+  lodash.debounce@4.0.8:
+    resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
 
   lodash@4.18.1:
     resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
@@ -2473,6 +2520,11 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
+  '@convex-dev/react-query@0.1.0(@tanstack/react-query@5.101.4(react@19.1.0))(convex@1.42.3(react@19.1.0))':
+    dependencies:
+      '@tanstack/react-query': 5.101.4(react@19.1.0)
+      convex: 1.42.3(react@19.1.0)
+
   '@csstools/css-tokenizer@3.0.4': {}
 
   '@date-fns/tz@1.5.0': {}
@@ -3037,6 +3089,21 @@ snapshots:
 
   '@tanstack/history@1.162.0': {}
 
+  '@tanstack/query-core@5.101.4': {}
+
+  '@tanstack/query-devtools@5.101.4': {}
+
+  '@tanstack/react-query-devtools@5.101.4(@tanstack/react-query@5.101.4(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@tanstack/query-devtools': 5.101.4
+      '@tanstack/react-query': 5.101.4(react@19.1.0)
+      react: 19.1.0
+
+  '@tanstack/react-query@5.101.4(react@19.1.0)':
+    dependencies:
+      '@tanstack/query-core': 5.101.4
+      react: 19.1.0
+
   '@tanstack/react-router-devtools@1.167.0(@tanstack/react-router@1.170.16(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@tanstack/router-core@1.171.13)(csstype@3.2.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@tanstack/react-router': 1.170.16(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -3188,6 +3255,12 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/lodash.debounce@4.0.9':
+    dependencies:
+      '@types/lodash': 4.17.24
+
+  '@types/lodash@4.17.24': {}
+
   '@types/node@22.15.30':
     dependencies:
       undici-types: 6.21.0
@@ -3311,11 +3384,11 @@ snapshots:
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.0
 
-  '@workos-inc/authkit-js@0.20.0': {}
+  '@workos-inc/authkit-js@0.20.2': {}
 
-  '@workos-inc/authkit-react@0.16.1(react@19.1.0)':
+  '@workos-inc/authkit-react@0.16.2(react@19.1.0)':
     dependencies:
-      '@workos-inc/authkit-js': 0.20.0
+      '@workos-inc/authkit-js': 0.20.2
       react: 19.1.0
 
   acorn-jsx@5.3.2(acorn@8.17.0):
@@ -3764,6 +3837,8 @@ snapshots:
   locate-path@6.0.0:
     dependencies:
       p-locate: 5.0.0
+
+  lodash.debounce@4.0.8: {}
 
   lodash@4.18.1: {}
 

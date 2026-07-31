@@ -1,21 +1,11 @@
-import { v } from 'convex/values'
+import type { MutationCtx, QueryCtx } from './_generated/server'
 
-import { query } from './_generated/server'
+export async function requireIdentity(ctx: QueryCtx | MutationCtx) {
+	const identity = await ctx.auth.getUserIdentity()
 
-export const getIdentity = query({
-	args: {},
-	returns: v.object({
-		authenticated: v.boolean(),
-	}),
-	handler: async ctx => {
-		const identity = await ctx.auth.getUserIdentity()
+	if (!identity) {
+		throw new Error('Unauthenticated')
+	}
 
-		if (identity === null) {
-			throw new Error('Not authenticated')
-		}
-
-		return {
-			authenticated: true,
-		}
-	},
-})
+	return identity
+}

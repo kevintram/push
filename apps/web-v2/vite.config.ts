@@ -44,6 +44,7 @@ export default defineConfig(() => ({
 	},
 	resolve: {
 		alias: {
+			'@convex': path.resolve(import.meta.dirname, './convex'),
 			'~': path.resolve(import.meta.dirname, './src'),
 		},
 		tsconfigPaths: true,
@@ -61,6 +62,7 @@ export default defineConfig(() => ({
 			exclude: [
 				'src/**/*.stylex.ts',
 				'src/**/*.d.ts',
+				'src/lib/convex.ts',
 				'src/main.tsx',
 				'src/testing/**',
 				'src/app/routeTree.gen.ts',

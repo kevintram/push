@@ -1,5 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
+import { useNavigate } from '@tanstack/react-router'
 import { Plus, Trash2 } from 'lucide-react'
+import { useCallback } from 'react'
 
 import { SidebarLink } from '~/components/sidebar-link'
 import {
@@ -10,6 +12,7 @@ import {
 } from '~/components/ui'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
+import { useCreateTopic, useDeleteTopic } from '../../api/topicQueries'
 import { type TopicWithChildren } from '../../types/topic.types'
 
 const styles = stylex.create({
@@ -29,8 +32,25 @@ const styles = stylex.create({
 	},
 })
 
-export function TopicLink({ id, title, children }: TopicWithChildren) {
+export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 	const topicTitle = title.trim() || 'Untitled'
+	const navigate = useNavigate()
+	const createTopic = useCreateTopic()
+	const deleteTopic = useDeleteTopic()
+
+	const handleCreateSubtopic = useCallback(() => {
+		createTopic.mutate(
+			{ parentId: _id },
+			{
+				onSuccess: topicId =>
+					navigate({ to: '/library/$topicId', params: { topicId } }),
+			},
+		)
+	}, [navigate, createTopic, _id])
+
+	const handleDeleteTopic = useCallback(() => {
+		deleteTopic.mutate({ topicId: _id })
+	}, [_id, deleteTopic])
 
 	return (
 		<li {...stylex.props(styles.container)}>
@@ -39,7 +59,7 @@ export function TopicLink({ id, title, children }: TopicWithChildren) {
 					render={
 						<SidebarLink
 							to='/library/$topicId'
-							params={{ topicId: id }}
+							params={{ topicId: _id }}
 							text={topicTitle}
 						/>
 					}
@@ -47,21 +67,21 @@ export function TopicLink({ id, title, children }: TopicWithChildren) {
 					{topicTitle}
 				</ContextMenuTrigger>
 				<ContextMenuContent>
-					<ContextMenuItem disabled>
+					<ContextMenuItem onClick={handleCreateSubtopic}>
 						<Plus aria-hidden='true' size={iconSizes.md} />
 						Add subtopic
 					</ContextMenuItem>
-					<ContextMenuItem disabled>
+					<ContextMenuItem onClick={handleDeleteTopic}>
 						<Trash2 aria-hidden='true' size={iconSizes.md} />
 						Delete
 					</ContextMenuItem>
 				</ContextMenuContent>
 			</ContextMenu>
 
-			{children && children.length > 0 ? (
+			{childTopics.length > 0 ? (
 				<ul {...stylex.props(styles.childrenList)}>
-					{children.map(child => (
-						<TopicLink key={child.id} {...child} />
+					{childTopics.map(child => (
+						<TopicLink key={child._id} {...child} />
 					))}
 				</ul>
 			) : null}

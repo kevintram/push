@@ -1,13 +1,7 @@
-import { type ReviewCard } from '~/modules/reviews/types/review.types'
+import type { Doc } from '@convex/_generated/dataModel'
 
-export type Topic = {
-	id: string
-	parentId?: string
-	title: string
-	body: string
-	reviewCards?: Array<ReviewCard>
-}
+export type Topic = Doc<'topics'>
 
 export type TopicWithChildren = Topic & {
-	children?: Array<TopicWithChildren>
+	childTopics: Array<TopicWithChildren>
 }

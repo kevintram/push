@@ -7,31 +7,43 @@ import { AuthProvider } from '../AuthProvider'
 type AuthKitState = {
 	isLoading: boolean
 	user: unknown
-	getAccessToken: () => Promise<string | null>
+	getAccessToken: (options?: {
+		forceRefresh?: boolean
+	}) => Promise<string | null>
 }
 
 type AdaptedAuthState = {
 	isLoading: boolean
 	isAuthenticated: boolean
-	fetchAccessToken: () => Promise<string | null>
+	fetchAccessToken: (args: {
+		forceRefreshToken: boolean
+	}) => Promise<string | null>
 }
 
-type RedirectCallback = () => void
+type RedirectCallback = (args: { state?: unknown }) => void
+type RefreshFailureCallback = (args: {
+	signIn: (options?: { state?: { returnTo?: string } }) => Promise<void>
+}) => void
 
-const testAuthConfig = vi.hoisted(() => ({
-	convexUrl: 'https://example.convex.cloud',
-	workOsClientId: 'client_example',
-	workOsRedirectUri: 'https://example.com/callback',
+const testConfig = vi.hoisted(() => ({
+	convex: {
+		url: 'https://example.convex.cloud',
+	},
+	workOs: {
+		clientId: 'client_example',
+		redirectUri: 'https://example.com/',
+	},
 }))
 
 const authState = vi.hoisted(() => ({
 	authKit: undefined as AuthKitState | undefined,
 	convex: undefined as AdaptedAuthState | undefined,
 	onRedirectCallback: undefined as RedirectCallback | undefined,
+	onRefreshFailure: undefined as RefreshFailureCallback | undefined,
 }))
 
-vi.mock('../authConfig', () => ({
-	readPublicAuthConfig: () => testAuthConfig,
+vi.mock('~/lib/config', () => ({
+	config: testConfig,
 }))
 
 vi.mock('@workos-inc/authkit-react', () => ({
@@ -39,14 +51,17 @@ vi.mock('@workos-inc/authkit-react', () => ({
 		children,
 		clientId,
 		onRedirectCallback,
+		onRefreshFailure,
 		redirectUri,
 	}: {
 		children: ReactNode
 		clientId: string
 		onRedirectCallback?: RedirectCallback
+		onRefreshFailure?: RefreshFailureCallback
 		redirectUri: string
 	}) => {
 		authState.onRedirectCallback = onRedirectCallback
+		authState.onRefreshFailure = onRefreshFailure
 
 		return (
 			<div
@@ -67,8 +82,14 @@ vi.mock('@workos-inc/authkit-react', () => ({
 	},
 }))
 
+// The Convex socket and query client are module-scope singletons; stub them so
+// importing the provider does not open a real connection.
+vi.mock('~/lib/convex', () => ({
+	convexClient: {},
+	queryClient: {},
+}))
+
 vi.mock('convex/react', () => ({
-	ConvexReactClient: class ConvexReactClient {},
 	ConvexProviderWithAuth: ({
 		children,
 		useAuth,
@@ -90,13 +111,13 @@ describe('AuthProvider', () => {
 		}
 		authState.convex = undefined
 		authState.onRedirectCallback = undefined
+		authState.onRefreshFailure = undefined
+		window.history.replaceState({}, '', '/')
 	})
 
 	it('wraps the existing app with AuthKit and then Convex', () => {
-		const onRedirectCallback = vi.fn()
-
 		render(
-			<AuthProvider onRedirectCallback={onRedirectCallback}>
+			<AuthProvider>
 				<div data-testid='existing-providers'>Application</div>
 			</AuthProvider>,
 		)
@@ -109,17 +130,32 @@ describe('AuthProvider', () => {
 		expect(convexProvider).toContainElement(existingProviders)
 		expect(authKitProvider).toHaveAttribute(
 			'data-client-id',
-			testAuthConfig.workOsClientId,
+			testConfig.workOs.clientId,
 		)
 		expect(authKitProvider).toHaveAttribute(
 			'data-redirect-uri',
-			testAuthConfig.workOsRedirectUri,
+			testConfig.workOs.redirectUri,
 		)
 		expect(authState.convex).toMatchObject({
 			isLoading: true,
 			isAuthenticated: false,
 		})
-		expect(authState.onRedirectCallback).toBe(onRedirectCallback)
+		expect(authState.onRedirectCallback).toBeTypeOf('function')
+	})
+
+	it('starts reauthentication when token refresh fails', () => {
+		window.history.replaceState({}, '', '/review/new?mode=focused#current')
+		const signIn = vi.fn(
+			async (_options?: { state?: { returnTo?: string } }) => {},
+		)
+
+		render(<AuthProvider>Application</AuthProvider>)
+
+		authState.onRefreshFailure?.({ signIn })
+
+		expect(signIn).toHaveBeenCalledWith({
+			state: { returnTo: '/review/new?mode=focused#current' },
+		})
 	})
 
 	it('adapts AuthKit authentication state and access tokens for Convex', async () => {
@@ -136,10 +172,26 @@ describe('AuthProvider', () => {
 			isLoading: false,
 			isAuthenticated: true,
 		})
-		await expect(authState.convex?.fetchAccessToken()).resolves.toBe(
-			'access-token',
-		)
-		expect(getAccessToken).toHaveBeenCalledOnce()
+		await expect(
+			authState.convex?.fetchAccessToken({ forceRefreshToken: false }),
+		).resolves.toBe('access-token')
+		expect(getAccessToken).toHaveBeenCalledWith({ forceRefresh: false })
+	})
+
+	it('forces a token refresh when Convex rejects the current token', async () => {
+		const getAccessToken = vi.fn(async () => 'refreshed-token')
+		authState.authKit = {
+			isLoading: false,
+			user: { id: 'user_123' },
+			getAccessToken,
+		}
+
+		render(<AuthProvider>Application</AuthProvider>)
+
+		await expect(
+			authState.convex?.fetchAccessToken({ forceRefreshToken: true }),
+		).resolves.toBe('refreshed-token')
+		expect(getAccessToken).toHaveBeenCalledWith({ forceRefresh: true })
 	})
 
 	it('waits for AuthKit initialization before authenticating Convex', () => {
@@ -172,7 +224,9 @@ describe('AuthProvider', () => {
 
 		render(<AuthProvider>Application</AuthProvider>)
 
-		await expect(authState.convex?.fetchAccessToken()).resolves.toBeNull()
+		await expect(
+			authState.convex?.fetchAccessToken({ forceRefreshToken: false }),
+		).resolves.toBeNull()
 		expect(consoleError).toHaveBeenCalledWith(
 			'Unable to fetch WorkOS access token',
 		)

@@ -3,6 +3,7 @@
 	"compilerOptions": {
 		"allowUnreachableCode": false,
 		"paths": {
+			"@convex/*": ["./convex/*"],
 			"~/*": ["./src/*"]
 		},
 		"erasableSyntaxOnly": true,

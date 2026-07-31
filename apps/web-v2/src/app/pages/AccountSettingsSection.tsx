@@ -1,9 +1,9 @@
 import * as stylex from '@stylexjs/stylex'
 import { useAuth } from '@workos-inc/authkit-react'
-import { useConvexAuth, useQuery } from 'convex/react'
 import { UserRound } from 'lucide-react'
 
 import { Button } from '~/components/ui'
+import { config } from '~/lib/config'
 import { colors } from '~/styles/colors.stylex'
 import {
 	fontSizes,
@@ -12,8 +12,6 @@ import {
 	radii,
 	spacing,
 } from '~/styles/tokens.stylex'
-
-import { api } from '../../../convex/_generated/api'
 
 const styles = stylex.create({
 	section: {
@@ -82,26 +80,6 @@ const styles = stylex.create({
 		fontSize: fontSizes.sm,
 		lineHeight: 1.45,
 	},
-	status: {
-		gap: spacing.sm,
-		alignItems: 'center',
-		display: 'flex',
-	},
-	statusDot: {
-		borderRadius: radii.full,
-		flexShrink: 0,
-		height: '6px',
-		width: '6px',
-	},
-	statusDotIdle: {
-		backgroundColor: colors.textSecondary,
-	},
-	statusDotLoading: {
-		backgroundColor: colors.bgFillInfo,
-	},
-	statusDotConnected: {
-		backgroundColor: colors.bgFillSuccess,
-	},
 	actionContainer: {
 		gridColumnEnd: {
 			default: 'auto',
@@ -123,47 +101,16 @@ const styles = stylex.create({
 })
 
 export function AccountSettingsSection() {
-	const { isLoading: isAuthLoading, signIn, signOut, user } = useAuth()
-	const { isAuthenticated, isLoading, isRefreshing } = useConvexAuth()
-	const identity = useQuery(
-		api.auth.getIdentity,
-		isAuthenticated ? {} : 'skip',
-	)
+	const { signOut, user } = useAuth()
+	const displayName = [user?.firstName, user?.lastName]
+		.filter(Boolean)
+		.join(' ')
 
-	const identityVerified = identity?.authenticated === true
-	const sessionLoading = isAuthLoading || isLoading || isRefreshing
-	const displayName =
-		[user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
-		user?.email ||
-		'Your account'
-
-	const status = sessionLoading
-		? 'Checking your session'
-		: identityVerified
-			? 'Connected'
-			: isAuthenticated
-				? 'Connecting'
-				: 'Signed out'
-
-	const description = user?.email
-		? user.email
-		: 'Sign in to sync your library and review history.'
-
-	const statusStyle = sessionLoading
-		? styles.statusDotLoading
-		: identityVerified
-			? styles.statusDotConnected
-			: styles.statusDotIdle
-
-	const handleAuthAction = () => {
-		const action = isAuthenticated ? signOut : signIn
-
-		void Promise.resolve(action()).catch(() => {
-			console.error(
-				isAuthenticated
-					? 'Unable to sign out of WorkOS'
-					: 'Unable to start WorkOS sign-in',
-			)
+	const handleSignOut = () => {
+		void Promise.resolve(
+			signOut({ returnTo: config.workOs.signOutReturnTo }),
+		).catch(() => {
+			console.error('Unable to sign out of WorkOS')
 		})
 	}
 
@@ -182,29 +129,23 @@ export function AccountSettingsSection() {
 				</div>
 
 				<div {...stylex.props(styles.accountCopy)}>
-					<p {...stylex.props(styles.accountName)}>{displayName}</p>
+					{displayName && (
+						<p {...stylex.props(styles.accountName)}>
+							{displayName}
+						</p>
+					)}
 					<p {...stylex.props(styles.accountDescription)}>
-						{description}
+						{user?.email}
 					</p>
-					<div role='status' {...stylex.props(styles.status)}>
-						<span
-							aria-hidden='true'
-							{...stylex.props(styles.statusDot, statusStyle)}
-						/>
-						<span {...stylex.props(styles.accountDescription)}>
-							{status}
-						</span>
-					</div>
 				</div>
 
 				<div {...stylex.props(styles.actionContainer)}>
 					<Button
-						disabled={sessionLoading}
-						onClick={handleAuthAction}
+						onClick={handleSignOut}
 						size='small'
-						variant={isAuthenticated ? 'outline' : 'primary'}
+						variant='outline'
 					>
-						{isAuthenticated ? 'Sign out' : 'Sign in'}
+						Sign out
 					</Button>
 				</div>
 			</div>

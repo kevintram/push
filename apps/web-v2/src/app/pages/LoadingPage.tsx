@@ -31,7 +31,7 @@ const styles = stylex.create({
 	},
 })
 
-export function LoaderPage() {
+export function LoadingPage() {
 	return (
 		<div aria-label='Loading' role='status' {...stylex.props(styles.page)}>
 			<Loader aria-hidden='true' {...stylex.props(styles.loader)} />

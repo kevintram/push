@@ -1,29 +1,14 @@
-import { createRootRoute, Outlet } from '@tanstack/react-router'
-import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
+import type { QueryClient } from '@tanstack/react-query'
+import { createRootRouteWithContext } from '@tanstack/react-router'
 
 import { NotFoundPage } from '~/app/pages/NotFoundPage'
-import { AppShell } from '~/components/AppShell'
-import { Toaster } from '~/components/ui'
+import { Root } from '~/app/Root'
 
-function renderError({ error }: FallbackProps) {
-	return (
-		<div role='alert'>
-			<h1>Something went wrong</h1>
-			<pre>{error instanceof Error ? error.message : String(error)}</pre>
-		</div>
-	)
+export type RouterContext = {
+	queryClient: QueryClient
 }
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RouterContext>()({
 	notFoundComponent: NotFoundPage,
-	component: () => (
-		<>
-			<AppShell>
-				<ErrorBoundary fallbackRender={renderError}>
-					<Outlet />
-				</ErrorBoundary>
-			</AppShell>
-			<Toaster />
-		</>
-	),
+	component: Root,
 })

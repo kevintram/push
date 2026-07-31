@@ -1,36 +1,16 @@
 import * as stylex from '@stylexjs/stylex'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
+import { useCallback, useMemo } from 'react'
 
 import { Button } from '~/components/ui'
-import type { TopicWithChildren } from '~/modules/library/types/topic.types'
 import { fontWeights, iconSizes, spacing } from '~/styles/tokens.stylex'
 
+import { topicQueries, useCreateTopic } from '../../api/topicQueries'
+import { treeifyTopics } from '../../utils/treeifyTopics'
 import { TopicLink } from './TopicLink'
 
-const topics = Array.from({ length: 20 }, (_, index): TopicWithChildren => {
-	const number = index + 1
-	const id = index === 0 ? 'learning-typescript' : `mock-topic-${number}`
-
-	return {
-		id,
-		title: index === 0 ? 'Learning TypeScript' : `Mock topic ${number}`,
-		body: `Overflow test notes for mock topic ${number}.`,
-		children: [
-			{
-				id: `${id}-fundamentals`,
-				parentId: id,
-				title: 'Fundamentals',
-				body: `Fundamentals for mock topic ${number}.`,
-			},
-			{
-				id: `${id}-practice`,
-				parentId: id,
-				title: 'Practice',
-				body: `Practice notes for mock topic ${number}.`,
-			},
-		],
-	}
-})
 const styles = stylex.create({
 	container: { overflowY: 'auto' },
 	header: {
@@ -62,24 +42,39 @@ const styles = stylex.create({
 })
 
 export function LibrarySidebar() {
+	const { data: topics } = useSuspenseQuery(topicQueries.list())
+	const createTopic = useCreateTopic()
+	const navigate = useNavigate()
+	const topicTree = useMemo(() => treeifyTopics(topics), [topics])
+
+	const handleCreateTopic = useCallback(() => {
+		createTopic.mutate(
+			{},
+			{
+				onSuccess: topicId =>
+					navigate({ to: '/library/$topicId', params: { topicId } }),
+			},
+		)
+	}, [navigate, createTopic])
+
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.header)}>
 				<p {...stylex.props(styles.headerText)}>Library</p>
 				<Button.Icon
 					aria-label='Add topic'
-					disabled
 					shape='round'
 					size='micro'
 					variant='ghost'
+					onClick={handleCreateTopic}
 				>
 					<Plus aria-hidden='true' size={iconSizes.md} />
 				</Button.Icon>
 			</div>
 			<nav aria-label='Library topics' {...stylex.props(styles.nav)}>
 				<ul {...stylex.props(styles.list)}>
-					{topics.map(topic => (
-						<TopicLink key={topic.id} {...topic} />
+					{topicTree.map(topic => (
+						<TopicLink key={topic._id} {...topic} />
 					))}
 				</ul>
 			</nav>

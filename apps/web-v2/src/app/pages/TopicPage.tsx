@@ -1,5 +1,9 @@
 import * as stylex from '@stylexjs/stylex'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useParams } from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
+import { useCallback } from 'react'
+import { toast } from 'sonner'
 
 import {
 	Button,
@@ -9,6 +13,8 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
+import { useAutoSave } from '~/hooks/useAutoSave'
+import { topicQueries, useDeleteTopic, useUpdateTopic } from '~/modules/library'
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
 import type { ReviewCard as ReviewCardModel } from '~/modules/reviews/types/review.types'
 import {
@@ -19,17 +25,12 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-const topic = {
-	id: 'learning-typescript',
-	title: 'Learning TypeScript',
-	body: 'Notes and flashcards for TypeScript fundamentals.',
-}
 const reviewCards = Array.from({ length: 18 }, (_, index): ReviewCardModel => {
 	const number = index + 1
 
 	return {
 		id: index === 0 ? 'typescript-generics' : `topic-review-card-${number}`,
-		topic_id: topic.id,
+		topic_id: 'topic-id',
 		type: index % 4 === 3 ? 'practice' : 'flashcard',
 		primary_text:
 			index === 0
@@ -74,22 +75,71 @@ const styles = stylex.create({
 		fontWeight: fontWeights.bold,
 		minBlockSize: '44px',
 	},
-	body: { fontSize: fontSizes.md },
+	description: { fontSize: fontSizes.md },
 	reviewCardsHeaderContainer: { display: 'flex' },
 	reviewCardsHeaderText: { flexBasis: 0, flexGrow: 1, flexShrink: 1 },
 	reviewCardsList: { display: 'flex', flexDirection: 'column' },
 })
 
 export function TopicPage() {
+	const { topicId } = useParams({ from: '/library/$topicId' })
+	const { data: topic } = useSuspenseQuery(topicQueries.detail(topicId))
+	const deleteTopic = useDeleteTopic()
+	const updateTopic = useUpdateTopic()
+
+	const handleDeleteTopic = useCallback(() => {
+		deleteTopic.mutate({ topicId })
+	}, [deleteTopic, topicId])
+
+	const saveTitle = useCallback(
+		async (title: string) => {
+			if (!topic || title === topic.title) return
+
+			try {
+				await updateTopic.mutateAsync({ topicId, title })
+			} catch {
+				toast.error('Failed to update topic title')
+			}
+		},
+		[topic, topicId, updateTopic],
+	)
+	const saveDescription = useCallback(
+		async (description: string) => {
+			if (!topic || description === topic.description) return
+
+			try {
+				await updateTopic.mutateAsync({ topicId, description })
+			} catch {
+				toast.error('Failed to update topic description')
+			}
+		},
+		[topic, topicId, updateTopic],
+	)
+
+	const title = useAutoSave({
+		initialValue: topic?.title ?? '',
+		key: `${topicId}:title`,
+		onSave: saveTitle,
+	})
+	const description = useAutoSave({
+		initialValue: topic?.description ?? '',
+		key: `${topicId}:description`,
+		onSave: saveDescription,
+	})
+
+	if (!topic) return null
+
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.content)}>
 				<header {...stylex.props(styles.header)}>
 					<div {...stylex.props(styles.titleBar)}>
 						<Textarea
+							placeholder='Title'
 							aria-label='Topic title'
-							readOnly
-							value={topic.title}
+							onBlur={title.flush}
+							onChange={title.onChange}
+							value={title.value}
 							xstyle={styles.title}
 						/>
 						<DropdownMenu>
@@ -105,7 +155,10 @@ export function TopicPage() {
 								<Ellipsis aria-hidden='true' />
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align='end'>
-								<DropdownMenuItem disabled>
+								<DropdownMenuItem
+									disabled={deleteTopic.isPending}
+									onClick={handleDeleteTopic}
+								>
 									<Trash2
 										aria-hidden='true'
 										size={iconSizes.md}
@@ -116,10 +169,12 @@ export function TopicPage() {
 						</DropdownMenu>
 					</div>
 					<Textarea
-						aria-label='Topic body'
-						readOnly
-						value={topic.body}
-						xstyle={styles.body}
+						placeholder='Add description...'
+						aria-label='Topic description'
+						onBlur={description.flush}
+						onChange={description.onChange}
+						value={description.value}
+						xstyle={styles.description}
 					/>
 				</header>
 

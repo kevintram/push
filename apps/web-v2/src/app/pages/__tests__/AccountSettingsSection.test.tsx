@@ -1,79 +1,31 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAuth } from '@workos-inc/authkit-react'
-import { useConvexAuth, useQuery } from 'convex/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { api } from '../../../../convex/_generated/api'
 import { AccountSettingsSection } from '../AccountSettingsSection'
 
 vi.mock('@workos-inc/authkit-react', () => ({
 	useAuth: vi.fn(),
 }))
 
-vi.mock('convex/react', () => ({
-	useConvexAuth: vi.fn(),
-	useQuery: vi.fn(),
-}))
-
-vi.mock('../../../../convex/_generated/api', () => ({
-	api: {
-		auth: {
-			getIdentity: 'auth:getIdentity',
-		},
+// `config` reads `import.meta.env`, which Vite does not populate from
+// `.env.local` in test mode.
+vi.mock('~/lib/config', () => ({
+	config: {
+		workOs: { signOutReturnTo: 'https://signed-out.example.com' },
 	},
 }))
 
 const mockedUseAuth = vi.mocked(useAuth)
-const mockedUseConvexAuth = vi.mocked(useConvexAuth)
-const mockedUseQuery = vi.mocked(useQuery)
 
 describe('AccountSettingsSection', () => {
-	const signIn = vi.fn(async () => {})
 	const signOut = vi.fn(async () => {})
 
 	beforeEach(() => {
 		vi.clearAllMocks()
 		mockedUseAuth.mockReturnValue({
 			isLoading: false,
-			signIn,
-			signOut,
-			user: null,
-		} as unknown as ReturnType<typeof useAuth>)
-		mockedUseConvexAuth.mockReturnValue({
-			isAuthenticated: false,
-			isLoading: false,
-			isRefreshing: false,
-		})
-		mockedUseQuery.mockReturnValue(undefined)
-	})
-
-	it('shows a minimal signed-out state and starts sign-in', async () => {
-		const user = userEvent.setup()
-
-		render(<AccountSettingsSection />)
-
-		expect(
-			screen.getByText(
-				'Sign in to sync your library and review history.',
-			),
-		).toBeInTheDocument()
-		expect(screen.getByRole('status')).toHaveTextContent('Signed out')
-		expect(mockedUseQuery).toHaveBeenCalledWith(
-			api.auth.getIdentity,
-			'skip',
-		)
-
-		await user.click(screen.getByRole('button', { name: 'Sign in' }))
-		expect(signIn).toHaveBeenCalledOnce()
-		expect(signOut).not.toHaveBeenCalled()
-	})
-
-	it('shows the signed-in identity and ends the session', async () => {
-		const user = userEvent.setup()
-		mockedUseAuth.mockReturnValue({
-			isLoading: false,
-			signIn,
 			signOut,
 			user: {
 				email: 'reader@example.com',
@@ -81,38 +33,56 @@ describe('AccountSettingsSection', () => {
 				lastName: 'Lovelace',
 			},
 		} as unknown as ReturnType<typeof useAuth>)
-		mockedUseConvexAuth.mockReturnValue({
-			isAuthenticated: true,
-			isLoading: false,
-			isRefreshing: false,
-		})
-		mockedUseQuery.mockReturnValue({ authenticated: true })
+	})
+
+	it('shows the signed-in identity and signs out to the configured return URL', async () => {
+		const user = userEvent.setup()
 
 		render(<AccountSettingsSection />)
 
 		expect(screen.getByText('Ada Lovelace')).toBeInTheDocument()
 		expect(screen.getByText('reader@example.com')).toBeInTheDocument()
-		expect(screen.getByRole('status')).toHaveTextContent('Connected')
-		expect(mockedUseQuery).toHaveBeenCalledWith(api.auth.getIdentity, {})
 
 		await user.click(screen.getByRole('button', { name: 'Sign out' }))
-		expect(signOut).toHaveBeenCalledOnce()
-		expect(signIn).not.toHaveBeenCalled()
+		expect(signOut).toHaveBeenCalledWith({
+			returnTo: 'https://signed-out.example.com',
+		})
 	})
 
-	it('disables the action while the session is loading', () => {
+	it('shows only the email when the account has no name', () => {
 		mockedUseAuth.mockReturnValue({
-			isLoading: true,
-			signIn,
+			isLoading: false,
 			signOut,
-			user: null,
+			user: {
+				email: 'reader@example.com',
+				firstName: null,
+				lastName: null,
+			},
 		} as unknown as ReturnType<typeof useAuth>)
 
 		render(<AccountSettingsSection />)
 
-		expect(screen.getByRole('status')).toHaveTextContent(
-			'Checking your session',
+		expect(screen.getByText('reader@example.com')).toBeInTheDocument()
+		expect(screen.queryByText('Ada Lovelace')).not.toBeInTheDocument()
+	})
+
+	it('reports a failed sign-out instead of leaving a rejection unhandled', async () => {
+		const user = userEvent.setup()
+		const consoleError = vi
+			.spyOn(console, 'error')
+			.mockImplementation(() => {})
+		signOut.mockRejectedValueOnce(new Error('Network down'))
+
+		render(<AccountSettingsSection />)
+
+		await user.click(screen.getByRole('button', { name: 'Sign out' }))
+
+		await vi.waitFor(() =>
+			expect(consoleError).toHaveBeenCalledWith(
+				'Unable to sign out of WorkOS',
+			),
 		)
-		expect(screen.getByRole('button', { name: 'Sign in' })).toBeDisabled()
+
+		consoleError.mockRestore()
 	})
 })
