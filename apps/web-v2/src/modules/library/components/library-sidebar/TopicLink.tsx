@@ -1,5 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
+import { useNavigate } from '@tanstack/react-router'
 import { Plus, Trash2 } from 'lucide-react'
+import { useCallback } from 'react'
 
 import { SidebarLink } from '~/components/sidebar-link'
 import {
@@ -10,6 +12,7 @@ import {
 } from '~/components/ui'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
+import { useCreateTopic } from '../../api/topicQueries'
 import { type TopicWithChildren } from '../../types/topic.types'
 
 const styles = stylex.create({
@@ -31,6 +34,18 @@ const styles = stylex.create({
 
 export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 	const topicTitle = title.trim() || 'Untitled'
+	const navigate = useNavigate()
+	const createTopic = useCreateTopic()
+
+	const handleCreateSubtopic = useCallback(() => {
+		createTopic.mutate(
+			{ parentId: _id },
+			{
+				onSuccess: topicId =>
+					navigate({ to: '/library/$topicId', params: { topicId } }),
+			},
+		)
+	}, [navigate, createTopic, _id])
 
 	return (
 		<li {...stylex.props(styles.container)}>
@@ -47,7 +62,7 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 					{topicTitle}
 				</ContextMenuTrigger>
 				<ContextMenuContent>
-					<ContextMenuItem disabled>
+					<ContextMenuItem onClick={handleCreateSubtopic}>
 						<Plus aria-hidden='true' size={iconSizes.md} />
 						Add subtopic
 					</ContextMenuItem>
