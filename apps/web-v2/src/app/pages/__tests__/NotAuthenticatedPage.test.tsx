@@ -18,6 +18,21 @@ describe('NotAuthenticatedPage', () => {
 		expect(screen.getByRole('status')).toBeInTheDocument()
 	})
 
+	it('can delay authentication progress to avoid flashing', () => {
+		render(<NotAuthenticatedPage delayMs={300} onRetry={vi.fn()} />)
+
+		expect(screen.queryByRole('status')).not.toBeInTheDocument()
+		act(() => {
+			vi.advanceTimersByTime(299)
+		})
+		expect(screen.queryByRole('status')).not.toBeInTheDocument()
+
+		act(() => {
+			vi.advanceTimersByTime(1)
+		})
+		expect(screen.getByRole('status')).toBeInTheDocument()
+	})
+
 	it('hides the retry button while sign-in is still plausibly in progress', () => {
 		render(<NotAuthenticatedPage onRetry={vi.fn()} />)
 

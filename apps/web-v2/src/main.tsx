@@ -9,6 +9,7 @@ import { LoadingPage } from './app/pages/LoadingPage'
 import { routeTree } from './app/routeTree.gen'
 import { TooltipProvider } from './components/ui'
 import { queryClient } from './lib/convex'
+import { AuthGate } from './stores/Auth/AuthGate'
 import { AuthProvider } from './stores/Auth/AuthProvider'
 import { HideModeProvider } from './stores/HideMode'
 
@@ -49,7 +50,9 @@ if (container) {
 				<QueryClientProvider client={queryClient}>
 					<TooltipProvider>
 						<HideModeProvider>
-							<RouterProvider router={router} />
+							<AuthGate>
+								<RouterProvider router={router} />
+							</AuthGate>
 						</HideModeProvider>
 					</TooltipProvider>
 				</QueryClientProvider>

@@ -1,9 +1,9 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ComponentProps, ReactNode } from 'react'
+import type { ComponentProps } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { Root } from '../Root'
+import { AuthGate } from '../AuthGate'
 
 const auth = vi.hoisted(() => ({
 	workOs: {
@@ -27,22 +27,21 @@ vi.mock('convex/react', () => ({
 	useConvexAuth: () => auth.convex,
 }))
 
-vi.mock('@tanstack/react-router', () => ({
-	Outlet: () => <p>Route content</p>,
-}))
-
-vi.mock('~/components/AppShell', () => ({
-	AppShell: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-}))
-
 vi.mock('~/components/ui', () => ({
 	Button: ({ children, ...props }: ComponentProps<'button'>) => (
 		<button {...props}>{children}</button>
 	),
-	Toaster: () => null,
 }))
 
-describe('Root authentication gate', () => {
+function renderAuthGate() {
+	return render(
+		<AuthGate>
+			<p>Route content</p>
+		</AuthGate>,
+	)
+}
+
+describe('AuthGate', () => {
 	beforeEach(() => {
 		auth.workOs.isLoading = false
 		auth.workOs.user = null
@@ -55,9 +54,9 @@ describe('Root authentication gate', () => {
 	it('starts WorkOS sign-in when there is no provider session', async () => {
 		window.history.replaceState({}, '', '/review/late?mode=compact#card-12')
 
-		render(<Root />)
+		renderAuthGate()
 
-		expect(screen.getByRole('status')).toBeInTheDocument()
+		expect(screen.queryByRole('status')).not.toBeInTheDocument()
 		await waitFor(() =>
 			expect(auth.workOs.signIn).toHaveBeenCalledWith({
 				state: {
@@ -67,31 +66,35 @@ describe('Root authentication gate', () => {
 		)
 	})
 
-	it('shows authentication status while WorkOS is loading', () => {
+	it('shows authentication status while WorkOS is loading', async () => {
 		auth.workOs.isLoading = true
 
-		render(<Root />)
+		renderAuthGate()
 
-		expect(screen.getByRole('status')).toBeInTheDocument()
+		expect(screen.queryByRole('status')).not.toBeInTheDocument()
+		expect(await screen.findByRole('status')).toBeInTheDocument()
+		expect(screen.queryByText('Route content')).not.toBeInTheDocument()
 		expect(auth.workOs.signIn).not.toHaveBeenCalled()
 	})
 
-	it('shows authentication status while Convex is loading', () => {
+	it('shows authentication status while Convex is loading', async () => {
 		auth.workOs.user = { email: 'test@example.com' }
 		auth.convex.isLoading = true
 
-		render(<Root />)
+		renderAuthGate()
 
-		expect(screen.getByRole('status')).toBeInTheDocument()
+		expect(screen.queryByRole('status')).not.toBeInTheDocument()
+		expect(await screen.findByRole('status')).toBeInTheDocument()
 		expect(auth.workOs.signIn).not.toHaveBeenCalled()
 	})
 
-	it('shows authentication status when WorkOS is authenticated but Convex is not', () => {
+	it('shows authentication status when WorkOS is authenticated but Convex is not', async () => {
 		auth.workOs.user = { email: 'test@example.com' }
 
-		render(<Root />)
+		renderAuthGate()
 
-		expect(screen.getByRole('status')).toBeInTheDocument()
+		expect(screen.queryByRole('status')).not.toBeInTheDocument()
+		expect(await screen.findByRole('status')).toBeInTheDocument()
 		expect(auth.workOs.signIn).not.toHaveBeenCalled()
 	})
 
@@ -101,7 +104,7 @@ describe('Root authentication gate', () => {
 			.mockRejectedValueOnce(new Error('Unable to redirect'))
 			.mockResolvedValueOnce()
 
-		render(<Root />)
+		renderAuthGate()
 
 		expect(
 			await screen.findByRole('heading', { name: 'Sign in failed' }),
@@ -116,7 +119,7 @@ describe('Root authentication gate', () => {
 		auth.workOs.user = { email: 'test@example.com' }
 
 		try {
-			render(<Root />)
+			renderAuthGate()
 			act(() => {
 				vi.advanceTimersByTime(5000)
 			})
@@ -129,11 +132,11 @@ describe('Root authentication gate', () => {
 		}
 	})
 
-	it('renders the app only after Convex confirms authentication', () => {
+	it('renders children only after Convex confirms authentication', () => {
 		auth.workOs.user = { email: 'test@example.com' }
 		auth.convex.isAuthenticated = true
 
-		render(<Root />)
+		renderAuthGate()
 
 		expect(screen.getByText('Route content')).toBeInTheDocument()
 	})

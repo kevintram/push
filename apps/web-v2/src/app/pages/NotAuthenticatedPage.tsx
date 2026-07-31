@@ -68,11 +68,24 @@ const styles = stylex.create({
 const RETRY_VISIBLE_AFTER_MS = 5000
 
 type NotAuthenticatedPageProps = {
+	delayMs?: number
 	onRetry: () => void
 }
 
-export function NotAuthenticatedPage({ onRetry }: NotAuthenticatedPageProps) {
+export function NotAuthenticatedPage({
+	delayMs = 0,
+	onRetry,
+}: NotAuthenticatedPageProps) {
+	const [isVisible, setIsVisible] = useState(delayMs <= 0)
 	const [canRetry, setCanRetry] = useState(false)
+
+	useEffect(() => {
+		if (delayMs <= 0) return
+
+		const timeout = setTimeout(() => setIsVisible(true), delayMs)
+
+		return () => clearTimeout(timeout)
+	}, [delayMs])
 
 	useEffect(() => {
 		const timeout = setTimeout(
@@ -82,6 +95,8 @@ export function NotAuthenticatedPage({ onRetry }: NotAuthenticatedPageProps) {
 
 		return () => clearTimeout(timeout)
 	}, [])
+
+	if (!isVisible) return null
 
 	return (
 		<main {...stylex.props(styles.page)}>
