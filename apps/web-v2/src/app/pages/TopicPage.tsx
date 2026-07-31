@@ -3,6 +3,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
 import { useCallback } from 'react'
+import { toast } from 'sonner'
 
 import {
 	Button,
@@ -12,7 +13,8 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
-import { topicQueries, useDeleteTopic } from '~/modules/library'
+import { useAutoSave } from '~/hooks/useAutoSave'
+import { topicQueries, useDeleteTopic, useUpdateTopic } from '~/modules/library'
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
 import type { ReviewCard as ReviewCardModel } from '~/modules/reviews/types/review.types'
 import {
@@ -83,10 +85,47 @@ export function TopicPage() {
 	const { topicId } = useParams({ from: '/library/$topicId' })
 	const { data: topic } = useSuspenseQuery(topicQueries.detail(topicId))
 	const deleteTopic = useDeleteTopic()
+	const updateTopic = useUpdateTopic()
 
 	const handleDeleteTopic = useCallback(() => {
 		deleteTopic.mutate({ topicId })
 	}, [deleteTopic, topicId])
+
+	const saveTitle = useCallback(
+		async (title: string) => {
+			if (!topic || title === topic.title) return
+
+			try {
+				await updateTopic.mutateAsync({ topicId, title })
+			} catch {
+				toast.error('Failed to update topic title')
+			}
+		},
+		[topic, topicId, updateTopic],
+	)
+	const saveDescription = useCallback(
+		async (description: string) => {
+			if (!topic || description === topic.description) return
+
+			try {
+				await updateTopic.mutateAsync({ topicId, description })
+			} catch {
+				toast.error('Failed to update topic description')
+			}
+		},
+		[topic, topicId, updateTopic],
+	)
+
+	const title = useAutoSave({
+		initialValue: topic?.title ?? '',
+		key: `${topicId}:title`,
+		onSave: saveTitle,
+	})
+	const description = useAutoSave({
+		initialValue: topic?.description ?? '',
+		key: `${topicId}:description`,
+		onSave: saveDescription,
+	})
 
 	if (!topic) return null
 
@@ -96,9 +135,11 @@ export function TopicPage() {
 				<header {...stylex.props(styles.header)}>
 					<div {...stylex.props(styles.titleBar)}>
 						<Textarea
+							placeholder='Title'
 							aria-label='Topic title'
-							readOnly
-							value={topic.title}
+							onBlur={title.flush}
+							onChange={title.onChange}
+							value={title.value}
 							xstyle={styles.title}
 						/>
 						<DropdownMenu>
@@ -128,9 +169,11 @@ export function TopicPage() {
 						</DropdownMenu>
 					</div>
 					<Textarea
+						placeholder='Add description...'
 						aria-label='Topic description'
-						readOnly
-						value={topic.description}
+						onBlur={description.flush}
+						onChange={description.onChange}
+						value={description.value}
 						xstyle={styles.description}
 					/>
 				</header>

@@ -14,6 +14,11 @@ export function useCreateTopic() {
 	return useMutation({ mutationFn })
 }
 
+export function useUpdateTopic() {
+	const mutationFn = useConvexMutation(api.topics.update)
+	return useMutation({ mutationFn })
+}
+
 export function useDeleteTopic() {
 	const navigate = useNavigate()
 	const matchRoute = useMatchRoute()
