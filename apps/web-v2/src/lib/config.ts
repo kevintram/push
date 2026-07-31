@@ -2,6 +2,7 @@ type AppEnvironment = {
 	VITE_CONVEX_URL?: string
 	VITE_WORKOS_CLIENT_ID?: string
 	VITE_WORKOS_REDIRECT_URI?: string
+	VITE_WORKOS_SIGN_OUT_RETURN_TO?: string
 }
 
 type AppConfig = {
@@ -11,6 +12,9 @@ type AppConfig = {
 	workOs: {
 		clientId: string
 		redirectUri: string
+		// Where WorkOS drops the user after sign-out. Must be registered as a
+		// logout redirect in the WorkOS dashboard or sign-out errors out.
+		signOutReturnTo: string
 	}
 }
 
@@ -32,6 +36,10 @@ export function readConfig(environment: AppEnvironment): AppConfig {
 		workOs: {
 			clientId: requireValue(environment, 'VITE_WORKOS_CLIENT_ID'),
 			redirectUri: requireValue(environment, 'VITE_WORKOS_REDIRECT_URI'),
+			signOutReturnTo: requireValue(
+				environment,
+				'VITE_WORKOS_SIGN_OUT_RETURN_TO',
+			),
 		},
 	}
 }
@@ -41,4 +49,6 @@ export const config = readConfig({
 	VITE_CONVEX_URL: import.meta.env.VITE_CONVEX_URL,
 	VITE_WORKOS_CLIENT_ID: import.meta.env.VITE_WORKOS_CLIENT_ID,
 	VITE_WORKOS_REDIRECT_URI: import.meta.env.VITE_WORKOS_REDIRECT_URI,
+	VITE_WORKOS_SIGN_OUT_RETURN_TO: import.meta.env
+		.VITE_WORKOS_SIGN_OUT_RETURN_TO,
 })

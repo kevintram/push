@@ -6,6 +6,7 @@ const completeEnvironment = {
 	VITE_CONVEX_URL: 'https://example.convex.cloud',
 	VITE_WORKOS_CLIENT_ID: 'client_example',
 	VITE_WORKOS_REDIRECT_URI: 'https://example.com/callback',
+	VITE_WORKOS_SIGN_OUT_RETURN_TO: 'https://example.com',
 }
 
 describe('readConfig', () => {
@@ -17,6 +18,7 @@ describe('readConfig', () => {
 			workOs: {
 				clientId: 'client_example',
 				redirectUri: 'https://example.com/callback',
+				signOutReturnTo: 'https://example.com',
 			},
 		})
 	})
@@ -25,6 +27,7 @@ describe('readConfig', () => {
 		'VITE_CONVEX_URL',
 		'VITE_WORKOS_CLIENT_ID',
 		'VITE_WORKOS_REDIRECT_URI',
+		'VITE_WORKOS_SIGN_OUT_RETURN_TO',
 	] as const)('rejects a missing %s value', key => {
 		expect(() =>
 			readConfig({
