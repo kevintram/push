@@ -5,7 +5,7 @@ import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { LoaderPage } from './app/pages/LoaderPage'
+import { LoadingPage } from './app/pages/LoadingPage'
 import { routeTree } from './app/routeTree.gen'
 import { TooltipProvider } from './components/ui'
 import { queryClient } from './lib/convex'
@@ -27,7 +27,7 @@ const router = createRouter({
 	defaultPreload: 'intent',
 	defaultPreloadStaleTime: 0,
 
-	defaultPendingComponent: LoaderPage,
+	defaultPendingComponent: LoadingPage,
 	defaultPendingMs: 200,
 	defaultPendingMinMs: 200,
 

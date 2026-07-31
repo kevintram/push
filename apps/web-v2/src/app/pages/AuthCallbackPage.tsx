@@ -2,7 +2,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useAuth } from '@workos-inc/authkit-react'
 import { useEffect } from 'react'
 
-import { LoaderPage } from './LoaderPage'
+import { LoadingPage } from './LoadingPage'
 
 export function AuthCallbackPage() {
 	const { isLoading } = useAuth()
@@ -17,5 +17,5 @@ export function AuthCallbackPage() {
 		}
 	}, [isLoading, navigate])
 
-	return <LoaderPage />
+	return <LoadingPage />
 }
