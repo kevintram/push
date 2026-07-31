@@ -6,5 +6,5 @@ export default defineSchema({
 		title: v.string(),
 		description: v.string(),
 		parentId: v.optional(v.id('topics')),
-	}),
+	}).index('by_parentId', ['parentId']),
 })

@@ -1,7 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { notFound, useParams } from '@tanstack/react-router'
+import { useParams } from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
+import { useCallback } from 'react'
 
 import {
 	Button,
@@ -11,7 +12,7 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
-import { topicQueries } from '~/modules/library'
+import { topicQueries, useDeleteTopic } from '~/modules/library'
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
 import type { ReviewCard as ReviewCardModel } from '~/modules/reviews/types/review.types'
 import {
@@ -81,10 +82,13 @@ const styles = stylex.create({
 export function TopicPage() {
 	const { topicId } = useParams({ from: '/library/$topicId' })
 	const { data: topic } = useSuspenseQuery(topicQueries.detail(topicId))
+	const deleteTopic = useDeleteTopic()
 
-	// The loader already rejects missing topics; this covers a topic deleted
-	// out from under a live subscription.
-	if (!topic) throw notFound()
+	const handleDeleteTopic = useCallback(() => {
+		deleteTopic.mutate({ topicId })
+	}, [deleteTopic, topicId])
+
+	if (!topic) return null
 
 	return (
 		<div {...stylex.props(styles.container)}>
@@ -110,7 +114,10 @@ export function TopicPage() {
 								<Ellipsis aria-hidden='true' />
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align='end'>
-								<DropdownMenuItem disabled>
+								<DropdownMenuItem
+									disabled={deleteTopic.isPending}
+									onClick={handleDeleteTopic}
+								>
 									<Trash2
 										aria-hidden='true'
 										size={iconSizes.md}

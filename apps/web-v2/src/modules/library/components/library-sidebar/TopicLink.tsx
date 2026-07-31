@@ -12,7 +12,7 @@ import {
 } from '~/components/ui'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
-import { useCreateTopic } from '../../api/topicQueries'
+import { useCreateTopic, useDeleteTopic } from '../../api/topicQueries'
 import { type TopicWithChildren } from '../../types/topic.types'
 
 const styles = stylex.create({
@@ -36,6 +36,7 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 	const topicTitle = title.trim() || 'Untitled'
 	const navigate = useNavigate()
 	const createTopic = useCreateTopic()
+	const deleteTopic = useDeleteTopic()
 
 	const handleCreateSubtopic = useCallback(() => {
 		createTopic.mutate(
@@ -46,6 +47,10 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 			},
 		)
 	}, [navigate, createTopic, _id])
+
+	const handleDeleteTopic = useCallback(() => {
+		deleteTopic.mutate({ topicId: _id })
+	}, [_id, deleteTopic])
 
 	return (
 		<li {...stylex.props(styles.container)}>
@@ -66,7 +71,7 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 						<Plus aria-hidden='true' size={iconSizes.md} />
 						Add subtopic
 					</ContextMenuItem>
-					<ContextMenuItem disabled>
+					<ContextMenuItem onClick={handleDeleteTopic}>
 						<Trash2 aria-hidden='true' size={iconSizes.md} />
 						Delete
 					</ContextMenuItem>
