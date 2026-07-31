@@ -7,13 +7,17 @@ import { AuthProvider } from '../AuthProvider'
 type AuthKitState = {
 	isLoading: boolean
 	user: unknown
-	getAccessToken: () => Promise<string | null>
+	getAccessToken: (options?: {
+		forceRefresh?: boolean
+	}) => Promise<string | null>
 }
 
 type AdaptedAuthState = {
 	isLoading: boolean
 	isAuthenticated: boolean
-	fetchAccessToken: () => Promise<string | null>
+	fetchAccessToken: (args: {
+		forceRefreshToken: boolean
+	}) => Promise<string | null>
 }
 
 type RedirectCallback = (args: { state?: unknown }) => void
@@ -168,10 +172,26 @@ describe('AuthProvider', () => {
 			isLoading: false,
 			isAuthenticated: true,
 		})
-		await expect(authState.convex?.fetchAccessToken()).resolves.toBe(
-			'access-token',
-		)
-		expect(getAccessToken).toHaveBeenCalledOnce()
+		await expect(
+			authState.convex?.fetchAccessToken({ forceRefreshToken: false }),
+		).resolves.toBe('access-token')
+		expect(getAccessToken).toHaveBeenCalledWith({ forceRefresh: false })
+	})
+
+	it('forces a token refresh when Convex rejects the current token', async () => {
+		const getAccessToken = vi.fn(async () => 'refreshed-token')
+		authState.authKit = {
+			isLoading: false,
+			user: { id: 'user_123' },
+			getAccessToken,
+		}
+
+		render(<AuthProvider>Application</AuthProvider>)
+
+		await expect(
+			authState.convex?.fetchAccessToken({ forceRefreshToken: true }),
+		).resolves.toBe('refreshed-token')
+		expect(getAccessToken).toHaveBeenCalledWith({ forceRefresh: true })
 	})
 
 	it('waits for AuthKit initialization before authenticating Convex', () => {
@@ -204,7 +224,9 @@ describe('AuthProvider', () => {
 
 		render(<AuthProvider>Application</AuthProvider>)
 
-		await expect(authState.convex?.fetchAccessToken()).resolves.toBeNull()
+		await expect(
+			authState.convex?.fetchAccessToken({ forceRefreshToken: false }),
+		).resolves.toBeNull()
 		expect(consoleError).toHaveBeenCalledWith(
 			'Unable to fetch WorkOS access token',
 		)
