@@ -1,12 +1,13 @@
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { Button } from '~/components/ui'
 import { fontWeights, iconSizes, spacing } from '~/styles/tokens.stylex'
 
-import { topicQueries } from '../../api/topicQueries'
+import { topicQueries, useCreateTopic } from '../../api/topicQueries'
 import { treeifyTopics } from '../../utils/treeifyTopics'
 import { TopicLink } from './TopicLink'
 
@@ -42,7 +43,19 @@ const styles = stylex.create({
 
 export function LibrarySidebar() {
 	const { data: topics } = useSuspenseQuery(topicQueries.list())
+	const createTopic = useCreateTopic()
+	const navigate = useNavigate()
 	const topicTree = useMemo(() => treeifyTopics(topics), [topics])
+
+	const handleCreateTopic = useCallback(() => {
+		createTopic.mutate(
+			{},
+			{
+				onSuccess: topicId =>
+					navigate({ to: '/library/$topicId', params: { topicId } }),
+			},
+		)
+	}, [navigate, createTopic])
 
 	return (
 		<div {...stylex.props(styles.container)}>
@@ -50,10 +63,10 @@ export function LibrarySidebar() {
 				<p {...stylex.props(styles.headerText)}>Library</p>
 				<Button.Icon
 					aria-label='Add topic'
-					disabled
 					shape='round'
 					size='micro'
 					variant='ghost'
+					onClick={handleCreateTopic}
 				>
 					<Plus aria-hidden='true' size={iconSizes.md} />
 				</Button.Icon>

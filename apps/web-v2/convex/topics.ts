@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 
-import { query } from './_generated/server'
+import { mutation, query } from './_generated/server'
 
 export const list = query({
 	args: {},
@@ -12,4 +12,19 @@ export const get = query({
 		topicId: v.id('topics'),
 	},
 	handler: async (ctx, args) => await ctx.db.get('topics', args.topicId),
+})
+
+export const create = mutation({
+	args: {
+		title: v.optional(v.string()),
+		description: v.optional(v.string()),
+		parentId: v.optional(v.id('topics')),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.insert('topics', {
+			title: args.title ?? '',
+			description: args.description ?? '',
+			parentId: args.parentId,
+		})
+	},
 })
