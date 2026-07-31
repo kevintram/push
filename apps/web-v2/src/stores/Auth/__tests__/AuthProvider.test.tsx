@@ -16,8 +16,10 @@ type AdaptedAuthState = {
 	fetchAccessToken: () => Promise<string | null>
 }
 
-type RedirectCallback = () => void
-type RefreshFailureCallback = (args: { signIn: () => Promise<void> }) => void
+type RedirectCallback = (args: { state?: unknown }) => void
+type RefreshFailureCallback = (args: {
+	signIn: (options?: { state?: { returnTo?: string } }) => Promise<void>
+}) => void
 
 const testConfig = vi.hoisted(() => ({
 	convex: {
@@ -25,7 +27,7 @@ const testConfig = vi.hoisted(() => ({
 	},
 	workOs: {
 		clientId: 'client_example',
-		redirectUri: 'https://example.com/callback',
+		redirectUri: 'https://example.com/',
 	},
 }))
 
@@ -106,13 +108,12 @@ describe('AuthProvider', () => {
 		authState.convex = undefined
 		authState.onRedirectCallback = undefined
 		authState.onRefreshFailure = undefined
+		window.history.replaceState({}, '', '/')
 	})
 
 	it('wraps the existing app with AuthKit and then Convex', () => {
-		const onRedirectCallback = vi.fn()
-
 		render(
-			<AuthProvider onRedirectCallback={onRedirectCallback}>
+			<AuthProvider>
 				<div data-testid='existing-providers'>Application</div>
 			</AuthProvider>,
 		)
@@ -135,17 +136,22 @@ describe('AuthProvider', () => {
 			isLoading: true,
 			isAuthenticated: false,
 		})
-		expect(authState.onRedirectCallback).toBe(onRedirectCallback)
+		expect(authState.onRedirectCallback).toBeTypeOf('function')
 	})
 
 	it('starts reauthentication when token refresh fails', () => {
-		const signIn = vi.fn(async () => {})
+		window.history.replaceState({}, '', '/review/new?mode=focused#current')
+		const signIn = vi.fn(
+			async (_options?: { state?: { returnTo?: string } }) => {},
+		)
 
 		render(<AuthProvider>Application</AuthProvider>)
 
 		authState.onRefreshFailure?.({ signIn })
 
-		expect(signIn).toHaveBeenCalledOnce()
+		expect(signIn).toHaveBeenCalledWith({
+			state: { returnTo: '/review/new?mode=focused#current' },
+		})
 	})
 
 	it('adapts AuthKit authentication state and access tokens for Convex', async () => {

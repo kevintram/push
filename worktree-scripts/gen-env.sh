@@ -207,7 +207,7 @@ if [ -d "$ROOT_DIR/apps/web-v2" ]; then
         fi
     fi
     set_env_var "$WEB_V2_ENV" "VITE_API_URL" "$API_URL"
-    set_env_var "$WEB_V2_ENV" "VITE_WORKOS_REDIRECT_URI" "${APP_V2_URL}/callback"
+    set_env_var "$WEB_V2_ENV" "VITE_WORKOS_REDIRECT_URI" "${APP_V2_URL}/"
     # Production returns to 3gulp.com; worktrees have no local marketing site,
     # so sign-out just leaves the app.
     set_env_var "$WEB_V2_ENV" "VITE_WORKOS_SIGN_OUT_RETURN_TO" "https://google.com"

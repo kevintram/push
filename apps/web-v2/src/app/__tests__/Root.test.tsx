@@ -8,7 +8,9 @@ import { Root } from '../Root'
 const auth = vi.hoisted(() => ({
 	workOs: {
 		isLoading: false,
-		signIn: vi.fn<() => Promise<void>>(),
+		signIn: vi.fn<
+			(options?: { state?: { returnTo?: string } }) => Promise<void>
+		>(),
 		user: null as object | null,
 	},
 	convex: {
@@ -47,13 +49,22 @@ describe('Root authentication gate', () => {
 		auth.workOs.signIn.mockReset().mockResolvedValue()
 		auth.convex.isAuthenticated = false
 		auth.convex.isLoading = false
+		window.history.replaceState({}, '', '/')
 	})
 
 	it('starts WorkOS sign-in when there is no provider session', async () => {
+		window.history.replaceState({}, '', '/review/late?mode=compact#card-12')
+
 		render(<Root />)
 
 		expect(screen.getByRole('status')).toBeInTheDocument()
-		await waitFor(() => expect(auth.workOs.signIn).toHaveBeenCalledOnce())
+		await waitFor(() =>
+			expect(auth.workOs.signIn).toHaveBeenCalledWith({
+				state: {
+					returnTo: '/review/late?mode=compact#card-12',
+				},
+			}),
+		)
 	})
 
 	it('shows authentication status while WorkOS is loading', () => {

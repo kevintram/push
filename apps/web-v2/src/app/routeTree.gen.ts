@@ -14,7 +14,6 @@ import { Route as RecentRouteImport } from './routes/recent'
 import { Route as PinnedRouteImport } from './routes/pinned'
 import { Route as FlaggedRouteImport } from './routes/flagged'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
-import { Route as CallbackRouteImport } from './routes/callback'
 import { Route as ReviewRouteRouteImport } from './routes/review/route'
 import { Route as LibraryRouteRouteImport } from './routes/library/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -51,11 +50,6 @@ const FlaggedRoute = FlaggedRouteImport.update({
 const DesignSystemRoute = DesignSystemRouteImport.update({
   id: '/design-system',
   path: '/design-system',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CallbackRoute = CallbackRouteImport.update({
-  id: '/callback',
-  path: '/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReviewRouteRoute = ReviewRouteRouteImport.update({
@@ -126,7 +120,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/library': typeof LibraryRouteRouteWithChildren
   '/review': typeof ReviewRouteRouteWithChildren
-  '/callback': typeof CallbackRoute
   '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
   '/pinned': typeof PinnedRoute
@@ -144,7 +137,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/callback': typeof CallbackRoute
   '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
   '/pinned': typeof PinnedRoute
@@ -164,7 +156,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/library': typeof LibraryRouteRouteWithChildren
   '/review': typeof ReviewRouteRouteWithChildren
-  '/callback': typeof CallbackRoute
   '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
   '/pinned': typeof PinnedRoute
@@ -186,7 +177,6 @@ export interface FileRouteTypes {
     | '/'
     | '/library'
     | '/review'
-    | '/callback'
     | '/design-system'
     | '/flagged'
     | '/pinned'
@@ -204,7 +194,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/callback'
     | '/design-system'
     | '/flagged'
     | '/pinned'
@@ -223,7 +212,6 @@ export interface FileRouteTypes {
     | '/'
     | '/library'
     | '/review'
-    | '/callback'
     | '/design-system'
     | '/flagged'
     | '/pinned'
@@ -244,7 +232,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LibraryRouteRoute: typeof LibraryRouteRouteWithChildren
   ReviewRouteRoute: typeof ReviewRouteRouteWithChildren
-  CallbackRoute: typeof CallbackRoute
   DesignSystemRoute: typeof DesignSystemRoute
   FlaggedRoute: typeof FlaggedRoute
   PinnedRoute: typeof PinnedRoute
@@ -288,13 +275,6 @@ declare module '@tanstack/react-router' {
       path: '/design-system'
       fullPath: '/design-system'
       preLoaderRoute: typeof DesignSystemRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/callback': {
-      id: '/callback'
-      path: '/callback'
-      fullPath: '/callback'
-      preLoaderRoute: typeof CallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/review': {
@@ -436,7 +416,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LibraryRouteRoute: LibraryRouteRouteWithChildren,
   ReviewRouteRoute: ReviewRouteRouteWithChildren,
-  CallbackRoute: CallbackRoute,
   DesignSystemRoute: DesignSystemRoute,
   FlaggedRoute: FlaggedRoute,
   PinnedRoute: PinnedRoute,

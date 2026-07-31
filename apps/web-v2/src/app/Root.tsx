@@ -10,6 +10,7 @@ import { ErrorPage } from '~/app/pages/ErrorPage'
 import { NotAuthenticatedPage } from '~/app/pages/NotAuthenticatedPage'
 import { AppShell } from '~/components/AppShell'
 import { Toaster } from '~/components/ui'
+import { getCurrentReturnTo } from '~/stores/Auth/authRedirect'
 
 const showDevtools = import.meta.env.DEV && !import.meta.env.VITEST
 
@@ -22,6 +23,7 @@ export function Root() {
 
 	const [signInFailed, setSignInFailed] = useState(false)
 	const isWorkOsAuthenticated = Boolean(user)
+
 	// WorkOS establishes the user identity first, then Convex observes that
 	// identity and establishes its own session. The app isn't ready until both
 	// sides agree that the user is authenticated.
@@ -30,6 +32,13 @@ export function Root() {
 		isConvexLoading ||
 		!isWorkOsAuthenticated ||
 		!isConvexAuthenticated
+	const startSignIn = useCallback(
+		() =>
+			signIn({
+				state: { returnTo: getCurrentReturnTo() },
+			}),
+		[signIn],
+	)
 
 	useEffect(() => {
 		// Automatically begin sign-in once WorkOS has confirmed there is no
@@ -39,16 +48,16 @@ export function Root() {
 			return
 		}
 
-		void signIn().catch(() => setSignInFailed(true))
-	}, [isWorkOsAuthenticated, isWorkOsLoading, signIn, signInFailed])
+		void startSignIn().catch(() => setSignInFailed(true))
+	}, [isWorkOsAuthenticated, isWorkOsLoading, signInFailed, startSignIn])
 
 	const handleRetrySignIn = useCallback(() => {
 		// A user-initiated retry is allowed without waiting for another auth state
 		// transition. Reset the failure latch before starting that new attempt.
 		setSignInFailed(false)
 
-		void signIn().catch(() => setSignInFailed(true))
-	}, [signIn])
+		void startSignIn().catch(() => setSignInFailed(true))
+	}, [startSignIn])
 
 	// A WorkOS failure is actionable. All other incomplete states—including the
 	// short handoff from WorkOS to Convex—continue to use the pending screen.
