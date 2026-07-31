@@ -2,17 +2,35 @@ import { v } from 'convex/values'
 
 import type { Doc, Id } from './_generated/dataModel'
 import { mutation, type MutationCtx, query } from './_generated/server'
+import { requireIdentity } from './auth'
 
 export const list = query({
 	args: {},
-	handler: async ctx => await ctx.db.query('topics').collect(),
+	handler: async ctx => {
+		const { subject: userId } = await requireIdentity(ctx)
+
+		return await ctx.db
+			.query('topics')
+			.withIndex('by_ownerId', q => q.eq('ownerId', userId))
+			.collect()
+	},
 })
 
 export const get = query({
 	args: {
 		topicId: v.id('topics'),
 	},
-	handler: async (ctx, args) => await ctx.db.get('topics', args.topicId),
+	handler: async (ctx, args) => {
+		const { subject: userId } = await requireIdentity(ctx)
+
+		const topic = await ctx.db.get('topics', args.topicId)
+
+		if (!topic || topic.ownerId !== userId) {
+			throw new Error('Topic not found')
+		}
+
+		return topic
+	},
 })
 
 export const create = mutation({
@@ -21,12 +39,24 @@ export const create = mutation({
 		description: v.optional(v.string()),
 		parentId: v.optional(v.id('topics')),
 	},
-	handler: async (ctx, args) =>
-		await ctx.db.insert('topics', {
+	handler: async (ctx, args) => {
+		const { subject: userId } = await requireIdentity(ctx)
+
+		if (args.parentId) {
+			const parent = await ctx.db.get('topics', args.parentId)
+
+			if (!parent || parent.ownerId !== userId) {
+				throw new Error('Parent topic not found')
+			}
+		}
+
+		return await ctx.db.insert('topics', {
 			title: args.title ?? '',
 			description: args.description ?? '',
 			parentId: args.parentId,
-		}),
+			ownerId: userId,
+		})
+	},
 })
 
 export const update = mutation({
@@ -39,10 +69,29 @@ export const update = mutation({
 		),
 	},
 	handler: async (ctx, args) => {
+		const { subject: userId } = await requireIdentity(ctx)
+
+		const topic = await ctx.db.get('topics', args.topicId)
+		if (!topic || topic.ownerId !== userId) {
+			throw new Error('Topic not found')
+		}
+
+		if (args.parentId === args.topicId) {
+			throw new Error('A topic cannot be its own parent')
+		}
+
+		if (args.parentId) {
+			const parent = await ctx.db.get('topics', args.parentId)
+
+			if (!parent || parent.ownerId !== userId) {
+				throw new Error('Parent topic not found')
+			}
+		}
+
 		const { topicId, ...fields } = args
 
 		if (fields.parentId === null) {
-			// in convex, pass explicit `undefined` to unset
+			// In Convex, pass explicit `undefined` to unset a field.
 			fields.parentId = undefined
 		}
 
@@ -56,13 +105,15 @@ export const remove = mutation({
 		topicId: v.id('topics'),
 	},
 	handler: async (ctx, args) => {
+		const { subject: userId } = await requireIdentity(ctx)
 		const topic = await ctx.db.get('topics', args.topicId)
 
-		if (!topic) {
-			throw new Error('Topic not found!')
+		if (!topic || topic.ownerId !== userId) {
+			throw new Error('Topic not found')
 		}
 
-		await deleteChildrenOf(ctx, args.topicId)
+		await deleteChildrenOf(ctx, args.topicId, userId, new Set())
+
 		return topic
 	},
 })
@@ -70,13 +121,25 @@ export const remove = mutation({
 async function deleteChildrenOf(
 	ctx: MutationCtx,
 	topicId: Id<'topics'>,
+	userId: string,
+	visitedTopicIds: Set<Id<'topics'>>,
 ): Promise<void> {
+	if (visitedTopicIds.has(topicId)) {
+		return
+	}
+
+	visitedTopicIds.add(topicId)
+
 	const children = ctx.db
 		.query('topics')
 		.withIndex('by_parentId', q => q.eq('parentId', topicId))
 
 	for await (const child of children) {
-		await deleteChildrenOf(ctx, child._id)
+		if (child.ownerId !== userId) {
+			throw new Error('Unable to delete children')
+		}
+
+		await deleteChildrenOf(ctx, child._id, userId, visitedTopicIds)
 	}
 
 	await ctx.db.delete('topics', topicId)

@@ -10,6 +10,7 @@ function topic(id: string, parentId?: string): Doc<'topics'> {
 		title: id,
 		description: '',
 		parentId: parentId as Id<'topics'> | undefined,
+		ownerId: 'owner',
 	}
 }
 
