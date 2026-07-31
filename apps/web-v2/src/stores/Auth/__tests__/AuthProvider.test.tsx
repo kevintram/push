@@ -17,6 +17,7 @@ type AdaptedAuthState = {
 }
 
 type RedirectCallback = () => void
+type RefreshFailureCallback = (args: { signIn: () => Promise<void> }) => void
 
 const testConfig = vi.hoisted(() => ({
 	convex: {
@@ -32,6 +33,7 @@ const authState = vi.hoisted(() => ({
 	authKit: undefined as AuthKitState | undefined,
 	convex: undefined as AdaptedAuthState | undefined,
 	onRedirectCallback: undefined as RedirectCallback | undefined,
+	onRefreshFailure: undefined as RefreshFailureCallback | undefined,
 }))
 
 vi.mock('~/lib/config', () => ({
@@ -43,14 +45,17 @@ vi.mock('@workos-inc/authkit-react', () => ({
 		children,
 		clientId,
 		onRedirectCallback,
+		onRefreshFailure,
 		redirectUri,
 	}: {
 		children: ReactNode
 		clientId: string
 		onRedirectCallback?: RedirectCallback
+		onRefreshFailure?: RefreshFailureCallback
 		redirectUri: string
 	}) => {
 		authState.onRedirectCallback = onRedirectCallback
+		authState.onRefreshFailure = onRefreshFailure
 
 		return (
 			<div
@@ -100,6 +105,7 @@ describe('AuthProvider', () => {
 		}
 		authState.convex = undefined
 		authState.onRedirectCallback = undefined
+		authState.onRefreshFailure = undefined
 	})
 
 	it('wraps the existing app with AuthKit and then Convex', () => {
@@ -130,6 +136,16 @@ describe('AuthProvider', () => {
 			isAuthenticated: false,
 		})
 		expect(authState.onRedirectCallback).toBe(onRedirectCallback)
+	})
+
+	it('starts reauthentication when token refresh fails', () => {
+		const signIn = vi.fn(async () => {})
+
+		render(<AuthProvider>Application</AuthProvider>)
+
+		authState.onRefreshFailure?.({ signIn })
+
+		expect(signIn).toHaveBeenCalledOnce()
 	})
 
 	it('adapts AuthKit authentication state and access tokens for Convex', async () => {

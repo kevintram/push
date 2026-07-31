@@ -22,6 +22,9 @@ export function AuthProvider({
 		<AuthKitProvider
 			clientId={config.workOs.clientId}
 			onRedirectCallback={onRedirectCallback}
+			onRefreshFailure={({ signIn }) => {
+				void signIn()
+			}}
 			redirectUri={config.workOs.redirectUri}
 		>
 			<ConvexProviderWithAuth
