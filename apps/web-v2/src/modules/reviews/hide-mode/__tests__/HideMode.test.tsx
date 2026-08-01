@@ -2,7 +2,8 @@ import { act, renderHook } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { HideModeProvider, useHideMode } from '..'
+import { HideModeProvider } from '../HideModeProvider'
+import { useHideMode } from '../useHideMode'
 
 function HideModeWrapper({ children }: { children: ReactNode }) {
 	return <HideModeProvider>{children}</HideModeProvider>

@@ -1,10 +1,9 @@
 import * as stylex from '@stylexjs/stylex'
 import { type ReactNode, useCallback, useState } from 'react'
 
+import { Button } from '~/components/ui'
 import { colors } from '~/styles/colors.stylex'
 import { radii } from '~/styles/tokens.stylex'
-
-import { Button } from './ui'
 
 type HideableProps = {
 	children?: ReactNode
