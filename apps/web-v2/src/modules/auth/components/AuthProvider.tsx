@@ -63,13 +63,6 @@ export function AuthProvider({ children, router }: AuthProviderProps) {
 			onRedirectCallback={({ state }) => {
 				void redirectToReturnTo(router, state)
 			}}
-			onRefreshFailure={({ signIn }) => {
-				void signIn({
-					state: {
-						returnTo: router.state.location.href,
-					},
-				})
-			}}
 			redirectUri={config.workOs.redirectUri}
 		>
 			<ConvexProviderWithAuth

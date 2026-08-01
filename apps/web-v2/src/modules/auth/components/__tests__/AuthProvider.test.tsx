@@ -22,9 +22,6 @@ type AdaptedAuthState = {
 }
 
 type RedirectCallback = (args: { state?: unknown }) => void
-type RefreshFailureCallback = (args: {
-	signIn: (options?: { state?: { returnTo?: string } }) => Promise<void>
-}) => void
 
 const testConfig = vi.hoisted(() => ({
 	convex: {
@@ -40,7 +37,6 @@ const authState = vi.hoisted(() => ({
 	authKit: undefined as AuthKitState | undefined,
 	convex: undefined as AdaptedAuthState | undefined,
 	onRedirectCallback: undefined as RedirectCallback | undefined,
-	onRefreshFailure: undefined as RefreshFailureCallback | undefined,
 }))
 
 const router = vi.hoisted(() => ({
@@ -61,17 +57,14 @@ vi.mock('@workos-inc/authkit-react', () => ({
 		children,
 		clientId,
 		onRedirectCallback,
-		onRefreshFailure,
 		redirectUri,
 	}: {
 		children: ReactNode
 		clientId: string
 		onRedirectCallback?: RedirectCallback
-		onRefreshFailure?: RefreshFailureCallback
 		redirectUri: string
 	}) => {
 		authState.onRedirectCallback = onRedirectCallback
-		authState.onRefreshFailure = onRefreshFailure
 
 		return (
 			<div
@@ -121,7 +114,6 @@ describe('AuthProvider', () => {
 		}
 		authState.convex = undefined
 		authState.onRedirectCallback = undefined
-		authState.onRefreshFailure = undefined
 		router.load.mockClear()
 		router.navigate.mockClear()
 		router.state.location.href = '/'
@@ -207,21 +199,6 @@ describe('AuthProvider', () => {
 		expect(router.navigate).toHaveBeenCalledWith({
 			to: '/',
 			replace: true,
-		})
-	})
-
-	it('starts reauthentication when token refresh fails', () => {
-		router.state.location.href = '/review/new?mode=focused#current'
-		const signIn = vi.fn(
-			async (_options?: { state?: { returnTo?: string } }) => {},
-		)
-
-		render(<AuthProvider router={authRouter}>Application</AuthProvider>)
-
-		authState.onRefreshFailure?.({ signIn })
-
-		expect(signIn).toHaveBeenCalledWith({
-			state: { returnTo: '/review/new?mode=focused#current' },
 		})
 	})
 

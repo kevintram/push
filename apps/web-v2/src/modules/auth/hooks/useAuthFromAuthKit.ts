@@ -7,10 +7,10 @@ import { useCallback, useMemo } from 'react'
 export function useAuthFromAuthKit() {
 	const { isLoading, user, getAccessToken } = useAuth()
 
-	// Convex passes `forceRefreshToken: true` after a deployment rejects the
-	// current token. AuthKit otherwise serves its cached one, so dropping the
-	// flag would hand back the same rejected token and leave the client
-	// unauthenticated until a reload.
+	// Convex uses `forceRefreshToken: true` for scheduled refreshes and after a
+	// deployment rejects a token. AuthKit otherwise serves its cached token, so
+	// preserve that signal here; the client is configured to reuse only the
+	// already-fresh initial callback token.
 	const fetchAccessToken = useCallback(
 		async ({ forceRefreshToken }: { forceRefreshToken: boolean }) => {
 			try {
