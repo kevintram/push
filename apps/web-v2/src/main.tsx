@@ -1,17 +1,9 @@
 import './styles/global.css'
 
-import { QueryClientProvider } from '@tanstack/react-query'
-import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { LoadingPage } from './app/pages/LoadingPage'
-import { routeTree } from './app/routeTree.gen'
-import { TooltipProvider } from './components/ui'
-import { queryClient } from './lib/convex'
-import { AuthGate } from './stores/Auth/AuthGate'
-import { AuthProvider } from './stores/Auth/AuthProvider'
-import { HideModeProvider } from './stores/HideMode'
+import { App } from './app/App'
 
 if (import.meta.env.DEV && !import.meta.env.VITEST) {
 	const branchLabel = __APP_BRANCH__
@@ -19,44 +11,12 @@ if (import.meta.env.DEV && !import.meta.env.VITEST) {
 		document.title = `${document.title} ${branchLabel}`.trim()
 	}
 }
-
-const router = createRouter({
-	routeTree,
-
-	context: { queryClient },
-
-	defaultPreload: 'intent',
-	defaultPreloadStaleTime: 0,
-
-	defaultPendingComponent: LoadingPage,
-	defaultPendingMs: 200,
-	defaultPendingMinMs: 200,
-
-	scrollRestoration: true,
-})
-
-declare module '@tanstack/react-router' {
-	interface Register {
-		router: typeof router
-	}
-}
-
 const container = document.querySelector('#root')
 
 if (container) {
 	createRoot(container).render(
 		<StrictMode>
-			<AuthProvider>
-				<QueryClientProvider client={queryClient}>
-					<TooltipProvider>
-						<HideModeProvider>
-							<AuthGate>
-								<RouterProvider router={router} />
-							</AuthGate>
-						</HideModeProvider>
-					</TooltipProvider>
-				</QueryClientProvider>
-			</AuthProvider>
+			<App />
 		</StrictMode>,
 	)
 }

@@ -10,7 +10,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
 import { topicQueries } from '~/modules/library'
-import { HideModeProvider } from '~/stores/HideMode'
+import { HideModeProvider } from '~/modules/reviews/hide-mode/HideModeProvider'
 import { createTestConvexClient } from '~/testing/createTestConvexClient'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
@@ -45,7 +45,13 @@ function renderRoute(path: string) {
 
 	const router = createRouter({
 		routeTree,
-		context: { queryClient },
+		context: {
+			auth: {
+				isAuthenticated: true,
+				isLoading: false,
+			},
+			queryClient,
+		},
 		history: createMemoryHistory({
 			initialEntries: [path],
 		}),

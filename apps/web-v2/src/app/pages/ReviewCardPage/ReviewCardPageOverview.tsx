@@ -2,7 +2,6 @@ import * as stylex from '@stylexjs/stylex'
 import { Check, Ellipsis, Flag, Trash2, Zap } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { Hideable } from '~/components/Hideable'
 import {
 	Button,
 	DropdownMenu,
@@ -12,9 +11,10 @@ import {
 	Separator,
 	Textarea,
 } from '~/components/ui'
+import { Hideable } from '~/modules/reviews/components/Hideable'
 import { ReviewsSidebar } from '~/modules/reviews/components/ReviewsSidebar'
+import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import type { ReviewCard } from '~/modules/reviews/types/review.types'
-import { useHideMode } from '~/stores/HideMode'
 import { colors } from '~/styles/colors.stylex'
 import {
 	fontSizes,

@@ -122,13 +122,13 @@ async function deleteChildrenOf(
 	ctx: MutationCtx,
 	topicId: Id<'topics'>,
 	userId: string,
-	visitedTopicIds: Set<Id<'topics'>>,
+	visited: Set<Id<'topics'>>,
 ): Promise<void> {
-	if (visitedTopicIds.has(topicId)) {
-		return
+	if (visited.has(topicId)) {
+		return // if have cycle, just stop the recursion here
 	}
 
-	visitedTopicIds.add(topicId)
+	visited.add(topicId)
 
 	const children = ctx.db
 		.query('topics')
@@ -139,7 +139,7 @@ async function deleteChildrenOf(
 			throw new Error('Unable to delete children')
 		}
 
-		await deleteChildrenOf(ctx, child._id, userId, visitedTopicIds)
+		await deleteChildrenOf(ctx, child._id, userId, visited)
 	}
 
 	await ctx.db.delete('topics', topicId)

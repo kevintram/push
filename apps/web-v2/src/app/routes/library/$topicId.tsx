@@ -16,7 +16,9 @@ export const Route = createFileRoute('/library/$topicId')({
 			topicId: params.topicId,
 		}),
 	},
-	loader: async ({ context: { queryClient }, params }) => {
+	loader: async ({ context: { auth, queryClient }, params }) => {
+		if (!auth.isAuthenticated) return
+
 		const topic = await queryClient.ensureQueryData(
 			topicQueries.detail(params.topicId),
 		)

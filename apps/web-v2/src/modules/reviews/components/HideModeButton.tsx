@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Copy } from 'lucide-react'
 
-import { useHideMode } from '~/stores/HideMode'
+import { Button } from '~/components/ui'
 import { colors } from '~/styles/colors.stylex'
 import {
 	fontSizes,
@@ -11,7 +11,7 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-import { Button } from './ui'
+import { useHideMode } from '../hide-mode/useHideMode'
 
 const styles = stylex.create({
 	item: {

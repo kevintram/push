@@ -1,3 +1,4 @@
+import type { AnyRouter } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -41,6 +42,15 @@ const authState = vi.hoisted(() => ({
 	onRedirectCallback: undefined as RedirectCallback | undefined,
 	onRefreshFailure: undefined as RefreshFailureCallback | undefined,
 }))
+
+const router = vi.hoisted(() => ({
+	load: vi.fn(async () => {}),
+	navigate: vi.fn(async () => {}),
+	state: {
+		location: { href: '/' },
+	},
+}))
+const authRouter = router as unknown as AnyRouter
 
 vi.mock('~/lib/config', () => ({
 	config: testConfig,
@@ -112,12 +122,14 @@ describe('AuthProvider', () => {
 		authState.convex = undefined
 		authState.onRedirectCallback = undefined
 		authState.onRefreshFailure = undefined
-		window.history.replaceState({}, '', '/')
+		router.load.mockClear()
+		router.navigate.mockClear()
+		router.state.location.href = '/'
 	})
 
 	it('wraps the existing app with AuthKit and then Convex', () => {
 		render(
-			<AuthProvider>
+			<AuthProvider router={authRouter}>
 				<div data-testid='existing-providers'>Application</div>
 			</AuthProvider>,
 		)
@@ -143,13 +155,68 @@ describe('AuthProvider', () => {
 		expect(authState.onRedirectCallback).toBeTypeOf('function')
 	})
 
+	it('returns to a safe route through TanStack Router after sign-in', async () => {
+		render(<AuthProvider router={authRouter}>Application</AuthProvider>)
+
+		authState.onRedirectCallback?.({
+			state: { returnTo: '/library/topic-1?tab=new#notes' },
+		})
+
+		await vi.waitFor(() => expect(router.navigate).toHaveBeenCalledOnce())
+		expect(router.load).toHaveBeenCalledOnce()
+		expect(router.navigate).toHaveBeenCalledWith({
+			to: '/library/topic-1?tab=new#notes',
+			replace: true,
+		})
+		expect(router.load.mock.invocationCallOrder[0]).toBeLessThan(
+			router.navigate.mock.invocationCallOrder[0] ?? 0,
+		)
+	})
+
+	it('accepts a same-origin return destination after sign-in', async () => {
+		render(<AuthProvider router={authRouter}>Application</AuthProvider>)
+
+		authState.onRedirectCallback?.({
+			state: {
+				returnTo: `${window.location.origin}/review/due#current`,
+			},
+		})
+
+		await vi.waitFor(() => expect(router.navigate).toHaveBeenCalledOnce())
+		expect(router.navigate).toHaveBeenCalledWith({
+			to: '/review/due#current',
+			replace: true,
+		})
+	})
+
+	it.each([
+		undefined,
+		null,
+		{},
+		{ returnTo: 42 },
+		{ returnTo: 'https://evil.example/review' },
+		{ returnTo: '//evil.example/review' },
+		{ returnTo: 'javascript:alert(1)' },
+		{ returnTo: 'http://[' },
+	])('falls back to the root for an unsafe state: %j', async state => {
+		render(<AuthProvider router={authRouter}>Application</AuthProvider>)
+
+		authState.onRedirectCallback?.({ state })
+
+		await vi.waitFor(() => expect(router.navigate).toHaveBeenCalledOnce())
+		expect(router.navigate).toHaveBeenCalledWith({
+			to: '/',
+			replace: true,
+		})
+	})
+
 	it('starts reauthentication when token refresh fails', () => {
-		window.history.replaceState({}, '', '/review/new?mode=focused#current')
+		router.state.location.href = '/review/new?mode=focused#current'
 		const signIn = vi.fn(
 			async (_options?: { state?: { returnTo?: string } }) => {},
 		)
 
-		render(<AuthProvider>Application</AuthProvider>)
+		render(<AuthProvider router={authRouter}>Application</AuthProvider>)
 
 		authState.onRefreshFailure?.({ signIn })
 
@@ -166,7 +233,7 @@ describe('AuthProvider', () => {
 			getAccessToken,
 		}
 
-		render(<AuthProvider>Application</AuthProvider>)
+		render(<AuthProvider router={authRouter}>Application</AuthProvider>)
 
 		expect(authState.convex).toMatchObject({
 			isLoading: false,
@@ -186,7 +253,7 @@ describe('AuthProvider', () => {
 			getAccessToken,
 		}
 
-		render(<AuthProvider>Application</AuthProvider>)
+		render(<AuthProvider router={authRouter}>Application</AuthProvider>)
 
 		await expect(
 			authState.convex?.fetchAccessToken({ forceRefreshToken: true }),
@@ -201,7 +268,7 @@ describe('AuthProvider', () => {
 			getAccessToken: vi.fn(async () => 'access-token'),
 		}
 
-		render(<AuthProvider>Application</AuthProvider>)
+		render(<AuthProvider router={authRouter}>Application</AuthProvider>)
 
 		expect(authState.convex).toMatchObject({
 			isLoading: true,
@@ -222,7 +289,7 @@ describe('AuthProvider', () => {
 			getAccessToken,
 		}
 
-		render(<AuthProvider>Application</AuthProvider>)
+		render(<AuthProvider router={authRouter}>Application</AuthProvider>)
 
 		await expect(
 			authState.convex?.fetchAccessToken({ forceRefreshToken: false }),

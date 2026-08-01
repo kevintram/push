@@ -3,7 +3,6 @@ import { Link } from '@tanstack/react-router'
 import { Check, Ellipsis, Flag, Trash2, Zap } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { Hideable } from '~/components/Hideable'
 import {
 	Button,
 	DropdownMenu,
@@ -12,7 +11,6 @@ import {
 	DropdownMenuTrigger,
 } from '~/components/ui'
 import { type ReviewCard } from '~/modules/reviews/types/review.types'
-import { useHideMode } from '~/stores/HideMode'
 import { colors } from '~/styles/colors.stylex'
 import {
 	fontSizes,
@@ -21,6 +19,9 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 import { formatRelativeDate } from '~/utils/date'
+
+import { useHideMode } from '../hide-mode/useHideMode'
+import { Hideable } from './Hideable'
 
 const styles = stylex.create({
 	container: {
