@@ -43,11 +43,7 @@ export const create = mutation({
 		const { subject: userId } = await requireIdentity(ctx)
 
 		if (args.parentId) {
-			const parent = await ctx.db.get('topics', args.parentId)
-
-			if (!parent || parent.ownerId !== userId) {
-				throw new Error('Parent topic not found')
-			}
+			await validateParent(ctx, args.parentId, userId)
 		}
 
 		return await ctx.db.insert('topics', {
@@ -81,11 +77,7 @@ export const update = mutation({
 		}
 
 		if (args.parentId) {
-			const parent = await ctx.db.get('topics', args.parentId)
-
-			if (!parent || parent.ownerId !== userId) {
-				throw new Error('Parent topic not found')
-			}
+			await validateParent(ctx, args.parentId, userId, args.topicId)
 		}
 
 		const { topicId, ...fields } = args
@@ -98,6 +90,43 @@ export const update = mutation({
 		await ctx.db.patch('topics', topicId, fields as Partial<Doc<'topics'>>)
 	},
 })
+
+// TODO(3): this walks the ancestor chain one read at a time, as does
+// `deleteChildrenOf` on the way down. Deep hierarchies could reach Convex's
+// per-function read limits; cap the depth if topic trees get large.
+async function validateParent(
+	ctx: MutationCtx,
+	parentId: Id<'topics'>,
+	userId: string,
+	topicId?: Id<'topics'>,
+): Promise<void> {
+	const visited = new Set<Id<'topics'>>()
+	let ancestorId: Id<'topics'> | undefined = parentId
+
+	while (ancestorId) {
+		if (ancestorId === topicId) {
+			throw new Error(
+				'A topic cannot be nested below one of its descendants',
+			)
+		}
+
+		if (visited.has(ancestorId)) {
+			throw new Error('Parent topic hierarchy contains a cycle')
+		}
+
+		visited.add(ancestorId)
+
+		const ancestor: Doc<'topics'> | null = await ctx.db.get(
+			'topics',
+			ancestorId,
+		)
+		if (!ancestor || ancestor.ownerId !== userId) {
+			throw new Error('Parent topic not found')
+		}
+
+		ancestorId = ancestor.parentId
+	}
+}
 
 /* AKA delete (we don't use `delete` because it's a reserved JS keyword) */
 export const remove = mutation({
