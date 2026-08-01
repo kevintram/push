@@ -60,6 +60,9 @@ export default defineConfig(() => ({
 		coverage: {
 			enabled: true,
 			exclude: [
+				'convex/_generated/**',
+				'convex/**/*.test.ts',
+				'convex/test.setup.ts',
 				'src/**/*.stylex.ts',
 				'src/**/*.d.ts',
 				'src/lib/convex.ts',
@@ -67,14 +70,32 @@ export default defineConfig(() => ({
 				'src/testing/**',
 				'src/app/routeTree.gen.ts',
 			],
-			include: ['src/**/*'],
+			include: ['convex/**/*.ts', 'src/**/*'],
 			reporter: ['text', 'lcov'],
 			reportsDirectory: 'coverage',
 		},
 		css: false,
-		environment: 'happy-dom',
 		globals: true,
-		include: ['src/**/__tests__/**/*.test.ts?(x)'],
-		setupFiles: 'src/testing/setup-tests.ts',
+		projects: [
+			{
+				// `as const` keeps this from widening to `boolean`, which vitest
+				// rejects: `extends` is typed `string | true`.
+				extends: true as const,
+				test: {
+					environment: 'happy-dom',
+					include: ['src/**/__tests__/**/*.test.ts?(x)'],
+					name: 'frontend',
+					setupFiles: 'src/testing/setup-tests.ts',
+				},
+			},
+			{
+				extends: true as const,
+				test: {
+					environment: 'edge-runtime',
+					include: ['convex/**/*.test.ts'],
+					name: 'convex',
+				},
+			},
+		],
 	},
 }))

@@ -101,8 +101,12 @@ src/modules/<module>/
 
 ## Testing Rules
 
-- Place tests in `__tests__/` folders next to the code under test.
+Vitest runs two projects (see `vite.config.ts`): `frontend` for `src/` under Happy DOM, and `convex` for `convex/` under `edge-runtime`. `pnpm test` and `pnpm test:ci` run both.
+
+- Place frontend tests in `__tests__/` folders next to the code under test.
 - Route-level and app integration tests belong under `src/app/__tests__/`, not under `src/app/routes/`.
+- Convex function tests are the exception to the `__tests__/` rule: colocate them flat beside the function file as `convex/<name>.test.ts`, following the `convex-test` convention. They import the module map from `convex/test.setup.ts`.
+- Both `convex/*.test.ts` and `convex/test.setup.ts` are kept out of deploys by the Convex bundler's rule that skips filenames containing more than one dot. Preserve that shape when adding files under `convex/` that must not ship.
 - Use Testing Library for behavior-focused assertions.
 - Prefer the smallest useful test scope: pure utilities first, component tests for UI behavior, route integration tests for routing/provider behavior.
 - There is no WebV2 Playwright setup yet. If E2E coverage is added, follow the root repository guidance for browser authentication and session cleanup.
