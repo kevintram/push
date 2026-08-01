@@ -45,7 +45,13 @@ function renderRoute(path: string) {
 
 	const router = createRouter({
 		routeTree,
-		context: { queryClient },
+		context: {
+			auth: {
+				isAuthenticated: true,
+				isLoading: false,
+			},
+			queryClient,
+		},
 		history: createMemoryHistory({
 			initialEntries: [path],
 		}),

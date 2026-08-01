@@ -19,6 +19,20 @@ const auth = vi.hoisted(() => ({
 	},
 }))
 
+const router = vi.hoisted(() => ({
+	state: {
+		location: { href: '/' },
+	},
+}))
+
+vi.mock('@tanstack/react-router', () => ({
+	useLocation: ({
+		select,
+	}: {
+		select: (location: { href: string }) => unknown
+	}) => select(router.state.location),
+}))
+
 vi.mock('@workos-inc/authkit-react', () => ({
 	useAuth: () => auth.workOs,
 }))
@@ -48,11 +62,11 @@ describe('AuthGate', () => {
 		auth.workOs.signIn.mockReset().mockResolvedValue()
 		auth.convex.isAuthenticated = false
 		auth.convex.isLoading = false
-		window.history.replaceState({}, '', '/')
+		router.state.location.href = '/'
 	})
 
 	it('starts WorkOS sign-in when there is no provider session', async () => {
-		window.history.replaceState({}, '', '/review/late?mode=compact#card-12')
+		router.state.location.href = '/review/late?mode=compact#card-12'
 
 		renderAuthGate()
 

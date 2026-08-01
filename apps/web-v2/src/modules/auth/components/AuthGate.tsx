@@ -1,11 +1,10 @@
+import { useLocation } from '@tanstack/react-router'
 import { useAuth } from '@workos-inc/authkit-react'
 import { useConvexAuth } from 'convex/react'
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
 
-import { AuthFailedPage } from '~/app/pages/AuthFailedPage'
-import { NotAuthenticatedPage } from '~/app/pages/NotAuthenticatedPage'
-
-import { getCurrentReturnTo } from './authRedirect'
+import { AuthFailedPage } from './AuthFailedPage'
+import { NotAuthenticatedPage } from './NotAuthenticatedPage'
 
 type AuthGateProps = {
 	children: ReactNode
@@ -14,11 +13,11 @@ type AuthGateProps = {
 const AUTH_PENDING_VISIBLE_AFTER_MS = 500
 
 /**
- * Holds the router outside the tree until Convex has accepted the WorkOS
- * session. TanStack Router starts loaders when its provider mounts, so this
- * keeps protected loader queries from racing the initial token exchange.
+ * Holds routed UI until Convex has accepted the WorkOS session. The router
+ * remains mounted so it can own the complete sign-in and callback location.
  */
 export function AuthGate({ children }: AuthGateProps) {
+	const returnTo = useLocation({ select: location => location.href })
 	const { isLoading: isWorkOsLoading, signIn, user } = useAuth()
 	const {
 		isAuthenticated: isConvexAuthenticated,
@@ -35,9 +34,9 @@ export function AuthGate({ children }: AuthGateProps) {
 	const startSignIn = useCallback(
 		() =>
 			signIn({
-				state: { returnTo: getCurrentReturnTo() },
+				state: { returnTo },
 			}),
-		[signIn],
+		[returnTo, signIn],
 	)
 
 	useEffect(() => {

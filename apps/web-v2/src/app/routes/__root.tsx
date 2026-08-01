@@ -1,14 +1,28 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { createRootRouteWithContext } from '@tanstack/react-router'
+import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
+import { ErrorBoundary } from 'react-error-boundary'
 
+import { ErrorPage } from '~/app/pages/ErrorPage'
 import { NotFoundPage } from '~/app/pages/NotFoundPage'
-import { Root } from '~/app/Root'
+import { AppShell } from '~/components/AppShell'
+import { AuthGate } from '~/modules/auth/components/AuthGate'
 
 export type RouterContext = {
+	auth: {
+		isAuthenticated: boolean
+		isLoading: boolean
+	}
 	queryClient: QueryClient
 }
-
 export const Route = createRootRouteWithContext<RouterContext>()({
 	notFoundComponent: NotFoundPage,
-	component: Root,
+	component: () => (
+		<AuthGate>
+			<AppShell>
+				<ErrorBoundary FallbackComponent={ErrorPage}>
+					<Outlet />
+				</ErrorBoundary>
+			</AppShell>
+		</AuthGate>
+	),
 })
