@@ -1,11 +1,12 @@
-import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link, Outlet, useMatchRoute, useParams } from '@tanstack/react-router'
-import { ArrowLeft } from 'lucide-react'
 
 import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { reviewCardQueries } from '~/modules/reviews'
 import { spacing } from '~/styles/tokens.stylex'
+
+import { ReviewCardTopicLink } from './ReviewCardTopicLink'
 
 const styles = stylex.create({
 	outerContainer: {
@@ -30,18 +31,6 @@ const styles = stylex.create({
 		flexGrow: 1,
 		flexShrink: 1,
 	},
-	link: {
-		display: 'flex',
-
-		gap: spacing.sm,
-
-		textDecoration: 'none',
-		color: {
-			default: colors.textLink,
-			':hover': colors.textLinkHover,
-			':active': colors.textLinkActive,
-		},
-	},
 	tabLink: {
 		textDecoration: 'none',
 	},
@@ -51,11 +40,9 @@ export function ReviewCardPageLayout() {
 	const { reviewCardId } = useParams({
 		from: '/review-cards/$reviewCardId',
 	})
-	// Mock data: a real topic id will come from the review card once review
-	// cards are backed by Convex.
-	const topicId = 'learning-typescript' as Id<'topics'>
-	const topicTitle = 'Learning TypeScript'
-
+	const { data: reviewCard } = useSuspenseQuery(
+		reviewCardQueries.detail(reviewCardId),
+	)
 	const matchRoute = useMatchRoute()
 	const activeTab = matchRoute({
 		to: '/review-cards/$reviewCardId/reviews',
@@ -64,18 +51,21 @@ export function ReviewCardPageLayout() {
 		? 'review'
 		: 'overview'
 
+	// The card can read as missing here in two ways: the loader bailed out while
+	// auth was still resolving, or it was just deleted and Convex pushed the
+	// removal before the redirect landed. Render nothing and let the loader
+	// (re-run on auth) or the delete's navigation decide where to go next.
+	//
+	// Deliberately not `throw notFound()`: `__root` wraps the outlet in a React
+	// error boundary, which would catch the router's control-flow object and
+	// render the error page instead of a 404.
+	if (!reviewCard) return null
+
 	return (
 		<div {...stylex.props(styles.outerContainer)}>
 			<header {...stylex.props(styles.header)}>
 				<Tabs value={activeTab} xstyle={styles.tabs}>
-					<Link
-						to='/library/$topicId'
-						params={{ topicId }}
-						{...stylex.props(styles.link)}
-					>
-						<ArrowLeft />
-						{topicTitle}
-					</Link>
+					<ReviewCardTopicLink topicId={reviewCard.topicId} />
 					<TabsList aria-label='Review card sections'>
 						<TabsTrigger
 							value='overview'

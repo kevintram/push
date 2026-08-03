@@ -3,6 +3,7 @@ import { createRouter } from '@tanstack/react-router'
 import { queryClient } from '~/lib/convex'
 
 import { LoadingPage } from './pages/LoadingPage'
+import { NotFoundPage } from './pages/NotFoundPage'
 import { routeTree } from './routeTree.gen'
 
 export const router = createRouter({
@@ -15,6 +16,8 @@ export const router = createRouter({
 
 	defaultPreload: 'intent',
 	defaultPreloadStaleTime: 0,
+
+	defaultNotFoundComponent: NotFoundPage,
 
 	defaultPendingComponent: LoadingPage,
 	defaultPendingMs: 200,

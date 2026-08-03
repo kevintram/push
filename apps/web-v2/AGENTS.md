@@ -99,6 +99,21 @@ src/modules/<module>/
 └── index.ts      # Public API
 ```
 
+## Convex Backend Structure
+
+`convex/` follows the layering Convex recommends: the public API is a set of thin
+wrappers, and the logic lives in `convex/model/`.
+
+```text
+convex/
+├── schema.ts              # defineSchema: tables and indexes only
+├── auth.config.ts         # WorkOS custom JWT providers
+├── <domain>.ts            # public API — eg: `api.topics.*`
+├── model/                 # all business logic, imported as namespaces
+├── validators/            # resource validators, the single source of truth
+└── *.test.ts              # exercise the public API, not model/ directly
+```
+
 ## Testing Rules
 
 Vitest runs two projects (see `vite.config.ts`): `frontend` for `src/` under Happy DOM, and `convex` for `convex/` under `edge-runtime`. `pnpm test` and `pnpm test:ci` run both.

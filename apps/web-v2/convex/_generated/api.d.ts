@@ -8,8 +8,14 @@
  * @module
  */
 
-import type * as auth from "../auth.js";
+import type * as model_auth from "../model/auth.js";
+import type * as model_reviewCards from "../model/reviewCards.js";
+import type * as model_topicRemoval from "../model/topicRemoval.js";
+import type * as model_topics from "../model/topics.js";
+import type * as reviewCards from "../reviewCards.js";
 import type * as topics from "../topics.js";
+import type * as validators_reviewCards from "../validators/reviewCards.js";
+import type * as validators_topics from "../validators/topics.js";
 
 import type {
   ApiFromModules,
@@ -18,8 +24,14 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  auth: typeof auth;
+  "model/auth": typeof model_auth;
+  "model/reviewCards": typeof model_reviewCards;
+  "model/topicRemoval": typeof model_topicRemoval;
+  "model/topics": typeof model_topics;
+  reviewCards: typeof reviewCards;
   topics: typeof topics;
+  "validators/reviewCards": typeof validators_reviewCards;
+  "validators/topics": typeof validators_topics;
 }>;
 
 /**

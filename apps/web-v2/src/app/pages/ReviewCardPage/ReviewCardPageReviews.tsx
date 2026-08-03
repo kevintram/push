@@ -2,8 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Plus } from 'lucide-react'
 
 import { Button } from '~/components/ui'
-import { Review } from '~/modules/reviews/components/Review'
-import type { Review as ReviewModel } from '~/modules/reviews/types/review.types'
+import { Review, type ReviewModel } from '~/modules/reviews'
 import { layout, spacing } from '~/styles/tokens.stylex'
 
 const ratings: Array<ReviewModel['rating']> = ['miss', 'hard', 'good', 'easy']

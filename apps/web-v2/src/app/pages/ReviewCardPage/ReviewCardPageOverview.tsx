@@ -1,43 +1,21 @@
 import * as stylex from '@stylexjs/stylex'
-import { Check, Ellipsis, Flag, Trash2, Zap } from 'lucide-react'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useParams } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
+import { Separator, Textarea } from '~/components/ui'
 import {
-	Button,
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-	Separator,
-	Textarea,
-} from '~/components/ui'
-import { Hideable } from '~/modules/reviews/components/Hideable'
-import { ReviewsSidebar } from '~/modules/reviews/components/ReviewsSidebar'
-import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
-import type { ReviewCard } from '~/modules/reviews/types/review.types'
-import { colors } from '~/styles/colors.stylex'
-import {
-	fontSizes,
-	fontWeights,
-	iconSizes,
-	layout,
-	spacing,
-} from '~/styles/tokens.stylex'
-import { formatRelativeDate } from '~/utils/date'
+	Hideable,
+	ReviewCardActions,
+	ReviewCardMetadata,
+	reviewCardQueries,
+	ReviewsSidebar,
+	unscheduledSrsState,
+	useHideMode,
+	useReviewCardField,
+} from '~/modules/reviews'
+import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
 
-const reviewCard: ReviewCard = {
-	id: 'typescript-generics',
-	topic_id: 'learning-typescript',
-	type: 'flashcard',
-	primary_text: 'What problem do generics solve?',
-	secondary_text: 'They preserve type safety across reusable code.',
-	notes: 'Start with simple examples.',
-	stability: 8,
-	last_reviewed_at: '2026-07-28',
-	next_due_at: '2026-07-30',
-	freshness_tier: 'Fresh',
-	flagged_at: null,
-}
 const styles = stylex.create({
 	layout: {
 		display: 'flex',
@@ -82,56 +60,63 @@ const styles = stylex.create({
 		flexDirection: 'column',
 	},
 	footer: { gap: spacing.md, alignItems: 'center', display: 'flex' },
-	metadata: {
-		gap: spacing.xl,
-		alignItems: 'center',
-		display: 'flex',
-		flexGrow: 1,
-		flexWrap: 'wrap',
-		fontSize: fontSizes.sm,
-	},
-	metadataItem: {
-		gap: spacing.xs,
-		alignItems: 'center',
-		color: colors.textSecondary,
-		display: 'inline-flex',
-		fontWeight: fontWeights.semibold,
-		whiteSpace: 'nowrap',
-	},
-	actions: {
-		gap: spacing.xs,
-		alignItems: 'center',
-		display: 'flex',
-		flexShrink: 0,
-	},
-	flashcardOn: {
-		fill: colors.iconFlashcardActive,
-		color: colors.iconFlashcardActive,
-	},
-	flagOn: {
-		fill: colors.iconFlagActive,
-		color: colors.iconFlagActive,
-	},
 	notesContainer: { flexBasis: 0, flexGrow: 1, flexShrink: 1 },
 	notes: { blockSize: '100%', fontSize: fontSizes.md, inlineSize: '100%' },
 })
 
 export function ReviewCardPageOverview() {
+	const { reviewCardId } = useParams({ from: '/review-cards/$reviewCardId' })
+	const { data: reviewCard } = useSuspenseQuery(
+		reviewCardQueries.detail(reviewCardId),
+	)
+
 	const { hideMode } = useHideMode()
 	const [secondaryRevealed, setSecondaryRevealed] = useState(false)
 	const [notesRevealed, setNotesRevealed] = useState(false)
+
 	useEffect(() => {
 		setSecondaryRevealed(false)
 		setNotesRevealed(false)
-	}, [hideMode])
+	}, [hideMode, reviewCardId])
+
+	const primaryText = useReviewCardField({
+		errorMessage: 'Failed to update review card',
+		field: 'primaryText',
+		reviewCardId,
+		value: reviewCard?.primaryText ?? '',
+	})
+	const secondaryText = useReviewCardField({
+		errorMessage: 'Failed to update review card',
+		field: 'secondaryText',
+		reviewCardId,
+		value: reviewCard?.secondaryText ?? '',
+	})
+	const notes = useReviewCardField({
+		errorMessage: 'Failed to update review card notes',
+		field: 'notes',
+		reviewCardId,
+		value: reviewCard?.notes ?? '',
+	})
+
+	// The parent layout stops rendering the outlet in this case, so this is
+	// belt-and-braces for the render that may still be in flight.
+	if (!reviewCard) return null
+
+	const primaryTextPlaceholder =
+		reviewCard.type === 'practice' ? 'Title' : 'Prompt'
+	const secondaryTextPlaceholder =
+		reviewCard.type === 'practice' ? 'Description' : 'Answer'
+
 	return (
 		<div {...stylex.props(styles.layout)}>
 			<main {...stylex.props(styles.main)}>
 				<div {...stylex.props(styles.content)}>
 					<Textarea
 						aria-label='Review-card primary text'
-						readOnly
-						value={reviewCard.primary_text}
+						placeholder={primaryTextPlaceholder}
+						onBlur={primaryText.flush}
+						onChange={primaryText.onChange}
+						value={primaryText.value}
 						xstyle={styles.primary}
 					/>
 					<Hideable
@@ -144,154 +129,17 @@ export function ReviewCardPageOverview() {
 					>
 						<Textarea
 							aria-label='Review-card secondary text'
-							readOnly
-							value={reviewCard.secondary_text}
+							placeholder={secondaryTextPlaceholder}
+							onBlur={secondaryText.flush}
+							onChange={secondaryText.onChange}
+							value={secondaryText.value}
 							xstyle={styles.secondary}
 						/>
 					</Hideable>
 					<div {...stylex.props(styles.separatorGroup)}>
 						<div {...stylex.props(styles.footer)}>
-							<div {...stylex.props(styles.metadata)}>
-								{reviewCard.last_reviewed_at === null ? (
-									<span
-										{...stylex.props(styles.metadataItem)}
-									>
-										Unreviewed
-									</span>
-								) : (
-									<>
-										{reviewCard.freshness_tier !== null ? (
-											<span
-												{...stylex.props(
-													styles.metadataItem,
-												)}
-											>
-												{reviewCard.freshness_tier}
-											</span>
-										) : null}
-										{reviewCard.next_due_at !== null ? (
-											<span
-												{...stylex.props(
-													styles.metadataItem,
-												)}
-											>{`Due ${formatRelativeDate(reviewCard.next_due_at)}`}</span>
-										) : null}
-										<span
-											{...stylex.props(
-												styles.metadataItem,
-											)}
-										>
-											<Check size={iconSizes.md} />
-											{formatRelativeDate(
-												reviewCard.last_reviewed_at,
-											)}
-										</span>
-										{reviewCard.stability !== null ? (
-											<span
-												{...stylex.props(
-													styles.metadataItem,
-												)}
-											>
-												Durable for{' '}
-												{Math.round(
-													reviewCard.stability,
-												)}
-												d
-											</span>
-										) : null}
-									</>
-								)}
-							</div>
-							<div {...stylex.props(styles.actions)}>
-								{reviewCard.type === 'flashcard' ? (
-									<Button.Icon
-										aria-label='Unflashcard'
-										disabled
-										shape='round'
-										variant='ghost'
-										size='small'
-									>
-										<Zap
-											aria-hidden='true'
-											size={iconSizes.md}
-											{...stylex.props(
-												styles.flashcardOn,
-											)}
-										/>
-									</Button.Icon>
-								) : null}
-								{reviewCard.flagged_at !== null ? (
-									<Button.Icon
-										aria-label='Unflag'
-										disabled
-										shape='round'
-										variant='ghost'
-										size='small'
-									>
-										<Flag
-											aria-hidden='true'
-											size={iconSizes.md}
-											{...stylex.props(styles.flagOn)}
-										/>
-									</Button.Icon>
-								) : null}
-								<DropdownMenu>
-									<DropdownMenuTrigger
-										render={
-											<Button.Icon
-												aria-label='Review card actions'
-												shape='round'
-												variant='ghost'
-												size='small'
-											/>
-										}
-									>
-										<Ellipsis
-											aria-hidden='true'
-											size={iconSizes.md}
-										/>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent align='end'>
-										<DropdownMenuItem disabled>
-											<Zap
-												aria-hidden='true'
-												size={iconSizes.md}
-												{...(reviewCard.type ===
-												'flashcard'
-													? stylex.props(
-															styles.flashcardOn,
-														)
-													: {})}
-											/>
-											{reviewCard.type === 'flashcard'
-												? 'Unflashcard'
-												: 'Flashcard'}
-										</DropdownMenuItem>
-										<DropdownMenuItem disabled>
-											<Flag
-												aria-hidden='true'
-												size={iconSizes.md}
-												{...(reviewCard.flagged_at !==
-												null
-													? stylex.props(
-															styles.flagOn,
-														)
-													: {})}
-											/>
-											{reviewCard.flagged_at !== null
-												? 'Unflag'
-												: 'Flag'}
-										</DropdownMenuItem>
-										<DropdownMenuItem disabled>
-											<Trash2
-												aria-hidden='true'
-												size={iconSizes.md}
-											/>
-											Delete
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-							</div>
+							<ReviewCardMetadata {...unscheduledSrsState} />
+							<ReviewCardActions reviewCard={reviewCard} />
 						</div>
 						<Separator />
 					</div>
@@ -302,8 +150,10 @@ export function ReviewCardPageOverview() {
 					>
 						<Textarea
 							aria-label='Review-card notes'
-							readOnly
-							value={reviewCard.notes}
+							placeholder='Add notes...'
+							onBlur={notes.flush}
+							onChange={notes.onChange}
+							value={notes.value}
 							xstyle={styles.notes}
 						/>
 					</Hideable>

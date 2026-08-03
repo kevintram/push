@@ -1,13 +1,16 @@
 import { defineSchema, defineTable } from 'convex/server'
-import { v } from 'convex/values'
+
+import { reviewCardBase } from './validators/reviewCards'
+import { topicBase } from './validators/topics'
 
 export default defineSchema({
-	topics: defineTable({
-		title: v.string(),
-		description: v.string(),
-		parentId: v.optional(v.id('topics')),
-		ownerId: v.string(),
-	})
+	topics: defineTable(topicBase)
 		.index('by_parentId', ['parentId'])
+		.index('by_ownerId', ['ownerId']),
+
+	// `by_topicId_ownerId` also serves lookups by `topicId` alone, since an
+	// index can be queried on any prefix of its fields.
+	reviewCards: defineTable(reviewCardBase)
+		.index('by_topicId_ownerId', ['topicId', 'ownerId'])
 		.index('by_ownerId', ['ownerId']),
 })
