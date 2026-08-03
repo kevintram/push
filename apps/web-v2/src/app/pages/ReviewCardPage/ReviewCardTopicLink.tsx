@@ -28,8 +28,10 @@ const styles = stylex.create({
  * waterfall: the layout loads the review card, then this component mounts and
  * loads its topic. This must be a separate component so its query hook remains
  * unconditional while the layout can return early when the review card is
- * missing. The waterfall should eventually be removed by returning the topic
- * data with the review card.
+ * missing.
+ *
+ * TODO(2): Remove the waterfall by returning the topic data with the review
+ * card.
  */
 export function ReviewCardTopicLink({ topicId }: { topicId: Id<'topics'> }) {
 	const { data: topic } = useSuspenseQuery(topicQueries.detail(topicId))
