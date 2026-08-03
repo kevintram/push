@@ -63,14 +63,20 @@ const reviewCard: Doc<'reviewCards'> = {
 
 function renderRoute(
 	path: string,
-	{ missingReviewCard = false }: { missingReviewCard?: boolean } = {},
+	{
+		missingReviewCard = false,
+		reviewCardType = 'flashcard',
+	}: {
+		missingReviewCard?: boolean
+		reviewCardType?: Doc<'reviewCards'>['type']
+	} = {},
 ) {
 	const queryClient = createTestQueryClient()
 	queryClient.setQueryData(topicQueries.list().queryKey, [])
 	queryClient.setQueryData(topicQueries.detail(topicId).queryKey, topic)
 	queryClient.setQueryData(
 		reviewCardQueries.detail(reviewCardId).queryKey,
-		missingReviewCard ? null : reviewCard,
+		missingReviewCard ? null : { ...reviewCard, type: reviewCardType },
 	)
 	const convexClient = createTestConvexClient()
 
@@ -157,15 +163,33 @@ describe('v2 app setup', () => {
 	it('renders a review card at its standalone route', async () => {
 		renderRoute(`/review-cards/${reviewCardId}`)
 
+		const primaryText = await screen.findByLabelText(
+			'Review-card primary text',
+		)
+		expect(primaryText).toHaveValue('What problem do generics solve?')
+		expect(primaryText).toHaveAttribute('placeholder', 'Prompt')
 		expect(
-			await screen.findByLabelText('Review-card primary text'),
-		).toHaveValue('What problem do generics solve?')
+			screen.getByLabelText('Review-card secondary text'),
+		).toHaveAttribute('placeholder', 'Answer')
 		expect(
 			screen.getByRole('link', { name: 'Learning TypeScript' }),
 		).toHaveAttribute('href', `/library/${topicId}`)
 		expect(
 			screen.queryByRole('navigation', { name: 'Library topics' }),
 		).not.toBeInTheDocument()
+	})
+
+	it('uses practice-specific review-card placeholders', async () => {
+		renderRoute(`/review-cards/${reviewCardId}`, {
+			reviewCardType: 'practice',
+		})
+
+		expect(
+			await screen.findByLabelText('Review-card primary text'),
+		).toHaveAttribute('placeholder', 'Title')
+		expect(
+			screen.getByLabelText('Review-card secondary text'),
+		).toHaveAttribute('placeholder', 'Description')
 	})
 
 	it('404s a review card that no longer exists', async () => {

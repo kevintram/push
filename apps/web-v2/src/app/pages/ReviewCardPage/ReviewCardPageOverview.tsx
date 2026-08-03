@@ -102,13 +102,18 @@ export function ReviewCardPageOverview() {
 	// belt-and-braces for the render that may still be in flight.
 	if (!reviewCard) return null
 
+	const primaryTextPlaceholder =
+		reviewCard.type === 'practice' ? 'Title' : 'Prompt'
+	const secondaryTextPlaceholder =
+		reviewCard.type === 'practice' ? 'Description' : 'Answer'
+
 	return (
 		<div {...stylex.props(styles.layout)}>
 			<main {...stylex.props(styles.main)}>
 				<div {...stylex.props(styles.content)}>
 					<Textarea
 						aria-label='Review-card primary text'
-						placeholder='Add a question...'
+						placeholder={primaryTextPlaceholder}
 						onBlur={primaryText.flush}
 						onChange={primaryText.onChange}
 						value={primaryText.value}
@@ -124,7 +129,7 @@ export function ReviewCardPageOverview() {
 					>
 						<Textarea
 							aria-label='Review-card secondary text'
-							placeholder='Add an answer...'
+							placeholder={secondaryTextPlaceholder}
 							onBlur={secondaryText.flush}
 							onChange={secondaryText.onChange}
 							value={secondaryText.value}
