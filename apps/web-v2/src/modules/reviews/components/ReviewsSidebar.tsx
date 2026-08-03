@@ -3,10 +3,10 @@ import { Link, useParams } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 
 import { Button } from '~/components/ui'
-import type { Review as ReviewModel } from '~/modules/reviews/types/review.types'
 import { colors } from '~/styles/colors.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
+import type { Review as ReviewModel } from '../types/review.types'
 import { Review } from './Review'
 
 const reviews = Array.from({ length: 14 }, (_, index): ReviewModel => {

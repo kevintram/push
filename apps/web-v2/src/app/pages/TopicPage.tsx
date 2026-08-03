@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useParams } from '@tanstack/react-router'
+import { useNavigate, useParams } from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
@@ -15,8 +15,12 @@ import {
 } from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { topicQueries, useDeleteTopic, useUpdateTopic } from '~/modules/library'
-import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
-import type { ReviewCard as ReviewCardModel } from '~/modules/reviews/types/review.types'
+import {
+	ReviewCard,
+	reviewCardQueries,
+	unscheduledSrsState,
+	useCreateReviewCard,
+} from '~/modules/reviews'
 import {
 	fontSizes,
 	fontWeights,
@@ -24,30 +28,6 @@ import {
 	layout,
 	spacing,
 } from '~/styles/tokens.stylex'
-
-const reviewCards = Array.from({ length: 18 }, (_, index): ReviewCardModel => {
-	const number = index + 1
-
-	return {
-		id: index === 0 ? 'typescript-generics' : `topic-review-card-${number}`,
-		topic_id: 'topic-id',
-		type: index % 4 === 3 ? 'practice' : 'flashcard',
-		primary_text:
-			index === 0
-				? 'What problem do generics solve?'
-				: `Topic mock card ${number}: TypeScript concept`,
-		secondary_text:
-			index === 0
-				? 'They let code work with many types while preserving type safety.'
-				: `An example answer for topic mock card ${number}.`,
-		notes: `Overflow test notes for topic mock card ${number}.`,
-		stability: 4 + (index % 8),
-		last_reviewed_at: '2026-07-28',
-		next_due_at: '2026-07-30',
-		freshness_tier: index % 5 === 4 ? 'Needs attention' : 'Fresh',
-		flagged_at: index % 5 === 4 ? '2026-07-25' : null,
-	}
-})
 
 const styles = stylex.create({
 	container: {
@@ -84,12 +64,31 @@ const styles = stylex.create({
 export function TopicPage() {
 	const { topicId } = useParams({ from: '/library/$topicId' })
 	const { data: topic } = useSuspenseQuery(topicQueries.detail(topicId))
+	const { data: reviewCards } = useSuspenseQuery(
+		reviewCardQueries.listByTopic(topicId),
+	)
 	const deleteTopic = useDeleteTopic()
 	const updateTopic = useUpdateTopic()
+	const createReviewCard = useCreateReviewCard()
+	const navigate = useNavigate()
 
 	const handleDeleteTopic = useCallback(() => {
 		deleteTopic.mutate({ topicId })
 	}, [deleteTopic, topicId])
+
+	const handleCreateReviewCard = useCallback(() => {
+		createReviewCard.mutate(
+			{ topicId },
+			{
+				onError: () => toast.error('Failed to create review card'),
+				onSuccess: reviewCardId =>
+					void navigate({
+						to: '/review-cards/$reviewCardId',
+						params: { reviewCardId },
+					}),
+			},
+		)
+	}, [createReviewCard, navigate, topicId])
 
 	const saveTitle = useCallback(
 		async (title: string) => {
@@ -184,7 +183,8 @@ export function TopicPage() {
 					</h2>
 					<Button.Icon
 						aria-label='Add review card'
-						disabled
+						disabled={createReviewCard.isPending}
+						onClick={handleCreateReviewCard}
 						shape='round'
 					>
 						<Plus aria-hidden='true' />
@@ -193,7 +193,11 @@ export function TopicPage() {
 
 				<div {...stylex.props(styles.reviewCardsList)}>
 					{reviewCards.map(reviewCard => (
-						<ReviewCard key={reviewCard.id} {...reviewCard} />
+						<ReviewCard
+							key={reviewCard._id}
+							reviewCard={reviewCard}
+							srs={unscheduledSrsState}
+						/>
 					))}
 				</div>
 			</div>

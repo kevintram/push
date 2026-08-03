@@ -1,22 +1,27 @@
+import type { Doc } from '@convex/_generated/dataModel'
+
 import type { DateString } from '~/types/date'
 
-export type ReviewCard = {
-	id: string
-	topic_id: string
-	type: 'practice' | 'flashcard'
-	primary_text: string
-	secondary_text: string
-	notes: string
+export type ReviewCard = Doc<'reviewCards'>
+
+/**
+ * Scheduling state is still derived by the FastAPI service from a card's
+ * reviews and its FSRS parameters, none of which Convex knows about yet. Card
+ * views take it as a separate prop so the metadata they already render can stay
+ * in place, reading as "unreviewed", until the scheduler moves over too.
+ */
+export type ReviewCardSrsState = {
 	stability: number | null
-	last_reviewed_at: DateString | null
-	next_due_at: DateString | null
-	freshness_tier: string | null
-	flagged_at: string | null
+	lastReviewedAt: DateString | null
+	nextDueAt: DateString | null
+	freshnessTier: string | null
 }
 
-export type ReviewCardFilters = {
-	due?: 'late' | 'new' | DateString
-	topicId?: string
+export const unscheduledSrsState: ReviewCardSrsState = {
+	stability: null,
+	lastReviewedAt: null,
+	nextDueAt: null,
+	freshnessTier: null,
 }
 
 export type Rating = 'miss' | 'hard' | 'good' | 'easy'

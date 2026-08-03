@@ -1,3 +1,4 @@
+import type { Doc, Id } from '@convex/_generated/dataModel'
 import { QueryClientProvider } from '@tanstack/react-query'
 import {
 	createMemoryHistory,
@@ -10,7 +11,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
 import { topicQueries } from '~/modules/library'
-import { HideModeProvider } from '~/modules/reviews/hide-mode/HideModeProvider'
+import { HideModeProvider, reviewCardQueries } from '~/modules/reviews'
 import { createTestConvexClient } from '~/testing/createTestConvexClient'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
@@ -38,9 +39,39 @@ vi.mock('convex/react', async importOriginal => ({
 	}),
 }))
 
-function renderRoute(path: string) {
+const topicId = 'topic-1' as Id<'topics'>
+const reviewCardId = 'review-card-1' as Id<'reviewCards'>
+
+const topic: Doc<'topics'> = {
+	_id: topicId,
+	_creationTime: 0,
+	title: 'Learning TypeScript',
+	description: '',
+	ownerId: 'user-1',
+}
+
+const reviewCard: Doc<'reviewCards'> = {
+	_id: reviewCardId,
+	_creationTime: 0,
+	topicId,
+	ownerId: 'user-1',
+	type: 'flashcard',
+	primaryText: 'What problem do generics solve?',
+	secondaryText: 'They preserve type safety across reusable code.',
+	notes: '',
+}
+
+function renderRoute(
+	path: string,
+	{ missingReviewCard = false }: { missingReviewCard?: boolean } = {},
+) {
 	const queryClient = createTestQueryClient()
 	queryClient.setQueryData(topicQueries.list().queryKey, [])
+	queryClient.setQueryData(topicQueries.detail(topicId).queryKey, topic)
+	queryClient.setQueryData(
+		reviewCardQueries.detail(reviewCardId).queryKey,
+		missingReviewCard ? null : reviewCard,
+	)
 	const convexClient = createTestConvexClient()
 
 	const router = createRouter({
@@ -124,21 +155,37 @@ describe('v2 app setup', () => {
 	})
 
 	it('renders a review card at its standalone route', async () => {
-		renderRoute('/review-cards/3')
+		renderRoute(`/review-cards/${reviewCardId}`)
 
 		expect(
 			await screen.findByLabelText('Review-card primary text'),
 		).toHaveValue('What problem do generics solve?')
 		expect(
 			screen.getByRole('link', { name: 'Learning TypeScript' }),
-		).toHaveAttribute('href', '/library/learning-typescript')
+		).toHaveAttribute('href', `/library/${topicId}`)
 		expect(
 			screen.queryByRole('navigation', { name: 'Library topics' }),
 		).not.toBeInTheDocument()
 	})
 
+	it('404s a review card that no longer exists', async () => {
+		renderRoute(`/review-cards/${reviewCardId}`, {
+			missingReviewCard: true,
+		})
+
+		expect(
+			await screen.findByRole('heading', { name: 'Page not found' }),
+		).toBeInTheDocument()
+		// A deleted card must not reach the error boundary: `notFound()` is a
+		// router control-flow object, and the root boundary renders it as
+		// "[object Object]" if a component throws it during render.
+		expect(
+			screen.queryByText('Something went wrong'),
+		).not.toBeInTheDocument()
+	})
+
 	it('renders review history under the standalone review-card route', async () => {
-		renderRoute('/review-cards/3/reviews')
+		renderRoute(`/review-cards/${reviewCardId}/reviews`)
 
 		expect(
 			await screen.findByText('Correctly described generics.'),

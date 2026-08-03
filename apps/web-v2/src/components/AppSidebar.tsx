@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { BookOpen, Clock, Flag, Library, PinIcon, Settings } from 'lucide-react'
 
-import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
+import { HideModeButton } from '~/modules/reviews'
 import { colors } from '~/styles/colors.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 

@@ -3,6 +3,7 @@ import { createFileRoute, notFound } from '@tanstack/react-router'
 
 import { TopicPage } from '~/app/pages/TopicPage'
 import { topicQueries } from '~/modules/library'
+import { reviewCardQueries } from '~/modules/reviews'
 
 export const Route = createFileRoute('/library/$topicId')({
 	component: TopicPage,
@@ -19,9 +20,12 @@ export const Route = createFileRoute('/library/$topicId')({
 	loader: async ({ context: { auth, queryClient }, params }) => {
 		if (!auth.isAuthenticated) return
 
-		const topic = await queryClient.ensureQueryData(
-			topicQueries.detail(params.topicId),
-		)
+		const [topic] = await Promise.all([
+			queryClient.ensureQueryData(topicQueries.detail(params.topicId)),
+			queryClient.ensureQueryData(
+				reviewCardQueries.listByTopic(params.topicId),
+			),
+		])
 
 		if (!topic) throw notFound()
 	},

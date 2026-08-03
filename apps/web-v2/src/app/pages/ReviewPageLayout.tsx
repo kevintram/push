@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Outlet } from '@tanstack/react-router'
 
-import { ReviewSidebar } from '~/modules/reviews/components/ReviewSidebar'
+import { ReviewSidebar } from '~/modules/reviews'
 import { layout } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
