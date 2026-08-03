@@ -1,8 +1,10 @@
+import type { Infer } from 'convex/values'
+
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
-import { deleteReviewCardsOf } from './reviewCards'
+import type { topicCreate, topicPatch } from '../validators/topics'
 
-export async function requireOwnedTopic(
+export async function requireUserOwns(
 	ctx: QueryCtx,
 	topicId: Id<'topics'>,
 	userId: string,
@@ -16,9 +18,9 @@ export async function requireOwnedTopic(
 	return topic
 }
 
-// TODO(3): this walks the ancestor chain one read at a time, as does
-// `deleteChildrenOf` on the way down. Deep hierarchies could reach Convex's
-// per-function read limits; cap the depth if topic trees get large.
+// TODO(3): this walks the ancestor chain one read at a time. Deep hierarchies
+// could reach Convex's per-function read limits; cap the depth if topic trees
+// get large.
 export async function validateParent(
 	ctx: MutationCtx,
 	parentId: Id<'topics'>,
@@ -53,31 +55,61 @@ export async function validateParent(
 	}
 }
 
-export async function deleteChildrenOf(
-	ctx: MutationCtx,
-	topicId: Id<'topics'>,
+export async function list(
+	ctx: QueryCtx,
 	userId: string,
-	visited: Set<Id<'topics'>>,
-): Promise<void> {
-	if (visited.has(topicId)) {
-		return // if have cycle, just stop the recursion here
-	}
-
-	visited.add(topicId)
-
-	const children = ctx.db
+): Promise<Array<Doc<'topics'>>> {
+	return await ctx.db
 		.query('topics')
-		.withIndex('by_parentId', q => q.eq('parentId', topicId))
+		.withIndex('by_ownerId', q => q.eq('ownerId', userId))
+		.collect()
+}
 
-	for await (const child of children) {
-		if (child.ownerId !== userId) {
-			throw new Error('Unable to delete children')
-		}
+export async function get(
+	ctx: QueryCtx,
+	userId: string,
+	topicId: Id<'topics'>,
+): Promise<Doc<'topics'>> {
+	return await requireUserOwns(ctx, topicId, userId)
+}
 
-		await deleteChildrenOf(ctx, child._id, userId, visited)
+export async function create(
+	ctx: MutationCtx,
+	userId: string,
+	fields: Infer<typeof topicCreate>,
+): Promise<Id<'topics'>> {
+	if (fields.parentId) {
+		await validateParent(ctx, fields.parentId, userId)
 	}
 
-	await deleteReviewCardsOf(ctx, topicId)
+	return await ctx.db.insert('topics', {
+		title: fields.title ?? '',
+		description: fields.description ?? '',
+		parentId: fields.parentId,
+		ownerId: userId,
+	})
+}
 
-	await ctx.db.delete('topics', topicId)
+export async function update(
+	ctx: MutationCtx,
+	userId: string,
+	topicId: Id<'topics'>,
+	patch: Infer<typeof topicPatch>,
+): Promise<void> {
+	await requireUserOwns(ctx, topicId, userId)
+
+	if (patch.parentId === topicId) {
+		throw new Error('A topic cannot be its own parent')
+	}
+
+	if (patch.parentId) {
+		await validateParent(ctx, patch.parentId, userId, topicId)
+	}
+
+	await ctx.db.patch('topics', topicId, {
+		...patch,
+		// An omitted key leaves the parent alone. `null` detaches the topic,
+		// which in Convex means patching an explicit `undefined`.
+		...(patch.parentId === null && { parentId: undefined }),
+	} as Partial<Doc<'topics'>>)
 }
