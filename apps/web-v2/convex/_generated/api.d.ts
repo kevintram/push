@@ -9,6 +9,9 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as model_reviewCards from "../model/reviewCards.js";
+import type * as model_topics from "../model/topics.js";
+import type * as reviewCards from "../reviewCards.js";
 import type * as topics from "../topics.js";
 
 import type {
@@ -19,6 +22,9 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  "model/reviewCards": typeof model_reviewCards;
+  "model/topics": typeof model_topics;
+  reviewCards: typeof reviewCards;
   topics: typeof topics;
 }>;
 

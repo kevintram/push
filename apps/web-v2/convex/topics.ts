@@ -1,8 +1,13 @@
 import { v } from 'convex/values'
 
-import type { Doc, Id } from './_generated/dataModel'
-import { mutation, type MutationCtx, query } from './_generated/server'
+import type { Doc } from './_generated/dataModel'
+import { mutation, query } from './_generated/server'
 import { requireIdentity } from './auth'
+import {
+	deleteChildrenOf,
+	requireOwnedTopic,
+	validateParent,
+} from './model/topics'
 
 export const list = query({
 	args: {},
@@ -23,13 +28,7 @@ export const get = query({
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
 
-		const topic = await ctx.db.get('topics', args.topicId)
-
-		if (!topic || topic.ownerId !== userId) {
-			throw new Error('Topic not found')
-		}
-
-		return topic
+		return await requireOwnedTopic(ctx, args.topicId, userId)
 	},
 })
 
@@ -67,10 +66,7 @@ export const update = mutation({
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
 
-		const topic = await ctx.db.get('topics', args.topicId)
-		if (!topic || topic.ownerId !== userId) {
-			throw new Error('Topic not found')
-		}
+		await requireOwnedTopic(ctx, args.topicId, userId)
 
 		if (args.parentId === args.topicId) {
 			throw new Error('A topic cannot be its own parent')
@@ -91,43 +87,6 @@ export const update = mutation({
 	},
 })
 
-// TODO(3): this walks the ancestor chain one read at a time, as does
-// `deleteChildrenOf` on the way down. Deep hierarchies could reach Convex's
-// per-function read limits; cap the depth if topic trees get large.
-async function validateParent(
-	ctx: MutationCtx,
-	parentId: Id<'topics'>,
-	userId: string,
-	topicId?: Id<'topics'>,
-): Promise<void> {
-	const visited = new Set<Id<'topics'>>()
-	let ancestorId: Id<'topics'> | undefined = parentId
-
-	while (ancestorId) {
-		if (ancestorId === topicId) {
-			throw new Error(
-				'A topic cannot be nested below one of its descendants',
-			)
-		}
-
-		if (visited.has(ancestorId)) {
-			throw new Error('Parent topic hierarchy contains a cycle')
-		}
-
-		visited.add(ancestorId)
-
-		const ancestor: Doc<'topics'> | null = await ctx.db.get(
-			'topics',
-			ancestorId,
-		)
-		if (!ancestor || ancestor.ownerId !== userId) {
-			throw new Error('Parent topic not found')
-		}
-
-		ancestorId = ancestor.parentId
-	}
-}
-
 /* AKA delete (we don't use `delete` because it's a reserved JS keyword) */
 export const remove = mutation({
 	args: {
@@ -135,41 +94,10 @@ export const remove = mutation({
 	},
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
-		const topic = await ctx.db.get('topics', args.topicId)
-
-		if (!topic || topic.ownerId !== userId) {
-			throw new Error('Topic not found')
-		}
+		const topic = await requireOwnedTopic(ctx, args.topicId, userId)
 
 		await deleteChildrenOf(ctx, args.topicId, userId, new Set())
 
 		return topic
 	},
 })
-
-async function deleteChildrenOf(
-	ctx: MutationCtx,
-	topicId: Id<'topics'>,
-	userId: string,
-	visited: Set<Id<'topics'>>,
-): Promise<void> {
-	if (visited.has(topicId)) {
-		return // if have cycle, just stop the recursion here
-	}
-
-	visited.add(topicId)
-
-	const children = ctx.db
-		.query('topics')
-		.withIndex('by_parentId', q => q.eq('parentId', topicId))
-
-	for await (const child of children) {
-		if (child.ownerId !== userId) {
-			throw new Error('Unable to delete children')
-		}
-
-		await deleteChildrenOf(ctx, child._id, userId, visited)
-	}
-
-	await ctx.db.delete('topics', topicId)
-}
