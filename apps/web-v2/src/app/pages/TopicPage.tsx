@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { queryOptions, useSuspenseQueries } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
 import { useCallback } from 'react'
@@ -63,10 +63,12 @@ const styles = stylex.create({
 
 export function TopicPage() {
 	const { topicId } = useParams({ from: '/library/$topicId' })
-	const { data: topic } = useSuspenseQuery(topicQueries.detail(topicId))
-	const { data: reviewCards } = useSuspenseQuery(
-		reviewCardQueries.listByTopic(topicId),
-	)
+	const [{ data: topic }, { data: reviewCards }] = useSuspenseQueries({
+		queries: [
+			queryOptions(topicQueries.detail(topicId)),
+			queryOptions(reviewCardQueries.listByTopic(topicId)),
+		],
+	})
 	const deleteTopic = useDeleteTopic()
 	const updateTopic = useUpdateTopic()
 	const createReviewCard = useCreateReviewCard()
