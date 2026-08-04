@@ -118,9 +118,7 @@ export async function remove(
 	reviewCardId: Id<'reviewCards'>,
 ): Promise<Doc<'reviewCards'>> {
 	const reviewCard = await requireUserOwns(ctx, reviewCardId, userId)
-
 	await ctx.db.delete('reviewCards', reviewCardId)
-
 	// Returned so callers can navigate back to the card's topic.
 	return reviewCard
 }
