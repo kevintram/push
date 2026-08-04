@@ -4,16 +4,14 @@ import { useParams } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
 import { Separator, Textarea } from '~/components/ui'
-import {
-	Hideable,
-	ReviewCardActions,
-	ReviewCardMetadata,
-	reviewCardQueries,
-	ReviewsSidebar,
-	unscheduledSrsState,
-	useHideMode,
-	useReviewCardField,
-} from '~/modules/reviews'
+import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
+import { Hideable } from '~/modules/reviews/components/Hideable'
+import { ReviewCardActions } from '~/modules/reviews/components/ReviewCardActions'
+import { ReviewCardMetadata } from '~/modules/reviews/components/ReviewCardMetadata'
+import { ReviewsSidebar } from '~/modules/reviews/components/ReviewsSidebar'
+import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
+import { useReviewCardField } from '~/modules/reviews/hooks/useReviewCardField'
+import { unscheduledSrsState } from '~/modules/reviews/types/review.types'
 import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({

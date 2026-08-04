@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon'
 import { describe, expect, it } from 'vitest'
 
 import type { DateString } from '~/types/date'
@@ -8,7 +9,7 @@ import {
 } from '~/utils/date'
 
 describe('date', () => {
-	const today = new Date(2026, 6, 20)
+	const today = DateTime.local(2026, 7, 20)
 
 	it.each([
 		[null, 'Unscheduled'],

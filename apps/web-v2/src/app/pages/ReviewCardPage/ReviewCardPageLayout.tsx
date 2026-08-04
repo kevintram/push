@@ -3,7 +3,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link, Outlet, useMatchRoute, useParams } from '@tanstack/react-router'
 
 import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
-import { reviewCardQueries } from '~/modules/reviews'
+import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
 import { spacing } from '~/styles/tokens.stylex'
 
 import { ReviewCardTopicLink } from './ReviewCardTopicLink'

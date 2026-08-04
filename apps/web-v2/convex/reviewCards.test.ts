@@ -193,7 +193,6 @@ describe('reviewCards', () => {
 		})
 
 		for (const reviewCardId of [foreignCardId, missingCardId]) {
-			// `get` reports invisible cards as null so the route can 404.
 			await expect(
 				asUserA.query(api.reviewCards.get, { reviewCardId }),
 			).resolves.toBeNull()

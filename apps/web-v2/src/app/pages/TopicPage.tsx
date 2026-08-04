@@ -14,13 +14,17 @@ import {
 	Textarea,
 } from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
-import { topicQueries, useDeleteTopic, useUpdateTopic } from '~/modules/library'
 import {
-	ReviewCard,
+	topicQueries,
+	useDeleteTopic,
+	useUpdateTopic,
+} from '~/modules/library/api/topicQueries'
+import {
 	reviewCardQueries,
-	unscheduledSrsState,
 	useCreateReviewCard,
-} from '~/modules/reviews'
+} from '~/modules/reviews/api/reviewCardQueries'
+import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
+import { unscheduledSrsState } from '~/modules/reviews/types/review.types'
 import {
 	fontSizes,
 	fontWeights,

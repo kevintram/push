@@ -4,7 +4,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 
-import { topicQueries } from '~/modules/library'
+import { topicQueries } from '~/modules/library/api/topicQueries'
 import { colors } from '~/styles/colors.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 

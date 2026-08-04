@@ -2,8 +2,8 @@ import type { Id } from '@convex/_generated/dataModel'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 
 import { TopicPage } from '~/app/pages/TopicPage'
-import { topicQueries } from '~/modules/library'
-import { reviewCardQueries } from '~/modules/reviews'
+import { topicQueries } from '~/modules/library/api/topicQueries'
+import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
 
 export const Route = createFileRoute('/library/$topicId')({
 	component: TopicPage,

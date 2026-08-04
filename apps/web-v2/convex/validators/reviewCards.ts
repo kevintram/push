@@ -16,15 +16,19 @@ export const reviewCardRead = reviewCardBase.extend({
 })
 
 // Cards are created from an empty "add" button, so everything the user
-// eventually fills in is optional. `ownerId` comes from the caller's identity,
-// `topicId` is passed separately, and a new card is never flagged.
-export const reviewCardCreate = reviewCardBase
-	.omit('ownerId', 'topicId', 'flaggedAt')
-	.partial()
+// eventually fills in is optional. The parent topic remains required, while
+// `ownerId` comes from the caller's identity and a new card is never flagged.
+export const reviewCardCreate = v.object({
+	...reviewCardBase.omit('ownerId', 'topicId', 'flaggedAt').partial().fields,
+	topicId: v.id('topics'), // require topicId
+})
 
-// The creatable fields, plus `flaggedAt` as a three-state shape
+// The mutable card fields, plus `flaggedAt` as a three-state shape
 // where 1. omit/undefined = leave alone 2. null = unflag 3. number = flag.
 // `topicId`/`ownerId` stay unsettable.
-export const reviewCardPatch = reviewCardCreate.extend({
-	flaggedAt: v.optional(v.union(v.number(), v.null())),
-})
+export const reviewCardPatch = reviewCardBase
+	.omit('ownerId', 'topicId', 'flaggedAt')
+	.extend({
+		flaggedAt: v.union(v.number(), v.null()),
+	})
+	.partial()
