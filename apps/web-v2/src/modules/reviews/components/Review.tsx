@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
+import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	Button,
 	Dialog,
@@ -28,7 +29,9 @@ import { colors } from '~/styles/colors.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
-import type { Review as ReviewModel } from '../types/review.types'
+import { useReviewActions } from '../hooks/useReviewActions'
+import { useReviewField } from '../hooks/useReviewField'
+import type { Rating, Review as ReviewModel } from '../types/review.types'
 import { ReviewDatePicker } from './ReviewDatePicker'
 
 const styles = stylex.create({
@@ -151,6 +154,28 @@ const ratings = {
 export function Review({ review }: { review: ReviewModel }) {
 	const [isOpen, setIsOpen] = useState(false)
 
+	const {
+		confirmDelete,
+		isDeleteDialogOpen,
+		isDeleting,
+		setDate,
+		setIsDeleteDialogOpen,
+		setRating,
+	} = useReviewActions(review)
+
+	const descriptionField = useReviewField({
+		errorMessage: 'Failed to update review description',
+		field: 'description',
+		reviewId: review._id,
+		value: review.description,
+	})
+	const notesField = useReviewField({
+		errorMessage: 'Failed to update review notes',
+		field: 'notes',
+		reviewId: review._id,
+		value: review.notes,
+	})
+
 	const rating = !review.rating ? null : ratings[review.rating]
 	const RatingIcon = rating?.Icon ?? Circle
 	const description = review.description.trim()
@@ -187,10 +212,16 @@ export function Review({ review }: { review: ReviewModel }) {
 							)}
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
-							<DropdownMenuRadioGroup value={review.rating ?? ''}>
+							<DropdownMenuRadioGroup
+								value={review.rating ?? ''}
+								onValueChange={value =>
+									setRating(
+										value === '' ? null : (value as Rating),
+									)
+								}
+							>
 								<DropdownMenuRadioItem
 									value=''
-									disabled
 									prefix={
 										<Circle
 											aria-hidden='true'
@@ -205,7 +236,6 @@ export function Review({ review }: { review: ReviewModel }) {
 										<DropdownMenuRadioItem
 											key={value}
 											value={value}
-											disabled
 											prefix={
 												<Icon
 													aria-hidden='true'
@@ -234,8 +264,8 @@ export function Review({ review }: { review: ReviewModel }) {
 					<div {...stylex.props(styles.footer)}>
 						<div {...stylex.props(styles.raised)}>
 							<ReviewDatePicker
-								disabled
 								isCompleted={review.completedAt !== undefined}
+								onChange={setDate}
 								value={
 									(review.completedAt ??
 										review.scheduledAt ??
@@ -262,7 +292,9 @@ export function Review({ review }: { review: ReviewModel }) {
 								/>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align='end'>
-								<DropdownMenuItem disabled>
+								<DropdownMenuItem
+									onClick={() => setIsDeleteDialogOpen(true)}
+								>
 									<Trash2
 										aria-hidden='true'
 										size={iconSizes.md}
@@ -278,19 +310,30 @@ export function Review({ review }: { review: ReviewModel }) {
 					<Textarea
 						aria-label='Review description'
 						placeholder='Add a description…'
-						readOnly
-						value={review.description}
+						value={descriptionField.value}
+						onBlur={descriptionField.flush}
+						onChange={descriptionField.onChange}
 						xstyle={styles.descriptionEditor}
 					/>
 					<Textarea
 						aria-label='Review notes'
 						placeholder='Add notes…'
-						readOnly
-						value={review.notes}
+						value={notesField.value}
+						onBlur={notesField.flush}
+						onChange={notesField.onChange}
 						xstyle={styles.notesEditor}
 					/>
 				</DialogContent>
 			</Dialog>
+
+			<DeleteConfirmationDialog
+				description='This review will be permanently deleted.'
+				isPending={isDeleting}
+				onConfirm={confirmDelete}
+				onOpenChange={setIsDeleteDialogOpen}
+				open={isDeleteDialogOpen}
+				title='Delete review?'
+			/>
 		</>
 	)
 }

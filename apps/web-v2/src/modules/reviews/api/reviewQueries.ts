@@ -14,3 +14,13 @@ export function useCreateReview() {
 	const mutationFn = useConvexMutation(api.reviews.create)
 	return useMutation({ mutationFn })
 }
+
+export function useUpdateReview() {
+	const mutationFn = useConvexMutation(api.reviews.update)
+	return useMutation({ mutationFn })
+}
+
+export function useDeleteReview() {
+	const mutationFn = useConvexMutation(api.reviews.remove)
+	return useMutation({ mutationFn })
+}

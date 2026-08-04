@@ -26,7 +26,7 @@ export const unscheduledSrsState: ReviewCardSrsState = {
 
 export type Review = Doc<'reviews'>
 
-export type Rating = Review['rating']
+export type Rating = NonNullable<Review['rating']>
 
 export type ReviewFilters = {
 	reviewCardId: string
