@@ -2,9 +2,14 @@ import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
+import { useCallback } from 'react'
+import { toast } from 'sonner'
 
 import { Button } from '~/components/ui'
-import { reviewQueries } from '~/modules/reviews/api/reviewQueries'
+import {
+	reviewQueries,
+	useCreateReview,
+} from '~/modules/reviews/api/reviewQueries'
 import { Review } from '~/modules/reviews/components/Review'
 import { layout, spacing } from '~/styles/tokens.stylex'
 
@@ -33,12 +38,22 @@ export function ReviewCardPageReviews() {
 	const { data: reviews } = useSuspenseQuery(
 		reviewQueries.listByReviewCard(reviewCardId),
 	)
+	const createReview = useCreateReview()
+	const handleCreateReview = useCallback(() => {
+		createReview.mutate(
+			{ reviewCardId },
+			{ onError: () => toast.error('Failed to create review') },
+		)
+	}, [createReview, reviewCardId])
 
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.content)}>
 				<div {...stylex.props(styles.actions)}>
-					<Button disabled>
+					<Button
+						disabled={createReview.isPending}
+						onClick={handleCreateReview}
+					>
 						<Plus aria-hidden='true' />
 						Review
 					</Button>

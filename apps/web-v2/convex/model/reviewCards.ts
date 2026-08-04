@@ -83,8 +83,8 @@ export async function create(
 	await Topics.requireUserOwns(ctx, fields.topicId, userId)
 
 	return await ctx.db.insert('reviewCards', {
-		topicId: fields.topicId,
 		ownerId: userId,
+		topicId: fields.topicId,
 		type: fields.type ?? 'flashcard',
 		primaryText: fields.primaryText ?? '',
 		secondaryText: fields.secondaryText ?? '',

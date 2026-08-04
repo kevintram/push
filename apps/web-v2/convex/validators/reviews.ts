@@ -1,6 +1,8 @@
 import { v } from 'convex/values'
 
 export const reviewBase = v.object({
+	ownerId: v.string(),
+	reviewCardId: v.id('reviewCards'),
 	rating: v.optional(
 		v.union(
 			v.literal('miss'),
@@ -16,11 +18,14 @@ export const reviewBase = v.object({
 	// TODO(2): validate YYYY-MM-DD when review mutations are added.
 	scheduledAt: v.optional(v.string()),
 	completedAt: v.optional(v.string()),
-	ownerId: v.string(),
-	reviewCardId: v.id('reviewCards'),
 })
 
 export const reviewRead = reviewBase.extend({
 	_id: v.id('reviews'),
 	_creationTime: v.number(),
 })
+
+export const reviewCreate = reviewBase
+	.omit('ownerId', 'reviewCardId')
+	.partial()
+	.extend({ reviewCardId: v.id('reviewCards') }) // require

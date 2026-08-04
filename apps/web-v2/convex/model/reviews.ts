@@ -1,5 +1,8 @@
+import { type Infer } from 'convex/values'
+
 import { type Doc, type Id } from '../_generated/dataModel'
-import { type QueryCtx } from '../_generated/server'
+import { type MutationCtx, type QueryCtx } from '../_generated/server'
+import { type reviewCreate } from '../validators/reviews'
 import * as ReviewCards from './reviewCards'
 
 export async function requireUserOwns(
@@ -38,4 +41,22 @@ export async function listByReviewCard(
 		)
 		.order('desc')
 		.collect()
+}
+
+export async function create(
+	ctx: MutationCtx,
+	userId: string,
+	fields: Infer<typeof reviewCreate>,
+): Promise<Id<'reviews'>> {
+	await ReviewCards.requireUserOwns(ctx, fields.reviewCardId, userId)
+
+	return await ctx.db.insert('reviews', {
+		ownerId: userId,
+		reviewCardId: fields.reviewCardId,
+		rating: fields.rating,
+		description: fields.description ?? '',
+		notes: fields.notes ?? '',
+		scheduledAt: fields.scheduledAt,
+		completedAt: fields.completedAt,
+	})
 }
