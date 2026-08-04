@@ -4,7 +4,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster, TooltipProvider } from '~/components/ui'
 import { queryClient } from '~/lib/convex'
 import { AuthProvider } from '~/modules/auth/components/AuthProvider'
-import { HideModeProvider } from '~/modules/reviews'
+import { HideModeProvider } from '~/modules/reviews/hide-mode/HideModeProvider'
 
 import { AuthedRouterProvider } from './AuthedRouterProvider'
 import { router } from './router'
