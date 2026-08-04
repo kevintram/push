@@ -10,8 +10,10 @@ import { ConvexProvider } from 'convex/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
-import { topicQueries } from '~/modules/library'
-import { HideModeProvider, reviewCardQueries } from '~/modules/reviews'
+import { topicQueries } from '~/modules/library/api/topicQueries'
+import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
+import { reviewQueries } from '~/modules/reviews/api/reviewQueries'
+import { HideModeProvider } from '~/modules/reviews/hide-mode/HideModeProvider'
 import { createTestConvexClient } from '~/testing/createTestConvexClient'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
@@ -61,6 +63,17 @@ const reviewCard: Doc<'reviewCards'> = {
 	notes: '',
 }
 
+const review: Doc<'reviews'> = {
+	_id: 'review-1' as Id<'reviews'>,
+	_creationTime: 0,
+	reviewCardId,
+	ownerId: 'user-1',
+	rating: 'good',
+	description: 'Correctly described generics.',
+	notes: '',
+	completedAt: '2026-07-28',
+}
+
 function renderRoute(
 	path: string,
 	{
@@ -77,6 +90,10 @@ function renderRoute(
 	queryClient.setQueryData(
 		reviewCardQueries.detail(reviewCardId).queryKey,
 		missingReviewCard ? null : { ...reviewCard, type: reviewCardType },
+	)
+	queryClient.setQueryData(
+		reviewQueries.listByReviewCard(reviewCardId).queryKey,
+		[review],
 	)
 	const convexClient = createTestConvexClient()
 

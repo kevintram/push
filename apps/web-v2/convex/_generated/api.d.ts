@@ -10,9 +10,11 @@
 
 import type * as model_auth from "../model/auth.js";
 import type * as model_reviewCards from "../model/reviewCards.js";
+import type * as model_reviews from "../model/reviews.js";
 import type * as model_topicRemoval from "../model/topicRemoval.js";
 import type * as model_topics from "../model/topics.js";
 import type * as reviewCards from "../reviewCards.js";
+import type * as reviews from "../reviews.js";
 import type * as topics from "../topics.js";
 import type * as validators_reviewCards from "../validators/reviewCards.js";
 import type * as validators_reviews from "../validators/reviews.js";
@@ -27,9 +29,11 @@ import type {
 declare const fullApi: ApiFromModules<{
   "model/auth": typeof model_auth;
   "model/reviewCards": typeof model_reviewCards;
+  "model/reviews": typeof model_reviews;
   "model/topicRemoval": typeof model_topicRemoval;
   "model/topics": typeof model_topics;
   reviewCards: typeof reviewCards;
+  reviews: typeof reviews;
   topics: typeof topics;
   "validators/reviewCards": typeof validators_reviewCards;
   "validators/reviews": typeof validators_reviews;

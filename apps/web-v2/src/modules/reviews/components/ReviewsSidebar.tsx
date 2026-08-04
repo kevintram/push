@@ -1,4 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link, useParams } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 
@@ -6,45 +7,8 @@ import { Button } from '~/components/ui'
 import { colors } from '~/styles/colors.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
-import type { Review as ReviewModel } from '../types/review.types'
+import { reviewQueries } from '../api/reviewQueries'
 import { Review } from './Review'
-
-const reviews = Array.from({ length: 14 }, (_, index): ReviewModel => {
-	const number = index + 1
-
-	return {
-		id: `sidebar-review-${number}`,
-		review_card_id: 'typescript-generics',
-		rating: index % 4 === 0 ? 'easy' : 'good',
-		description:
-			index === 0
-				? 'Correctly described generics.'
-				: `Sidebar mock review ${number}.`,
-		notes: index % 3 === 0 ? `Notes for sidebar review ${number}.` : '',
-		scheduled_at: null,
-		completed_at: '2026-07-28',
-		effective_date: '2026-07-28',
-		inserted_at: '2026-07-28',
-		updated_at: '2026-07-28',
-		review_card: {
-			id: 'typescript-generics',
-			topic_id: 'learning-typescript',
-			type: 'flashcard',
-			primary_text: 'What problem do generics solve?',
-			secondary_text: 'They preserve type safety across reusable code.',
-		},
-		stability_before: 4 + (index % 3),
-		difficulty_before: 5,
-		state_before: 'REVIEW',
-		step_before: null,
-		due_before: '2026-07-28',
-		stability_after: 6 + (index % 4),
-		difficulty_after: 4,
-		state_after: 'REVIEW',
-		step_after: null,
-		due_after: '2026-07-30',
-	}
-})
 
 const styles = stylex.create({
 	container: {
@@ -73,6 +37,10 @@ const styles = stylex.create({
 })
 export function ReviewsSidebar() {
 	const { reviewCardId } = useParams({ from: '/review-cards/$reviewCardId' })
+	const { data: reviews } = useSuspenseQuery(
+		reviewQueries.listByReviewCard(reviewCardId),
+	)
+
 	return (
 		<aside {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.header)}>
@@ -98,7 +66,7 @@ export function ReviewsSidebar() {
 			</div>
 			<div {...stylex.props(styles.list)}>
 				{reviews.map(review => (
-					<Review key={review.id} review={review} />
+					<Review key={review._id} review={review} />
 				))}
 			</div>
 		</aside>

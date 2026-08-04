@@ -1,6 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
 import {
-	Anvil,
 	Check,
 	CheckCheck,
 	Circle,
@@ -134,19 +133,6 @@ const styles = stylex.create({
 		flexGrow: 1,
 		flexShrink: 1,
 	},
-	durability: {
-		alignItems: 'center',
-		color: colors.textSecondary,
-		columnGap: spacing.xs,
-		display: 'flex',
-		whiteSpace: 'nowrap',
-	},
-	durabilityIcon: {
-		blockSize: iconSizes.md,
-		inlineSize: iconSizes.md,
-	},
-	positiveChange: { color: colors.textSuccess },
-	negativeChange: { color: colors.textDanger },
 	more: {
 		flexShrink: 0,
 		marginInlineStart: 'auto',
@@ -165,26 +151,10 @@ const ratings = {
 export function Review({ review }: { review: ReviewModel }) {
 	const [isOpen, setIsOpen] = useState(false)
 
-	const rating = review.rating === null ? null : ratings[review.rating]
+	const rating = !review.rating ? null : ratings[review.rating]
 	const RatingIcon = rating?.Icon ?? Circle
 	const description = review.description.trim()
 	const hasNotes = review.notes.trim().length > 0
-	const stabilityAfter =
-		review.stability_after === null
-			? null
-			: Math.round(review.stability_after)
-	const stabilityDelta =
-		review.stability_before === null || review.stability_after === null
-			? null
-			: Math.round(review.stability_after - review.stability_before)
-	const stabilityChange =
-		stabilityDelta === null
-			? 'new'
-			: `${stabilityDelta >= 0 ? '+' : ''}${stabilityDelta}`
-	const stabilityChangeStyle =
-		stabilityDelta === null || stabilityDelta >= 0
-			? styles.positiveChange
-			: styles.negativeChange
 
 	return (
 		<>
@@ -202,7 +172,7 @@ export function Review({ review }: { review: ReviewModel }) {
 								/>
 							}
 						>
-							{review.rating === null ? (
+							{!review.rating ? (
 								<RatingIcon
 									aria-hidden='true'
 									size={iconSizes.md}
@@ -265,25 +235,14 @@ export function Review({ review }: { review: ReviewModel }) {
 						<div {...stylex.props(styles.raised)}>
 							<ReviewDatePicker
 								disabled
-								isCompleted={review.completed_at !== null}
+								isCompleted={review.completedAt !== undefined}
 								value={
-									(review.completed_at ??
-										review.scheduled_at) as DateString | null
+									(review.completedAt ??
+										review.scheduledAt ??
+										null) as DateString | null
 								}
 							/>
 						</div>
-						{stabilityAfter !== null && (
-							<span {...stylex.props(styles.durability)}>
-								<Anvil
-									aria-hidden='true'
-									{...stylex.props(styles.durabilityIcon)}
-								/>
-								<span>{stabilityAfter}d</span>
-								<span {...stylex.props(stabilityChangeStyle)}>
-									({stabilityChange})
-								</span>
-							</span>
-						)}
 						<div {...stylex.props(styles.spacer)} />
 						<DropdownMenu>
 							<DropdownMenuTrigger
