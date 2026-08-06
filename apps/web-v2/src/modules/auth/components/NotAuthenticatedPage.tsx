@@ -1,8 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
-import { Loader, RefreshCw } from 'lucide-react'
+import { Loader } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { Button } from '~/components/ui'
 import { colors } from '~/styles/colors.stylex'
 import {
 	fontSizes,
@@ -56,28 +55,16 @@ const styles = stylex.create({
 		letterSpacing: '-0.02em',
 		lineHeight: 1.3,
 	},
-	buttonIcon: {
-		height: iconSizes.md,
-		width: iconSizes.md,
-	},
 })
-
-// Sign-in normally resolves in well under a second. Holding the retry button
-// back keeps it out of that flash, so it only appears once the wait has become
-// long enough to read as stuck.
-const RETRY_VISIBLE_AFTER_MS = 5000
 
 type NotAuthenticatedPageProps = {
 	delayMs?: number
-	onRetry: () => void
 }
 
 export function NotAuthenticatedPage({
 	delayMs = 0,
-	onRetry,
 }: NotAuthenticatedPageProps) {
 	const [isVisible, setIsVisible] = useState(delayMs <= 0)
-	const [canRetry, setCanRetry] = useState(false)
 
 	useEffect(() => {
 		if (delayMs <= 0) return
@@ -86,15 +73,6 @@ export function NotAuthenticatedPage({
 
 		return () => clearTimeout(timeout)
 	}, [delayMs])
-
-	useEffect(() => {
-		const timeout = setTimeout(
-			() => setCanRetry(true),
-			RETRY_VISIBLE_AFTER_MS,
-		)
-
-		return () => clearTimeout(timeout)
-	}, [])
 
 	if (!isVisible) return null
 
@@ -115,16 +93,6 @@ export function NotAuthenticatedPage({
 						Signing you in
 					</h1>
 				</section>
-
-				{canRetry && (
-					<Button onClick={onRetry} variant='secondary'>
-						<RefreshCw
-							aria-hidden='true'
-							{...stylex.props(styles.buttonIcon)}
-						/>
-						Retry
-					</Button>
-				)}
 			</div>
 		</main>
 	)

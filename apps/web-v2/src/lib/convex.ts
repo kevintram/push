@@ -12,15 +12,10 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * The app's single Convex socket. `AuthProvider` attaches the WorkOS token to
+ * The app's single Convex socket. `AuthProvider` attaches the Clerk token to
  * it, and `convexQueryClient` reads through it, so both share one connection.
  */
-export const convexClient = new ConvexReactClient(config.convex.url, {
-	// The token returned by the AuthKit callback is already fresh. Reuse it once
-	// Convex accepts it instead of immediately forcing a second WorkOS refresh.
-	// Later refreshes are still scheduled from the token's expiration time.
-	initialAuthTokenReuse: true,
-})
+export const convexClient = new ConvexReactClient(config.convex.url)
 
 const convexQueryClient = new ConvexQueryClient(convexClient)
 

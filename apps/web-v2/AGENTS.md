@@ -107,7 +107,7 @@ wrappers, and the logic lives in `convex/model/`.
 ```text
 convex/
 ├── schema.ts              # defineSchema: tables and indexes only
-├── auth.config.ts         # WorkOS custom JWT providers
+├── auth.config.ts         # Clerk JWT provider configuration
 ├── <domain>.ts            # public API — eg: `api.topics.*`
 ├── model/                 # all business logic, imported as namespaces
 ├── validators/            # resource validators, the single source of truth

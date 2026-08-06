@@ -1,20 +1,14 @@
 type AppEnvironment = {
+	VITE_CLERK_PUBLISHABLE_KEY?: string
 	VITE_CONVEX_URL?: string
-	VITE_WORKOS_CLIENT_ID?: string
-	VITE_WORKOS_REDIRECT_URI?: string
-	VITE_WORKOS_SIGN_OUT_RETURN_TO?: string
 }
 
 type AppConfig = {
+	clerk: {
+		publishableKey: string
+	}
 	convex: {
 		url: string
-	}
-	workOs: {
-		clientId: string
-		redirectUri: string
-		// Where WorkOS drops the user after sign-out. Must be registered as a
-		// logout redirect in the WorkOS dashboard or sign-out errors out.
-		signOutReturnTo: string
 	}
 }
 
@@ -30,25 +24,20 @@ function requireValue(environment: AppEnvironment, key: keyof AppEnvironment) {
 
 export function readConfig(environment: AppEnvironment): AppConfig {
 	return {
+		clerk: {
+			publishableKey: requireValue(
+				environment,
+				'VITE_CLERK_PUBLISHABLE_KEY',
+			),
+		},
 		convex: {
 			url: requireValue(environment, 'VITE_CONVEX_URL'),
-		},
-		workOs: {
-			clientId: requireValue(environment, 'VITE_WORKOS_CLIENT_ID'),
-			redirectUri: requireValue(environment, 'VITE_WORKOS_REDIRECT_URI'),
-			signOutReturnTo: requireValue(
-				environment,
-				'VITE_WORKOS_SIGN_OUT_RETURN_TO',
-			),
 		},
 	}
 }
 
 // Vite embeds VITE_* values in the browser bundle; never put secrets here.
 export const config = readConfig({
+	VITE_CLERK_PUBLISHABLE_KEY: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
 	VITE_CONVEX_URL: import.meta.env.VITE_CONVEX_URL,
-	VITE_WORKOS_CLIENT_ID: import.meta.env.VITE_WORKOS_CLIENT_ID,
-	VITE_WORKOS_REDIRECT_URI: import.meta.env.VITE_WORKOS_REDIRECT_URI,
-	VITE_WORKOS_SIGN_OUT_RETURN_TO: import.meta.env
-		.VITE_WORKOS_SIGN_OUT_RETURN_TO,
 })
