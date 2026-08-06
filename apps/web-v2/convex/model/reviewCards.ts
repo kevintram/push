@@ -89,6 +89,8 @@ export async function create(
 		primaryText: fields.primaryText ?? '',
 		secondaryText: fields.secondaryText ?? '',
 		notes: fields.notes ?? '',
+		...(fields.flaggedAt !== undefined && { flaggedAt: fields.flaggedAt }),
+		state: 'LEARNING',
 	})
 }
 

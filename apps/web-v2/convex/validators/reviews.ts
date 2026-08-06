@@ -1,5 +1,7 @@
 import { v } from 'convex/values'
 
+import { learningState } from './reviewCards'
+
 export const rating = v.union(
 	v.literal('miss'),
 	v.literal('hard'),
@@ -18,6 +20,16 @@ export const reviewBase = v.object({
 	// TODO(2): validate YYYY-MM-DD when review mutations are added.
 	scheduledAt: v.optional(v.string()),
 	completedAt: v.optional(v.string()),
+	stabilityBefore: v.optional(v.number()),
+	difficultyBefore: v.optional(v.number()),
+	stateBefore: v.optional(learningState),
+	stepBefore: v.optional(v.number()),
+	dueBefore: v.optional(v.string()),
+	stabilityAfter: v.optional(v.number()),
+	difficultyAfter: v.optional(v.number()),
+	stateAfter: v.optional(learningState),
+	stepAfter: v.optional(v.number()),
+	dueAfter: v.optional(v.string()),
 })
 
 export const reviewRead = reviewBase.extend({
@@ -26,7 +38,21 @@ export const reviewRead = reviewBase.extend({
 })
 
 export const reviewCreate = reviewBase
-	.omit('ownerId', 'reviewCardId')
+	.omit(
+		'ownerId',
+		'reviewCardId',
+		// omit SRS columns because they're handled by *us* ONLY
+		'stabilityBefore',
+		'difficultyBefore',
+		'stateBefore',
+		'stepBefore',
+		'dueBefore',
+		'stabilityAfter',
+		'difficultyAfter',
+		'stateAfter',
+		'stepAfter',
+		'dueAfter',
+	)
 	.partial()
 	.extend({ reviewCardId: v.id('reviewCards') }) // require
 
@@ -37,7 +63,25 @@ export const reviewCreate = reviewBase
 // unset back to undefined, only ever emptied.
 // `reviewCardId`/`ownerId` stay unsettable.
 export const reviewPatch = reviewBase
-	.omit('ownerId', 'reviewCardId', 'rating', 'scheduledAt', 'completedAt')
+	.omit(
+		'ownerId',
+		'reviewCardId',
+		//
+		'rating',
+		'scheduledAt',
+		'completedAt',
+		// omit SRS columns because they're handled by *us* ONLY
+		'stabilityBefore',
+		'difficultyBefore',
+		'stateBefore',
+		'stepBefore',
+		'dueBefore',
+		'stabilityAfter',
+		'difficultyAfter',
+		'stateAfter',
+		'stepAfter',
+		'dueAfter',
+	)
 	.extend({
 		rating: v.union(rating, v.null()),
 		scheduledAt: v.union(v.string(), v.null()),

@@ -24,6 +24,7 @@ describe('reviewCards', () => {
 				primaryText: '',
 				secondaryText: '',
 				notes: '',
+				state: 'LEARNING',
 			})
 
 			return { reviewCardId, topicId }
@@ -58,6 +59,7 @@ describe('reviewCards', () => {
 			topicId,
 		})
 		const filledCardId = await asUserA.mutation(api.reviewCards.create, {
+			flaggedAt: 1_700_000_000_000,
 			notes: 'Notes',
 			primaryText: 'Primary',
 			secondaryText: 'Secondary',
@@ -74,12 +76,14 @@ describe('reviewCards', () => {
 			ownerId: userAIdentity.subject,
 			primaryText: '',
 			secondaryText: '',
+			state: 'LEARNING',
 			topicId,
 			type: 'flashcard',
 		})
 		await expect(
 			asUserA.query(api.reviewCards.get, { reviewCardId: filledCardId }),
 		).resolves.toMatchObject({
+			flaggedAt: 1_700_000_000_000,
 			notes: 'Notes',
 			primaryText: 'Primary',
 			secondaryText: 'Secondary',
@@ -142,6 +146,7 @@ describe('reviewCards', () => {
 				primaryText: 'Not user A’s',
 				secondaryText: '',
 				notes: '',
+				state: 'LEARNING',
 			})
 		})
 

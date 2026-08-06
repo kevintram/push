@@ -22,6 +22,7 @@ const reviewCard: Doc<'reviewCards'> = {
 	primaryText: 'Question',
 	secondaryText: 'Answer',
 	notes: '',
+	state: 'LEARNING',
 }
 
 function openMenu() {

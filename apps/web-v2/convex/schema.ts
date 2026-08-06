@@ -15,8 +15,7 @@ export default defineSchema({
 		.index('by_topicId_ownerId', ['topicId', 'ownerId'])
 		.index('by_ownerId', ['ownerId']),
 
-	reviews: defineTable(reviewBase).index('by_reviewCardId_ownerId', [
-		'reviewCardId',
-		'ownerId',
-	]),
+	reviews: defineTable(reviewBase)
+		.index('by_reviewCardId_ownerId', ['reviewCardId', 'ownerId'])
+		.index('by_reviewCardId_completedAt', ['reviewCardId', 'completedAt']),
 })

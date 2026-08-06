@@ -61,6 +61,7 @@ const reviewCard: Doc<'reviewCards'> = {
 	primaryText: 'What problem do generics solve?',
 	secondaryText: 'They preserve type safety across reusable code.',
 	notes: '',
+	state: 'LEARNING',
 }
 
 const review: Doc<'reviews'> = {
