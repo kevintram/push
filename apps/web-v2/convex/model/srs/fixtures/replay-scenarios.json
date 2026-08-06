@@ -1,0 +1,168 @@
+[
+	{
+		"name": "again",
+		"reviews": [{ "completedAt": "2024-01-01", "rating": "miss" }],
+		"expected": [
+			{
+				"stabilityAfter": 0.212,
+				"difficultyAfter": 6.4133,
+				"stateAfter": "LEARNING",
+				"stepAfter": 0,
+				"dueAfter": "2024-01-01"
+			}
+		],
+		"cardState": {
+			"stability": 0.212,
+			"difficulty": 6.4133,
+			"state": "LEARNING",
+			"step": 0
+		}
+	},
+	{
+		"name": "hard",
+		"reviews": [{ "completedAt": "2024-01-01", "rating": "hard" }],
+		"expected": [
+			{
+				"stabilityAfter": 1.2931,
+				"difficultyAfter": 5.112170705601056,
+				"stateAfter": "LEARNING",
+				"stepAfter": 0,
+				"dueAfter": "2024-01-01"
+			}
+		],
+		"cardState": {
+			"stability": 1.2931,
+			"difficulty": 5.112170705601056,
+			"state": "LEARNING",
+			"step": 0
+		}
+	},
+	{
+		"name": "good",
+		"reviews": [{ "completedAt": "2024-01-01", "rating": "good" }],
+		"expected": [
+			{
+				"stabilityAfter": 2.3065,
+				"difficultyAfter": 2.118103970459016,
+				"stateAfter": "LEARNING",
+				"stepAfter": 1,
+				"dueAfter": "2024-01-01"
+			}
+		],
+		"cardState": {
+			"stability": 2.3065,
+			"difficulty": 2.118103970459016,
+			"state": "LEARNING",
+			"step": 1
+		}
+	},
+	{
+		"name": "easy",
+		"reviews": [{ "completedAt": "2024-01-01", "rating": "easy" }],
+		"expected": [
+			{
+				"stabilityAfter": 8.2956,
+				"difficultyAfter": 1.0,
+				"stateAfter": "REVIEW",
+				"stepAfter": null,
+				"dueAfter": "2024-01-17"
+			}
+		],
+		"cardState": {
+			"stability": 8.2956,
+			"difficulty": 1.0,
+			"state": "REVIEW",
+			"step": null
+		}
+	},
+	{
+		"name": "learning_to_review",
+		"reviews": [
+			{ "completedAt": "2024-01-01", "rating": "good" },
+			{ "completedAt": "2024-01-02", "rating": "good" },
+			{ "completedAt": "2024-01-06", "rating": "good" }
+		],
+		"expected": [
+			{
+				"stabilityAfter": 2.3065,
+				"difficultyAfter": 2.118103970459016,
+				"stateAfter": "LEARNING",
+				"stepAfter": 1,
+				"dueAfter": "2024-01-01"
+			},
+			{
+				"stabilityAfter": 7.31530074407728,
+				"difficultyAfter": 2.111214235785395,
+				"stateAfter": "REVIEW",
+				"stepAfter": null,
+				"dueAfter": "2024-01-16"
+			},
+			{
+				"stabilityAfter": 23.18895613421823,
+				"difficultyAfter": 2.1043313908464483,
+				"stateAfter": "REVIEW",
+				"stepAfter": null,
+				"dueAfter": "2024-02-19"
+			}
+		],
+		"cardState": {
+			"stability": 23.18895613421823,
+			"difficulty": 2.1043313908464483,
+			"state": "REVIEW",
+			"step": null
+		}
+	},
+	{
+		"name": "lapse_and_relearn",
+		"reviews": [
+			{ "completedAt": "2024-01-01", "rating": "easy" },
+			{ "completedAt": "2024-01-11", "rating": "good" },
+			{ "completedAt": "2024-01-21", "rating": "miss" },
+			{ "completedAt": "2024-01-22", "rating": "good" },
+			{ "completedAt": "2024-02-10", "rating": "easy" }
+		],
+		"expected": [
+			{
+				"stabilityAfter": 8.2956,
+				"difficultyAfter": 1.0,
+				"stateAfter": "REVIEW",
+				"stepAfter": null,
+				"dueAfter": "2024-01-17"
+			},
+			{
+				"stabilityAfter": 44.09694244251397,
+				"difficultyAfter": 1.0,
+				"stateAfter": "REVIEW",
+				"stepAfter": null,
+				"dueAfter": "2024-04-04"
+			},
+			{
+				"stabilityAfter": 2.6860876943188265,
+				"difficultyAfter": 7.0269895692968385,
+				"stateAfter": "RELEARNING",
+				"stepAfter": 0,
+				"dueAfter": "2024-01-21"
+			},
+			{
+				"stabilityAfter": 4.922361739979824,
+				"difficultyAfter": 7.0151909490243805,
+				"stateAfter": "REVIEW",
+				"stepAfter": null,
+				"dueAfter": "2024-01-31"
+			},
+			{
+				"stabilityAfter": 39.01763388388797,
+				"difficultyAfter": 6.003035225586943,
+				"stateAfter": "REVIEW",
+				"stepAfter": null,
+				"dueAfter": "2024-04-24"
+			}
+		],
+		"cardState": {
+			"stability": 39.01763388388797,
+			"difficulty": 6.003035225586943,
+			"state": "REVIEW",
+			"step": null
+		}
+	}
+]
