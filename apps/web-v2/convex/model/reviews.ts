@@ -5,6 +5,7 @@ import { type Doc, type Id } from '../_generated/dataModel'
 import { type MutationCtx, type QueryCtx } from '../_generated/server'
 import { type reviewCreate, type reviewPatch } from '../validators/reviews'
 import * as ReviewCards from './reviewCards'
+import { updateCardSrs } from './srs/replay'
 
 // TODO(2): This stamps the UTC calendar day. Convex has no access to the
 // user's timezone, so this lands a day late for users rating in their local
@@ -57,20 +58,45 @@ export async function create(
 	userId: string,
 	fields: Infer<typeof reviewCreate>,
 ): Promise<Id<'reviews'>> {
-	await ReviewCards.requireUserOwns(ctx, fields.reviewCardId, userId)
+	const reviewCard = await ReviewCards.requireUserOwns(
+		ctx,
+		fields.reviewCardId,
+		userId,
+	)
 
-	// TODO(2): A caller can supply a rating without completedAt, violating the
-	// completion invariant enforced by `update`. Align create when its callers
-	// need to create completed reviews.
-	return await ctx.db.insert('reviews', {
+	// the relationship between completedAt and rating
+	// is that setting/clearing a rating will set/clear completedAt
+	// ---
+	// what the heck does setting/clearing completedAt mean?
+	// completedAt vs rating is driven by the rating???
+	// what's the difference between completedAt and scheduledAt
+	// what if we just had date and completion status is based of the rating
+	// what's the *point* of having completedAt and scheduledAt???
+
+	const completedAt =
+		fields.completedAt ??
+		// if have rating, set `completedAt` to Today
+		(fields.rating !== undefined ? todayInUtc() : undefined)
+	const rating =
+		completedAt === undefined // clear rating
+			? undefined
+			: (fields.rating ?? 'good') //
+
+	const reviewId = await ctx.db.insert('reviews', {
 		ownerId: userId,
 		reviewCardId: fields.reviewCardId,
-		rating: fields.rating,
+		rating,
 		description: fields.description ?? '',
 		notes: fields.notes ?? '',
 		scheduledAt: fields.scheduledAt,
-		completedAt: fields.completedAt,
+		completedAt,
 	})
+
+	if (completedAt !== undefined) {
+		await updateCardSrs(ctx, reviewCard, completedAt)
+	}
+
+	return reviewId
 }
 
 export async function update(
@@ -80,25 +106,34 @@ export async function update(
 	patch: Infer<typeof reviewPatch>,
 ): Promise<void> {
 	const review = await requireUserOwns(ctx, reviewId, userId)
+	const reviewCard = await ReviewCards.requireUserOwns(
+		ctx,
+		review.reviewCardId,
+		userId,
+	)
+	const oldCompletedAt = review.completedAt
 
 	const { rating, scheduledAt, completedAt, ...fields } = patch
 	const updates: Partial<Doc<'reviews'>> = { ...fields }
+	let newRating = review.rating
+	let newCompletedAt = review.completedAt
 
-	if (rating !== undefined) {
+	if (rating === null || completedAt === null) {
+		newRating = undefined
+		newCompletedAt = undefined
+	} else if (rating !== undefined) {
 		// Ratings and completion are a pair: setting a rating completes the
 		// review, while clearing it makes the review incomplete.
-		updates.rating = rating ?? undefined
-		updates.completedAt =
-			rating === null
-				? undefined
-				: (completedAt ?? review.completedAt ?? todayInUtc())
+		newRating = rating
+		newCompletedAt = completedAt ?? review.completedAt ?? todayInUtc()
 	} else if (completedAt !== undefined) {
-		updates.completedAt = completedAt ?? undefined
+		newCompletedAt = completedAt
+		newRating = review.rating ?? 'good'
+	}
 
-		if (completedAt === null) {
-			// An incomplete review cannot retain a rating.
-			updates.rating = undefined
-		}
+	if (rating !== undefined || completedAt !== undefined) {
+		updates.rating = newRating
+		updates.completedAt = newCompletedAt
 	}
 
 	if (scheduledAt !== undefined) {
@@ -107,7 +142,19 @@ export async function update(
 		updates.scheduledAt = scheduledAt ?? undefined
 	}
 
+	if (newCompletedAt === undefined && oldCompletedAt !== undefined) {
+		Object.assign(updates, emptySrsSnapshot)
+	}
+
 	await ctx.db.patch('reviews', reviewId, updates)
+
+	if (newCompletedAt === undefined) {
+		if (oldCompletedAt !== undefined) {
+			await updateCardSrs(ctx, reviewCard, oldCompletedAt)
+		}
+	} else {
+		await updateCardSrs(ctx, reviewCard, newCompletedAt)
+	}
 }
 
 export async function remove(
@@ -116,6 +163,25 @@ export async function remove(
 	reviewId: Id<'reviews'>,
 ): Promise<Doc<'reviews'>> {
 	const review = await requireUserOwns(ctx, reviewId, userId)
+	const reviewCard = await ctx.db.get('reviewCards', review.reviewCardId)
 	await ctx.db.delete('reviews', reviewId)
+
+	if (review.completedAt !== undefined && reviewCard?.ownerId === userId) {
+		await updateCardSrs(ctx, reviewCard, review.completedAt)
+	}
+
 	return review
 }
+
+const emptySrsSnapshot = {
+	stabilityBefore: undefined,
+	difficultyBefore: undefined,
+	stateBefore: undefined,
+	stepBefore: undefined,
+	dueBefore: undefined,
+	stabilityAfter: undefined,
+	difficultyAfter: undefined,
+	stateAfter: undefined,
+	stepAfter: undefined,
+	dueAfter: undefined,
+} satisfies Partial<Doc<'reviews'>>

@@ -361,4 +361,191 @@ describe('reviews', () => {
 			).rejects.toThrow('Review not found')
 		}
 	})
+
+	it('completing a review advances the card and records SRS snapshots', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {})
+		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId,
+		})
+		const reviewId = await asUserA.mutation(api.reviews.create, {
+			reviewCardId,
+		})
+
+		await asUserA.mutation(api.reviews.update, {
+			completedAt: '2026-01-10',
+			rating: 'good',
+			reviewId,
+		})
+
+		const review = await asUserA.query(api.reviews.get, { reviewId })
+		const card = await asUserA.query(api.reviewCards.get, { reviewCardId })
+
+		expect(review).toMatchObject({
+			difficultyAfter: expect.any(Number),
+			dueAfter: expect.any(String),
+			dueBefore: '2026-01-10',
+			stateAfter: 'LEARNING',
+			stateBefore: 'LEARNING',
+			stabilityAfter: expect.any(Number),
+		})
+		expect(card).toMatchObject({
+			difficulty: review.difficultyAfter,
+			lastReviewedAt: '2026-01-10',
+			stability: review.stabilityAfter,
+			state: review.stateAfter,
+			step: review.stepAfter,
+		})
+	})
+
+	it('re-rating an older review rewrites the downstream replay chain', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {})
+		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId,
+		})
+		const firstReviewId = await asUserA.mutation(api.reviews.create, {
+			completedAt: '2026-01-01',
+			rating: 'good',
+			reviewCardId,
+		})
+		const secondReviewId = await asUserA.mutation(api.reviews.create, {
+			completedAt: '2026-01-10',
+			rating: 'good',
+			reviewCardId,
+		})
+		const secondBefore = await asUserA.query(api.reviews.get, {
+			reviewId: secondReviewId,
+		})
+
+		await asUserA.mutation(api.reviews.update, {
+			rating: 'easy',
+			reviewId: firstReviewId,
+		})
+
+		const firstAfter = await asUserA.query(api.reviews.get, {
+			reviewId: firstReviewId,
+		})
+		const secondAfter = await asUserA.query(api.reviews.get, {
+			reviewId: secondReviewId,
+		})
+		const card = await asUserA.query(api.reviewCards.get, { reviewCardId })
+
+		expect(secondAfter.stabilityBefore).toBe(firstAfter.stabilityAfter)
+		expect(secondAfter.difficultyBefore).toBe(firstAfter.difficultyAfter)
+		expect(secondAfter.stabilityAfter).not.toBe(secondBefore.stabilityAfter)
+		expect(card?.stability).toBe(secondAfter.stabilityAfter)
+		expect(card?.lastReviewedAt).toBe('2026-01-10')
+	})
+
+	it('un-completing a review clears its snapshots and rewinds the card', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {})
+		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId,
+		})
+		const firstReviewId = await asUserA.mutation(api.reviews.create, {
+			completedAt: '2026-01-01',
+			rating: 'good',
+			reviewCardId,
+		})
+		const secondReviewId = await asUserA.mutation(api.reviews.create, {
+			completedAt: '2026-01-10',
+			rating: 'hard',
+			reviewCardId,
+		})
+
+		await asUserA.mutation(api.reviews.update, {
+			completedAt: null,
+			reviewId: secondReviewId,
+		})
+
+		const first = await asUserA.query(api.reviews.get, {
+			reviewId: firstReviewId,
+		})
+		const second = await asUserA.query(api.reviews.get, {
+			reviewId: secondReviewId,
+		})
+		const card = await asUserA.query(api.reviewCards.get, { reviewCardId })
+
+		expect(second.rating).toBeUndefined()
+		expect(second.completedAt).toBeUndefined()
+		for (const field of [
+			'stabilityBefore',
+			'difficultyBefore',
+			'stateBefore',
+			'stepBefore',
+			'dueBefore',
+			'stabilityAfter',
+			'difficultyAfter',
+			'stateAfter',
+			'stepAfter',
+			'dueAfter',
+		] as const) {
+			expect(second[field]).toBeUndefined()
+		}
+		expect(card).toMatchObject({
+			difficulty: first.difficultyAfter,
+			lastReviewedAt: '2026-01-01',
+			stability: first.stabilityAfter,
+			state: first.stateAfter,
+		})
+	})
+
+	it('deleting the only completed review resets the card to fresh state', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {})
+		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId,
+		})
+		const reviewId = await asUserA.mutation(api.reviews.create, {
+			completedAt: '2026-01-01',
+			rating: 'good',
+			reviewCardId,
+		})
+
+		await asUserA.mutation(api.reviews.remove, { reviewId })
+
+		const card = await asUserA.query(api.reviewCards.get, { reviewCardId })
+		expect(card?.state).toBe('LEARNING')
+		expect(card?.stability).toBeUndefined()
+		expect(card?.difficulty).toBeUndefined()
+		expect(card?.step).toBeUndefined()
+		expect(card?.lastReviewedAt).toBeUndefined()
+	})
+
+	it('couples rating and completion when creating completed reviews', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {})
+		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId,
+		})
+
+		const datedReviewId = await asUserA.mutation(api.reviews.create, {
+			completedAt: '2026-01-01',
+			reviewCardId,
+		})
+		const ratedReviewId = await asUserA.mutation(api.reviews.create, {
+			rating: 'hard',
+			reviewCardId,
+		})
+
+		await expect(
+			asUserA.query(api.reviews.get, { reviewId: datedReviewId }),
+		).resolves.toMatchObject({
+			completedAt: '2026-01-01',
+			rating: 'good',
+		})
+		await expect(
+			asUserA.query(api.reviews.get, { reviewId: ratedReviewId }),
+		).resolves.toMatchObject({
+			completedAt: DateTime.utc().toISODate(),
+			rating: 'hard',
+		})
+	})
 })
