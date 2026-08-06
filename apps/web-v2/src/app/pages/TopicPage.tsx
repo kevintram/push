@@ -2,6 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { queryOptions, useSuspenseQueries } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
+import { DateTime } from 'luxon'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
 
@@ -24,7 +25,7 @@ import {
 	useCreateReviewCard,
 } from '~/modules/reviews/api/reviewCardQueries'
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
-import { unscheduledSrsState } from '~/modules/reviews/types/review.types'
+import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
 import {
 	fontSizes,
 	fontWeights,
@@ -32,6 +33,7 @@ import {
 	layout,
 	spacing,
 } from '~/styles/tokens.stylex'
+import type { DateString } from '~/types/date'
 
 const styles = stylex.create({
 	container: {
@@ -77,6 +79,7 @@ export function TopicPage() {
 	const updateTopic = useUpdateTopic()
 	const createReviewCard = useCreateReviewCard()
 	const navigate = useNavigate()
+	const today = DateTime.utc().toISODate() as DateString
 
 	const handleDeleteTopic = useCallback(() => {
 		deleteTopic.mutate({ topicId })
@@ -202,7 +205,7 @@ export function TopicPage() {
 						<ReviewCard
 							key={reviewCard._id}
 							reviewCard={reviewCard}
-							srs={unscheduledSrsState}
+							srs={deriveReviewCardSrsState(reviewCard, today)}
 						/>
 					))}
 				</div>

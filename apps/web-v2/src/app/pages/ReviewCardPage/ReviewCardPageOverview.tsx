@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
+import { DateTime } from 'luxon'
 import { useEffect, useState } from 'react'
 
 import { Separator, Textarea } from '~/components/ui'
@@ -11,8 +12,9 @@ import { ReviewCardMetadata } from '~/modules/reviews/components/ReviewCardMetad
 import { ReviewsSidebar } from '~/modules/reviews/components/ReviewsSidebar'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { useReviewCardField } from '~/modules/reviews/hooks/useReviewCardField'
-import { unscheduledSrsState } from '~/modules/reviews/types/review.types'
+import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
 import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
+import type { DateString } from '~/types/date'
 
 const styles = stylex.create({
 	layout: {
@@ -71,6 +73,7 @@ export function ReviewCardPageOverview() {
 	const { hideMode } = useHideMode()
 	const [secondaryRevealed, setSecondaryRevealed] = useState(false)
 	const [notesRevealed, setNotesRevealed] = useState(false)
+	const today = DateTime.utc().toISODate() as DateString
 
 	useEffect(() => {
 		setSecondaryRevealed(false)
@@ -136,7 +139,9 @@ export function ReviewCardPageOverview() {
 					</Hideable>
 					<div {...stylex.props(styles.separatorGroup)}>
 						<div {...stylex.props(styles.footer)}>
-							<ReviewCardMetadata {...unscheduledSrsState} />
+							<ReviewCardMetadata
+								{...deriveReviewCardSrsState(reviewCard, today)}
+							/>
 							<ReviewCardActions reviewCard={reviewCard} />
 						</div>
 						<Separator />

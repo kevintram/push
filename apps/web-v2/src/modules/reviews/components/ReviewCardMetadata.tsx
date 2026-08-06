@@ -31,10 +31,7 @@ const styles = stylex.create({
 	},
 })
 
-/**
- * Scheduling summary for a review card. Every field is optional because Convex
- * does not track SRS state yet, in which case the card reads as unreviewed.
- */
+/** Scheduling summary for a review card, including its client-derived tier. */
 export function ReviewCardMetadata({
 	freshnessTier,
 	lastReviewedAt,
