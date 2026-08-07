@@ -75,7 +75,7 @@ const review: Doc<'reviews'> = {
 	rating: 'good',
 	description: 'Correctly described generics.',
 	notes: '',
-	completedAt: '2026-07-28',
+	date: '2026-07-28',
 }
 
 function renderRoute(

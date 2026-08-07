@@ -144,7 +144,7 @@ describe('reviews', () => {
 		}
 	})
 
-	it('patches supplied fields and can clear a rating, schedule, or completion', async () => {
+	it('patches supplied fields and can clear a rating or date', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const topicId = await asUserA.mutation(api.topics.create, {})
@@ -152,10 +152,10 @@ describe('reviews', () => {
 			topicId,
 		})
 		const reviewId = await asUserA.mutation(api.reviews.create, {
+			date: '2024-01-01',
 			description: 'Original',
 			rating: 'hard',
 			reviewCardId,
-			scheduledAt: '2024-01-01',
 		})
 
 		await asUserA.mutation(api.reviews.update, {
@@ -167,25 +167,23 @@ describe('reviews', () => {
 		await expect(
 			asUserA.query(api.reviews.get, { reviewId }),
 		).resolves.toMatchObject({
+			date: '2024-01-01',
 			description: 'Updated',
 			rating: 'good',
-			scheduledAt: '2024-01-01',
 		})
 
 		await asUserA.mutation(api.reviews.update, {
-			completedAt: null,
+			date: null,
 			rating: null,
 			reviewId,
-			scheduledAt: null,
 		})
 
 		const cleared = await asUserA.query(api.reviews.get, { reviewId })
 		expect(cleared.rating).toBeUndefined()
-		expect(cleared.scheduledAt).toBeUndefined()
-		expect(cleared.completedAt).toBeUndefined()
+		expect(cleared.date).toBeUndefined()
 	})
 
-	it('completes an unrated review when rated and preserves its completion day when re-rated', async () => {
+	it('dates an undated review on the day it is rated and keeps that day when re-rated', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const topicId = await asUserA.mutation(api.topics.create, {})
@@ -202,7 +200,7 @@ describe('reviews', () => {
 		})
 
 		const completed = await asUserA.query(api.reviews.get, { reviewId })
-		expect(completed.completedAt).toBe(DateTime.utc().toISODate())
+		expect(completed.date).toBe(DateTime.utc().toISODate())
 
 		await asUserA.mutation(api.reviews.update, {
 			rating: 'easy',
@@ -212,12 +210,12 @@ describe('reviews', () => {
 		await expect(
 			asUserA.query(api.reviews.get, { reviewId }),
 		).resolves.toMatchObject({
-			completedAt: completed.completedAt,
+			date: completed.date,
 			rating: 'easy',
 		})
 	})
 
-	it('keeps completion fields coupled while allowing explicit re-dating', async () => {
+	it('reopens a review onto its existing day when only the rating is cleared', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const topicId = await asUserA.mutation(api.topics.create, {})
@@ -229,46 +227,44 @@ describe('reviews', () => {
 		})
 
 		await asUserA.mutation(api.reviews.update, {
-			completedAt: '2024-05-04',
+			date: '2024-05-04',
 			rating: 'good',
 			reviewId,
 		})
 		await asUserA.mutation(api.reviews.update, {
-			completedAt: '2024-05-05',
-			reviewId,
-		})
-		await asUserA.mutation(api.reviews.update, {
-			scheduledAt: '2024-06-01',
+			date: '2024-05-05',
 			reviewId,
 		})
 
 		await expect(
 			asUserA.query(api.reviews.get, { reviewId }),
-		).resolves.toMatchObject({
-			completedAt: '2024-05-05',
+		).resolves.toMatchObject({ date: '2024-05-05', rating: 'good' })
+
+		await asUserA.mutation(api.reviews.update, { rating: null, reviewId })
+
+		const reopened = await asUserA.query(api.reviews.get, { reviewId })
+		expect(reopened.rating).toBeUndefined()
+		expect(reopened.date).toBe('2024-05-05')
+	})
+
+	it('clears the rating when the date is cleared', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {})
+		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId,
+		})
+		const reviewId = await asUserA.mutation(api.reviews.create, {
+			date: '2024-05-04',
 			rating: 'good',
-			scheduledAt: '2024-06-01',
+			reviewCardId,
 		})
 
-		await asUserA.mutation(api.reviews.update, {
-			rating: null,
-			reviewId,
-		})
-		let review = await asUserA.query(api.reviews.get, { reviewId })
-		expect(review.rating).toBeUndefined()
-		expect(review.completedAt).toBeUndefined()
+		await asUserA.mutation(api.reviews.update, { date: null, reviewId })
 
-		await asUserA.mutation(api.reviews.update, {
-			rating: 'good',
-			reviewId,
-		})
-		await asUserA.mutation(api.reviews.update, {
-			completedAt: null,
-			reviewId,
-		})
-		review = await asUserA.query(api.reviews.get, { reviewId })
+		const review = await asUserA.query(api.reviews.get, { reviewId })
 		expect(review.rating).toBeUndefined()
-		expect(review.completedAt).toBeUndefined()
+		expect(review.date).toBeUndefined()
 	})
 
 	it('rejects updating a missing or foreign review', async () => {
@@ -374,7 +370,7 @@ describe('reviews', () => {
 		})
 
 		await asUserA.mutation(api.reviews.update, {
-			completedAt: '2026-01-10',
+			date: '2026-01-10',
 			rating: 'good',
 			reviewId,
 		})
@@ -407,12 +403,12 @@ describe('reviews', () => {
 			topicId,
 		})
 		const firstReviewId = await asUserA.mutation(api.reviews.create, {
-			completedAt: '2026-01-01',
+			date: '2026-01-01',
 			rating: 'good',
 			reviewCardId,
 		})
 		const secondReviewId = await asUserA.mutation(api.reviews.create, {
-			completedAt: '2026-01-10',
+			date: '2026-01-10',
 			rating: 'good',
 			reviewCardId,
 		})
@@ -440,7 +436,7 @@ describe('reviews', () => {
 		expect(card?.lastReviewedAt).toBe('2026-01-10')
 	})
 
-	it('un-completing a review clears its snapshots and rewinds the card', async () => {
+	it('un-rating a review clears its snapshots and rewinds the card', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const topicId = await asUserA.mutation(api.topics.create, {})
@@ -448,18 +444,18 @@ describe('reviews', () => {
 			topicId,
 		})
 		const firstReviewId = await asUserA.mutation(api.reviews.create, {
-			completedAt: '2026-01-01',
+			date: '2026-01-01',
 			rating: 'good',
 			reviewCardId,
 		})
 		const secondReviewId = await asUserA.mutation(api.reviews.create, {
-			completedAt: '2026-01-10',
+			date: '2026-01-10',
 			rating: 'hard',
 			reviewCardId,
 		})
 
 		await asUserA.mutation(api.reviews.update, {
-			completedAt: null,
+			rating: null,
 			reviewId: secondReviewId,
 		})
 
@@ -472,7 +468,8 @@ describe('reviews', () => {
 		const card = await asUserA.query(api.reviewCards.get, { reviewCardId })
 
 		expect(second.rating).toBeUndefined()
-		expect(second.completedAt).toBeUndefined()
+		// Un-rating reopens the review rather than unscheduling it.
+		expect(second.date).toBe('2026-01-10')
 		for (const field of [
 			'stabilityBefore',
 			'difficultyBefore',
@@ -503,7 +500,7 @@ describe('reviews', () => {
 			topicId,
 		})
 		const reviewId = await asUserA.mutation(api.reviews.create, {
-			completedAt: '2026-01-01',
+			date: '2026-01-01',
 			rating: 'good',
 			reviewCardId,
 		})
@@ -518,7 +515,7 @@ describe('reviews', () => {
 		expect(card?.lastReviewedAt).toBeUndefined()
 	})
 
-	it('couples rating and completion when creating completed reviews', async () => {
+	it('creates a dated review as scheduled and a rated review as completed today', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const topicId = await asUserA.mutation(api.topics.create, {})
@@ -526,8 +523,8 @@ describe('reviews', () => {
 			topicId,
 		})
 
-		const datedReviewId = await asUserA.mutation(api.reviews.create, {
-			completedAt: '2026-01-01',
+		const scheduledReviewId = await asUserA.mutation(api.reviews.create, {
+			date: '2026-01-01',
 			reviewCardId,
 		})
 		const ratedReviewId = await asUserA.mutation(api.reviews.create, {
@@ -535,17 +532,21 @@ describe('reviews', () => {
 			reviewCardId,
 		})
 
-		await expect(
-			asUserA.query(api.reviews.get, { reviewId: datedReviewId }),
-		).resolves.toMatchObject({
-			completedAt: '2026-01-01',
-			rating: 'good',
+		const scheduled = await asUserA.query(api.reviews.get, {
+			reviewId: scheduledReviewId,
 		})
+		expect(scheduled.date).toBe('2026-01-01')
+		expect(scheduled.rating).toBeUndefined()
+
 		await expect(
 			asUserA.query(api.reviews.get, { reviewId: ratedReviewId }),
 		).resolves.toMatchObject({
-			completedAt: DateTime.utc().toISODate(),
+			date: DateTime.utc().toISODate(),
 			rating: 'hard',
 		})
+
+		// A scheduled review contributes nothing to the card's SRS state.
+		const card = await asUserA.query(api.reviewCards.get, { reviewCardId })
+		expect(card?.lastReviewedAt).toBe(DateTime.utc().toISODate())
 	})
 })

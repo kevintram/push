@@ -64,36 +64,23 @@ export async function create(
 		userId,
 	)
 
-	// the relationship between completedAt and rating
-	// is that setting/clearing a rating will set/clear completedAt
-	// ---
-	// what the heck does setting/clearing completedAt mean?
-	// completedAt vs rating is driven by the rating???
-	// what's the difference between completedAt and scheduledAt
-	// what if we just had date and completion status is based of the rating
-	// what's the *point* of having completedAt and scheduledAt???
-
-	const completedAt =
-		fields.completedAt ??
-		// if have rating, set `completedAt` to Today
-		(fields.rating !== undefined ? todayInUtc() : undefined)
-	const rating =
-		completedAt === undefined // clear rating
-			? undefined
-			: (fields.rating ?? 'good') //
+	// A rating is what completes a review, and a completed review has to have
+	// happened on some day, so rating without a date means "rated today".
+	const { rating } = fields
+	const date =
+		fields.date ?? (rating !== undefined ? todayInUtc() : undefined)
 
 	const reviewId = await ctx.db.insert('reviews', {
 		ownerId: userId,
 		reviewCardId: fields.reviewCardId,
 		rating,
+		date,
 		description: fields.description ?? '',
 		notes: fields.notes ?? '',
-		scheduledAt: fields.scheduledAt,
-		completedAt,
 	})
 
-	if (completedAt !== undefined) {
-		await updateCardSrs(ctx, reviewCard, completedAt)
+	if (rating !== undefined && date !== undefined) {
+		await updateCardSrs(ctx, reviewCard, date)
 	}
 
 	return reviewId
@@ -111,49 +98,52 @@ export async function update(
 		review.reviewCardId,
 		userId,
 	)
-	const oldCompletedAt = review.completedAt
+	const wasCompleted = review.rating !== undefined
+	const oldDate = review.date
 
-	const { rating, scheduledAt, completedAt, ...fields } = patch
+	const { rating, date, ...fields } = patch
 	const updates: Partial<Doc<'reviews'>> = { ...fields }
 	let newRating = review.rating
-	let newCompletedAt = review.completedAt
+	let newDate = review.date
 
-	if (rating === null || completedAt === null) {
+	// Convex clears an optional document field when it is patched with
+	// `undefined`; the public API uses `null` to request that operation.
+	if (date === null) {
+		// A completed review has to have happened on some day, so dropping the
+		// date drops the completion with it.
+		newDate = undefined
 		newRating = undefined
-		newCompletedAt = undefined
+	} else if (date !== undefined) {
+		newDate = date
+	}
+
+	if (rating === null) {
+		// Un-rating reopens the review but leaves its date alone, so the review
+		// simply becomes scheduled for that day again.
+		newRating = undefined
 	} else if (rating !== undefined) {
-		// Ratings and completion are a pair: setting a rating completes the
-		// review, while clearing it makes the review incomplete.
 		newRating = rating
-		newCompletedAt = completedAt ?? review.completedAt ?? todayInUtc()
-	} else if (completedAt !== undefined) {
-		newCompletedAt = completedAt
-		newRating = review.rating ?? 'good'
+		newDate ??= todayInUtc()
 	}
 
-	if (rating !== undefined || completedAt !== undefined) {
+	if (rating !== undefined || date !== undefined) {
 		updates.rating = newRating
-		updates.completedAt = newCompletedAt
+		updates.date = newDate
 	}
 
-	if (scheduledAt !== undefined) {
-		// Convex clears an optional document field when it is patched with
-		// `undefined`; the public API uses `null` to request that operation.
-		updates.scheduledAt = scheduledAt ?? undefined
-	}
+	const isCompleted = newRating !== undefined
 
-	if (newCompletedAt === undefined && oldCompletedAt !== undefined) {
+	if (!isCompleted && wasCompleted) {
 		Object.assign(updates, emptySrsSnapshot)
 	}
 
 	await ctx.db.patch('reviews', reviewId, updates)
 
-	if (newCompletedAt === undefined) {
-		if (oldCompletedAt !== undefined) {
-			await updateCardSrs(ctx, reviewCard, oldCompletedAt)
-		}
-	} else {
-		await updateCardSrs(ctx, reviewCard, newCompletedAt)
+	// Replay from whichever day the card's history first changed.
+	if (isCompleted && newDate !== undefined) {
+		await updateCardSrs(ctx, reviewCard, newDate)
+	} else if (wasCompleted && oldDate !== undefined) {
+		await updateCardSrs(ctx, reviewCard, oldDate)
 	}
 }
 
@@ -166,8 +156,12 @@ export async function remove(
 	const reviewCard = await ctx.db.get('reviewCards', review.reviewCardId)
 	await ctx.db.delete('reviews', reviewId)
 
-	if (review.completedAt !== undefined && reviewCard?.ownerId === userId) {
-		await updateCardSrs(ctx, reviewCard, review.completedAt)
+	if (
+		review.rating !== undefined &&
+		review.date !== undefined &&
+		reviewCard?.ownerId === userId
+	) {
+		await updateCardSrs(ctx, reviewCard, review.date)
 	}
 
 	return review

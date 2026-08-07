@@ -12,14 +12,20 @@ export const rating = v.union(
 export const reviewBase = v.object({
 	ownerId: v.string(),
 	reviewCardId: v.id('reviewCards'),
+	// A review is completed exactly when it carries a rating. There is no
+	// completed-but-ungraded state, so `rating` is the completion flag rather
+	// than something a separate timestamp has to be kept in sync with.
 	rating: v.optional(rating),
+	// The day the review happened when it is rated, and the day it is scheduled
+	// for when it is not. A review can also be undated, meaning "someday".
+	// Invariant: a rated review always has a date. `Reviews.create`/`update` are
+	// the only places that enforce it.
+	// Date-only strings match the calendar UI and avoid timezone shifts for a
+	// user's intended review day.
+	// TODO(2): validate YYYY-MM-DD when review mutations are added.
+	date: v.optional(v.string()),
 	description: v.string(),
 	notes: v.string(),
-	// Reviews can be unscheduled or incomplete. Date-only strings match the
-	// calendar UI and avoid timezone shifts for a user's intended review day.
-	// TODO(2): validate YYYY-MM-DD when review mutations are added.
-	scheduledAt: v.optional(v.string()),
-	completedAt: v.optional(v.string()),
 	stabilityBefore: v.optional(v.number()),
 	difficultyBefore: v.optional(v.number()),
 	stateBefore: v.optional(learningState),
@@ -56,9 +62,9 @@ export const reviewCreate = reviewBase
 	.partial()
 	.extend({ reviewCardId: v.id('reviewCards') }) // require
 
-// The mutable review fields. `rating`/`scheduledAt`/`completedAt` are
-// three-state: omit/undefined = leave alone, null = clear, value = set.
-// `Reviews.update` owns the rating/completedAt completion coupling.
+// The mutable review fields. `rating`/`date` are three-state: omit/undefined =
+// leave alone, null = clear, value = set. `Reviews.update` enforces the
+// rated-implies-dated invariant across the pair.
 // `description`/`notes` stay plain optional strings since they are never
 // unset back to undefined, only ever emptied.
 // `reviewCardId`/`ownerId` stay unsettable.
@@ -68,8 +74,7 @@ export const reviewPatch = reviewBase
 		'reviewCardId',
 		//
 		'rating',
-		'scheduledAt',
-		'completedAt',
+		'date',
 		// omit SRS columns because they're handled by *us* ONLY
 		'stabilityBefore',
 		'difficultyBefore',
@@ -84,7 +89,6 @@ export const reviewPatch = reviewBase
 	)
 	.extend({
 		rating: v.union(rating, v.null()),
-		scheduledAt: v.union(v.string(), v.null()),
-		completedAt: v.union(v.string(), v.null()),
+		date: v.union(v.string(), v.null()),
 	})
 	.partial()

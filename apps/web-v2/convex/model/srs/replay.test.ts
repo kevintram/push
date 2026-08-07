@@ -35,7 +35,7 @@ interface ExpectedPatch {
 
 interface ParityCase {
 	name: string
-	reviews: Array<{ completedAt: string; rating: ReviewRating }>
+	reviews: Array<{ date: string; rating: ReviewRating }>
 	expected: Array<ExpectedPatch>
 	cardState: ExpectedState
 }
@@ -128,7 +128,7 @@ describe('SRS card construction', () => {
 
 	it('reconstructs a seed from its after snapshot without persisted bookkeeping', () => {
 		const card = cardFromReviewSnapshot({
-			completedAt: '2024-03-04',
+			date: '2024-03-04',
 			difficultyAfter: 4.5,
 			dueAfter: '2024-04-20',
 			stabilityAfter: 12.5,
@@ -174,7 +174,7 @@ describe('SRS replay', () => {
 
 	it('records a complete deterministic before snapshot for the first review', () => {
 		const first = replay({
-			reviews: [{ completedAt: '2024-06-15', rating: 'good' }],
+			reviews: [{ date: '2024-06-15', rating: 'good' }],
 		}).reviewPatches[0]!
 
 		expect(first.patch).toMatchObject({
@@ -186,28 +186,16 @@ describe('SRS replay', () => {
 		})
 	})
 
-	it('defaults a missing completed-review rating to good', () => {
-		const implicit = replay({ reviews: [{ completedAt: '2024-01-01' }] })
-		const explicit = replay({
-			reviews: [{ completedAt: '2024-01-01', rating: 'good' }],
-		})
-
-		expect(implicit.cardState).toEqual(explicit.cardState)
-		expect(implicit.reviewPatches[0]!.patch).toEqual(
-			explicit.reviewPatches[0]!.patch,
-		)
-	})
-
 	it('replays same-day learning steps deterministically in input order', () => {
 		// py-fsrs 6.3 and ts-fsrs 5.4.1 differ in their same-timestamp
 		// short-term stability update. The product decision is to use ts-fsrs,
 		// so keep this edge case deterministic without calling it cross-library
 		// parity.
 		const reviews = [
-			{ completedAt: '2024-01-01', rating: 'miss' },
-			{ completedAt: '2024-01-01', rating: 'hard' },
-			{ completedAt: '2024-01-01', rating: 'good' },
-			{ completedAt: '2024-01-01', rating: 'easy' },
+			{ date: '2024-01-01', rating: 'miss' },
+			{ date: '2024-01-01', rating: 'hard' },
+			{ date: '2024-01-01', rating: 'good' },
+			{ date: '2024-01-01', rating: 'easy' },
 		] as const
 
 		const first = replay({ reviews })
@@ -231,7 +219,7 @@ describe('SRS replay', () => {
 		const seedPatch = prefix.reviewPatches.at(-1)!.patch
 		const suffix = replay({
 			seedReview: {
-				completedAt: fixture.reviews[1]!.completedAt,
+				date: fixture.reviews[1]!.date,
 				...seedPatch,
 			},
 			reviews: fixture.reviews.slice(2),
@@ -244,16 +232,16 @@ describe('SRS replay', () => {
 	})
 
 	it('ignores a seed without an after stability snapshot', () => {
-		const reviews = [{ completedAt: '2024-01-01', rating: 'easy' }] as const
+		const reviews = [{ date: '2024-01-01', rating: 'easy' }] as const
 
-		expect(
-			replay({ seedReview: { completedAt: '1999-01-01' }, reviews }),
-		).toEqual(replay({ reviews }))
+		expect(replay({ seedReview: { date: '1999-01-01' }, reviews })).toEqual(
+			replay({ reviews }),
+		)
 	})
 
 	it('does not mutate review inputs', () => {
 		const reviews = [
-			{ completedAt: '2024-01-01', marker: 'unchanged', rating: 'good' },
+			{ date: '2024-01-01', marker: 'unchanged', rating: 'good' },
 		] as const
 		const original = structuredClone(reviews)
 

@@ -264,12 +264,10 @@ export function Review({ review }: { review: ReviewModel }) {
 					<div {...stylex.props(styles.footer)}>
 						<div {...stylex.props(styles.raised)}>
 							<ReviewDatePicker
-								isCompleted={review.completedAt !== undefined}
+								isCompleted={review.rating !== undefined}
 								onChange={setDate}
 								value={
-									(review.completedAt ??
-										review.scheduledAt ??
-										null) as DateString | null
+									(review.date ?? null) as DateString | null
 								}
 							/>
 						</div>

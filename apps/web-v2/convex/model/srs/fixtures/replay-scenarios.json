@@ -1,7 +1,7 @@
 [
 	{
 		"name": "again",
-		"reviews": [{ "completedAt": "2024-01-01", "rating": "miss" }],
+		"reviews": [{ "date": "2024-01-01", "rating": "miss" }],
 		"expected": [
 			{
 				"stabilityAfter": 0.212,
@@ -20,7 +20,7 @@
 	},
 	{
 		"name": "hard",
-		"reviews": [{ "completedAt": "2024-01-01", "rating": "hard" }],
+		"reviews": [{ "date": "2024-01-01", "rating": "hard" }],
 		"expected": [
 			{
 				"stabilityAfter": 1.2931,
@@ -39,7 +39,7 @@
 	},
 	{
 		"name": "good",
-		"reviews": [{ "completedAt": "2024-01-01", "rating": "good" }],
+		"reviews": [{ "date": "2024-01-01", "rating": "good" }],
 		"expected": [
 			{
 				"stabilityAfter": 2.3065,
@@ -58,7 +58,7 @@
 	},
 	{
 		"name": "easy",
-		"reviews": [{ "completedAt": "2024-01-01", "rating": "easy" }],
+		"reviews": [{ "date": "2024-01-01", "rating": "easy" }],
 		"expected": [
 			{
 				"stabilityAfter": 8.2956,
@@ -78,9 +78,9 @@
 	{
 		"name": "learning_to_review",
 		"reviews": [
-			{ "completedAt": "2024-01-01", "rating": "good" },
-			{ "completedAt": "2024-01-02", "rating": "good" },
-			{ "completedAt": "2024-01-06", "rating": "good" }
+			{ "date": "2024-01-01", "rating": "good" },
+			{ "date": "2024-01-02", "rating": "good" },
+			{ "date": "2024-01-06", "rating": "good" }
 		],
 		"expected": [
 			{
@@ -115,11 +115,11 @@
 	{
 		"name": "lapse_and_relearn",
 		"reviews": [
-			{ "completedAt": "2024-01-01", "rating": "easy" },
-			{ "completedAt": "2024-01-11", "rating": "good" },
-			{ "completedAt": "2024-01-21", "rating": "miss" },
-			{ "completedAt": "2024-01-22", "rating": "good" },
-			{ "completedAt": "2024-02-10", "rating": "easy" }
+			{ "date": "2024-01-01", "rating": "easy" },
+			{ "date": "2024-01-11", "rating": "good" },
+			{ "date": "2024-01-21", "rating": "miss" },
+			{ "date": "2024-01-22", "rating": "good" },
+			{ "date": "2024-02-10", "rating": "easy" }
 		],
 		"expected": [
 			{

@@ -1,5 +1,7 @@
 // Completed reviews are the source of truth for SRS state. Everything else in
 // this file is derived from that history and can be rebuilt by replaying it.
+// A review counts as completed exactly when it has a rating; its `date` is then
+// the day it happened.
 //
 // Review dates are calendar dates, not timestamps. We represent them as UTC
 // midnight while inside ts-fsrs so a replay never depends on the local timezone
@@ -23,7 +25,7 @@ export type ReviewRating = 'miss' | 'hard' | 'good' | 'easy'
 export type LearningState = 'LEARNING' | 'REVIEW' | 'RELEARNING'
 
 export interface ReviewSrsSnapshot {
-	completedAt?: string
+	date?: string
 	rating?: ReviewRating
 	stabilityAfter?: number
 	difficultyAfter?: number
@@ -33,7 +35,8 @@ export interface ReviewSrsSnapshot {
 }
 
 export interface CompletedReviewSrsSnapshot extends ReviewSrsSnapshot {
-	completedAt: string
+	date: string
+	rating: ReviewRating
 }
 
 export interface ReviewSrsPatch {
@@ -66,7 +69,7 @@ export interface ReplayResult<TReview> {
 	cardState: ReviewCardSrsState
 }
 
-type CompletedReview = Doc<'reviews'> & { completedAt: string }
+type CompletedReview = Doc<'reviews'> & { date: string; rating: ReviewRating }
 
 const REQUEST_RETENTION = 0.85
 const scheduler = fsrs({ request_retention: REQUEST_RETENTION })
@@ -94,12 +97,10 @@ export function replay<TReview extends CompletedReviewSrsSnapshot>({
 
 	for (const review of reviews) {
 		const previousCard = card
-		// Ratings are optional in the persisted review shape. Treating a
-		// missing value as Good keeps those histories replayable.
 		const { card: nextCard } = scheduler.next(
 			previousCard,
-			dateOnlyToUtc(review.completedAt),
-			ratingToGrade(review.rating ?? 'good'),
+			dateOnlyToUtc(review.date),
+			ratingToGrade(review.rating),
 		)
 
 		reviewPatches.push({
@@ -130,32 +131,34 @@ export async function updateCardSrs(
 	const reviews = (
 		await ctx.db
 			.query('reviews')
-			.withIndex('by_reviewCardId_completedAt', query =>
-				query
-					.eq('reviewCardId', card._id)
-					.gte('completedAt', startingFrom),
+			.withIndex('by_reviewCardId_date', query =>
+				query.eq('reviewCardId', card._id).gte('date', startingFrom),
 			)
 			.order('asc')
 			.collect()
 	).filter(isCompleted)
 
 	// Convex sorts `undefined` before strings. The empty-string lower bound
-	// excludes incomplete reviews while preserving every valid date-only value.
-	const seedReview = await ctx.db
+	// excludes undated reviews while preserving every valid date-only value.
+	// Scheduled-but-unrated reviews still land in this range, so walk backwards
+	// to the nearest rated one rather than taking the first row.
+	let seedReview: CompletedReview | undefined
+	for await (const candidate of ctx.db
 		.query('reviews')
-		.withIndex('by_reviewCardId_completedAt', query =>
+		.withIndex('by_reviewCardId_date', query =>
 			query
 				.eq('reviewCardId', card._id)
-				.gte('completedAt', '')
-				.lt('completedAt', startingFrom),
+				.gte('date', '')
+				.lt('date', startingFrom),
 		)
-		.order('desc')
-		.first()
+		.order('desc')) {
+		if (isCompleted(candidate)) {
+			seedReview = candidate
+			break
+		}
+	}
 
-	const { reviewPatches, cardState } = replay({
-		seedReview: seedReview ?? undefined,
-		reviews,
-	})
+	const { reviewPatches, cardState } = replay({ seedReview, reviews })
 
 	for (const { review, patch } of reviewPatches) {
 		await ctx.db.patch('reviews', review._id, patch)
@@ -165,9 +168,7 @@ export async function updateCardSrs(
 	await ctx.db.patch('reviewCards', card._id, {
 		...cardState,
 		lastReviewedAt:
-			lastReplayedReview?.completedAt ??
-			seedReview?.completedAt ??
-			undefined,
+			lastReplayedReview?.date ?? seedReview?.date ?? undefined,
 	})
 }
 
@@ -234,7 +235,7 @@ export function emptyCard(referenceDate: Date = EMPTY_CARD_DATE): Card {
 }
 
 export function cardFromReviewSnapshot(review: ReviewSrsSnapshot): Card {
-	const completedAt = requireSnapshotField(review.completedAt, 'completedAt')
+	const date = requireSnapshotField(review.date, 'date')
 	const stabilityAfter = requireSnapshotField(
 		review.stabilityAfter,
 		'stabilityAfter',
@@ -244,19 +245,19 @@ export function cardFromReviewSnapshot(review: ReviewSrsSnapshot): Card {
 		'difficultyAfter',
 	)
 	const state = toSchedulerState(review.stateAfter ?? 'LEARNING')
-	const completedAtUtc = dateOnlyToUtc(completedAt)
+	const dateUtc = dateOnlyToUtc(date)
 
 	return {
-		...emptyCard(completedAtUtc),
+		...emptyCard(dateUtc),
 		// `due` is not an FSRS-6 memory-state input for the next review. Using
 		// the last review date avoids the nondeterministic wall clock used by the
 		// Python reference implementation when reconstructing a replay seed.
-		due: completedAtUtc,
+		due: dateUtc,
 		stability: stabilityAfter,
 		difficulty: difficultyAfter,
 		state,
 		learning_steps: state === State.Review ? 0 : (review.stepAfter ?? 0),
-		last_review: completedAtUtc,
+		last_review: dateUtc,
 	}
 }
 
@@ -268,9 +269,7 @@ function initialCard(
 	// full replay.
 	if (seedReview?.stabilityAfter === undefined) {
 		return emptyCard(
-			firstReview
-				? dateOnlyToUtc(firstReview.completedAt)
-				: EMPTY_CARD_DATE,
+			firstReview ? dateOnlyToUtc(firstReview.date) : EMPTY_CARD_DATE,
 		)
 	}
 
@@ -322,5 +321,5 @@ function snapshotState(card: Card): ReviewCardSrsState {
 }
 
 function isCompleted(review: Doc<'reviews'>): review is CompletedReview {
-	return review.completedAt !== undefined
+	return review.rating !== undefined && review.date !== undefined
 }

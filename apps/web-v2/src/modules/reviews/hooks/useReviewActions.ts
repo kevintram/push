@@ -10,14 +10,13 @@ type UseReviewActionsReturn = {
 	isDeleteDialogOpen: boolean
 	isDeleting: boolean
 	/**
-	 * Sets the review's rating. A rating completes the review; `null` clears
-	 * both rating and completion. The backend derives `completedAt`.
+	 * Note: setting review's rating, completes it, defaulting the date
+	 * to today.
 	 */
 	setRating: (rating: Rating | null) => void
 	/**
-	 * Sets the review's date. Edits `completedAt` for an already-completed
-	 * review, otherwise `scheduledAt`. Clearing a completed review's date also
-	 * clears its rating, which the backend enforces.
+	 * Note: clearing the date also clears the
+	 * rating, since a completed review has to have happened on some day.
 	 */
 	setDate: (value: DateString | null) => void
 	setIsDeleteDialogOpen: (open: boolean) => void
@@ -50,18 +49,12 @@ export function useReviewActions(review: Review): UseReviewActionsReturn {
 
 	const setDate = useCallback(
 		(value: DateString | null) => {
-			const isCompleted = review.completedAt !== undefined
 			updateReview.mutate(
-				{
-					reviewId: review._id,
-					...(isCompleted
-						? { completedAt: value }
-						: { scheduledAt: value }),
-				},
+				{ date: value, reviewId: review._id },
 				{ onError: () => toast.error('Failed to update review date') },
 			)
 		},
-		[review._id, review.completedAt, updateReview],
+		[review._id, updateReview],
 	)
 
 	const confirmDelete = useCallback(() => {

@@ -15,7 +15,10 @@ export default defineSchema({
 		.index('by_topicId_ownerId', ['topicId', 'ownerId'])
 		.index('by_ownerId', ['ownerId']),
 
+	// `by_reviewCardId_date` backs SRS replay, which needs a card's reviews in
+	// date order. Rated and unrated reviews share the index; replay filters the
+	// unrated ones out in memory, which is bounded by a single card's history.
 	reviews: defineTable(reviewBase)
 		.index('by_reviewCardId_ownerId', ['reviewCardId', 'ownerId'])
-		.index('by_reviewCardId_completedAt', ['reviewCardId', 'completedAt']),
+		.index('by_reviewCardId_date', ['reviewCardId', 'date']),
 })
