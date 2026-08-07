@@ -6,14 +6,6 @@ import type { ReviewCreate, ReviewPatch } from '../validators/reviews'
 import * as ReviewCards from './reviewCards'
 import { updateCardSrs } from './srs/replay'
 
-// TODO(2): This stamps the UTC calendar day. Convex has no access to the
-// user's timezone, so this lands a day late for users rating in their local
-// evening. Fix by passing the client's IANA zone as a mutation argument and
-// switching to `DateTime.now().setZone(zone)`.
-function todayInUtc(): string {
-	return DateTime.utc().toISODate()!
-}
-
 export async function requireUserOwns(
 	ctx: QueryCtx,
 	reviewId: Id<'reviews'>,
@@ -65,9 +57,14 @@ export async function create(
 
 	// A rating is what completes a review, and a completed review has to have
 	// happened on some day, so rating without a date means "rated today".
+	// TODO(2): This stamps the UTC calendar day. Convex has no access to the
+	// user's timezone, so this lands a day late for users rating in their local
+	// evening. Fix by passing the client's IANA zone as a mutation argument and
+	// switching to `DateTime.now().setZone(zone)`.
 	const { rating } = fields
 	const date =
-		fields.date ?? (rating !== undefined ? todayInUtc() : undefined)
+		fields.date ??
+		(rating !== undefined ? DateTime.utc().toISODate()! : undefined)
 
 	const reviewId = await ctx.db.insert('reviews', {
 		ownerId: userId,
@@ -122,7 +119,8 @@ export async function update(
 		newRating = undefined
 	} else if (rating !== undefined) {
 		newRating = rating
-		newDate ??= todayInUtc()
+		// TODO(2) accept timezone
+		newDate ??= DateTime.utc().toISODate()!
 	}
 
 	if (rating !== undefined || date !== undefined) {
