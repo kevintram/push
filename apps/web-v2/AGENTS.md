@@ -85,7 +85,7 @@ src/
 
 **Components**: Colocate components with the page or module that owns them. Only promote to `src/components/` when genuinely reused across unrelated domains. Reserve `src/components/ui/` for shared primitive components.
 
-**Modules**: Product areas live in `src/modules/<module>/` with a public `index.ts`. Outside code imports through that public surface instead of reaching into module internals.
+**Modules**: Product areas live in `src/modules/<module>/` 
 
 Module shape:
 
@@ -95,8 +95,7 @@ src/modules/<module>/
 ├── components/   # Components scoped to this module
 ├── hooks/        # Hooks scoped to this module
 ├── types/        # Domain types
-├── utils/        # Module-local utilities
-└── index.ts      # Public API
+└── utils/        # Module-local utilities
 ```
 
 ## Convex Backend Structure

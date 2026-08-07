@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from 'convex/server'
 
 import { reviewCardBase } from './validators/reviewCards'
+import { reviewBase } from './validators/reviews'
 import { topicBase } from './validators/topics'
 
 export default defineSchema({
@@ -13,4 +14,9 @@ export default defineSchema({
 	reviewCards: defineTable(reviewCardBase)
 		.index('by_topicId_ownerId', ['topicId', 'ownerId'])
 		.index('by_ownerId', ['ownerId']),
+
+	reviews: defineTable(reviewBase).index('by_reviewCardId_ownerId', [
+		'reviewCardId',
+		'ownerId',
+	]),
 })

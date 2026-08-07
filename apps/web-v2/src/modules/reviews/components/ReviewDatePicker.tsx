@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
-import { format } from 'date-fns'
 import { CalendarIcon } from 'lucide-react'
+import { DateTime } from 'luxon'
 import { useState } from 'react'
 
 import {
@@ -62,11 +62,14 @@ export function ReviewDatePicker({
 				? styles.today
 				: null
 	const absoluteDate = value === null ? null : formatAbsoluteDate(value)
-	const selectedDate = value === null ? undefined : parseDate(value)
+	// react-day-picker uses native Date, so convert at this library boundary.
+	const selectedDate =
+		value === null ? undefined : parseDate(value).toJSDate()
 
 	const selectDate = async (date: Date | undefined) => {
 		if (!date) return
-		if (onChange) await onChange(format(date, 'yyyy-MM-dd') as DateString)
+		if (onChange)
+			await onChange(DateTime.fromJSDate(date).toISODate() as DateString)
 		setIsOpen(false)
 	}
 

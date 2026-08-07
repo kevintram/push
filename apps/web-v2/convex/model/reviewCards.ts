@@ -78,14 +78,13 @@ export async function get(
 export async function create(
 	ctx: MutationCtx,
 	userId: string,
-	topicId: Id<'topics'>,
 	fields: Infer<typeof reviewCardCreate>,
 ): Promise<Id<'reviewCards'>> {
-	await Topics.requireUserOwns(ctx, topicId, userId)
+	await Topics.requireUserOwns(ctx, fields.topicId, userId)
 
 	return await ctx.db.insert('reviewCards', {
-		topicId,
 		ownerId: userId,
+		topicId: fields.topicId,
 		type: fields.type ?? 'flashcard',
 		primaryText: fields.primaryText ?? '',
 		secondaryText: fields.secondaryText ?? '',
@@ -119,9 +118,7 @@ export async function remove(
 	reviewCardId: Id<'reviewCards'>,
 ): Promise<Doc<'reviewCards'>> {
 	const reviewCard = await requireUserOwns(ctx, reviewCardId, userId)
-
 	await ctx.db.delete('reviewCards', reviewCardId)
-
 	// Returned so callers can navigate back to the card's topic.
 	return reviewCard
 }

@@ -1,6 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
 import {
-	Anvil,
 	Check,
 	CheckCheck,
 	Circle,
@@ -12,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
+import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	Button,
 	Dialog,
@@ -29,7 +29,9 @@ import { colors } from '~/styles/colors.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
-import type { Review as ReviewModel } from '../types/review.types'
+import { useReviewActions } from '../hooks/useReviewActions'
+import { useReviewField } from '../hooks/useReviewField'
+import type { Rating, Review as ReviewModel } from '../types/review.types'
 import { ReviewDatePicker } from './ReviewDatePicker'
 
 const styles = stylex.create({
@@ -134,19 +136,6 @@ const styles = stylex.create({
 		flexGrow: 1,
 		flexShrink: 1,
 	},
-	durability: {
-		alignItems: 'center',
-		color: colors.textSecondary,
-		columnGap: spacing.xs,
-		display: 'flex',
-		whiteSpace: 'nowrap',
-	},
-	durabilityIcon: {
-		blockSize: iconSizes.md,
-		inlineSize: iconSizes.md,
-	},
-	positiveChange: { color: colors.textSuccess },
-	negativeChange: { color: colors.textDanger },
 	more: {
 		flexShrink: 0,
 		marginInlineStart: 'auto',
@@ -165,26 +154,32 @@ const ratings = {
 export function Review({ review }: { review: ReviewModel }) {
 	const [isOpen, setIsOpen] = useState(false)
 
-	const rating = review.rating === null ? null : ratings[review.rating]
+	const {
+		confirmDelete,
+		isDeleteDialogOpen,
+		isDeleting,
+		setDate,
+		setIsDeleteDialogOpen,
+		setRating,
+	} = useReviewActions(review)
+
+	const descriptionField = useReviewField({
+		errorMessage: 'Failed to update review description',
+		field: 'description',
+		reviewId: review._id,
+		value: review.description,
+	})
+	const notesField = useReviewField({
+		errorMessage: 'Failed to update review notes',
+		field: 'notes',
+		reviewId: review._id,
+		value: review.notes,
+	})
+
+	const rating = !review.rating ? null : ratings[review.rating]
 	const RatingIcon = rating?.Icon ?? Circle
 	const description = review.description.trim()
 	const hasNotes = review.notes.trim().length > 0
-	const stabilityAfter =
-		review.stability_after === null
-			? null
-			: Math.round(review.stability_after)
-	const stabilityDelta =
-		review.stability_before === null || review.stability_after === null
-			? null
-			: Math.round(review.stability_after - review.stability_before)
-	const stabilityChange =
-		stabilityDelta === null
-			? 'new'
-			: `${stabilityDelta >= 0 ? '+' : ''}${stabilityDelta}`
-	const stabilityChangeStyle =
-		stabilityDelta === null || stabilityDelta >= 0
-			? styles.positiveChange
-			: styles.negativeChange
 
 	return (
 		<>
@@ -202,7 +197,7 @@ export function Review({ review }: { review: ReviewModel }) {
 								/>
 							}
 						>
-							{review.rating === null ? (
+							{!review.rating ? (
 								<RatingIcon
 									aria-hidden='true'
 									size={iconSizes.md}
@@ -217,10 +212,16 @@ export function Review({ review }: { review: ReviewModel }) {
 							)}
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
-							<DropdownMenuRadioGroup value={review.rating ?? ''}>
+							<DropdownMenuRadioGroup
+								value={review.rating ?? ''}
+								onValueChange={value =>
+									setRating(
+										value === '' ? null : (value as Rating),
+									)
+								}
+							>
 								<DropdownMenuRadioItem
 									value=''
-									disabled
 									prefix={
 										<Circle
 											aria-hidden='true'
@@ -235,7 +236,6 @@ export function Review({ review }: { review: ReviewModel }) {
 										<DropdownMenuRadioItem
 											key={value}
 											value={value}
-											disabled
 											prefix={
 												<Icon
 													aria-hidden='true'
@@ -264,26 +264,15 @@ export function Review({ review }: { review: ReviewModel }) {
 					<div {...stylex.props(styles.footer)}>
 						<div {...stylex.props(styles.raised)}>
 							<ReviewDatePicker
-								disabled
-								isCompleted={review.completed_at !== null}
+								isCompleted={review.completedAt !== undefined}
+								onChange={setDate}
 								value={
-									(review.completed_at ??
-										review.scheduled_at) as DateString | null
+									(review.completedAt ??
+										review.scheduledAt ??
+										null) as DateString | null
 								}
 							/>
 						</div>
-						{stabilityAfter !== null && (
-							<span {...stylex.props(styles.durability)}>
-								<Anvil
-									aria-hidden='true'
-									{...stylex.props(styles.durabilityIcon)}
-								/>
-								<span>{stabilityAfter}d</span>
-								<span {...stylex.props(stabilityChangeStyle)}>
-									({stabilityChange})
-								</span>
-							</span>
-						)}
 						<div {...stylex.props(styles.spacer)} />
 						<DropdownMenu>
 							<DropdownMenuTrigger
@@ -303,7 +292,9 @@ export function Review({ review }: { review: ReviewModel }) {
 								/>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align='end'>
-								<DropdownMenuItem disabled>
+								<DropdownMenuItem
+									onClick={() => setIsDeleteDialogOpen(true)}
+								>
 									<Trash2
 										aria-hidden='true'
 										size={iconSizes.md}
@@ -319,19 +310,30 @@ export function Review({ review }: { review: ReviewModel }) {
 					<Textarea
 						aria-label='Review description'
 						placeholder='Add a description…'
-						readOnly
-						value={review.description}
+						value={descriptionField.value}
+						onBlur={descriptionField.flush}
+						onChange={descriptionField.onChange}
 						xstyle={styles.descriptionEditor}
 					/>
 					<Textarea
 						aria-label='Review notes'
 						placeholder='Add notes…'
-						readOnly
-						value={review.notes}
+						value={notesField.value}
+						onBlur={notesField.flush}
+						onChange={notesField.onChange}
 						xstyle={styles.notesEditor}
 					/>
 				</DialogContent>
 			</Dialog>
+
+			<DeleteConfirmationDialog
+				description='This review will be permanently deleted.'
+				isPending={isDeleting}
+				onConfirm={confirmDelete}
+				onOpenChange={setIsDeleteDialogOpen}
+				open={isDeleteDialogOpen}
+				title='Delete review?'
+			/>
 		</>
 	)
 }

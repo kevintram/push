@@ -34,16 +34,12 @@ export const get = query({
 })
 
 export const create = mutation({
-	args: {
-		topicId: v.id('topics'),
-		...reviewCardCreate.fields,
-	},
+	args: reviewCardCreate.fields,
 	returns: v.id('reviewCards'),
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
-		const { topicId, ...fields } = args
 
-		return await ReviewCards.create(ctx, userId, topicId, fields)
+		return await ReviewCards.create(ctx, userId, args)
 	},
 })
 
