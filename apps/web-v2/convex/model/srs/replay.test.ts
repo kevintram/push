@@ -218,7 +218,7 @@ describe('SRS replay', () => {
 		const prefix = replay({ reviews: fixture.reviews.slice(0, 2) })
 		const seedPatch = prefix.reviewPatches.at(-1)!.patch
 		const suffix = replay({
-			seedReview: {
+			previousReview: {
 				date: fixture.reviews[1]!.date,
 				...seedPatch,
 			},
@@ -234,9 +234,9 @@ describe('SRS replay', () => {
 	it('ignores a seed without an after stability snapshot', () => {
 		const reviews = [{ date: '2024-01-01', rating: 'easy' }] as const
 
-		expect(replay({ seedReview: { date: '1999-01-01' }, reviews })).toEqual(
-			replay({ reviews }),
-		)
+		expect(
+			replay({ previousReview: { date: '1999-01-01' }, reviews }),
+		).toEqual(replay({ reviews }))
 	})
 
 	it('does not mutate review inputs', () => {

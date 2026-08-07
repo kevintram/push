@@ -101,13 +101,13 @@ export async function updateCardSrs(
 			)
 			.order('asc')
 			.collect()
-	).filter(isCompleted)
+	).filter((review): review is CompletedReview => review.rating !== undefined)
 
 	// Convex sorts `undefined` before strings. The empty-string lower bound
 	// excludes undated reviews while preserving every valid date-only value.
 	// Scheduled-but-unrated reviews still land in this range, so walk backwards
 	// to the nearest rated one rather than taking the first row.
-	let seedReview: CompletedReview | undefined
+	let previousReview: CompletedReview | undefined
 	for await (const candidate of ctx.db
 		.query('reviews')
 		.withIndex('by_reviewCardId_date', query =>
@@ -117,13 +117,13 @@ export async function updateCardSrs(
 				.lt('date', startingFrom),
 		)
 		.order('desc')) {
-		if (isCompleted(candidate)) {
-			seedReview = candidate
+		if (candidate.rating !== undefined) {
+			previousReview = candidate as CompletedReview
 			break
 		}
 	}
 
-	const { reviewPatches, cardState } = replay({ seedReview, reviews })
+	const { reviewPatches, cardState } = replay({ previousReview, reviews })
 
 	for (const { review, patch } of reviewPatches) {
 		await ctx.db.patch('reviews', review._id, patch)
@@ -133,12 +133,8 @@ export async function updateCardSrs(
 	await ctx.db.patch('reviewCards', card._id, {
 		...cardState,
 		lastReviewedAt:
-			lastReplayedReview?.date ?? seedReview?.date ?? undefined,
+			lastReplayedReview?.date ?? previousReview?.date ?? undefined,
 	})
-}
-
-function isCompleted(review: Doc<'reviews'>): review is CompletedReview {
-	return review.rating !== undefined && review.date !== undefined
 }
 
 /**
@@ -149,14 +145,24 @@ function isCompleted(review: Doc<'reviews'>): review is CompletedReview {
  * database patches to persist in their own transaction.
  */
 export function replay<TReview extends CompletedReviewSrsSnapshot>({
-	seedReview,
+	previousReview,
 	reviews,
 }: {
-	seedReview?: ReviewSrsSnapshot
+	previousReview?: ReviewSrsSnapshot
 	reviews: ReadonlyArray<TReview>
 }): ReplayResult<TReview> {
 	const reviewPatches: Array<ReplayReviewPatch<TReview>> = []
-	let card = initialCard(seedReview, reviews[0])
+	const firstReviewToReplay = reviews[0]
+	// A partially populated seed is not safe to resume from, so fall back to a
+	// full replay.
+	let card =
+		previousReview?.stabilityAfter === undefined
+			? emptyCard(
+					firstReviewToReplay
+						? dateOnlyToUtc(firstReviewToReplay.date)
+						: EMPTY_CARD_DATE,
+				)
+			: cardFromReviewSnapshot(previousReview)
 
 	for (const review of reviews) {
 		const previousCard = card
@@ -174,21 +180,6 @@ export function replay<TReview extends CompletedReviewSrsSnapshot>({
 	}
 
 	return { reviewPatches, cardState: cardState(card) }
-}
-
-function initialCard(
-	seedReview: ReviewSrsSnapshot | undefined,
-	firstReview: CompletedReviewSrsSnapshot | undefined,
-): Card {
-	// A partially populated seed is not safe to resume from, so fall back to a
-	// full replay.
-	if (seedReview?.stabilityAfter === undefined) {
-		return emptyCard(
-			firstReview ? dateOnlyToUtc(firstReview.date) : EMPTY_CARD_DATE,
-		)
-	}
-
-	return cardFromReviewSnapshot(seedReview)
 }
 
 // We start directly in Learning because New is not a persisted application
