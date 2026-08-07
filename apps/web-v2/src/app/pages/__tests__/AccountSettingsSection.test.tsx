@@ -1,41 +1,39 @@
+import { useClerk, useUser } from '@clerk/react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useAuth } from '@workos-inc/authkit-react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { AccountSettingsSection } from '../AccountSettingsSection'
 
-vi.mock('@workos-inc/authkit-react', () => ({
-	useAuth: vi.fn(),
+vi.mock('@clerk/react', () => ({
+	useClerk: vi.fn(),
+	useUser: vi.fn(),
 }))
 
-// `config` reads `import.meta.env`, which Vite does not populate from
-// `.env.local` in test mode.
-vi.mock('~/lib/config', () => ({
-	config: {
-		workOs: { signOutReturnTo: 'https://signed-out.example.com' },
-	},
-}))
-
-const mockedUseAuth = vi.mocked(useAuth)
+const mockedUseClerk = vi.mocked(useClerk)
+const mockedUseUser = vi.mocked(useUser)
 
 describe('AccountSettingsSection', () => {
 	const signOut = vi.fn(async () => {})
 
 	beforeEach(() => {
 		vi.clearAllMocks()
-		mockedUseAuth.mockReturnValue({
-			isLoading: false,
-			signOut,
+		mockedUseClerk.mockReturnValue({ signOut } as unknown as ReturnType<
+			typeof useClerk
+		>)
+		mockedUseUser.mockReturnValue({
+			isLoaded: true,
+			isSignedIn: true,
 			user: {
-				email: 'reader@example.com',
-				firstName: 'Ada',
-				lastName: 'Lovelace',
+				fullName: 'Ada Lovelace',
+				primaryEmailAddress: {
+					emailAddress: 'reader@example.com',
+				},
 			},
-		} as unknown as ReturnType<typeof useAuth>)
+		} as unknown as ReturnType<typeof useUser>)
 	})
 
-	it('shows the signed-in identity and signs out to the configured return URL', async () => {
+	it('shows the Clerk identity and signs out to the application root', async () => {
 		const user = userEvent.setup()
 
 		render(<AccountSettingsSection />)
@@ -44,21 +42,20 @@ describe('AccountSettingsSection', () => {
 		expect(screen.getByText('reader@example.com')).toBeInTheDocument()
 
 		await user.click(screen.getByRole('button', { name: 'Sign out' }))
-		expect(signOut).toHaveBeenCalledWith({
-			returnTo: 'https://signed-out.example.com',
-		})
+		expect(signOut).toHaveBeenCalledWith({ redirectUrl: '/' })
 	})
 
-	it('shows only the email when the account has no name', () => {
-		mockedUseAuth.mockReturnValue({
-			isLoading: false,
-			signOut,
+	it('shows only the primary email when the account has no name', () => {
+		mockedUseUser.mockReturnValue({
+			isLoaded: true,
+			isSignedIn: true,
 			user: {
-				email: 'reader@example.com',
-				firstName: null,
-				lastName: null,
+				fullName: null,
+				primaryEmailAddress: {
+					emailAddress: 'reader@example.com',
+				},
 			},
-		} as unknown as ReturnType<typeof useAuth>)
+		} as unknown as ReturnType<typeof useUser>)
 
 		render(<AccountSettingsSection />)
 
@@ -66,11 +63,11 @@ describe('AccountSettingsSection', () => {
 		expect(screen.queryByText('Ada Lovelace')).not.toBeInTheDocument()
 	})
 
-	it('reports a failed sign-out instead of leaving a rejection unhandled', async () => {
+	it('reports a failed sign-out without logging the error payload', async () => {
 		const user = userEvent.setup()
 		const consoleError = vi
 			.spyOn(console, 'error')
-			.mockImplementation(() => {})
+			.mockImplementation(() => undefined)
 		signOut.mockRejectedValueOnce(new Error('Network down'))
 
 		render(<AccountSettingsSection />)
@@ -79,8 +76,11 @@ describe('AccountSettingsSection', () => {
 
 		await vi.waitFor(() =>
 			expect(consoleError).toHaveBeenCalledWith(
-				'Unable to sign out of WorkOS',
+				'Unable to sign out of Clerk',
 			),
+		)
+		expect(consoleError).not.toHaveBeenCalledWith(
+			expect.stringContaining('Network down'),
 		)
 
 		consoleError.mockRestore()

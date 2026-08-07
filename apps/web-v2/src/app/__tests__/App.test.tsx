@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
 import { ConvexProvider } from 'convex/react'
+import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
@@ -17,23 +18,25 @@ import { HideModeProvider } from '~/modules/reviews/hide-mode/HideModeProvider'
 import { createTestConvexClient } from '~/testing/createTestConvexClient'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
-vi.mock('@workos-inc/authkit-react', () => ({
-	useAuth: () => ({
-		isLoading: false,
-		signIn: vi.fn(),
-		signOut: vi.fn(),
+vi.mock('@clerk/react', () => ({
+	SignInButton: ({ children }: { children: ReactNode }) => children,
+	useClerk: () => ({ signOut: vi.fn() }),
+	useUser: () => ({
+		isLoaded: true,
+		isSignedIn: true,
 		user: {
-			email: 'test@example.com',
-			firstName: 'Test',
-			lastName: 'User',
+			fullName: 'Test User',
+			primaryEmailAddress: { emailAddress: 'test@example.com' },
 		},
 	}),
 }))
 
-// Only the auth hook is stubbed. The rest of `convex/react` stays real so that
-// `@convex-dev/react-query` can still import from it.
+// Keep Convex's data provider real while rendering the auth gate as signed in.
 vi.mock('convex/react', async importOriginal => ({
 	...(await importOriginal<typeof import('convex/react')>()),
+	Authenticated: ({ children }: { children: ReactNode }) => children,
+	AuthLoading: () => null,
+	Unauthenticated: () => null,
 	useConvexAuth: () => ({
 		isAuthenticated: true,
 		isLoading: false,

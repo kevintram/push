@@ -1,9 +1,17 @@
-import { useLocation } from '@tanstack/react-router'
-import { useAuth } from '@workos-inc/authkit-react'
-import { useConvexAuth } from 'convex/react'
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import { SignInButton } from '@clerk/react'
+import * as stylex from '@stylexjs/stylex'
+import { Authenticated, AuthLoading, Unauthenticated } from 'convex/react'
+import { LogIn } from 'lucide-react'
+import type { ReactNode } from 'react'
 
-import { AuthFailedPage } from './AuthFailedPage'
+import { Button } from '~/components/ui'
+import {
+	fontSizes,
+	fontWeights,
+	iconSizes,
+	spacing,
+} from '~/styles/tokens.stylex'
+
 import { NotAuthenticatedPage } from './NotAuthenticatedPage'
 
 type AuthGateProps = {
@@ -12,66 +20,61 @@ type AuthGateProps = {
 
 const AUTH_PENDING_VISIBLE_AFTER_MS = 500
 
-/**
- * Holds routed UI until Convex has accepted the WorkOS session. The router
- * remains mounted so it can own the complete sign-in and callback location.
- */
+const styles = stylex.create({
+	page: {
+		padding: spacing.xl,
+
+		alignItems: 'center',
+		display: 'flex',
+		justifyContent: 'center',
+		minHeight: '100svh',
+	},
+	content: {
+		gap: spacing.lg,
+
+		alignItems: 'center',
+		display: 'flex',
+		flexDirection: 'column',
+		textAlign: 'center',
+	},
+	title: {
+		margin: spacing.none,
+
+		fontSize: fontSizes.xl,
+		fontWeight: fontWeights.semibold,
+		letterSpacing: '-0.02em',
+		lineHeight: 1.3,
+	},
+})
+
+/** Holds routed UI until Convex has accepted the Clerk session. */
 export function AuthGate({ children }: AuthGateProps) {
-	const returnTo = useLocation({ select: location => location.href })
-	const { isLoading: isWorkOsLoading, signIn, user } = useAuth()
-	const {
-		isAuthenticated: isConvexAuthenticated,
-		isLoading: isConvexLoading,
-	} = useConvexAuth()
+	return (
+		<>
+			<AuthLoading>
+				<NotAuthenticatedPage delayMs={AUTH_PENDING_VISIBLE_AFTER_MS} />
+			</AuthLoading>
 
-	const [signInFailed, setSignInFailed] = useState(false)
-	const isWorkOsAuthenticated = Boolean(user)
-	const isAuthPending =
-		isWorkOsLoading ||
-		isConvexLoading ||
-		!isWorkOsAuthenticated ||
-		!isConvexAuthenticated
-	const startSignIn = useCallback(
-		() =>
-			signIn({
-				state: { returnTo },
-			}),
-		[returnTo, signIn],
+			<Unauthenticated>
+				<main {...stylex.props(styles.page)}>
+					<section
+						aria-labelledby='sign-in-title'
+						{...stylex.props(styles.content)}
+					>
+						<h1 id='sign-in-title' {...stylex.props(styles.title)}>
+							Sign in to 3gulp
+						</h1>
+						<SignInButton mode='modal'>
+							<Button>
+								<LogIn aria-hidden='true' size={iconSizes.md} />
+								Sign in
+							</Button>
+						</SignInButton>
+					</section>
+				</main>
+			</Unauthenticated>
+
+			<Authenticated>{children}</Authenticated>
+		</>
 	)
-
-	useEffect(() => {
-		// Automatically begin sign-in once WorkOS has confirmed there is no
-		// current user. A rejected attempt is latched so this effect doesn't turn
-		// a transient or configuration error into an infinite redirect loop.
-		if (isWorkOsLoading || isWorkOsAuthenticated || signInFailed) {
-			return
-		}
-
-		void startSignIn().catch(() => setSignInFailed(true))
-	}, [isWorkOsAuthenticated, isWorkOsLoading, signInFailed, startSignIn])
-
-	const handleRetrySignIn = useCallback(() => {
-		// A user-initiated retry is allowed without waiting for another auth state
-		// transition. Reset the failure latch before starting that new attempt.
-		setSignInFailed(false)
-
-		void startSignIn().catch(() => setSignInFailed(true))
-	}, [startSignIn])
-
-	// A WorkOS failure is actionable. All other incomplete states—including the
-	// short handoff from WorkOS to Convex—continue to use the pending screen.
-	if (!isWorkOsAuthenticated && signInFailed) {
-		return <AuthFailedPage onRetry={() => setSignInFailed(false)} />
-	}
-
-	if (isAuthPending) {
-		return (
-			<NotAuthenticatedPage
-				delayMs={AUTH_PENDING_VISIBLE_AFTER_MS}
-				onRetry={handleRetrySignIn}
-			/>
-		)
-	}
-
-	return children
 }

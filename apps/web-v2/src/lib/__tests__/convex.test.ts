@@ -44,12 +44,10 @@ describe('Convex client configuration', () => {
 		vi.resetModules()
 	})
 
-	it('reuses an accepted initial AuthKit token', async () => {
+	it('uses the configured deployment URL with default token handling', async () => {
 		await import('../convex')
 
 		expect(convexState.clientUrl).toBe('https://example.convex.cloud')
-		expect(convexState.clientOptions).toMatchObject({
-			initialAuthTokenReuse: true,
-		})
+		expect(convexState.clientOptions).toBeUndefined()
 	})
 })

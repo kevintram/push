@@ -156,6 +156,29 @@ set_env_var() {
     mv "$tmpfile" "$file"
 }
 
+# Remove KEY from a .env-style file.
+remove_env_var() {
+    local file="$1"
+    local key="$2"
+    local tmpfile
+    tmpfile="$(mktemp)"
+    awk -v key="$key" '$0 !~ "^"key"=" { print }' "$file" > "$tmpfile"
+    mv "$tmpfile" "$file"
+}
+
+# Read KEY from a .env-style file without evaluating its contents.
+get_env_var() {
+    local file="$1"
+    local key="$2"
+    awk -v key="$key" '
+        index($0, key "=") == 1 {
+            sub(/^[^=]*=/, "")
+            print
+            exit
+        }
+    ' "$file"
+}
+
 # Create or update apps/api/.env
 API_ENV="$ROOT_DIR/apps/api/.env"
 if [ ! -f "$API_ENV" ]; then
@@ -196,21 +219,29 @@ fi
 
 # Create or update apps/web-v2/.env.local
 WEB_V2_ENV="$ROOT_DIR/apps/web-v2/.env.local"
+WEB_V2_ENV_TEMPLATE="$PARENT_DIR/web-v2.env.local"
 if [ -d "$ROOT_DIR/apps/web-v2" ]; then
     if [ ! -f "$WEB_V2_ENV" ]; then
-        if [ -f "$PARENT_DIR/web.env.local" ]; then
-            cp "$PARENT_DIR/web.env.local" "$WEB_V2_ENV"
+        if [ -f "$WEB_V2_ENV_TEMPLATE" ]; then
+            cp "$WEB_V2_ENV_TEMPLATE" "$WEB_V2_ENV"
             echo "Created apps/web-v2/.env.local"
         else
             touch "$WEB_V2_ENV"
-            echo "Created apps/web-v2/.env.local"
+            echo "Created apps/web-v2/.env.local (template web-v2.env.local not found in $PARENT_DIR)"
         fi
     fi
     set_env_var "$WEB_V2_ENV" "VITE_API_URL" "$API_URL"
-    set_env_var "$WEB_V2_ENV" "VITE_WORKOS_REDIRECT_URI" "${APP_V2_URL}/"
-    # Production returns to 3gulp.com; worktrees have no local marketing site,
-    # so sign-out just leaves the app.
-    set_env_var "$WEB_V2_ENV" "VITE_WORKOS_SIGN_OUT_RETURN_TO" "https://google.com"
+    if [ -f "$WEB_V2_ENV_TEMPLATE" ]; then
+        for key in VITE_CLERK_PUBLISHABLE_KEY VITE_CONVEX_URL; do
+            template_value="$(get_env_var "$WEB_V2_ENV_TEMPLATE" "$key")"
+            if [ -n "$template_value" ]; then
+                set_env_var "$WEB_V2_ENV" "$key" "$template_value"
+            fi
+        done
+    fi
+    remove_env_var "$WEB_V2_ENV" "VITE_WORKOS_CLIENT_ID"
+    remove_env_var "$WEB_V2_ENV" "VITE_WORKOS_REDIRECT_URI"
+    remove_env_var "$WEB_V2_ENV" "VITE_WORKOS_SIGN_OUT_RETURN_TO"
     if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
         echo "Updated apps/web-v2/.env.local"
     fi
