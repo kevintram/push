@@ -22,27 +22,25 @@ function reviewCard(overrides: Partial<ReviewCard> = {}): ReviewCard {
 describe('deriveReviewCardSrsState', () => {
 	it('represents a card without SRS state as unreviewed', () => {
 		expect(deriveReviewCardSrsState(reviewCard(), '2026-02-16')).toEqual({
-			freshnessTier: null,
 			lastReviewedAt: null,
 			nextDueAt: null,
+			retrievability: null,
 			stability: null,
 		})
 	})
 
-	it('derives the current tier while leaving aggregate due data unset', () => {
-		expect(
-			deriveReviewCardSrsState(
-				reviewCard({
-					lastReviewedAt: '2026-02-11',
-					stability: 10,
-				}),
-				'2026-02-16',
-			),
-		).toEqual({
-			freshnessTier: 'Fine',
-			lastReviewedAt: '2026-02-11',
-			nextDueAt: null,
-			stability: 10,
-		})
+	it('derives retrievability while leaving aggregate due data unset', () => {
+		const srs = deriveReviewCardSrsState(
+			reviewCard({
+				lastReviewedAt: '2026-02-11',
+				stability: 10,
+			}),
+			'2026-02-16',
+		)
+
+		expect(srs.lastReviewedAt).toBe('2026-02-11')
+		expect(srs.nextDueAt).toBeNull()
+		expect(srs.stability).toBe(10)
+		expect(srs.retrievability).toBeCloseTo(0.9403442888929227, 14)
 	})
 })

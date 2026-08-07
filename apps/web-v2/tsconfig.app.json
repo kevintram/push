@@ -4,6 +4,7 @@
 		"allowUnreachableCode": false,
 		"paths": {
 			"@convex/*": ["./convex/*"],
+			"@shared/*": ["./shared/*"],
 			"~/*": ["./src/*"]
 		},
 		"erasableSyntaxOnly": true,

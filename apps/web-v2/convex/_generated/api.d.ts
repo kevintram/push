@@ -11,6 +11,7 @@
 import type * as model_auth from "../model/auth.js";
 import type * as model_reviewCards from "../model/reviewCards.js";
 import type * as model_reviews from "../model/reviews.js";
+import type * as model_srs_replay from "../model/srs/replay.js";
 import type * as model_topicRemoval from "../model/topicRemoval.js";
 import type * as model_topics from "../model/topics.js";
 import type * as reviewCards from "../reviewCards.js";
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   "model/auth": typeof model_auth;
   "model/reviewCards": typeof model_reviewCards;
   "model/reviews": typeof model_reviews;
+  "model/srs/replay": typeof model_srs_replay;
   "model/topicRemoval": typeof model_topicRemoval;
   "model/topics": typeof model_topics;
   reviewCards: typeof reviewCards;

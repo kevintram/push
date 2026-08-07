@@ -31,11 +31,11 @@ const styles = stylex.create({
 	},
 })
 
-/** Scheduling summary for a review card, including its client-derived tier. */
+/** Scheduling summary for a review card, including its recall estimate. */
 export function ReviewCardMetadata({
-	freshnessTier,
 	lastReviewedAt,
 	nextDueAt,
+	retrievability,
 	stability,
 }: ReviewCardSrsState) {
 	if (lastReviewedAt === null) {
@@ -48,8 +48,10 @@ export function ReviewCardMetadata({
 
 	return (
 		<div {...stylex.props(styles.container)}>
-			{freshnessTier !== null ? (
-				<span {...stylex.props(styles.item)}>{freshnessTier}</span>
+			{retrievability !== null ? (
+				<span {...stylex.props(styles.item)}>
+					{`${Math.round(retrievability * 100)}% recall`}
+				</span>
 			) : null}
 			{nextDueAt !== null ? (
 				<span {...stylex.props(styles.item)}>

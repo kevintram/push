@@ -1,7 +1,4 @@
-import {
-	calculateRetrievability,
-	getFreshnessTier,
-} from '@convex/model/srs/retrievability'
+import { calculateRetrievability } from '@shared/srs/retrievability'
 
 import type { DateString } from '~/types/date'
 
@@ -15,17 +12,15 @@ export function deriveReviewCardSrsState(
 	const stability = reviewCard.stability ?? null
 	const lastReviewedAt =
 		(reviewCard.lastReviewedAt as DateString | undefined) ?? null
-	const retrievability = calculateRetrievability(
-		stability,
-		lastReviewedAt,
-		today,
-	)
-
 	return {
-		freshnessTier: getFreshnessTier(retrievability),
 		lastReviewedAt,
 		// Card due-date aggregation is separate from the retrievability model.
 		nextDueAt: null,
+		retrievability: calculateRetrievability(
+			stability,
+			lastReviewedAt,
+			today,
+		),
 		stability,
 	}
 }
