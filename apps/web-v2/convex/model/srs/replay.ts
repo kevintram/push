@@ -156,7 +156,7 @@ export function replay<TReview extends CompletedReviewSrsSnapshot>({
 		previousReview?.stabilityAfter === undefined
 			? emptyCard(
 					firstReviewToReplay
-						? dateStrToJsDate(firstReviewToReplay.date)
+						? isoToJsDate(firstReviewToReplay.date)
 						: DateTime.fromMillis(0, { zone: 'utc' }).toJSDate(),
 				)
 			: cardFromReviewSnapshot(previousReview)
@@ -165,7 +165,7 @@ export function replay<TReview extends CompletedReviewSrsSnapshot>({
 		const previousCard = card
 		const { card: nextCard } = fsrsScheduler.next(
 			previousCard,
-			dateStrToJsDate(review.date),
+			isoToJsDate(review.date),
 			ratingToGrade(review.rating),
 		)
 
@@ -201,7 +201,7 @@ export function cardFromReviewSnapshot(review: ReviewSrsSnapshot): Card {
 		'difficultyAfter',
 	)
 	const state = toSchedulerState(review.stateAfter ?? 'LEARNING')
-	const jsDate = dateStrToJsDate(date)
+	const jsDate = isoToJsDate(date)
 
 	return {
 		...emptyCard(jsDate),
@@ -236,9 +236,7 @@ export function toSchedulerState(state: LearningState): State {
 	}
 }
 
-// Convert explicitly instead of relying on JavaScript's date-only parsing
-// semantics. The round trip also rejects normalized dates such as February 30.
-export function dateStrToJsDate(value: string): Date {
+export function isoToJsDate(value: string): Date {
 	const date = DateTime.fromISO(value, { zone: 'utc' })
 
 	if (!date.isValid || date.toISODate() !== value) {
@@ -248,7 +246,7 @@ export function dateStrToJsDate(value: string): Date {
 	return date.toJSDate()
 }
 
-export function jsDateToDateStr(value: Date): string {
+export function jsDateToIso(value: Date): string {
 	const date = DateTime.fromJSDate(value, { zone: 'utc' }).toISODate()
 	if (date === null) throw new Error('Invalid native date')
 	return date
@@ -275,12 +273,12 @@ function reviewPatch(before: Card, after: Card): ReviewSrsPatch {
 		difficultyBefore: beforeState.difficulty,
 		stateBefore: beforeState.state,
 		stepBefore: beforeState.step,
-		dueBefore: jsDateToDateStr(before.due),
+		dueBefore: jsDateToIso(before.due),
 		stabilityAfter: after.stability,
 		difficultyAfter: after.difficulty,
 		stateAfter: fromSchedulerState(after.state),
 		stepAfter: persistedStep(after),
-		dueAfter: jsDateToDateStr(after.due),
+		dueAfter: jsDateToIso(after.due),
 	}
 }
 
