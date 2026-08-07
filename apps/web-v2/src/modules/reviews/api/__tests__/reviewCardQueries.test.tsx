@@ -1,4 +1,5 @@
-import type { Doc, Id } from '@convex/_generated/dataModel'
+import type { Id } from '@convex/_generated/dataModel'
+import type { ReviewCard } from '@convex/validators/reviewCards'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
@@ -28,7 +29,7 @@ const reviewCardId = 'review-card-1' as Id<'reviewCards'>
 const removedReviewCard = {
 	_id: reviewCardId,
 	topicId,
-} as Doc<'reviewCards'>
+} satisfies Pick<ReviewCard, '_id' | 'topicId'>
 
 function wrapper({ children }: { children: ReactNode }) {
 	return (

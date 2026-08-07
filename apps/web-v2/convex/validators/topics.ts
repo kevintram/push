@@ -1,4 +1,4 @@
-import { v } from 'convex/values'
+import { type Infer, v } from 'convex/values'
 
 export const topicBase = v.object({
 	title: v.string(),
@@ -25,3 +25,7 @@ export const topicPatch = topicBase
 	.extend({
 		parentId: v.optional(v.union(v.id('topics'), v.null())),
 	})
+
+export type Topic = Infer<typeof topicRead>
+export type TopicCreate = Infer<typeof topicCreate>
+export type TopicPatch = Infer<typeof topicPatch>

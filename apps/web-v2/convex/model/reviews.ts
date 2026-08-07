@@ -1,9 +1,8 @@
-import { type Infer } from 'convex/values'
 import { DateTime } from 'luxon'
 
 import { type Doc, type Id } from '../_generated/dataModel'
 import { type MutationCtx, type QueryCtx } from '../_generated/server'
-import { type reviewCreate, type reviewPatch } from '../validators/reviews'
+import type { ReviewCreate, ReviewPatch } from '../validators/reviews'
 import * as ReviewCards from './reviewCards'
 import { updateCardSrs } from './srs/replay'
 
@@ -56,7 +55,7 @@ export async function listByReviewCard(
 export async function create(
 	ctx: MutationCtx,
 	userId: string,
-	fields: Infer<typeof reviewCreate>,
+	fields: ReviewCreate,
 ): Promise<Id<'reviews'>> {
 	const reviewCard = await ReviewCards.requireUserOwns(
 		ctx,
@@ -90,7 +89,7 @@ export async function update(
 	ctx: MutationCtx,
 	userId: string,
 	reviewId: Id<'reviews'>,
-	patch: Infer<typeof reviewPatch>,
+	patch: ReviewPatch,
 ): Promise<void> {
 	const review = await requireUserOwns(ctx, reviewId, userId)
 	const reviewCard = await ReviewCards.requireUserOwns(

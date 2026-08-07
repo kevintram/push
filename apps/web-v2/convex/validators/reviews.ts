@@ -1,4 +1,4 @@
-import { v } from 'convex/values'
+import { type Infer, v } from 'convex/values'
 
 import { learningState } from './reviewCards'
 
@@ -92,3 +92,7 @@ export const reviewPatch = reviewBase
 		date: v.union(v.string(), v.null()),
 	})
 	.partial()
+
+export type Review = Infer<typeof reviewRead>
+export type ReviewCreate = Infer<typeof reviewCreate>
+export type ReviewPatch = Infer<typeof reviewPatch>

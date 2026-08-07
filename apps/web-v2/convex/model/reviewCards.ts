@@ -1,10 +1,9 @@
-import type { Infer } from 'convex/values'
-
-import type { Doc, Id } from '../_generated/dataModel'
+import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import type {
-	reviewCardCreate,
-	reviewCardPatch,
+	ReviewCard,
+	ReviewCardCreate,
+	ReviewCardPatch,
 } from '../validators/reviewCards'
 import * as Topics from './topics'
 
@@ -12,7 +11,7 @@ export async function requireUserOwns(
 	ctx: QueryCtx,
 	reviewCardId: Id<'reviewCards'>,
 	userId: string,
-): Promise<Doc<'reviewCards'>> {
+): Promise<ReviewCard> {
 	const reviewCard = await ctx.db.get('reviewCards', reviewCardId)
 
 	if (!reviewCard || reviewCard.ownerId !== userId) {
@@ -43,7 +42,7 @@ export async function listByTopic(
 	ctx: QueryCtx,
 	userId: string,
 	topicId: Id<'topics'>,
-): Promise<Array<Doc<'reviewCards'>>> {
+): Promise<Array<ReviewCard>> {
 	await Topics.requireUserOwns(ctx, topicId, userId)
 
 	// A card always carries the owner of the topic it was created under, so
@@ -62,7 +61,7 @@ export async function get(
 	ctx: QueryCtx,
 	userId: string,
 	reviewCardId: Id<'reviewCards'>,
-): Promise<Doc<'reviewCards'> | null> {
+): Promise<ReviewCard | null> {
 	const reviewCard = await ctx.db.get('reviewCards', reviewCardId)
 
 	// Null rather than a throw: a card the caller cannot see is a 404 for
@@ -78,7 +77,7 @@ export async function get(
 export async function create(
 	ctx: MutationCtx,
 	userId: string,
-	fields: Infer<typeof reviewCardCreate>,
+	fields: ReviewCardCreate,
 ): Promise<Id<'reviewCards'>> {
 	await Topics.requireUserOwns(ctx, fields.topicId, userId)
 
@@ -98,7 +97,7 @@ export async function update(
 	ctx: MutationCtx,
 	userId: string,
 	reviewCardId: Id<'reviewCards'>,
-	patch: Infer<typeof reviewCardPatch>,
+	patch: ReviewCardPatch,
 ): Promise<void> {
 	await requireUserOwns(ctx, reviewCardId, userId)
 
@@ -118,7 +117,7 @@ export async function remove(
 	ctx: MutationCtx,
 	userId: string,
 	reviewCardId: Id<'reviewCards'>,
-): Promise<Doc<'reviewCards'>> {
+): Promise<ReviewCard> {
 	const reviewCard = await requireUserOwns(ctx, reviewCardId, userId)
 	await ctx.db.delete('reviewCards', reviewCardId)
 	// Returned so callers can navigate back to the card's topic.

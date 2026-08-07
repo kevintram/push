@@ -1,4 +1,5 @@
 import type { Doc, Id } from '@convex/_generated/dataModel'
+import type { ReviewCard } from '@convex/validators/reviewCards'
 import { QueryClientProvider } from '@tanstack/react-query'
 import {
 	createMemoryHistory,
@@ -55,7 +56,7 @@ const topic: Doc<'topics'> = {
 	ownerId: 'user-1',
 }
 
-const reviewCard: Doc<'reviewCards'> = {
+const reviewCard: ReviewCard = {
 	_id: reviewCardId,
 	_creationTime: 0,
 	topicId,
@@ -85,7 +86,7 @@ function renderRoute(
 		reviewCardType = 'flashcard',
 	}: {
 		missingReviewCard?: boolean
-		reviewCardType?: Doc<'reviewCards'>['type']
+		reviewCardType?: ReviewCard['type']
 	} = {},
 ) {
 	const queryClient = createTestQueryClient()

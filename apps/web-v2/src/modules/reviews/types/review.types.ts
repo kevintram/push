@@ -1,8 +1,9 @@
 import type { Doc } from '@convex/_generated/dataModel'
+import type { ReviewCard } from '@convex/validators/reviewCards'
 
 import type { DateString } from '~/types/date'
 
-export type ReviewCard = Doc<'reviewCards'>
+export type { ReviewCard }
 
 /** Client-derived scheduling metadata displayed alongside a review card. */
 export type ReviewCardSrsState = {

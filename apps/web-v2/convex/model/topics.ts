@@ -1,8 +1,6 @@
-import type { Infer } from 'convex/values'
-
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
-import type { topicCreate, topicPatch } from '../validators/topics'
+import type { TopicCreate, TopicPatch } from '../validators/topics'
 
 export async function requireUserOwns(
 	ctx: QueryCtx,
@@ -76,7 +74,7 @@ export async function get(
 export async function create(
 	ctx: MutationCtx,
 	userId: string,
-	fields: Infer<typeof topicCreate>,
+	fields: TopicCreate,
 ): Promise<Id<'topics'>> {
 	if (fields.parentId) {
 		await validateParent(ctx, fields.parentId, userId)
@@ -94,7 +92,7 @@ export async function update(
 	ctx: MutationCtx,
 	userId: string,
 	topicId: Id<'topics'>,
-	patch: Infer<typeof topicPatch>,
+	patch: TopicPatch,
 ): Promise<void> {
 	await requireUserOwns(ctx, topicId, userId)
 
