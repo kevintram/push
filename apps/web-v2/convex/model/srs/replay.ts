@@ -10,6 +10,7 @@ import { DateTime } from 'luxon'
 import * as fsrs from 'ts-fsrs'
 
 import type { MutationCtx } from '../../_generated/server'
+import { assertNonNull } from '../../utils/assertNonNull'
 import type { ReviewCard } from '../../validators/reviewCards'
 import type { Review } from '../../validators/reviews'
 
@@ -162,24 +163,18 @@ export function replay({
 // construct ts-fsrs card from a review.
 // you're like constructing a card from the end result of a review
 export function cardFrom(review: Review): fsrs.Card {
-	// TODO: extract into `assertNonNull` util function
-	function requireReviewField<T>(value: T | undefined, field: string): T {
-		if (value === undefined) {
-			throw new Error(`Review is missing ${field}`)
-		}
-
-		return value
-	}
-
-	const reviewDate = requireReviewField(review.date, 'date')
-	const dueAfter = requireReviewField(review.dueAfter, 'dueAfter')
-	const stabilityAfter = requireReviewField(
-		review.stabilityAfter,
-		'stabilityAfter',
+	const reviewDate = assertNonNull(review.date, 'Review is missing date')
+	const dueAfter = assertNonNull(
+		review.dueAfter,
+		'Review is missing dueAfter',
 	)
-	const difficultyAfter = requireReviewField(
+	const stabilityAfter = assertNonNull(
+		review.stabilityAfter,
+		'Review is missing stabilityAfter',
+	)
+	const difficultyAfter = assertNonNull(
 		review.difficultyAfter,
-		'difficultyAfter',
+		'Review is missing difficultyAfter',
 	)
 
 	const state = toSchedulerState(review.stateAfter ?? 'LEARNING')
