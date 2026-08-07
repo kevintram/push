@@ -75,11 +75,6 @@ type CompletedReview = Doc<'reviews'> & { date: string; rating: ReviewRating }
 const REQUEST_RETENTION = 0.85
 const fsrsScheduler = fsrs({ request_retention: REQUEST_RETENTION })
 
-// ts-fsrs requires every Card, including a new one, to have a due date. A new
-// card's due date has no scheduling effect before its first review; the Unix
-// epoch makes the no-history result deterministic for callers and tests.
-const EMPTY_CARD_DATE = DateTime.fromMillis(0, { zone: 'utc' }).toJSDate()
-
 /**
  * Recompute and persist a card's SRS state from the first affected day.
  *
@@ -162,7 +157,7 @@ export function replay<TReview extends CompletedReviewSrsSnapshot>({
 			? emptyCard(
 					firstReviewToReplay
 						? dateStrToJsDate(firstReviewToReplay.date)
-						: EMPTY_CARD_DATE,
+						: DateTime.fromMillis(0, { zone: 'utc' }).toJSDate(),
 				)
 			: cardFromReviewSnapshot(previousReview)
 
@@ -186,7 +181,9 @@ export function replay<TReview extends CompletedReviewSrsSnapshot>({
 
 // We start directly in Learning because New is not a persisted application
 // state. The first scheduler result will contain the actual memory state.
-export function emptyCard(referenceDate: Date = EMPTY_CARD_DATE): Card {
+export function emptyCard(
+	referenceDate: Date = DateTime.fromMillis(0, { zone: 'utc' }).toJSDate(),
+): Card {
 	return {
 		...createEmptyCard(referenceDate),
 		state: State.Learning,
