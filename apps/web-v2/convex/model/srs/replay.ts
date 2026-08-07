@@ -7,73 +7,40 @@
 // midnight while inside ts-fsrs so a replay never depends on the local timezone
 // or wall clock of the machine running it.
 import { DateTime } from 'luxon'
-import {
-	type Card,
-	createEmptyCard,
-	fsrs,
-	type Grade,
-	Rating,
-	State,
-} from 'ts-fsrs'
+import * as fsrs from 'ts-fsrs'
 
-import type { Doc } from '../../_generated/dataModel'
 import type { MutationCtx } from '../../_generated/server'
+import type { ReviewCard } from '../../validators/reviewCards'
+import type { Review } from '../../validators/reviews'
 
-// These are kept separate from ts-fsrs types so the scheduler remains an
-// implementation detail of the model.
-export type ReviewRating = 'miss' | 'hard' | 'good' | 'easy'
+export type ReviewCardSrsState = Pick<
+	ReviewCard,
+	'stability' | 'difficulty' | 'state' | 'step'
+>
 
-export type LearningState = 'LEARNING' | 'REVIEW' | 'RELEARNING'
+export type ReviewSrsPatch = Pick<
+	Review,
+	'stabilityBefore' | 'difficultyBefore' | 'stepBefore' | 'stepAfter'
+> &
+	Required<
+		Pick<
+			Review,
+			| 'stateBefore'
+			| 'dueBefore'
+			| 'stabilityAfter'
+			| 'difficultyAfter'
+			| 'stateAfter'
+			| 'dueAfter'
+		>
+	>
 
-export interface ReviewSrsSnapshot {
-	date?: string
-	rating?: ReviewRating
-	stabilityAfter?: number
-	difficultyAfter?: number
-	stateAfter?: LearningState
-	stepAfter?: number
-	dueAfter?: string
-}
-
-export interface CompletedReviewSrsSnapshot extends ReviewSrsSnapshot {
-	date: string
-	rating: ReviewRating
-}
-
-export interface ReviewSrsPatch {
-	stabilityBefore: number | undefined
-	difficultyBefore: number | undefined
-	stateBefore: LearningState
-	stepBefore: number | undefined
-	dueBefore: string
-	stabilityAfter: number
-	difficultyAfter: number
-	stateAfter: LearningState
-	stepAfter: number | undefined
-	dueAfter: string
-}
-
-export interface ReviewCardSrsState {
-	stability: number | undefined
-	difficulty: number | undefined
-	state: LearningState
-	step: number | undefined
-}
-
-export interface ReplayReviewPatch<TReview> {
-	review: TReview
-	patch: ReviewSrsPatch
-}
-
-export interface ReplayResult<TReview> {
-	reviewPatches: Array<ReplayReviewPatch<TReview>>
+export interface ReplayResult {
+	reviewPatches: Array<{ review: Review; patch: ReviewSrsPatch }>
 	cardState: ReviewCardSrsState
 }
 
-type CompletedReview = Doc<'reviews'> & { date: string; rating: ReviewRating }
-
 const REQUEST_RETENTION = 0.85
-const fsrsScheduler = fsrs({ request_retention: REQUEST_RETENTION })
+const fsrsScheduler = fsrs.fsrs({ request_retention: REQUEST_RETENTION })
 
 /**
  * Recompute and persist a card's SRS state from the first affected day.
@@ -84,8 +51,8 @@ const fsrsScheduler = fsrs({ request_retention: REQUEST_RETENTION })
  */
 export async function updateCardSrs(
 	ctx: MutationCtx,
-	card: Doc<'reviewCards'>,
-	startingFrom: string,
+	card: ReviewCard,
+	startingFrom: string, // an isoDate
 ): Promise<void> {
 	// Only the suffix at or after the changed date needs to be replayed. The
 	// latest completed review before it is enough to reconstruct the starting
@@ -98,13 +65,13 @@ export async function updateCardSrs(
 			)
 			.order('asc')
 			.collect()
-	).filter((review): review is CompletedReview => review.rating !== undefined)
+	).filter(review => review.rating !== undefined)
 
 	// Convex sorts `undefined` before strings. The empty-string lower bound
 	// excludes undated reviews while preserving every valid date-only value.
 	// Scheduled-but-unrated reviews still land in this range, so walk backwards
 	// to the nearest rated one rather than taking the first row.
-	let previousReview: CompletedReview | undefined
+	let previousReview: Review | undefined
 	for await (const candidate of ctx.db
 		.query('reviews')
 		.withIndex('by_reviewCardId_date', query =>
@@ -115,7 +82,7 @@ export async function updateCardSrs(
 		)
 		.order('desc')) {
 		if (candidate.rating !== undefined) {
-			previousReview = candidate as CompletedReview
+			previousReview = candidate
 			break
 		}
 	}
@@ -141,32 +108,45 @@ export async function updateCardSrs(
  * loop pure makes historical edits deterministic and gives callers the exact
  * database patches to persist in their own transaction.
  */
-export function replay<TReview extends CompletedReviewSrsSnapshot>({
+export function replay({
 	previousReview,
 	reviews,
 }: {
-	previousReview?: ReviewSrsSnapshot
-	reviews: ReadonlyArray<TReview>
-}): ReplayResult<TReview> {
-	const reviewPatches: Array<ReplayReviewPatch<TReview>> = []
-	const firstReviewToReplay = reviews[0]
+	previousReview?: Review
+	reviews: ReadonlyArray<Review>
+}): ReplayResult {
+	const reviewPatches: ReplayResult['reviewPatches'] = []
+	const completedReviews = reviews.map(review => {
+		if (review.date === undefined) throw new Error('Review is missing date')
+		if (review.rating === undefined)
+			throw new Error('Review is missing rating')
+		return { review, date: review.date, rating: review.rating }
+	})
+	const firstReviewToReplay = completedReviews[0]
 	// A partially populated seed is not safe to resume from, so fall back to a
 	// full replay.
 	let card =
 		previousReview?.stabilityAfter === undefined
-			? emptyCard(
-					firstReviewToReplay
-						? isoToJsDate(firstReviewToReplay.date)
-						: DateTime.fromMillis(0, { zone: 'utc' }).toJSDate(),
-				)
-			: cardFromReviewSnapshot(previousReview)
+			? {
+					...fsrs.createEmptyCard(
+						firstReviewToReplay
+							? isoToJsDate(firstReviewToReplay.date)
+							: DateTime.fromMillis(0, {
+									zone: 'utc',
+								}).toJSDate(),
+					),
+					// Skip New so the first completed review enters the learning
+					// schedule instead of immediately repeating the card.
+					state: fsrs.State.Learning,
+				}
+			: cardFrom(previousReview)
 
-	for (const review of reviews) {
+	for (const { review, date, rating } of completedReviews) {
 		const previousCard = card
 		const { card: nextCard } = fsrsScheduler.next(
 			previousCard,
-			isoToJsDate(review.date),
-			ratingToGrade(review.rating),
+			isoToJsDate(date),
+			ratingToGrade(rating),
 		)
 
 		reviewPatches.push({
@@ -179,60 +159,52 @@ export function replay<TReview extends CompletedReviewSrsSnapshot>({
 	return { reviewPatches, cardState: cardState(card) }
 }
 
-// We start directly in Learning because New is not a persisted application
-// state. The first scheduler result will contain the actual memory state.
-export function emptyCard(
-	referenceDate: Date = DateTime.fromMillis(0, { zone: 'utc' }).toJSDate(),
-): Card {
-	return {
-		...createEmptyCard(referenceDate),
-		state: State.Learning,
-	}
-}
+// construct ts-fsrs card from a review.
+// you're like constructing a card from the end result of a review
+export function cardFrom(review: Review): fsrs.Card {
+	// TODO: extract into `assertNonNull` util function
+	function requireReviewField<T>(value: T | undefined, field: string): T {
+		if (value === undefined) {
+			throw new Error(`Review is missing ${field}`)
+		}
 
-export function cardFromReviewSnapshot(review: ReviewSrsSnapshot): Card {
-	const date = requireSnapshotField(review.date, 'date')
-	const stabilityAfter = requireSnapshotField(
+		return value
+	}
+
+	const reviewDate = requireReviewField(review.date, 'date')
+	const dueAfter = requireReviewField(review.dueAfter, 'dueAfter')
+	const stabilityAfter = requireReviewField(
 		review.stabilityAfter,
 		'stabilityAfter',
 	)
-	const difficultyAfter = requireSnapshotField(
+	const difficultyAfter = requireReviewField(
 		review.difficultyAfter,
 		'difficultyAfter',
 	)
+
 	const state = toSchedulerState(review.stateAfter ?? 'LEARNING')
-	const jsDate = isoToJsDate(date)
+	const jsReviewDate = isoToJsDate(reviewDate)
 
 	return {
-		...emptyCard(jsDate),
-		// `due` is not an FSRS-6 memory-state input for the next review. Using
-		// the last review date avoids the nondeterministic wall clock used by the
-		// Python reference implementation when reconstructing a replay seed.
-		due: jsDate,
+		...fsrs.createEmptyCard(jsReviewDate),
+		due: isoToJsDate(dueAfter),
 		stability: stabilityAfter,
 		difficulty: difficultyAfter,
 		state,
-		learning_steps: state === State.Review ? 0 : (review.stepAfter ?? 0),
-		last_review: jsDate,
+		learning_steps:
+			state === fsrs.State.Review ? 0 : (review.stepAfter ?? 0),
+		last_review: jsReviewDate,
 	}
 }
 
-function requireSnapshotField<T>(value: T | undefined, field: string): T {
-	if (value === undefined) {
-		throw new Error(`Seed review is missing ${field}`)
-	}
-
-	return value
-}
-
-export function toSchedulerState(state: LearningState): State {
+export function toSchedulerState(state: ReviewCard['state']): fsrs.State {
 	switch (state) {
 		case 'LEARNING':
-			return State.Learning
+			return fsrs.State.Learning
 		case 'REVIEW':
-			return State.Review
+			return fsrs.State.Review
 		case 'RELEARNING':
-			return State.Relearning
+			return fsrs.State.Relearning
 	}
 }
 
@@ -252,21 +224,24 @@ export function jsDateToIso(value: Date): string {
 	return date
 }
 
-export function ratingToGrade(rating: ReviewRating): Grade {
+// convert our `Rating` to ts-fsrs `Grade`
+export function ratingToGrade(
+	rating: NonNullable<Review['rating']>,
+): fsrs.Grade {
 	switch (rating) {
 		case 'miss':
-			return Rating.Again
+			return fsrs.Rating.Again
 		case 'hard':
-			return Rating.Hard
+			return fsrs.Rating.Hard
 		case 'good':
-			return Rating.Good
+			return fsrs.Rating.Good
 		case 'easy':
-			return Rating.Easy
+			return fsrs.Rating.Easy
 	}
 }
 
-function reviewPatch(before: Card, after: Card): ReviewSrsPatch {
-	const beforeState = snapshotState(before)
+function reviewPatch(before: fsrs.Card, after: fsrs.Card): ReviewSrsPatch {
+	const beforeState = cardState(before)
 
 	return {
 		stabilityBefore: beforeState.stability,
@@ -277,39 +252,37 @@ function reviewPatch(before: Card, after: Card): ReviewSrsPatch {
 		stabilityAfter: after.stability,
 		difficultyAfter: after.difficulty,
 		stateAfter: fromSchedulerState(after.state),
-		stepAfter: persistedStep(after),
+		// when hit State.Review, null out learning step because it no longer applies
+		// (learning step is only for when card has `State.Learning`)
+		stepAfter:
+			after.state === fsrs.State.Review
+				? undefined
+				: after.learning_steps,
 		dueAfter: jsDateToIso(after.due),
 	}
 }
 
-function snapshotState(card: Card): ReviewCardSrsState {
-	return { ...cardState(card), step: persistedStep(card) }
-}
-
-function cardState(card: Card): ReviewCardSrsState {
+function cardState(card: fsrs.Card): ReviewCardSrsState {
 	const hasBeenReviewed = card.last_review !== undefined
 
 	return {
 		stability: hasBeenReviewed ? card.stability : undefined,
 		difficulty: hasBeenReviewed ? card.difficulty : undefined,
 		state: fromSchedulerState(card.state),
-		step: hasBeenReviewed ? persistedStep(card) : undefined,
+		step:
+			card.state === fsrs.State.Review ? undefined : card.learning_steps,
 	}
 }
 
-export function fromSchedulerState(state: State): LearningState {
+export function fromSchedulerState(state: fsrs.State): ReviewCard['state'] {
 	switch (state) {
-		case State.Learning:
+		case fsrs.State.Learning:
 			return 'LEARNING'
-		case State.Review:
+		case fsrs.State.Review:
 			return 'REVIEW'
-		case State.Relearning:
+		case fsrs.State.Relearning:
 			return 'RELEARNING'
-		case State.New:
+		case fsrs.State.New:
 			throw new Error('A new scheduler state cannot be persisted')
 	}
-}
-
-function persistedStep(card: Card): number | undefined {
-	return card.state === State.Review ? undefined : card.learning_steps
 }

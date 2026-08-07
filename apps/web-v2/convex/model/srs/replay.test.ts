@@ -3,17 +3,17 @@ import { readFileSync } from 'node:fs'
 import { Rating, State } from 'ts-fsrs'
 import { describe, expect, it } from 'vitest'
 
+import type { Id } from '../../_generated/dataModel'
+import type { ReviewCard } from '../../validators/reviewCards'
+import type { Review } from '../../validators/reviews'
 import {
-	cardFromReviewSnapshot,
-	emptyCard,
+	cardFrom,
 	fromSchedulerState,
 	isoToJsDate,
 	jsDateToIso,
-	type LearningState,
 	ratingToGrade,
 	replay,
 	type ReviewCardSrsState,
-	type ReviewRating,
 	type ReviewSrsPatch,
 	toSchedulerState,
 } from './replay'
@@ -21,21 +21,24 @@ import {
 interface ExpectedState {
 	stability: number
 	difficulty: number
-	state: LearningState
+	state: ReviewCard['state']
 	step: number | null
 }
 
 interface ExpectedPatch {
 	stabilityAfter: number
 	difficultyAfter: number
-	stateAfter: LearningState
+	stateAfter: ReviewCard['state']
 	stepAfter: number | null
 	dueAfter: string
 }
 
 interface ParityCase {
 	name: string
-	reviews: Array<{ date: string; rating: ReviewRating }>
+	reviews: Array<{
+		date: string
+		rating: NonNullable<Review['rating']>
+	}>
 	expected: Array<ExpectedPatch>
 	cardState: ExpectedState
 }
@@ -46,6 +49,18 @@ const parityCases = JSON.parse(
 		'utf8',
 	),
 ) as Array<ParityCase>
+
+function makeReview(overrides: Partial<Review> = {}): Review {
+	return {
+		_id: 'review-id' as Id<'reviews'>,
+		_creationTime: 0,
+		ownerId: 'user-id',
+		reviewCardId: 'review-card-id' as Id<'reviewCards'>,
+		description: '',
+		notes: '',
+		...overrides,
+	}
+}
 
 function expectNumberParity(
 	actual: number | undefined,
@@ -118,23 +133,17 @@ describe('SRS mappings', () => {
 })
 
 describe('SRS card construction', () => {
-	it('creates a deterministic Learning card instead of a New card', () => {
-		const card = emptyCard(isoToJsDate('2024-03-04'))
-
-		expect(card.state).toBe(State.Learning)
-		expect(card.due.toISOString()).toBe('2024-03-04T00:00:00.000Z')
-		expect(card.last_review).toBeUndefined()
-	})
-
 	it('reconstructs a seed from its after snapshot without persisted bookkeeping', () => {
-		const card = cardFromReviewSnapshot({
-			date: '2024-03-04',
-			difficultyAfter: 4.5,
-			dueAfter: '2024-04-20',
-			stabilityAfter: 12.5,
-			stateAfter: 'REVIEW',
-			stepAfter: 8,
-		})
+		const card = cardFrom(
+			makeReview({
+				date: '2024-03-04',
+				difficultyAfter: 4.5,
+				dueAfter: '2024-04-20',
+				stabilityAfter: 12.5,
+				stateAfter: 'REVIEW',
+				stepAfter: 8,
+			}),
+		)
 
 		expect(card).toMatchObject({
 			difficulty: 4.5,
@@ -144,7 +153,7 @@ describe('SRS card construction', () => {
 			stability: 12.5,
 			state: State.Review,
 		})
-		expect(card.due.toISOString()).toBe('2024-03-04T00:00:00.000Z')
+		expect(card.due.toISOString()).toBe('2024-04-20T00:00:00.000Z')
 		expect(card.last_review?.toISOString()).toBe('2024-03-04T00:00:00.000Z')
 	})
 })
@@ -153,7 +162,7 @@ describe('SRS replay', () => {
 	it.each(parityCases)(
 		'matches the deterministic replay conformance scenario: $name',
 		fixture => {
-			const result = replay({ reviews: fixture.reviews })
+			const result = replay({ reviews: fixture.reviews.map(makeReview) })
 
 			expect(result.reviewPatches).toHaveLength(fixture.expected.length)
 			result.reviewPatches.forEach(({ patch }, index) => {
@@ -163,18 +172,18 @@ describe('SRS replay', () => {
 		},
 	)
 
-	it('returns a pristine persisted card state when there is no history', () => {
+	it('returns the initial learning step when there is no history', () => {
 		expect(replay({ reviews: [] }).cardState).toEqual({
 			difficulty: undefined,
 			stability: undefined,
 			state: 'LEARNING',
-			step: undefined,
+			step: 0,
 		})
 	})
 
 	it('records a complete deterministic before snapshot for the first review', () => {
 		const first = replay({
-			reviews: [{ date: '2024-06-15', rating: 'good' }],
+			reviews: [makeReview({ date: '2024-06-15', rating: 'good' })],
 		}).reviewPatches[0]!
 
 		expect(first.patch).toMatchObject({
@@ -192,11 +201,11 @@ describe('SRS replay', () => {
 		// so keep this edge case deterministic without calling it cross-library
 		// parity.
 		const reviews = [
-			{ date: '2024-01-01', rating: 'miss' },
-			{ date: '2024-01-01', rating: 'hard' },
-			{ date: '2024-01-01', rating: 'good' },
-			{ date: '2024-01-01', rating: 'easy' },
-		] as const
+			makeReview({ date: '2024-01-01', rating: 'miss' }),
+			makeReview({ date: '2024-01-01', rating: 'hard' }),
+			makeReview({ date: '2024-01-01', rating: 'good' }),
+			makeReview({ date: '2024-01-01', rating: 'easy' }),
+		]
 
 		const first = replay({ reviews })
 		const second = replay({ reviews })
@@ -215,14 +224,16 @@ describe('SRS replay', () => {
 		const fixture = parityCases.find(
 			candidate => candidate.name === 'lapse_and_relearn',
 		)!
-		const prefix = replay({ reviews: fixture.reviews.slice(0, 2) })
+		const prefix = replay({
+			reviews: fixture.reviews.slice(0, 2).map(makeReview),
+		})
 		const seedPatch = prefix.reviewPatches.at(-1)!.patch
 		const suffix = replay({
-			previousReview: {
+			previousReview: makeReview({
 				date: fixture.reviews[1]!.date,
 				...seedPatch,
-			},
-			reviews: fixture.reviews.slice(2),
+			}),
+			reviews: fixture.reviews.slice(2).map(makeReview),
 		})
 
 		suffix.reviewPatches.forEach(({ patch }, index) => {
@@ -232,17 +243,18 @@ describe('SRS replay', () => {
 	})
 
 	it('ignores a seed without an after stability snapshot', () => {
-		const reviews = [{ date: '2024-01-01', rating: 'easy' }] as const
+		const reviews = [makeReview({ date: '2024-01-01', rating: 'easy' })]
 
 		expect(
-			replay({ previousReview: { date: '1999-01-01' }, reviews }),
+			replay({
+				previousReview: makeReview({ date: '1999-01-01' }),
+				reviews,
+			}),
 		).toEqual(replay({ reviews }))
 	})
 
 	it('does not mutate review inputs', () => {
-		const reviews = [
-			{ date: '2024-01-01', marker: 'unchanged', rating: 'good' },
-		] as const
+		const reviews = [makeReview({ date: '2024-01-01', rating: 'good' })]
 		const original = structuredClone(reviews)
 
 		const result = replay({ reviews })

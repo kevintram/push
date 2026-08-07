@@ -511,7 +511,7 @@ describe('reviews', () => {
 		expect(card?.state).toBe('LEARNING')
 		expect(card?.stability).toBeUndefined()
 		expect(card?.difficulty).toBeUndefined()
-		expect(card?.step).toBeUndefined()
+		expect(card?.step).toBe(0)
 		expect(card?.lastReviewedAt).toBeUndefined()
 	})
 
