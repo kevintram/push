@@ -13,8 +13,8 @@ import {
 	jsDateToIso,
 	ratingToGrade,
 	replay,
-	type ReviewCardSrsState,
 	type ReviewSrsPatch,
+	type SrsState,
 	toSchedulerState,
 } from './replay'
 
@@ -84,10 +84,7 @@ function expectPatchParity(
 	expect(actual.dueAfter).toBe(expected.dueAfter)
 }
 
-function expectCardParity(
-	actual: ReviewCardSrsState,
-	expected: ExpectedState,
-): void {
+function expectCardParity(actual: SrsState, expected: ExpectedState): void {
 	expectNumberParity(actual.stability, expected.stability)
 	expectNumberParity(actual.difficulty, expected.difficulty)
 	expect(actual.state).toBe(expected.state)
@@ -134,16 +131,14 @@ describe('SRS mappings', () => {
 
 describe('SRS card construction', () => {
 	it('reconstructs a seed from its after snapshot without persisted bookkeeping', () => {
-		const card = cardFrom(
-			makeReview({
-				date: '2024-03-04',
-				difficultyAfter: 4.5,
-				dueAfter: '2024-04-20',
-				stabilityAfter: 12.5,
-				stateAfter: 'REVIEW',
-				stepAfter: 8,
-			}),
-		)
+		const card = cardFrom({
+			difficulty: 4.5,
+			due: '2024-04-20',
+			lastReviewedAt: '2024-03-04',
+			stability: 12.5,
+			state: 'REVIEW',
+			step: 8,
+		})
 
 		expect(card).toMatchObject({
 			difficulty: 4.5,
@@ -169,12 +164,18 @@ describe('SRS replay', () => {
 				expectPatchParity(patch, fixture.expected[index]!)
 			})
 			expectCardParity(result.cardState, fixture.cardState)
+			expect(result.cardState.due).toBe(fixture.expected.at(-1)!.dueAfter)
+			expect(result.cardState.lastReviewedAt).toBe(
+				fixture.reviews.at(-1)!.date,
+			)
 		},
 	)
 
 	it('returns the initial learning step when there is no history', () => {
 		expect(replay({ reviews: [] }).cardState).toEqual({
 			difficulty: undefined,
+			due: '1970-01-01',
+			lastReviewedAt: undefined,
 			stability: undefined,
 			state: 'LEARNING',
 			step: 0,

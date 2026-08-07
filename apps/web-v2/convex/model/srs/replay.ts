@@ -14,10 +14,10 @@ import { assertNonNull } from '../../utils/assertNonNull'
 import type { ReviewCard } from '../../validators/reviewCards'
 import type { Review } from '../../validators/reviews'
 
-export type ReviewCardSrsState = Pick<
+export type SrsState = Pick<
 	ReviewCard,
-	'stability' | 'difficulty' | 'state' | 'step'
->
+	'stability' | 'difficulty' | 'state' | 'step' | 'lastReviewedAt'
+> & { due: string }
 
 export type ReviewSrsPatch = Pick<
 	Review,
@@ -37,7 +37,7 @@ export type ReviewSrsPatch = Pick<
 
 export interface ReplayResult {
 	reviewPatches: Array<{ review: Review; patch: ReviewSrsPatch }>
-	cardState: ReviewCardSrsState
+	cardState: SrsState
 }
 
 const REQUEST_RETENTION = 0.85
@@ -94,11 +94,10 @@ export async function updateCardSrs(
 		await ctx.db.patch('reviews', review._id, patch)
 	}
 
-	const lastReplayedReview = reviewPatches.at(-1)?.review
 	await ctx.db.patch('reviewCards', card._id, {
-		...cardState,
-		lastReviewedAt:
-			lastReplayedReview?.date ?? previousReview?.date ?? undefined,
+		...reviewCardSrsPatch(cardState),
+		// Preserve the date of a legacy seed whose SRS snapshot was incomplete.
+		lastReviewedAt: cardState.lastReviewedAt ?? previousReview?.date,
 	})
 }
 
@@ -140,7 +139,26 @@ export function replay({
 					// schedule instead of immediately repeating the card.
 					state: fsrs.State.Learning,
 				}
-			: cardFrom(previousReview)
+			: cardFrom({
+					stability: assertNonNull(
+						previousReview.stabilityAfter,
+						'Review is missing stabilityAfter',
+					),
+					difficulty: assertNonNull(
+						previousReview.difficultyAfter,
+						'Review is missing difficultyAfter',
+					),
+					state: previousReview.stateAfter ?? 'LEARNING',
+					step: previousReview.stepAfter,
+					due: assertNonNull(
+						previousReview.dueAfter,
+						'Review is missing dueAfter',
+					),
+					lastReviewedAt: assertNonNull(
+						previousReview.date,
+						'Review is missing date',
+					),
+				})
 
 	for (const { review, date, rating } of completedReviews) {
 		const previousCard = card
@@ -160,34 +178,30 @@ export function replay({
 	return { reviewPatches, cardState: cardState(card) }
 }
 
-// construct ts-fsrs card from a review.
-// you're like constructing a card from the end result of a review
-export function cardFrom(review: Review): fsrs.Card {
-	const reviewDate = assertNonNull(review.date, 'Review is missing date')
-	const dueAfter = assertNonNull(
-		review.dueAfter,
-		'Review is missing dueAfter',
+/** Reconstruct a ts-fsrs card from the application's normalized SRS state. */
+export function cardFrom(srsState: SrsState): fsrs.Card {
+	const lastReviewedAt = assertNonNull(
+		srsState.lastReviewedAt,
+		'SRS state is missing lastReviewedAt',
 	)
-	const stabilityAfter = assertNonNull(
-		review.stabilityAfter,
-		'Review is missing stabilityAfter',
+	const stability = assertNonNull(
+		srsState.stability,
+		'SRS state is missing stability',
 	)
-	const difficultyAfter = assertNonNull(
-		review.difficultyAfter,
-		'Review is missing difficultyAfter',
+	const difficulty = assertNonNull(
+		srsState.difficulty,
+		'SRS state is missing difficulty',
 	)
-
-	const state = toSchedulerState(review.stateAfter ?? 'LEARNING')
-	const jsReviewDate = isoToJsDate(reviewDate)
+	const state = toSchedulerState(srsState.state)
+	const jsReviewDate = isoToJsDate(lastReviewedAt)
 
 	return {
 		...fsrs.createEmptyCard(jsReviewDate),
-		due: isoToJsDate(dueAfter),
-		stability: stabilityAfter,
-		difficulty: difficultyAfter,
+		due: isoToJsDate(srsState.due),
+		stability,
+		difficulty,
 		state,
-		learning_steps:
-			state === fsrs.State.Review ? 0 : (review.stepAfter ?? 0),
+		learning_steps: state === fsrs.State.Review ? 0 : (srsState.step ?? 0),
 		last_review: jsReviewDate,
 	}
 }
@@ -237,27 +251,29 @@ export function ratingToGrade(
 
 function reviewPatch(before: fsrs.Card, after: fsrs.Card): ReviewSrsPatch {
 	const beforeState = cardState(before)
+	const afterState = cardState(after)
 
 	return {
 		stabilityBefore: beforeState.stability,
 		difficultyBefore: beforeState.difficulty,
 		stateBefore: beforeState.state,
 		stepBefore: beforeState.step,
-		dueBefore: jsDateToIso(before.due),
-		stabilityAfter: after.stability,
-		difficultyAfter: after.difficulty,
-		stateAfter: fromSchedulerState(after.state),
-		// when hit State.Review, null out learning step because it no longer applies
-		// (learning step is only for when card has `State.Learning`)
-		stepAfter:
-			after.state === fsrs.State.Review
-				? undefined
-				: after.learning_steps,
-		dueAfter: jsDateToIso(after.due),
+		dueBefore: beforeState.due,
+		stabilityAfter: assertNonNull(
+			afterState.stability,
+			'SRS state is missing stability',
+		),
+		difficultyAfter: assertNonNull(
+			afterState.difficulty,
+			'SRS state is missing difficulty',
+		),
+		stateAfter: afterState.state,
+		stepAfter: afterState.step,
+		dueAfter: afterState.due,
 	}
 }
 
-function cardState(card: fsrs.Card): ReviewCardSrsState {
+function cardState(card: fsrs.Card): SrsState {
 	const hasBeenReviewed = card.last_review !== undefined
 
 	return {
@@ -266,6 +282,26 @@ function cardState(card: fsrs.Card): ReviewCardSrsState {
 		state: fromSchedulerState(card.state),
 		step:
 			card.state === fsrs.State.Review ? undefined : card.learning_steps,
+		due: jsDateToIso(card.due),
+		lastReviewedAt:
+			card.last_review === undefined
+				? undefined
+				: jsDateToIso(card.last_review),
+	}
+}
+
+function reviewCardSrsPatch(
+	srsState: SrsState,
+): Pick<
+	ReviewCard,
+	'stability' | 'difficulty' | 'state' | 'step' | 'lastReviewedAt'
+> {
+	return {
+		stability: srsState.stability,
+		difficulty: srsState.difficulty,
+		state: srsState.state,
+		step: srsState.step,
+		lastReviewedAt: srsState.lastReviewedAt,
 	}
 }
 
