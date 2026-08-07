@@ -72,46 +72,11 @@ export interface ReplayResult<TReview> {
 type CompletedReview = Doc<'reviews'> & { date: string; rating: ReviewRating }
 
 const REQUEST_RETENTION = 0.85
-const scheduler = fsrs({ request_retention: REQUEST_RETENTION })
+const fsrsScheduler = fsrs({ request_retention: REQUEST_RETENTION })
 
 // A new card's due date has no scheduling effect before its first review. The
 // Unix epoch makes the no-history result deterministic for callers and tests.
 const EMPTY_CARD_DATE = new Date(0)
-
-/**
- * Replay the part of a card's history affected by a review change.
- *
- * This function is deliberately independent of Convex. Keeping the scheduling
- * loop pure makes historical edits deterministic and gives callers the exact
- * database patches to persist in their own transaction.
- */
-export function replay<TReview extends CompletedReviewSrsSnapshot>({
-	seedReview,
-	reviews,
-}: {
-	seedReview?: ReviewSrsSnapshot
-	reviews: ReadonlyArray<TReview>
-}): ReplayResult<TReview> {
-	const reviewPatches: Array<ReplayReviewPatch<TReview>> = []
-	let card = initialCard(seedReview, reviews[0])
-
-	for (const review of reviews) {
-		const previousCard = card
-		const { card: nextCard } = scheduler.next(
-			previousCard,
-			dateOnlyToUtc(review.date),
-			ratingToGrade(review.rating),
-		)
-
-		reviewPatches.push({
-			review,
-			patch: reviewPatch(previousCard, nextCard),
-		})
-		card = nextCard
-	}
-
-	return { reviewPatches, cardState: cardState(card) }
-}
 
 /**
  * Recompute and persist a card's SRS state from the first affected day.
@@ -172,57 +137,58 @@ export async function updateCardSrs(
 	})
 }
 
-// Convert explicitly instead of relying on JavaScript's date-only parsing
-// semantics. The round trip also rejects normalized dates such as February 30.
-export function dateOnlyToUtc(value: string): Date {
-	const date = new Date(`${value}T00:00:00.000Z`)
-
-	if (Number.isNaN(date.getTime()) || utcToDateOnly(date) !== value) {
-		throw new Error(`Invalid date-only value: ${value}`)
-	}
-
-	return date
+function isCompleted(review: Doc<'reviews'>): review is CompletedReview {
+	return review.rating !== undefined && review.date !== undefined
 }
 
-export function utcToDateOnly(value: Date): string {
-	return value.toISOString().slice(0, 10)
+/**
+ * Replay the part of a card's history affected by a review change.
+ *
+ * This function is deliberately independent of Convex. Keeping the scheduling
+ * loop pure makes historical edits deterministic and gives callers the exact
+ * database patches to persist in their own transaction.
+ */
+export function replay<TReview extends CompletedReviewSrsSnapshot>({
+	seedReview,
+	reviews,
+}: {
+	seedReview?: ReviewSrsSnapshot
+	reviews: ReadonlyArray<TReview>
+}): ReplayResult<TReview> {
+	const reviewPatches: Array<ReplayReviewPatch<TReview>> = []
+	let card = initialCard(seedReview, reviews[0])
+
+	for (const review of reviews) {
+		const previousCard = card
+		const { card: nextCard } = fsrsScheduler.next(
+			previousCard,
+			dateOnlyToUtc(review.date),
+			ratingToGrade(review.rating),
+		)
+
+		reviewPatches.push({
+			review,
+			patch: reviewPatch(previousCard, nextCard),
+		})
+		card = nextCard
+	}
+
+	return { reviewPatches, cardState: cardState(card) }
 }
 
-export function ratingToGrade(rating: ReviewRating): Grade {
-	switch (rating) {
-		case 'miss':
-			return Rating.Again
-		case 'hard':
-			return Rating.Hard
-		case 'good':
-			return Rating.Good
-		case 'easy':
-			return Rating.Easy
+function initialCard(
+	seedReview: ReviewSrsSnapshot | undefined,
+	firstReview: CompletedReviewSrsSnapshot | undefined,
+): Card {
+	// A partially populated seed is not safe to resume from, so fall back to a
+	// full replay.
+	if (seedReview?.stabilityAfter === undefined) {
+		return emptyCard(
+			firstReview ? dateOnlyToUtc(firstReview.date) : EMPTY_CARD_DATE,
+		)
 	}
-}
 
-export function toSchedulerState(state: LearningState): State {
-	switch (state) {
-		case 'LEARNING':
-			return State.Learning
-		case 'REVIEW':
-			return State.Review
-		case 'RELEARNING':
-			return State.Relearning
-	}
-}
-
-export function fromSchedulerState(state: State): LearningState {
-	switch (state) {
-		case State.Learning:
-			return 'LEARNING'
-		case State.Review:
-			return 'REVIEW'
-		case State.Relearning:
-			return 'RELEARNING'
-		case State.New:
-			throw new Error('A new scheduler state cannot be persisted')
-	}
+	return cardFromReviewSnapshot(seedReview)
 }
 
 // We start directly in Learning because New is not a persisted application
@@ -261,19 +227,52 @@ export function cardFromReviewSnapshot(review: ReviewSrsSnapshot): Card {
 	}
 }
 
-function initialCard(
-	seedReview: ReviewSrsSnapshot | undefined,
-	firstReview: CompletedReviewSrsSnapshot | undefined,
-): Card {
-	// A partially populated seed is not safe to resume from, so fall back to a
-	// full replay.
-	if (seedReview?.stabilityAfter === undefined) {
-		return emptyCard(
-			firstReview ? dateOnlyToUtc(firstReview.date) : EMPTY_CARD_DATE,
-		)
+function requireSnapshotField<T>(value: T | undefined, field: string): T {
+	if (value === undefined) {
+		throw new Error(`Seed review is missing ${field}`)
 	}
 
-	return cardFromReviewSnapshot(seedReview)
+	return value
+}
+
+export function toSchedulerState(state: LearningState): State {
+	switch (state) {
+		case 'LEARNING':
+			return State.Learning
+		case 'REVIEW':
+			return State.Review
+		case 'RELEARNING':
+			return State.Relearning
+	}
+}
+
+// Convert explicitly instead of relying on JavaScript's date-only parsing
+// semantics. The round trip also rejects normalized dates such as February 30.
+export function dateOnlyToUtc(value: string): Date {
+	const date = new Date(`${value}T00:00:00.000Z`)
+
+	if (Number.isNaN(date.getTime()) || utcToDateOnly(date) !== value) {
+		throw new Error(`Invalid date-only value: ${value}`)
+	}
+
+	return date
+}
+
+export function utcToDateOnly(value: Date): string {
+	return value.toISOString().slice(0, 10)
+}
+
+export function ratingToGrade(rating: ReviewRating): Grade {
+	switch (rating) {
+		case 'miss':
+			return Rating.Again
+		case 'hard':
+			return Rating.Hard
+		case 'good':
+			return Rating.Good
+		case 'easy':
+			return Rating.Easy
+	}
 }
 
 function reviewPatch(before: Card, after: Card): ReviewSrsPatch {
@@ -293,16 +292,8 @@ function reviewPatch(before: Card, after: Card): ReviewSrsPatch {
 	}
 }
 
-function requireSnapshotField<T>(value: T | undefined, field: string): T {
-	if (value === undefined) {
-		throw new Error(`Seed review is missing ${field}`)
-	}
-
-	return value
-}
-
-function persistedStep(card: Card): number | undefined {
-	return card.state === State.Review ? undefined : card.learning_steps
+function snapshotState(card: Card): ReviewCardSrsState {
+	return { ...cardState(card), step: persistedStep(card) }
 }
 
 function cardState(card: Card): ReviewCardSrsState {
@@ -316,10 +307,19 @@ function cardState(card: Card): ReviewCardSrsState {
 	}
 }
 
-function snapshotState(card: Card): ReviewCardSrsState {
-	return { ...cardState(card), step: persistedStep(card) }
+export function fromSchedulerState(state: State): LearningState {
+	switch (state) {
+		case State.Learning:
+			return 'LEARNING'
+		case State.Review:
+			return 'REVIEW'
+		case State.Relearning:
+			return 'RELEARNING'
+		case State.New:
+			throw new Error('A new scheduler state cannot be persisted')
+	}
 }
 
-function isCompleted(review: Doc<'reviews'>): review is CompletedReview {
-	return review.rating !== undefined && review.date !== undefined
+function persistedStep(card: Card): number | undefined {
+	return card.state === State.Review ? undefined : card.learning_steps
 }
