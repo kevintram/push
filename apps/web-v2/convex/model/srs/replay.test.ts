@@ -5,9 +5,10 @@ import { describe, expect, it } from 'vitest'
 
 import {
 	cardFromReviewSnapshot,
-	dateOnlyToUtc,
+	dateStrToJsDate,
 	emptyCard,
 	fromSchedulerState,
+	jsDateToDateStr,
 	type LearningState,
 	ratingToGrade,
 	replay,
@@ -15,7 +16,6 @@ import {
 	type ReviewRating,
 	type ReviewSrsPatch,
 	toSchedulerState,
-	utcToDateOnly,
 } from './replay'
 
 interface ExpectedState {
@@ -107,11 +107,11 @@ describe('SRS mappings', () => {
 	})
 
 	it('lifts and lowers date-only strings at UTC midnight', () => {
-		const date = dateOnlyToUtc('2024-02-29')
+		const date = dateStrToJsDate('2024-02-29')
 
 		expect(date.toISOString()).toBe('2024-02-29T00:00:00.000Z')
-		expect(utcToDateOnly(date)).toBe('2024-02-29')
-		expect(() => dateOnlyToUtc('2024-02-30')).toThrow(
+		expect(jsDateToDateStr(date)).toBe('2024-02-29')
+		expect(() => dateStrToJsDate('2024-02-30')).toThrow(
 			'Invalid date-only value',
 		)
 	})
@@ -119,7 +119,7 @@ describe('SRS mappings', () => {
 
 describe('SRS card construction', () => {
 	it('creates a deterministic Learning card instead of a New card', () => {
-		const card = emptyCard(new Date('2024-03-04T00:00:00.000Z'))
+		const card = emptyCard(dateStrToJsDate('2024-03-04'))
 
 		expect(card.state).toBe(State.Learning)
 		expect(card.due.toISOString()).toBe('2024-03-04T00:00:00.000Z')

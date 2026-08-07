@@ -6,6 +6,7 @@
 // Review dates are calendar dates, not timestamps. We represent them as UTC
 // midnight while inside ts-fsrs so a replay never depends on the local timezone
 // or wall clock of the machine running it.
+import { DateTime } from 'luxon'
 import {
 	type Card,
 	createEmptyCard,
@@ -74,9 +75,10 @@ type CompletedReview = Doc<'reviews'> & { date: string; rating: ReviewRating }
 const REQUEST_RETENTION = 0.85
 const fsrsScheduler = fsrs({ request_retention: REQUEST_RETENTION })
 
-// A new card's due date has no scheduling effect before its first review. The
-// Unix epoch makes the no-history result deterministic for callers and tests.
-const EMPTY_CARD_DATE = new Date(0)
+// ts-fsrs requires every Card, including a new one, to have a due date. A new
+// card's due date has no scheduling effect before its first review; the Unix
+// epoch makes the no-history result deterministic for callers and tests.
+const EMPTY_CARD_DATE = DateTime.fromMillis(0, { zone: 'utc' }).toJSDate()
 
 /**
  * Recompute and persist a card's SRS state from the first affected day.
@@ -159,7 +161,7 @@ export function replay<TReview extends CompletedReviewSrsSnapshot>({
 		previousReview?.stabilityAfter === undefined
 			? emptyCard(
 					firstReviewToReplay
-						? dateOnlyToUtc(firstReviewToReplay.date)
+						? dateStrToJsDate(firstReviewToReplay.date)
 						: EMPTY_CARD_DATE,
 				)
 			: cardFromReviewSnapshot(previousReview)
@@ -168,7 +170,7 @@ export function replay<TReview extends CompletedReviewSrsSnapshot>({
 		const previousCard = card
 		const { card: nextCard } = fsrsScheduler.next(
 			previousCard,
-			dateOnlyToUtc(review.date),
+			dateStrToJsDate(review.date),
 			ratingToGrade(review.rating),
 		)
 
@@ -202,19 +204,19 @@ export function cardFromReviewSnapshot(review: ReviewSrsSnapshot): Card {
 		'difficultyAfter',
 	)
 	const state = toSchedulerState(review.stateAfter ?? 'LEARNING')
-	const dateUtc = dateOnlyToUtc(date)
+	const jsDate = dateStrToJsDate(date)
 
 	return {
-		...emptyCard(dateUtc),
+		...emptyCard(jsDate),
 		// `due` is not an FSRS-6 memory-state input for the next review. Using
 		// the last review date avoids the nondeterministic wall clock used by the
 		// Python reference implementation when reconstructing a replay seed.
-		due: dateUtc,
+		due: jsDate,
 		stability: stabilityAfter,
 		difficulty: difficultyAfter,
 		state,
 		learning_steps: state === State.Review ? 0 : (review.stepAfter ?? 0),
-		last_review: dateUtc,
+		last_review: jsDate,
 	}
 }
 
@@ -239,18 +241,20 @@ export function toSchedulerState(state: LearningState): State {
 
 // Convert explicitly instead of relying on JavaScript's date-only parsing
 // semantics. The round trip also rejects normalized dates such as February 30.
-export function dateOnlyToUtc(value: string): Date {
-	const date = new Date(`${value}T00:00:00.000Z`)
+export function dateStrToJsDate(value: string): Date {
+	const date = DateTime.fromISO(value, { zone: 'utc' })
 
-	if (Number.isNaN(date.getTime()) || utcToDateOnly(date) !== value) {
+	if (!date.isValid || date.toISODate() !== value) {
 		throw new Error(`Invalid date-only value: ${value}`)
 	}
 
-	return date
+	return date.toJSDate()
 }
 
-export function utcToDateOnly(value: Date): string {
-	return value.toISOString().slice(0, 10)
+export function jsDateToDateStr(value: Date): string {
+	const date = DateTime.fromJSDate(value, { zone: 'utc' }).toISODate()
+	if (date === null) throw new Error('Invalid native date')
+	return date
 }
 
 export function ratingToGrade(rating: ReviewRating): Grade {
@@ -274,12 +278,12 @@ function reviewPatch(before: Card, after: Card): ReviewSrsPatch {
 		difficultyBefore: beforeState.difficulty,
 		stateBefore: beforeState.state,
 		stepBefore: beforeState.step,
-		dueBefore: utcToDateOnly(before.due),
+		dueBefore: jsDateToDateStr(before.due),
 		stabilityAfter: after.stability,
 		difficultyAfter: after.difficulty,
 		stateAfter: fromSchedulerState(after.state),
 		stepAfter: persistedStep(after),
-		dueAfter: utcToDateOnly(after.due),
+		dueAfter: jsDateToDateStr(after.due),
 	}
 }
 

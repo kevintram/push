@@ -1,3 +1,5 @@
+import { DateTime } from 'luxon'
+
 // Retrievability is the FSRS-6 estimate of the probability that a card can be
 // recalled right now. It decays from one as time passes since the last review,
 // at a rate set by the card's stability.
@@ -13,8 +15,6 @@ type OptionalValue<T> = T | null | undefined
 // decay exponent so that retrievability is exactly 90% when t equals S.
 export const SRS_DECAY = -0.1542
 export const SRS_FACTOR = 0.9 ** (1 / SRS_DECAY) - 1
-
-const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000
 
 /** Calculate the probability that a card can be recalled today. */
 export function calculateRetrievability(
@@ -34,12 +34,9 @@ export function calculateRetrievability(
 	return (1 + (SRS_FACTOR * elapsedDays) / stability) ** SRS_DECAY
 }
 
-/** Convert a date-only ISO string into its UTC calendar-day number. */
-function dateToEpochDay(value: string): number {
-	return Math.floor(Date.parse(`${value}T00:00:00Z`) / MILLISECONDS_PER_DAY)
-}
-
 /** Calculate signed UTC calendar days from `start` to `end`. */
 function daysBetween(start: string, end: string): number {
-	return dateToEpochDay(end) - dateToEpochDay(start)
+	const startDate = DateTime.fromISO(start, { zone: 'utc' })
+	const endDate = DateTime.fromISO(end, { zone: 'utc' })
+	return endDate.diff(startDate, 'days').days
 }
