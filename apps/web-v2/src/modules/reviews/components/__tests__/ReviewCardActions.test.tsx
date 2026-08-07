@@ -1,6 +1,7 @@
 import type { Doc } from '@convex/_generated/dataModel'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { DateTime } from 'luxon'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ReviewCardActions } from '../ReviewCardActions'
@@ -52,7 +53,7 @@ describe('ReviewCardActions', () => {
 	})
 
 	it('flags an unflagged card with the current time', async () => {
-		const before = Date.now()
+		const before = DateTime.now().toMillis()
 		render(<ReviewCardActions reviewCard={reviewCard} />)
 
 		await openMenu()

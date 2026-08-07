@@ -94,7 +94,7 @@ export function useAutoSave({
 		// its resulting server refresh to complete.
 		const hasRecentUserActivity =
 			lastUserActionRef.current !== null &&
-			Date.now() - lastUserActionRef.current < debounceMs + 500
+			performance.now() - lastUserActionRef.current < debounceMs + 500
 
 		if (!hasRecentUserActivity) setValue(initialValue)
 	}, [debounceMs, initialValue, key])
@@ -103,7 +103,7 @@ export function useAutoSave({
 	// input change event. Unlike React's setter, calling it always schedules a save.
 	const handleValueChange = useCallback(
 		(newValue: string) => {
-			lastUserActionRef.current = Date.now()
+			lastUserActionRef.current = performance.now()
 			setValue(newValue)
 			debouncedSave(newValue, onSave)
 		},

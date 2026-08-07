@@ -55,6 +55,18 @@
 		"no-prototype-builtins": "error",
 		"no-redeclare": "error",
 		"no-regex-spaces": "error",
+		"no-restricted-globals": [
+			"warn",
+			{
+				"globals": [
+					{
+						"name": "Date",
+						"message": "Prefer Luxon's DateTime. Native Date is appropriate at external-library boundaries."
+					}
+				],
+				"checkGlobalObject": true
+			}
+		],
 		"no-self-assign": "error",
 		"no-setter-return": "error",
 		"no-shadow-restricted-names": "error",
