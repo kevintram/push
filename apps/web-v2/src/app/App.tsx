@@ -7,13 +7,12 @@ import { AuthProvider } from '~/modules/auth/components/AuthProvider'
 import { HideModeProvider } from '~/modules/reviews/hide-mode/HideModeProvider'
 
 import { AuthedRouterProvider } from './AuthedRouterProvider'
-import { router } from './router'
 
 const showDevtools = import.meta.env.DEV && !import.meta.env.VITEST
 
 export function App() {
 	return (
-		<AuthProvider router={router}>
+		<AuthProvider>
 			<QueryClientProvider client={queryClient}>
 				<TooltipProvider>
 					<HideModeProvider>

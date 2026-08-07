@@ -79,13 +79,14 @@ Each application maintains its own:
 
 ## Worktrees
 
-Git worktrees enable parallel development with isolated ports. Each worktree gets a slot *S* (0–15) that determines its ports (API `8000 + S`, Web `5173 + S`).
+Git worktrees enable parallel development with isolated ports. Each worktree gets a slot *S* (0–15) that determines its ports (API `8000 + S`, Web `5173 + S`, Web V2 `6173 + S`).
 
 - **Setup** (`worktree-scripts/add.sh`):
   1. Claims a slot in `worktree-slots.toml`
-  2. Generates all environment files via `worktree-scripts/gen-env.sh`: `.worktree.env`, `.env`, `apps/api/.env`, and `apps/web/.env.local`
-  3. Generates run scripts for api and web: `apps/api/run.sh` and `apps/web/run.sh`
-- **Dev servers**: Use `apps/api/run.sh` and `apps/web/run.sh` to start on assigned ports (runs `gen-env.sh` to refresh env files and recreate any missing ones).
+  2. Generates all environment files via `worktree-scripts/gen-env.sh`: `.worktree.env`, `.env`, `apps/api/.env`, `apps/web/.env.local`, and `apps/web-v2/.env.local`
+  3. Generates run scripts for api, web, and web-v2: `apps/api/run.sh`, `apps/web/run.sh`, and `apps/web-v2/run.sh`
+- **Dev servers**: Use each app's `run.sh` to start on its assigned port. The script refreshes generated environment values and recreates missing files.
+- **Web V2 auth template**: Create an uncommitted `web-v2.env.local` beside the repository/worktrees with the development `VITE_CLERK_PUBLISHABLE_KEY` and `VITE_CONVEX_URL`. Worktrees copy or refresh those values in `apps/web-v2/.env.local`; generated API values are then updated for the worktree slot.
 - **Teardown**: `worktree-scripts/remove.sh` removes the worktree and frees its slot.
 
 ### WorkOS redirect URIs

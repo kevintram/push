@@ -1,9 +1,8 @@
+import { useClerk, useUser } from '@clerk/react'
 import * as stylex from '@stylexjs/stylex'
-import { useAuth } from '@workos-inc/authkit-react'
 import { UserRound } from 'lucide-react'
 
 import { Button } from '~/components/ui'
-import { config } from '~/lib/config'
 import { colors } from '~/styles/colors.stylex'
 import {
 	fontSizes,
@@ -101,16 +100,14 @@ const styles = stylex.create({
 })
 
 export function AccountSettingsSection() {
-	const { signOut, user } = useAuth()
-	const displayName = [user?.firstName, user?.lastName]
-		.filter(Boolean)
-		.join(' ')
+	const { signOut } = useClerk()
+	const { user } = useUser()
+	const displayName = user?.fullName?.trim()
+	const email = user?.primaryEmailAddress?.emailAddress
 
 	const handleSignOut = () => {
-		void Promise.resolve(
-			signOut({ returnTo: config.workOs.signOutReturnTo }),
-		).catch(() => {
-			console.error('Unable to sign out of WorkOS')
+		void signOut({ redirectUrl: '/' }).catch(() => {
+			console.error('Unable to sign out of Clerk')
 		})
 	}
 
@@ -134,9 +131,7 @@ export function AccountSettingsSection() {
 							{displayName}
 						</p>
 					)}
-					<p {...stylex.props(styles.accountDescription)}>
-						{user?.email}
-					</p>
+					<p {...stylex.props(styles.accountDescription)}>{email}</p>
 				</div>
 
 				<div {...stylex.props(styles.actionContainer)}>
