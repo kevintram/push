@@ -18,6 +18,7 @@ export const reviewCardBase = v.object({
 	difficulty: v.optional(v.number()),
 	state: learningState,
 	step: v.optional(v.number()),
+	due: v.optional(v.string()),
 	lastReviewedAt: v.optional(v.string()),
 })
 
@@ -38,6 +39,7 @@ export const reviewCardCreate = v.object({
 			'difficulty',
 			'state',
 			'step',
+			'due',
 			'lastReviewedAt',
 		)
 		.partial().fields,
@@ -56,6 +58,7 @@ export const reviewCardPatch = reviewCardBase
 		'difficulty',
 		'state',
 		'step',
+		'due',
 		'lastReviewedAt',
 	)
 	.extend({

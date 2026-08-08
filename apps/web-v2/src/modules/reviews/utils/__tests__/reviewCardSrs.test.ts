@@ -29,9 +29,10 @@ describe('deriveReviewCardSrsState', () => {
 		})
 	})
 
-	it('derives retrievability while leaving aggregate due data unset', () => {
+	it('derives retrievability and exposes the persisted SRS due date', () => {
 		const srs = deriveReviewCardSrsState(
 			reviewCard({
+				due: '2026-02-20',
 				lastReviewedAt: '2026-02-11',
 				stability: 10,
 			}),
@@ -39,7 +40,7 @@ describe('deriveReviewCardSrsState', () => {
 		)
 
 		expect(srs.lastReviewedAt).toBe('2026-02-11')
-		expect(srs.nextDueAt).toBeNull()
+		expect(srs.nextDueAt).toBe('2026-02-20')
 		expect(srs.stability).toBe(10)
 		expect(srs.retrievability).toBeCloseTo(0.9403442888929227, 14)
 	})

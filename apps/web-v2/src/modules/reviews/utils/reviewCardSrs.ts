@@ -12,10 +12,10 @@ export function deriveReviewCardSrsState(
 	const stability = reviewCard.stability ?? null
 	const lastReviewedAt =
 		(reviewCard.lastReviewedAt as DateString | undefined) ?? null
+	const nextDueAt = (reviewCard.due as DateString | undefined) ?? null
 	return {
 		lastReviewedAt,
-		// Card due-date aggregation is separate from the retrievability model.
-		nextDueAt: null,
+		nextDueAt,
 		retrievability: calculateRetrievability(
 			stability,
 			lastReviewedAt,

@@ -294,13 +294,16 @@ function reviewCardSrsPatch(
 	srsState: SrsState,
 ): Pick<
 	ReviewCard,
-	'stability' | 'difficulty' | 'state' | 'step' | 'lastReviewedAt'
+	'stability' | 'difficulty' | 'state' | 'step' | 'due' | 'lastReviewedAt'
 > {
 	return {
 		stability: srsState.stability,
 		difficulty: srsState.difficulty,
 		state: srsState.state,
 		step: srsState.step,
+		// An empty replay uses an epoch-backed ts-fsrs card internally. It is not
+		// a real schedule, so clearing the final completed review must clear due.
+		due: srsState.lastReviewedAt === undefined ? undefined : srsState.due,
 		lastReviewedAt: srsState.lastReviewedAt,
 	}
 }
