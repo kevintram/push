@@ -14,7 +14,7 @@ import { assertNonNull } from '../../utils/assertNonNull'
 import type { ReviewCard } from '../../validators/reviewCards'
 import type { Review } from '../../validators/reviews'
 
-export type SrsState = Pick<
+export type ReviewCardSrsState = Pick<
 	ReviewCard,
 	'stability' | 'difficulty' | 'state' | 'step' | 'lastReviewedAt'
 > & { due: string }
@@ -37,7 +37,7 @@ export type ReviewSrsPatch = Pick<
 
 export interface ReplayResult {
 	reviewPatches: Array<{ review: Review; patch: ReviewSrsPatch }>
-	cardState: SrsState
+	cardState: ReviewCardSrsState
 }
 
 const REQUEST_RETENTION = 0.85
@@ -95,7 +95,13 @@ export async function updateCardSrs(
 	}
 
 	await ctx.db.patch('reviewCards', card._id, {
-		...reviewCardSrsPatch(cardState),
+		stability: cardState.stability,
+		difficulty: cardState.difficulty,
+		state: cardState.state,
+		step: cardState.step,
+		// An empty replay uses an epoch-backed ts-fsrs card internally. It is not
+		// a real schedule, so clearing the final completed review must clear due.
+		due: cardState.lastReviewedAt === undefined ? undefined : cardState.due,
 		// Preserve the date of a legacy seed whose SRS snapshot was incomplete.
 		lastReviewedAt: cardState.lastReviewedAt ?? previousReview?.date,
 	})
@@ -139,7 +145,7 @@ export function replay({
 					// schedule instead of immediately repeating the card.
 					state: fsrs.State.Learning,
 				}
-			: cardFrom({
+			: reviewCardSrsStateToFsrsCard({
 					stability: assertNonNull(
 						previousReview.stabilityAfter,
 						'Review is missing stabilityAfter',
@@ -161,25 +167,47 @@ export function replay({
 				})
 
 	for (const { review, date, rating } of completedReviews) {
-		const previousCard = card
+		const beforeState = fsrsCardToReviewCardSrsState(card)
 		const { card: nextCard } = fsrsScheduler.next(
-			previousCard,
+			card,
 			isoToJsDate(date),
-			ratingToGrade(rating),
+			reviewRatingToFsrsGrade(rating),
 		)
+		const afterState = fsrsCardToReviewCardSrsState(nextCard)
 
 		reviewPatches.push({
 			review,
-			patch: reviewPatch(previousCard, nextCard),
+			patch: {
+				stabilityBefore: beforeState.stability,
+				difficultyBefore: beforeState.difficulty,
+				stateBefore: beforeState.state,
+				stepBefore: beforeState.step,
+				dueBefore: beforeState.due,
+				stabilityAfter: assertNonNull(
+					afterState.stability,
+					'SRS state is missing stability',
+				),
+				difficultyAfter: assertNonNull(
+					afterState.difficulty,
+					'SRS state is missing difficulty',
+				),
+				stateAfter: afterState.state,
+				stepAfter: afterState.step,
+				dueAfter: afterState.due,
+			},
 		})
 		card = nextCard
 	}
 
-	return { reviewPatches, cardState: cardState(card) }
+	return { reviewPatches, cardState: fsrsCardToReviewCardSrsState(card) }
 }
 
+// TODO(4): Consider extracting these ts-fsrs boundary conversions into a
+// dedicated adapter module.
 /** Reconstruct a ts-fsrs card from the application's normalized SRS state. */
-export function cardFrom(srsState: SrsState): fsrs.Card {
+export function reviewCardSrsStateToFsrsCard(
+	srsState: ReviewCardSrsState,
+): fsrs.Card {
 	const lastReviewedAt = assertNonNull(
 		srsState.lastReviewedAt,
 		'SRS state is missing lastReviewedAt',
@@ -192,7 +220,8 @@ export function cardFrom(srsState: SrsState): fsrs.Card {
 		srsState.difficulty,
 		'SRS state is missing difficulty',
 	)
-	const state = toSchedulerState(srsState.state)
+
+	const state = reviewCardStateToFsrsState(srsState.state)
 	const jsReviewDate = isoToJsDate(lastReviewedAt)
 
 	return {
@@ -206,7 +235,9 @@ export function cardFrom(srsState: SrsState): fsrs.Card {
 	}
 }
 
-export function toSchedulerState(state: ReviewCard['state']): fsrs.State {
+export function reviewCardStateToFsrsState(
+	state: ReviewCard['state'],
+): fsrs.State {
 	switch (state) {
 		case 'LEARNING':
 			return fsrs.State.Learning
@@ -214,6 +245,53 @@ export function toSchedulerState(state: ReviewCard['state']): fsrs.State {
 			return fsrs.State.Review
 		case 'RELEARNING':
 			return fsrs.State.Relearning
+	}
+}
+
+export function reviewRatingToFsrsGrade(
+	rating: NonNullable<Review['rating']>,
+): fsrs.Grade {
+	switch (rating) {
+		case 'miss':
+			return fsrs.Rating.Again
+		case 'hard':
+			return fsrs.Rating.Hard
+		case 'good':
+			return fsrs.Rating.Good
+		case 'easy':
+			return fsrs.Rating.Easy
+	}
+}
+
+function fsrsCardToReviewCardSrsState(card: fsrs.Card): ReviewCardSrsState {
+	const hasBeenReviewed = card.last_review !== undefined
+
+	return {
+		stability: hasBeenReviewed ? card.stability : undefined,
+		difficulty: hasBeenReviewed ? card.difficulty : undefined,
+		state: fsrsStateToReviewCardState(card.state),
+		step:
+			card.state === fsrs.State.Review ? undefined : card.learning_steps,
+		due: jsDateToIso(card.due),
+		lastReviewedAt:
+			card.last_review === undefined
+				? undefined
+				: jsDateToIso(card.last_review),
+	}
+}
+
+export function fsrsStateToReviewCardState(
+	state: fsrs.State,
+): ReviewCard['state'] {
+	switch (state) {
+		case fsrs.State.Learning:
+			return 'LEARNING'
+		case fsrs.State.Review:
+			return 'REVIEW'
+		case fsrs.State.Relearning:
+			return 'RELEARNING'
+		case fsrs.State.New:
+			throw new Error('A new scheduler state cannot be persisted')
 	}
 }
 
@@ -231,92 +309,4 @@ export function jsDateToIso(value: Date): string {
 	const date = DateTime.fromJSDate(value, { zone: 'utc' }).toISODate()
 	if (date === null) throw new Error('Invalid native date')
 	return date
-}
-
-// convert our `Rating` to ts-fsrs `Grade`
-export function ratingToGrade(
-	rating: NonNullable<Review['rating']>,
-): fsrs.Grade {
-	switch (rating) {
-		case 'miss':
-			return fsrs.Rating.Again
-		case 'hard':
-			return fsrs.Rating.Hard
-		case 'good':
-			return fsrs.Rating.Good
-		case 'easy':
-			return fsrs.Rating.Easy
-	}
-}
-
-function reviewPatch(before: fsrs.Card, after: fsrs.Card): ReviewSrsPatch {
-	const beforeState = cardState(before)
-	const afterState = cardState(after)
-
-	return {
-		stabilityBefore: beforeState.stability,
-		difficultyBefore: beforeState.difficulty,
-		stateBefore: beforeState.state,
-		stepBefore: beforeState.step,
-		dueBefore: beforeState.due,
-		stabilityAfter: assertNonNull(
-			afterState.stability,
-			'SRS state is missing stability',
-		),
-		difficultyAfter: assertNonNull(
-			afterState.difficulty,
-			'SRS state is missing difficulty',
-		),
-		stateAfter: afterState.state,
-		stepAfter: afterState.step,
-		dueAfter: afterState.due,
-	}
-}
-
-function cardState(card: fsrs.Card): SrsState {
-	const hasBeenReviewed = card.last_review !== undefined
-
-	return {
-		stability: hasBeenReviewed ? card.stability : undefined,
-		difficulty: hasBeenReviewed ? card.difficulty : undefined,
-		state: fromSchedulerState(card.state),
-		step:
-			card.state === fsrs.State.Review ? undefined : card.learning_steps,
-		due: jsDateToIso(card.due),
-		lastReviewedAt:
-			card.last_review === undefined
-				? undefined
-				: jsDateToIso(card.last_review),
-	}
-}
-
-function reviewCardSrsPatch(
-	srsState: SrsState,
-): Pick<
-	ReviewCard,
-	'stability' | 'difficulty' | 'state' | 'step' | 'due' | 'lastReviewedAt'
-> {
-	return {
-		stability: srsState.stability,
-		difficulty: srsState.difficulty,
-		state: srsState.state,
-		step: srsState.step,
-		// An empty replay uses an epoch-backed ts-fsrs card internally. It is not
-		// a real schedule, so clearing the final completed review must clear due.
-		due: srsState.lastReviewedAt === undefined ? undefined : srsState.due,
-		lastReviewedAt: srsState.lastReviewedAt,
-	}
-}
-
-export function fromSchedulerState(state: fsrs.State): ReviewCard['state'] {
-	switch (state) {
-		case fsrs.State.Learning:
-			return 'LEARNING'
-		case fsrs.State.Review:
-			return 'REVIEW'
-		case fsrs.State.Relearning:
-			return 'RELEARNING'
-		case fsrs.State.New:
-			throw new Error('A new scheduler state cannot be persisted')
-	}
 }
