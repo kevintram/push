@@ -113,6 +113,17 @@ convex/
 └── *.test.ts              # exercise the public API, not model/ directly
 ```
 
+### Mutation Patch Semantics
+
+For optional fields in public Convex mutation patches, use a three-state API:
+
+- An omitted field leaves the stored value unchanged.
+- `null` clears the stored optional field.
+- A non-null value sets or replaces the stored value.
+
+Patch validators should express this using an optional nullable field, such as
+`v.optional(v.union(valueValidator, v.null()))`.
+
 ## Testing Rules
 
 Vitest runs two projects (see `vite.config.ts`): `frontend` for `src/` under Happy DOM, and `convex` for `convex/` under `edge-runtime`. `pnpm test` and `pnpm test:ci` run both.
@@ -130,6 +141,12 @@ Vitest runs two projects (see `vite.config.ts`): `frontend` for `src/` under Hap
 The API is cookie-authenticated and generally cannot be tested by hitting API endpoints directly. User-facing flows should be validated through the browser when auth is involved.
 
 Local WebV2 uses `VITE_API_URL` from `apps/web-v2/.env.local`, refreshed by `worktree-scripts/gen-env.sh`. If WebV2 API requests fail locally with CORS or cookie issues, check the worktree-generated API origin settings before changing frontend request code.
+
+## Date Conventions
+
+- In `src/`, a `DateString` is a calendar date in the user's current local timezone. Use `todayIso()` for the current day and `parseDate()` for local-midnight parsing.
+- In `shared/srs/` and `convex/model/srs/`, date strings are opaque day indexes. Parse them at UTC midnight so replay and elapsed-day calculations do not depend on the process timezone.
+- `date` and `due` are date-only values. Clients submit the local completion date when a review is first rated; the backend validates it and never invents the user's day.
 
 ## Generated Files
 
