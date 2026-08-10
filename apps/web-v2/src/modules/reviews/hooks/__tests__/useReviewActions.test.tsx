@@ -30,7 +30,7 @@ describe('useReviewActions', () => {
 		vi.useRealTimers()
 	})
 
-	it('submits a date with every non-null rating', () => {
+	it('submits the local today with a first completion only', () => {
 		vi.useFakeTimers()
 		vi.setSystemTime(DateTime.fromISO('2026-08-09T01:00:00Z').toJSDate())
 		Settings.defaultZone = 'America/Los_Angeles'
@@ -53,13 +53,10 @@ describe('useReviewActions', () => {
 		rerender({
 			review: { ...baseReview, date: '2026-08-08', rating: 'good' },
 		})
+		// Re-rating leaves the stored completion day alone.
 		act(() => result.current.setRating('easy'))
 		expect(updateMutate).toHaveBeenLastCalledWith(
-			{
-				date: '2026-08-08',
-				rating: 'easy',
-				reviewId: baseReview._id,
-			},
+			{ rating: 'easy', reviewId: baseReview._id },
 			expect.anything(),
 		)
 

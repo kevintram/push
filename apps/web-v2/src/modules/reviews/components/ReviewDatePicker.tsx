@@ -120,6 +120,8 @@ export function ReviewDatePicker({
 						selected={selectedDate}
 					/>
 					<Button
+						// A completed review must always have a date so disable date clearing.
+						disabled={isCompleted}
 						onClick={() => void clearDate()}
 						size='small'
 						variant='outline'
