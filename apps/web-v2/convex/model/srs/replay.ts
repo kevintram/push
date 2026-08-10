@@ -9,6 +9,7 @@
 import { DateTime } from 'luxon'
 import * as fsrs from 'ts-fsrs'
 
+import { assertIsoDate } from '../../../shared/date'
 import type { MutationCtx } from '../../_generated/server'
 import { assertNonNull } from '../../utils/assertNonNull'
 import type { ReviewCard } from '../../validators/reviewCards'
@@ -296,13 +297,8 @@ export function fsrsStateToReviewCardState(
 }
 
 export function isoToJsDate(value: string): Date {
-	const date = DateTime.fromISO(value, { zone: 'utc' })
-
-	if (!date.isValid || date.toISODate() !== value) {
-		throw new Error(`Invalid date-only value: ${value}`)
-	}
-
-	return date.toJSDate()
+	assertIsoDate(value)
+	return DateTime.fromISO(value, { zone: 'utc' }).toJSDate()
 }
 
 export function jsDateToIso(value: Date): string {

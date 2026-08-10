@@ -129,6 +129,10 @@ describe('SRS mappings', () => {
 		expect(() => isoToJsDate('2024-02-30')).toThrow(
 			'Invalid date-only value',
 		)
+		expect(() => isoToJsDate('2024-2-9')).toThrow('Invalid date-only value')
+		expect(() => isoToJsDate('2024-02-29T00:00:00Z')).toThrow(
+			'Invalid date-only value',
+		)
 	})
 })
 
