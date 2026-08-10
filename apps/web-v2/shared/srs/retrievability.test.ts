@@ -29,7 +29,7 @@ describe('calculateRetrievability', () => {
 		expect(at('2026-02-11')).toBeGreaterThan(at('2025-12-16'))
 	})
 
-	it('clamps a future review date to zero elapsed days', () => {
+	it('defensively floors elapsed days for data bypassing write invariants', () => {
 		expect(calculateRetrievability(10, '2026-02-17', TODAY)).toBe(1)
 	})
 })

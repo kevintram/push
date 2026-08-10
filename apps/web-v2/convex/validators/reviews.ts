@@ -12,18 +12,8 @@ export const rating = v.union(
 export const reviewBase = v.object({
 	ownerId: v.string(),
 	reviewCardId: v.id('reviewCards'),
-	// A review is completed exactly when it carries a rating. There is no
-	// completed-but-ungraded state, so `rating` is the completion flag rather
-	// than something a separate timestamp has to be kept in sync with.
 	rating: v.optional(rating),
-	// The day the review happened when it is rated, and the day it is scheduled
-	// for when it is not. A review can also be undated, meaning "someday".
-	// Invariant: a rated review always has a date. `Reviews.create`/`update` are
-	// the only places that enforce it.
-	// Date-only strings match the calendar UI and avoid timezone shifts for a
-	// user's intended review day.
-	// TODO(2): validate YYYY-MM-DD when review mutations are added.
-	date: v.optional(v.string()),
+	date: v.optional(v.string()), // YYYY-MM-DD
 	description: v.string(),
 	notes: v.string(),
 	stabilityBefore: v.optional(v.number()),
@@ -47,7 +37,7 @@ export const reviewCreate = reviewBase
 	.omit(
 		'ownerId',
 		'reviewCardId',
-		// omit SRS columns because they're handled by *us* ONLY
+		// omit SRS columns because they're *only* handled by server
 		'stabilityBefore',
 		'difficultyBefore',
 		'stateBefore',
@@ -62,17 +52,13 @@ export const reviewCreate = reviewBase
 	.partial()
 	.extend({ reviewCardId: v.id('reviewCards') }) // require
 
-// The mutable review fields. `rating`/`date` are three-state: omit/undefined =
-// leave alone, null = clear, value = set. `Reviews.update` enforces the
-// rated-implies-dated invariant across the pair.
-// `description`/`notes` stay plain optional strings since they are never
-// unset back to undefined, only ever emptied.
-// `reviewCardId`/`ownerId` stay unsettable.
 export const reviewPatch = reviewBase
 	.omit(
+		// omit so they're unsettable
 		'ownerId',
 		'reviewCardId',
-		//
+		// omit so we can do the three-state jawn
+		// (1. omit/undefined = leave alone 2. null = clear 3. value = set.)
 		'rating',
 		'date',
 		// omit SRS columns because they're handled by *us* ONLY

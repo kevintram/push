@@ -26,8 +26,8 @@ export function calculateRetrievability(
 	// the forgetting curve. Keep that distinct from a known probability of 0.
 	if (stability == null || lastReviewedAt == null) return null
 
-	// Future review dates can occur through clock skew or imported data. They
-	// represent a card with no elapsed forgetting time, not negative decay.
+	// Public mutations prevent future completion dates beyond the UTC+1 safety
+	// bound. Keep this floor for legacy or directly inserted data.
 	const elapsedDays = Math.max(0, daysBetween(lastReviewedAt, today))
 	if (elapsedDays === 0) return 1
 

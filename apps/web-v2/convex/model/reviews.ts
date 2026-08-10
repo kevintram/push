@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
 
+import { assertIsoDate } from '../../shared/date'
 import { type Doc, type Id } from '../_generated/dataModel'
 import { type MutationCtx, type QueryCtx } from '../_generated/server'
 import type { ReviewCreate, ReviewPatch } from '../validators/reviews'
@@ -55,16 +56,13 @@ export async function create(
 		userId,
 	)
 
-	// A rating is what completes a review, and a completed review has to have
-	// happened on some day, so rating without a date means "rated today".
-	// TODO(2): This stamps the UTC calendar day. Convex has no access to the
-	// user's timezone, so this lands a day late for users rating in their local
-	// evening. Fix by passing the client's IANA zone as a mutation argument and
-	// switching to `DateTime.now().setZone(zone)`.
-	const { rating } = fields
-	const date =
-		fields.date ??
-		(rating !== undefined ? DateTime.utc().toISODate()! : undefined)
+	// A rating is the completion marker for a review, and every completion must
+	// identify the calendar day on which it happened. The client supplies that
+	// day because the backend does not know the user's timezone. In particular,
+	// do not replace a missing date with the current UTC date here.
+	const { date, rating } = fields
+	if (date !== undefined) assertIsoDate(date)
+	assertCompletedReviewIsValid(rating, date)
 
 	const reviewId = await ctx.db.insert('reviews', {
 		ownerId: userId,
@@ -75,7 +73,9 @@ export async function create(
 		notes: fields.notes ?? '',
 	})
 
+	// if this review is completed
 	if (rating !== undefined && date !== undefined) {
+		// run SRS on the corresponding review card
 		await updateCardSrs(ctx, reviewCard, date)
 	}
 
@@ -97,16 +97,27 @@ export async function update(
 	const wasCompleted = review.rating !== undefined
 	const oldDate = review.date
 
+	// 1. Validate the `date` format.
+	// 2. Require a `date` whenever `rating` is non-null.
+	//
+	// Passing both values together prevents a race condition. If `rating` were
+	// passed independently, we would have to rely on server data that another
+	// mutation could change concurrently.
 	const { rating, date, ...fields } = patch
+	if (date !== undefined && date !== null) assertIsoDate(date)
+	if (rating !== undefined && rating !== null && date === null) {
+		throw new Error('A completed review cannot have a null date')
+	}
+
 	const updates: Partial<Doc<'reviews'>> = { ...fields }
 	let newRating = review.rating
 	let newDate = review.date
 
-	// Convex clears an optional document field when it is patched with
-	// `undefined`; the public API uses `null` to request that operation.
+	// Convex uses `undefined` to delete an optional document field, but we
+	// use null so we do some translation.
 	if (date === null) {
-		// A completed review has to have happened on some day, so dropping the
-		// date drops the completion with it.
+		// A completion cannot exist without its day, so clearing the day also
+		// reopens the review even when the caller omits `rating`.
 		newDate = undefined
 		newRating = undefined
 	} else if (date !== undefined) {
@@ -114,33 +125,51 @@ export async function update(
 	}
 
 	if (rating === null) {
-		// Un-rating reopens the review but leaves its date alone, so the review
-		// simply becomes scheduled for that day again.
+		// Clearing only the rating preserves the day. This turns the completion
+		// back into a review scheduled for that same day.
 		newRating = undefined
 	} else if (rating !== undefined) {
 		newRating = rating
-		// TODO(2) accept timezone
-		newDate ??= DateTime.utc().toISODate()!
+		if (!wasCompleted) {
+			// The first completion must carry the client's actual completion day.
+			// A date already stored on an unrated row is only a scheduled day and
+			// must not be mistaken for when the review was completed.
+			if (date === undefined || date === null) {
+				throw new Error('Completing a review requires an explicit date')
+			}
+			newDate = date
+		}
 	}
 
-	if (rating !== undefined || date !== undefined) {
-		updates.rating = newRating
-		updates.date = newDate
+	const completionChanged = rating !== undefined || date !== undefined
+	if (!completionChanged) {
+		// Patch now and early return to avoid SRS stuff.
+		await ctx.db.patch('reviews', reviewId, updates)
+		return
 	}
+
+	assertCompletedReviewIsValid(newRating, newDate)
+	updates.rating = newRating
+	updates.date = newDate
 
 	const isCompleted = newRating !== undefined
-
 	if (!isCompleted && wasCompleted) {
+		// Clear review's SRS state
 		Object.assign(updates, emptySrsSnapshot)
 	}
 
 	await ctx.db.patch('reviews', reviewId, updates)
 
-	// Replay from whichever day the card's history first changed.
-	if (isCompleted && newDate !== undefined) {
-		await updateCardSrs(ctx, reviewCard, newDate)
-	} else if (wasCompleted && oldDate !== undefined) {
-		await updateCardSrs(ctx, reviewCard, oldDate)
+	// Replay from the earliest position affected by this edit.
+	const replayFrom = [
+		wasCompleted ? oldDate : undefined, // don't take oldDate if it was just scheduled
+		isCompleted ? newDate : undefined, // ^same for newDate
+	]
+		.filter(date => date !== undefined)
+		.sort()[0]
+
+	if (replayFrom !== undefined) {
+		await updateCardSrs(ctx, reviewCard, replayFrom)
 	}
 }
 
@@ -176,3 +205,22 @@ const emptySrsSnapshot = {
 	stepAfter: undefined,
 	dueAfter: undefined,
 } satisfies Partial<Doc<'reviews'>>
+
+function assertCompletedReviewIsValid(
+	rating: Doc<'reviews'>['rating'],
+	date: Doc<'reviews'>['date'],
+): void {
+	if (rating === undefined) return
+	if (date === undefined) {
+		throw new Error('Completing a review requires an explicit date')
+	}
+
+	assertIsoDate(date)
+	// A user's local calendar can be one day ahead of UTC. Accepting tomorrow
+	// in UTC lets those clients submit their real local completion day while
+	// still rejecting dates that cannot be "today" in any timezone.
+	const latestCompletionDate = DateTime.utc().plus({ days: 1 }).toISODate()
+	if (latestCompletionDate === null || date > latestCompletionDate) {
+		throw new Error("Can't have a completed review in the future")
+	}
+}
