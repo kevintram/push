@@ -274,7 +274,37 @@ describe('reviewCards', () => {
 		expect(remaining.map(reviewCard => reviewCard._id)).toEqual([siblingId])
 	})
 
-	it('deletes the cards of a removed topic subtree', async () => {
+	it('deletes the reviews of a removed card and leaves sibling reviews alone', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {})
+		const removedCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId,
+		})
+		const keptCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId,
+		})
+		await asUserA.mutation(api.reviews.create, {
+			reviewCardId: removedCardId,
+		})
+		await asUserA.mutation(api.reviews.create, {
+			reviewCardId: removedCardId,
+		})
+		const keptReviewId = await asUserA.mutation(api.reviews.create, {
+			reviewCardId: keptCardId,
+		})
+
+		await asUserA.mutation(api.reviewCards.remove, {
+			reviewCardId: removedCardId,
+		})
+
+		const remaining = await t.run(async ctx =>
+			ctx.db.query('reviews').collect(),
+		)
+		expect(remaining.map(review => review._id)).toEqual([keptReviewId])
+	})
+
+	it('deletes the cards and reviews of a removed topic subtree', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const rootId = await asUserA.mutation(api.topics.create, {})
@@ -283,19 +313,36 @@ describe('reviewCards', () => {
 		})
 		const unrelatedId = await asUserA.mutation(api.topics.create, {})
 
-		await asUserA.mutation(api.reviewCards.create, { topicId: rootId })
-		await asUserA.mutation(api.reviewCards.create, { topicId: childId })
+		const rootCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId: rootId,
+		})
+		const childCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId: childId,
+		})
 		const keptCardId = await asUserA.mutation(api.reviewCards.create, {
 			topicId: unrelatedId,
+		})
+		await asUserA.mutation(api.reviews.create, {
+			reviewCardId: rootCardId,
+		})
+		await asUserA.mutation(api.reviews.create, {
+			reviewCardId: childCardId,
+		})
+		const keptReviewId = await asUserA.mutation(api.reviews.create, {
+			reviewCardId: keptCardId,
 		})
 
 		await asUserA.mutation(api.topics.remove, { topicId: rootId })
 
-		const remaining = await t.run(async ctx =>
-			ctx.db.query('reviewCards').collect(),
+		const remaining = await t.run(async ctx => ({
+			reviewCards: await ctx.db.query('reviewCards').collect(),
+			reviews: await ctx.db.query('reviews').collect(),
+		}))
+		expect(remaining.reviewCards.map(reviewCard => reviewCard._id)).toEqual(
+			[keptCardId],
 		)
-		expect(remaining.map(reviewCard => reviewCard._id)).toEqual([
-			keptCardId,
+		expect(remaining.reviews.map(review => review._id)).toEqual([
+			keptReviewId,
 		])
 	})
 })

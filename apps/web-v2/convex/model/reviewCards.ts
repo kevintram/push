@@ -89,7 +89,7 @@ export async function remove(
 	reviewCardId: Id<'reviewCards'>,
 ): Promise<ReviewCard> {
 	const reviewCard = await requireUserOwns(ctx, userId, reviewCardId)
-	await ctx.db.delete('reviewCards', reviewCardId)
+	await deleteReviewCard(ctx, reviewCardId)
 	// Returned so callers can navigate back to the card's topic.
 	return reviewCard
 }
@@ -107,6 +107,24 @@ export async function deleteAllForTopic(
 		.withIndex('by_topicId_ownerId', q => q.eq('topicId', topicId))
 
 	for await (const reviewCard of reviewCards) {
-		await ctx.db.delete('reviewCards', reviewCard._id)
+		await deleteReviewCard(ctx, reviewCard._id)
 	}
+}
+
+/** Deletes a review card and every review that depends on it. */
+async function deleteReviewCard(
+	ctx: MutationCtx,
+	reviewCardId: Id<'reviewCards'>,
+): Promise<void> {
+	const reviews = ctx.db
+		.query('reviews')
+		.withIndex('by_reviewCardId_ownerId', q =>
+			q.eq('reviewCardId', reviewCardId),
+		)
+
+	for await (const review of reviews) {
+		await ctx.db.delete('reviews', review._id)
+	}
+
+	await ctx.db.delete('reviewCards', reviewCardId)
 }
