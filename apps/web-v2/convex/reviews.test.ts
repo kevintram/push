@@ -597,7 +597,7 @@ describe('reviews', () => {
 		})
 		expect(card).toMatchObject({
 			difficulty: review.difficultyAfter,
-			due: review.dueAfter,
+			dueDate: review.dueAfter,
 			lastReviewedAt: '2026-01-10',
 			stability: review.stabilityAfter,
 			state: review.stateAfter,
@@ -643,7 +643,7 @@ describe('reviews', () => {
 		expect(secondAfter.difficultyBefore).toBe(firstAfter.difficultyAfter)
 		expect(secondAfter.stabilityAfter).not.toBe(secondBefore.stabilityAfter)
 		expect(card?.stability).toBe(secondAfter.stabilityAfter)
-		expect(card?.due).toBe(secondAfter.dueAfter)
+		expect(card?.dueDate).toBe(secondAfter.dueAfter)
 		expect(card?.lastReviewedAt).toBe('2026-01-10')
 	})
 
@@ -704,7 +704,7 @@ describe('reviews', () => {
 			difficulty: firstAfterLaterMove.difficultyAfter,
 			state: firstAfterLaterMove.stateAfter,
 			step: firstAfterLaterMove.stepAfter,
-			due: firstAfterLaterMove.dueAfter,
+			dueDate: firstAfterLaterMove.dueAfter,
 			lastReviewedAt: '2026-01-15',
 		})
 
@@ -736,7 +736,7 @@ describe('reviews', () => {
 			difficulty: secondAfterEarlierMove.difficultyAfter,
 			state: secondAfterEarlierMove.stateAfter,
 			step: secondAfterEarlierMove.stepAfter,
-			due: secondAfterEarlierMove.dueAfter,
+			dueDate: secondAfterEarlierMove.dueAfter,
 			lastReviewedAt: '2026-01-10',
 		})
 	})
@@ -791,7 +791,7 @@ describe('reviews', () => {
 		}
 		expect(card).toMatchObject({
 			difficulty: first.difficultyAfter,
-			due: first.dueAfter,
+			dueDate: first.dueAfter,
 			lastReviewedAt: '2026-01-01',
 			stability: first.stabilityAfter,
 			state: first.stateAfter,
@@ -818,7 +818,7 @@ describe('reviews', () => {
 		expect(card?.stability).toBeUndefined()
 		expect(card?.difficulty).toBeUndefined()
 		expect(card?.step).toBe(0)
-		expect(card?.due).toBeUndefined()
+		expect(card?.dueDate).toBeUndefined()
 		expect(card?.lastReviewedAt).toBeUndefined()
 	})
 

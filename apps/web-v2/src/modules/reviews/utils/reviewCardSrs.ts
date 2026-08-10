@@ -12,7 +12,7 @@ export function deriveReviewCardSrsState(
 	const stability = reviewCard.stability ?? null
 	const lastReviewedAt =
 		(reviewCard.lastReviewedAt as DateString | undefined) ?? null
-	const nextDueAt = (reviewCard.due as DateString | undefined) ?? null
+	const nextDueAt = (reviewCard.dueDate as DateString | undefined) ?? null
 	return {
 		lastReviewedAt,
 		nextDueAt,

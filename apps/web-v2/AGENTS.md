@@ -146,7 +146,7 @@ Local WebV2 uses `VITE_API_URL` from `apps/web-v2/.env.local`, refreshed by `wor
 
 - In `src/`, a `DateString` is a calendar date in the user's current local timezone. Use `todayIso()` for the current day and `parseDate()` for local-midnight parsing.
 - In `shared/srs/` and `convex/model/srs/`, date strings are opaque day indexes. Parse them at UTC midnight so replay and elapsed-day calculations do not depend on the process timezone.
-- `date` and `due` are date-only values. Clients submit the local completion date when a review is first rated; the backend validates it and never invents the user's day.
+- `date` and `dueDate` are date-only values. Clients submit the local completion date when a review is first rated; the backend validates it and never invents the user's day.
 
 ## Generated Files
 

@@ -32,7 +32,7 @@ describe('deriveReviewCardSrsState', () => {
 	it('derives retrievability and exposes the persisted SRS due date', () => {
 		const srs = deriveReviewCardSrsState(
 			reviewCard({
-				due: '2026-02-20',
+				dueDate: '2026-02-20',
 				lastReviewedAt: '2026-02-11',
 				stability: 10,
 			}),

@@ -18,7 +18,7 @@ import type { Review } from '../../validators/reviews'
 export type ReviewCardSrsState = Pick<
 	ReviewCard,
 	'stability' | 'difficulty' | 'state' | 'step' | 'lastReviewedAt'
-> & { due: string }
+> & { dueDate: string }
 
 export type ReviewSrsPatch = Pick<
 	Review,
@@ -101,8 +101,11 @@ export async function updateCardSrs(
 		state: cardState.state,
 		step: cardState.step,
 		// An empty replay uses an epoch-backed ts-fsrs card internally. It is not
-		// a real schedule, so clearing the final completed review must clear due.
-		due: cardState.lastReviewedAt === undefined ? undefined : cardState.due,
+		// a real schedule, so clearing the final completed review must clear dueDate.
+		dueDate:
+			cardState.lastReviewedAt === undefined
+				? undefined
+				: cardState.dueDate,
 		// Preserve the date of a legacy seed whose SRS snapshot was incomplete.
 		lastReviewedAt: cardState.lastReviewedAt ?? previousReview?.date,
 	})
@@ -157,7 +160,7 @@ export function replay({
 					),
 					state: previousReview.stateAfter ?? 'LEARNING',
 					step: previousReview.stepAfter,
-					due: assertNonNull(
+					dueDate: assertNonNull(
 						previousReview.dueAfter,
 						'Review is missing dueAfter',
 					),
@@ -183,7 +186,7 @@ export function replay({
 				difficultyBefore: beforeState.difficulty,
 				stateBefore: beforeState.state,
 				stepBefore: beforeState.step,
-				dueBefore: beforeState.due,
+				dueBefore: beforeState.dueDate,
 				stabilityAfter: assertNonNull(
 					afterState.stability,
 					'SRS state is missing stability',
@@ -194,7 +197,7 @@ export function replay({
 				),
 				stateAfter: afterState.state,
 				stepAfter: afterState.step,
-				dueAfter: afterState.due,
+				dueAfter: afterState.dueDate,
 			},
 		})
 		card = nextCard
@@ -227,7 +230,7 @@ export function reviewCardSrsStateToFsrsCard(
 
 	return {
 		...fsrs.createEmptyCard(jsReviewDate),
-		due: isoToJsDate(srsState.due),
+		due: isoToJsDate(srsState.dueDate),
 		stability,
 		difficulty,
 		state,
@@ -273,7 +276,7 @@ function fsrsCardToReviewCardSrsState(card: fsrs.Card): ReviewCardSrsState {
 		state: fsrsStateToReviewCardState(card.state),
 		step:
 			card.state === fsrs.State.Review ? undefined : card.learning_steps,
-		due: jsDateToIso(card.due),
+		dueDate: jsDateToIso(card.due),
 		lastReviewedAt:
 			card.last_review === undefined
 				? undefined

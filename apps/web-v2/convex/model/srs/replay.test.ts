@@ -140,7 +140,7 @@ describe('SRS card construction', () => {
 	it('reconstructs a seed from its after snapshot without persisted bookkeeping', () => {
 		const card = reviewCardSrsStateToFsrsCard({
 			difficulty: 4.5,
-			due: '2024-04-20',
+			dueDate: '2024-04-20',
 			lastReviewedAt: '2024-03-04',
 			stability: 12.5,
 			state: 'REVIEW',
@@ -171,7 +171,9 @@ describe('SRS replay', () => {
 				expectPatchParity(patch, fixture.expected[index]!)
 			})
 			expectCardParity(result.cardState, fixture.cardState)
-			expect(result.cardState.due).toBe(fixture.expected.at(-1)!.dueAfter)
+			expect(result.cardState.dueDate).toBe(
+				fixture.expected.at(-1)!.dueAfter,
+			)
 			expect(result.cardState.lastReviewedAt).toBe(
 				fixture.reviews.at(-1)!.date,
 			)
@@ -181,7 +183,7 @@ describe('SRS replay', () => {
 	it('returns the initial learning step when there is no history', () => {
 		expect(replay({ reviews: [] }).cardState).toEqual({
 			difficulty: undefined,
-			due: '1970-01-01',
+			dueDate: '1970-01-01',
 			lastReviewedAt: undefined,
 			stability: undefined,
 			state: 'LEARNING',
