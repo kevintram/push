@@ -106,17 +106,8 @@ export async function update(
 	const wasCompleted = review.rating !== undefined
 	const oldDate = review.date
 
-	// 1. Validate the `date` format.
-	// 2. Require a `date` whenever `rating` is non-null.
-	//
-	// Passing both values together prevents a race condition. If `rating` were
-	// passed independently, we would have to rely on server data that another
-	// mutation could change concurrently.
 	const { rating, date, ...fields } = patch
 	if (date !== undefined && date !== null) assertIsoDate(date)
-	if (rating !== undefined && rating !== null && date === null) {
-		throw new Error('A completed review cannot have a null date')
-	}
 
 	const updates: Partial<Doc<'reviews'>> = { ...fields }
 	let newRating = review.rating
@@ -124,30 +115,21 @@ export async function update(
 
 	// Convex uses `undefined` to delete an optional document field, but we
 	// use null so we do some translation.
-	if (date === null) {
-		// A completion cannot exist without its day, so clearing the day also
-		// reopens the review even when the caller omits `rating`.
-		newDate = undefined
-		newRating = undefined
-	} else if (date !== undefined) {
-		newDate = date
-	}
-
 	if (rating === null) {
-		// Clearing only the rating preserves the day. This turns the completion
-		// back into a review scheduled for that same day.
 		newRating = undefined
 	} else if (rating !== undefined) {
 		newRating = rating
-		if (!wasCompleted) {
-			// The first completion must carry the client's actual completion day.
-			// A date already stored on an unrated row is only a scheduled day and
-			// must not be mistaken for when the review was completed.
-			if (date === undefined || date === null) {
-				throw new Error('Completing a review requires an explicit date')
-			}
-			newDate = date
+	}
+
+	if (date === null) {
+		// A completion cannot exist without its day, so a caller reopening a
+		// review has to clear the rating in the same patch.
+		if (newRating !== undefined) {
+			throw new Error('A completed review cannot have a null date')
 		}
+		newDate = undefined
+	} else if (date !== undefined) {
+		newDate = date
 	}
 
 	const completionChanged = rating !== undefined || date !== undefined

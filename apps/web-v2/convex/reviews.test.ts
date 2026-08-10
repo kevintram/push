@@ -187,7 +187,7 @@ describe('reviews', () => {
 		expect(cleared.date).toBeUndefined()
 	})
 
-	it('requires a completion day, preserves it when omitted, and applies it when passed', async () => {
+	it('preserves the completion day when omitted and applies it when passed', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const topicId = await asUserA.mutation(api.topics.create, {})
@@ -230,7 +230,7 @@ describe('reviews', () => {
 		).resolves.toMatchObject({ date: '2026-08-08', rating: 'hard' })
 	})
 
-	it('replaces a scheduled day with the submitted first-completion day', async () => {
+	it('completes on the scheduled day when none is submitted', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const topicId = await asUserA.mutation(api.topics.create, {})
@@ -242,12 +242,17 @@ describe('reviews', () => {
 			reviewCardId,
 		})
 
+		await asUserA.mutation(api.reviews.update, {
+			rating: 'good',
+			reviewId,
+		})
+
 		await expect(
-			asUserA.mutation(api.reviews.update, {
-				rating: 'good',
-				reviewId,
-			}),
-		).rejects.toThrow('requires an explicit date')
+			asUserA.query(api.reviews.get, { reviewId }),
+		).resolves.toMatchObject({ date: '2026-08-01', rating: 'good' })
+		await expect(
+			asUserA.query(api.reviewCards.get, { reviewCardId }),
+		).resolves.toMatchObject({ lastReviewedAt: '2026-08-01' })
 
 		await asUserA.mutation(api.reviews.update, {
 			date: '2026-08-09',
@@ -289,12 +294,53 @@ describe('reviews', () => {
 			}),
 		).rejects.toThrow('cannot have a null date')
 
+		// Neither the patch nor the stored review carries a day to complete on.
+		await expect(
+			asUserA.mutation(api.reviews.update, {
+				rating: 'hard',
+				reviewId,
+			}),
+		).rejects.toThrow('requires an explicit date')
+
 		const reviews = await asUserA.query(api.reviews.listByReviewCard, {
 			reviewCardId,
 		})
 		expect(reviews).toHaveLength(1)
 		expect(reviews[0]?.rating).toBeUndefined()
 		expect(reviews[0]?.date).toBeUndefined()
+	})
+
+	it('refuses to clear the date of a completed review on its own', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {})
+		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId,
+		})
+		const reviewId = await asUserA.mutation(api.reviews.create, {
+			date: '2026-08-09',
+			rating: 'good',
+			reviewCardId,
+		})
+
+		await expect(
+			asUserA.mutation(api.reviews.update, { date: null, reviewId }),
+		).rejects.toThrow('cannot have a null date')
+
+		await expect(
+			asUserA.query(api.reviews.get, { reviewId }),
+		).resolves.toMatchObject({ date: '2026-08-09', rating: 'good' })
+
+		// Reopening the review and clearing its day together is allowed.
+		await asUserA.mutation(api.reviews.update, {
+			date: null,
+			rating: null,
+			reviewId,
+		})
+
+		const reopened = await asUserA.query(api.reviews.get, { reviewId })
+		expect(reopened.rating).toBeUndefined()
+		expect(reopened.date).toBeUndefined()
 	})
 
 	it('rejects malformed dates without changing persisted or derived state', async () => {
@@ -454,26 +500,6 @@ describe('reviews', () => {
 		const reopened = await asUserA.query(api.reviews.get, { reviewId })
 		expect(reopened.rating).toBeUndefined()
 		expect(reopened.date).toBe('2024-05-05')
-	})
-
-	it('clears the rating when the date is cleared', async () => {
-		const t = convexTest(schema, modules)
-		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
-		})
-		const reviewId = await asUserA.mutation(api.reviews.create, {
-			date: '2024-05-04',
-			rating: 'good',
-			reviewCardId,
-		})
-
-		await asUserA.mutation(api.reviews.update, { date: null, reviewId })
-
-		const review = await asUserA.query(api.reviews.get, { reviewId })
-		expect(review.rating).toBeUndefined()
-		expect(review.date).toBeUndefined()
 	})
 
 	it('rejects updating a missing or foreign review', async () => {
