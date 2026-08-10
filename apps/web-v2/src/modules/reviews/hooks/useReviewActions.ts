@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
 import type { DateString } from '~/types/date'
+import { todayIso } from '~/utils/date'
 
 import { useDeleteReview, useUpdateReview } from '../api/reviewQueries'
 import type { Rating, Review } from '../types/review.types'
@@ -10,8 +11,7 @@ type UseReviewActionsReturn = {
 	isDeleteDialogOpen: boolean
 	isDeleting: boolean
 	/**
-	 * Note: setting review's rating, completes it, defaulting the date
-	 * to today.
+	 * Note: first rating a review completes it on the user's local today.
 	 */
 	setRating: (rating: Rating | null) => void
 	/**
@@ -36,15 +36,30 @@ export function useReviewActions(review: Review): UseReviewActionsReturn {
 
 	const setRating = useCallback(
 		(rating: Rating | null) => {
+			const date =
+				rating === null
+					? undefined
+					: review.rating === undefined
+						? todayIso()
+						: review.date
+			if (rating !== null && date === undefined) {
+				toast.error('Completed review is missing its date')
+				return
+			}
+
 			updateReview.mutate(
-				{ rating, reviewId: review._id },
+				{
+					...(date === undefined ? {} : { date }),
+					rating,
+					reviewId: review._id,
+				},
 				{
 					onError: () =>
 						toast.error('Failed to update review rating'),
 				},
 			)
 		},
-		[review._id, updateReview],
+		[review._id, review.date, review.rating, updateReview],
 	)
 
 	const setDate = useCallback(

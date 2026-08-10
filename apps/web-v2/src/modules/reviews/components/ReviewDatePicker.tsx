@@ -13,6 +13,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
+import { useToday } from '~/hooks/useToday'
 import { colors } from '~/styles/colors.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
@@ -53,8 +54,9 @@ export function ReviewDatePicker({
 	value,
 }: ReviewDatePickerProps) {
 	const [isOpen, setIsOpen] = useState(false)
-	const relativeDate = formatRelativeDate(value)
-	const dateTone = getDateTone(value, isCompleted)
+	const today = useToday()
+	const relativeDate = formatRelativeDate(value, today)
+	const dateTone = getDateTone(value, isCompleted, today)
 	const dateToneStyle =
 		dateTone === 'overdue'
 			? styles.overdue
@@ -108,6 +110,11 @@ export function ReviewDatePicker({
 				<div {...stylex.props(styles.content)}>
 					<Calendar
 						defaultMonth={selectedDate}
+						disabled={
+							isCompleted
+								? { after: parseDate(today).toJSDate() }
+								: undefined
+						}
 						mode='single'
 						onSelect={date => void selectDate(date)}
 						selected={selectedDate}

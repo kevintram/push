@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { colors } from '~/styles/colors.stylex'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+import type { DateString } from '~/types/date'
 
 import { useHideMode } from '../hide-mode/useHideMode'
 import type {
@@ -64,9 +65,10 @@ const styles = stylex.create({
 type ReviewCardProps = {
 	reviewCard: ReviewCardModel
 	srs: ReviewCardSrsState
+	today: DateString
 }
 
-export function ReviewCard({ reviewCard, srs }: ReviewCardProps) {
+export function ReviewCard({ reviewCard, srs, today }: ReviewCardProps) {
 	const { _id, type, primaryText, secondaryText } = reviewCard
 	const { hideMode } = useHideMode()
 
@@ -108,7 +110,7 @@ export function ReviewCard({ reviewCard, srs }: ReviewCardProps) {
 			) : null}
 
 			<div {...stylex.props(styles.footer)}>
-				<ReviewCardMetadata {...srs} />
+				<ReviewCardMetadata {...srs} today={today} />
 				<ReviewCardActions
 					reviewCard={reviewCard}
 					xstyle={styles.raised}

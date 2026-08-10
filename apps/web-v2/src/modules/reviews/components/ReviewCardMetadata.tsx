@@ -8,6 +8,7 @@ import {
 	iconSizes,
 	spacing,
 } from '~/styles/tokens.stylex'
+import type { DateString } from '~/types/date'
 import { formatRelativeDate } from '~/utils/date'
 
 import type { ReviewCardSrsState } from '../types/review.types'
@@ -37,7 +38,8 @@ export function ReviewCardMetadata({
 	nextDueAt,
 	retrievability,
 	stability,
-}: ReviewCardSrsState) {
+	today,
+}: ReviewCardSrsState & { today: DateString }) {
 	if (lastReviewedAt === null) {
 		return (
 			<div {...stylex.props(styles.container)}>
@@ -55,12 +57,12 @@ export function ReviewCardMetadata({
 			) : null}
 			{nextDueAt !== null ? (
 				<span {...stylex.props(styles.item)}>
-					{`Due ${formatRelativeDate(nextDueAt)}`}
+					{`Due ${formatRelativeDate(nextDueAt, today)}`}
 				</span>
 			) : null}
 			<span {...stylex.props(styles.item)}>
 				<Check size={iconSizes.md} />
-				{formatRelativeDate(lastReviewedAt)}
+				{formatRelativeDate(lastReviewedAt, today)}
 			</span>
 			{stability !== null ? (
 				<span {...stylex.props(styles.item)}>
