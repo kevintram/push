@@ -36,13 +36,22 @@ export async function listByReviewCard(
 ): Promise<Array<Doc<'reviews'>>> {
 	await ReviewCards.requireUserOwns(ctx, reviewCardId, userId)
 
-	return await ctx.db
+	const reviews = await ctx.db
 		.query('reviews')
 		.withIndex('by_reviewCardId_ownerId', q =>
 			q.eq('reviewCardId', reviewCardId).eq('ownerId', userId),
 		)
 		.order('desc')
 		.collect()
+
+	return reviews.sort((a, b) => {
+		// nulls first
+		if (a.date == undefined && b.date == undefined) return 0
+		if (a.date == undefined) return -1
+		if (b.date == undefined) return 1
+		// date descending
+		return b.date.localeCompare(a.date)
+	})
 }
 
 export async function create(
