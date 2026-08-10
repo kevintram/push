@@ -200,7 +200,7 @@ describe('reviewCards', () => {
 		for (const reviewCardId of [foreignCardId, missingCardId]) {
 			await expect(
 				asUserA.query(api.reviewCards.get, { reviewCardId }),
-			).resolves.toBeNull()
+			).rejects.toThrow('Review card not found')
 			await expect(
 				asUserA.mutation(api.reviewCards.update, {
 					primaryText: 'Updated',

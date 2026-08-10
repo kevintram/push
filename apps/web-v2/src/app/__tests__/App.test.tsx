@@ -90,12 +90,28 @@ function renderRoute(
 	} = {},
 ) {
 	const queryClient = createTestQueryClient()
+	if (missingReviewCard) {
+		queryClient.setDefaultOptions({
+			queries: {
+				queryFn: () => {
+					throw new Error('Review card not found')
+				},
+				retry: false,
+				staleTime: Infinity,
+			},
+		})
+	}
 	queryClient.setQueryData(topicQueries.list().queryKey, [])
 	queryClient.setQueryData(topicQueries.detail(topicId).queryKey, topic)
-	queryClient.setQueryData(
-		reviewCardQueries.detail(reviewCardId).queryKey,
-		missingReviewCard ? null : { ...reviewCard, type: reviewCardType },
-	)
+	if (!missingReviewCard) {
+		queryClient.setQueryData(
+			reviewCardQueries.detail(reviewCardId).queryKey,
+			{
+				...reviewCard,
+				type: reviewCardType,
+			},
+		)
+	}
 	queryClient.setQueryData(
 		reviewQueries.listByReviewCard(reviewCardId).queryKey,
 		[review],
@@ -214,20 +230,17 @@ describe('v2 app setup', () => {
 		).toHaveAttribute('placeholder', 'Description')
 	})
 
-	it('404s a review card that no longer exists', async () => {
+	it('renders the shared error page when a review card does not exist', async () => {
 		renderRoute(`/review-cards/${reviewCardId}`, {
 			missingReviewCard: true,
 		})
 
 		expect(
-			await screen.findByRole('heading', { name: 'Page not found' }),
+			await screen.findByRole('heading', {
+				name: 'Something went wrong',
+			}),
 		).toBeInTheDocument()
-		// A deleted card must not reach the error boundary: `notFound()` is a
-		// router control-flow object, and the root boundary renders it as
-		// "[object Object]" if a component throws it during render.
-		expect(
-			screen.queryByText('Something went wrong'),
-		).not.toBeInTheDocument()
+		expect(screen.getByText('Review card not found')).toBeInTheDocument()
 	})
 
 	it('renders review history under the standalone review-card route', async () => {

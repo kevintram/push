@@ -28,10 +28,6 @@ export async function listByTopic(
 ): Promise<Array<ReviewCard>> {
 	await Topics.requireUserOwns(ctx, userId, topicId)
 
-	// A card always carries the owner of the topic it was created under, so
-	// the topic check above is what authorizes this read. The `ownerId` half
-	// of the index restates that invariant rather than trusting it, keeping
-	// this consistent with `get`/`update`/`remove`, which check the card.
 	return await ctx.db
 		.query('reviewCards')
 		.withIndex('by_topicId_ownerId', q =>
@@ -44,17 +40,8 @@ export async function get(
 	ctx: QueryCtx,
 	userId: string,
 	reviewCardId: Id<'reviewCards'>,
-): Promise<ReviewCard | null> {
-	const reviewCard = await ctx.db.get('reviewCards', reviewCardId)
-
-	// Null rather than a throw: a card the caller cannot see is a 404 for
-	// the route to render, not an error. Cards owned by someone else are
-	// reported the same way so this does not leak their existence.
-	if (!reviewCard || reviewCard.ownerId !== userId) {
-		return null
-	}
-
-	return reviewCard
+): Promise<ReviewCard> {
+	return await requireUserOwns(ctx, userId, reviewCardId)
 }
 
 export async function create(
