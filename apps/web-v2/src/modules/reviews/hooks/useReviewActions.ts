@@ -15,8 +15,8 @@ type UseReviewActionsReturn = {
 	 */
 	setRating: (rating: Rating | null) => void
 	/**
-	 * Note: clearing the date also clears the
-	 * rating, since a completed review has to have happened on some day.
+	 * Note: the date can only be cleared while the review is uncompleted, since
+	 * a completed review has to have happened on some day.
 	 */
 	setDate: (value: DateString | null) => void
 	setIsDeleteDialogOpen: (open: boolean) => void
@@ -36,16 +36,12 @@ export function useReviewActions(review: Review): UseReviewActionsReturn {
 
 	const setRating = useCallback(
 		(rating: Rating | null) => {
+			// The first completion carries today's date; a re-rating leaves the
+			// stored completion day alone.
 			const date =
-				rating === null
-					? undefined
-					: review.rating === undefined
-						? todayIso()
-						: review.date
-			if (rating !== null && date === undefined) {
-				toast.error('Completed review is missing its date')
-				return
-			}
+				rating !== null && review.rating === undefined
+					? todayIso()
+					: undefined
 
 			updateReview.mutate(
 				{
@@ -59,7 +55,7 @@ export function useReviewActions(review: Review): UseReviewActionsReturn {
 				},
 			)
 		},
-		[review._id, review.date, review.rating, updateReview],
+		[review._id, review.rating, updateReview],
 	)
 
 	const setDate = useCallback(

@@ -28,11 +28,11 @@ export type ReviewSrsPatch = Pick<
 		Pick<
 			Review,
 			| 'stateBefore'
-			| 'dueBefore'
+			| 'dueDateBefore'
 			| 'stabilityAfter'
 			| 'difficultyAfter'
 			| 'stateAfter'
-			| 'dueAfter'
+			| 'dueDateAfter'
 		>
 	>
 
@@ -161,8 +161,8 @@ export function replay({
 					state: previousReview.stateAfter ?? 'LEARNING',
 					step: previousReview.stepAfter,
 					dueDate: assertNonNull(
-						previousReview.dueAfter,
-						'Review is missing dueAfter',
+						previousReview.dueDateAfter,
+						'Review is missing dueDateAfter',
 					),
 					lastReviewedAt: assertNonNull(
 						previousReview.date,
@@ -186,7 +186,7 @@ export function replay({
 				difficultyBefore: beforeState.difficulty,
 				stateBefore: beforeState.state,
 				stepBefore: beforeState.step,
-				dueBefore: beforeState.dueDate,
+				dueDateBefore: beforeState.dueDate,
 				stabilityAfter: assertNonNull(
 					afterState.stability,
 					'SRS state is missing stability',
@@ -197,7 +197,7 @@ export function replay({
 				),
 				stateAfter: afterState.state,
 				stepAfter: afterState.step,
-				dueAfter: afterState.dueDate,
+				dueDateAfter: afterState.dueDate,
 			},
 		})
 		card = nextCard

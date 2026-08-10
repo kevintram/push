@@ -37,4 +37,19 @@ describe('ReviewDatePicker', () => {
 			screen.getByRole('button', { name: /Monday, August 10th/ }),
 		).toBeEnabled()
 	})
+
+	it('only allows clearing the date while the review is incomplete', async () => {
+		const user = userEvent.setup()
+		const { rerender } = render(
+			<ReviewDatePicker isCompleted value='2026-08-09' />,
+		)
+
+		await user.click(
+			screen.getByRole('button', { name: 'Change review date, Today' }),
+		)
+		expect(screen.getByRole('button', { name: 'Clear' })).toBeDisabled()
+
+		rerender(<ReviewDatePicker isCompleted={false} value='2026-08-09' />)
+		expect(screen.getByRole('button', { name: 'Clear' })).toBeEnabled()
+	})
 })
