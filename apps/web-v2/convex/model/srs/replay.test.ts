@@ -30,7 +30,7 @@ interface ExpectedPatch {
 	difficultyAfter: number
 	stateAfter: ReviewCard['state']
 	stepAfter: number | null
-	dueAfter: string
+	dueDateAfter: string
 }
 
 interface ParityCase {
@@ -81,7 +81,7 @@ function expectPatchParity(
 	expectNumberParity(actual.difficultyAfter, expected.difficultyAfter)
 	expect(actual.stateAfter).toBe(expected.stateAfter)
 	expect(actual.stepAfter ?? null).toBe(expected.stepAfter)
-	expect(actual.dueAfter).toBe(expected.dueAfter)
+	expect(actual.dueDateAfter).toBe(expected.dueDateAfter)
 }
 
 function expectCardParity(
@@ -172,7 +172,7 @@ describe('SRS replay', () => {
 			})
 			expectCardParity(result.cardState, fixture.cardState)
 			expect(result.cardState.dueDate).toBe(
-				fixture.expected.at(-1)!.dueAfter,
+				fixture.expected.at(-1)!.dueDateAfter,
 			)
 			expect(result.cardState.lastReviewedAt).toBe(
 				fixture.reviews.at(-1)!.date,
@@ -198,7 +198,7 @@ describe('SRS replay', () => {
 
 		expect(first.patch).toMatchObject({
 			difficultyBefore: undefined,
-			dueBefore: '2024-06-15',
+			dueDateBefore: '2024-06-15',
 			stabilityBefore: undefined,
 			stateBefore: 'LEARNING',
 			stepBefore: 0,

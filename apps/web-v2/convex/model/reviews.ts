@@ -198,12 +198,12 @@ const emptySrsSnapshot = {
 	difficultyBefore: undefined,
 	stateBefore: undefined,
 	stepBefore: undefined,
-	dueBefore: undefined,
+	dueDateBefore: undefined,
 	stabilityAfter: undefined,
 	difficultyAfter: undefined,
 	stateAfter: undefined,
 	stepAfter: undefined,
-	dueAfter: undefined,
+	dueDateAfter: undefined,
 } satisfies Partial<Doc<'reviews'>>
 
 function assertCompletedReviewIsValid(

@@ -20,12 +20,12 @@ export const reviewBase = v.object({
 	difficultyBefore: v.optional(v.number()),
 	stateBefore: v.optional(learningState),
 	stepBefore: v.optional(v.number()),
-	dueBefore: v.optional(v.string()),
+	dueDateBefore: v.optional(v.string()),
 	stabilityAfter: v.optional(v.number()),
 	difficultyAfter: v.optional(v.number()),
 	stateAfter: v.optional(learningState),
 	stepAfter: v.optional(v.number()),
-	dueAfter: v.optional(v.string()),
+	dueDateAfter: v.optional(v.string()),
 })
 
 export const reviewRead = reviewBase.extend({
@@ -42,12 +42,12 @@ export const reviewCreate = reviewBase
 		'difficultyBefore',
 		'stateBefore',
 		'stepBefore',
-		'dueBefore',
+		'dueDateBefore',
 		'stabilityAfter',
 		'difficultyAfter',
 		'stateAfter',
 		'stepAfter',
-		'dueAfter',
+		'dueDateAfter',
 	)
 	.partial()
 	.extend({ reviewCardId: v.id('reviewCards') }) // require
@@ -66,12 +66,12 @@ export const reviewPatch = reviewBase
 		'difficultyBefore',
 		'stateBefore',
 		'stepBefore',
-		'dueBefore',
+		'dueDateBefore',
 		'stabilityAfter',
 		'difficultyAfter',
 		'stateAfter',
 		'stepAfter',
-		'dueAfter',
+		'dueDateAfter',
 	)
 	.extend({
 		rating: v.union(rating, v.null()),
