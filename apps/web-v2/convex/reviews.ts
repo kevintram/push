@@ -12,7 +12,8 @@ export const listByReviewCard = query({
 	returns: v.array(reviewRead),
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
-		return Reviews.listByReviewCard(ctx, args.reviewCardId, userId)
+
+		return await Reviews.listByReviewCard(ctx, userId, args.reviewCardId)
 	},
 })
 
@@ -23,7 +24,8 @@ export const get = query({
 	returns: reviewRead,
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
-		return await Reviews.get(ctx, args.reviewId, userId)
+
+		return await Reviews.get(ctx, userId, args.reviewId)
 	},
 })
 
@@ -32,6 +34,7 @@ export const create = mutation({
 	returns: v.id('reviews'),
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
+
 		return await Reviews.create(ctx, userId, args)
 	},
 })
@@ -58,6 +61,7 @@ export const remove = mutation({
 	returns: reviewRead,
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
+
 		return await Reviews.remove(ctx, userId, args.reviewId)
 	},
 })

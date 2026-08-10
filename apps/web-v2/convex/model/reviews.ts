@@ -9,32 +9,24 @@ import { updateCardSrs } from './srs/replay'
 
 export async function requireUserOwns(
 	ctx: QueryCtx,
-	reviewId: Id<'reviews'>,
 	userId: string,
+	reviewId: Id<'reviews'>,
 ): Promise<Doc<'reviews'>> {
 	const review = await ctx.db.get('reviews', reviewId)
 
 	if (!review || review.ownerId !== userId) {
-		throw Error('Review not found')
+		throw new Error('Review not found')
 	}
 
 	return review
 }
 
-export async function get(
-	ctx: QueryCtx,
-	reviewId: Id<'reviews'>,
-	userId: string,
-): Promise<Doc<'reviews'>> {
-	return requireUserOwns(ctx, reviewId, userId)
-}
-
 export async function listByReviewCard(
 	ctx: QueryCtx,
-	reviewCardId: Id<'reviewCards'>,
 	userId: string,
+	reviewCardId: Id<'reviewCards'>,
 ): Promise<Array<Doc<'reviews'>>> {
-	await ReviewCards.requireUserOwns(ctx, reviewCardId, userId)
+	await ReviewCards.requireUserOwns(ctx, userId, reviewCardId)
 
 	const reviews = await ctx.db
 		.query('reviews')
@@ -54,6 +46,14 @@ export async function listByReviewCard(
 	})
 }
 
+export async function get(
+	ctx: QueryCtx,
+	userId: string,
+	reviewId: Id<'reviews'>,
+): Promise<Doc<'reviews'>> {
+	return await requireUserOwns(ctx, userId, reviewId)
+}
+
 export async function create(
 	ctx: MutationCtx,
 	userId: string,
@@ -61,8 +61,8 @@ export async function create(
 ): Promise<Id<'reviews'>> {
 	const reviewCard = await ReviewCards.requireUserOwns(
 		ctx,
-		fields.reviewCardId,
 		userId,
+		fields.reviewCardId,
 	)
 
 	// A rating is the completion marker for a review, and every completion must
@@ -97,11 +97,11 @@ export async function update(
 	reviewId: Id<'reviews'>,
 	patch: ReviewPatch,
 ): Promise<void> {
-	const review = await requireUserOwns(ctx, reviewId, userId)
+	const review = await requireUserOwns(ctx, userId, reviewId)
 	const reviewCard = await ReviewCards.requireUserOwns(
 		ctx,
-		review.reviewCardId,
 		userId,
+		review.reviewCardId,
 	)
 	const wasCompleted = review.rating !== undefined
 	const oldDate = review.date
@@ -169,7 +169,7 @@ export async function remove(
 	userId: string,
 	reviewId: Id<'reviews'>,
 ): Promise<Doc<'reviews'>> {
-	const review = await requireUserOwns(ctx, reviewId, userId)
+	const review = await requireUserOwns(ctx, userId, reviewId)
 	const reviewCard = await ctx.db.get('reviewCards', review.reviewCardId)
 	await ctx.db.delete('reviews', reviewId)
 

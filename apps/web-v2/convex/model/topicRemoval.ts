@@ -14,9 +14,9 @@ export async function remove(
 	userId: string,
 	topicId: Id<'topics'>,
 ): Promise<Doc<'topics'>> {
-	const topic = await Topics.requireUserOwns(ctx, topicId, userId)
+	const topic = await Topics.requireUserOwns(ctx, userId, topicId)
 
-	await removeTree(ctx, topicId, userId, new Set())
+	await removeTree(ctx, userId, topicId, new Set())
 
 	// Returned so callers can navigate away from the deleted topic.
 	return topic
@@ -26,8 +26,8 @@ export async function remove(
 // get large.
 async function removeTree(
 	ctx: MutationCtx,
-	topicId: Id<'topics'>,
 	userId: string,
+	topicId: Id<'topics'>,
 	visited: Set<Id<'topics'>>,
 ): Promise<void> {
 	if (visited.has(topicId)) {
@@ -45,7 +45,7 @@ async function removeTree(
 			throw new Error('Unable to delete children')
 		}
 
-		await removeTree(ctx, child._id, userId, visited)
+		await removeTree(ctx, userId, child._id, visited)
 	}
 
 	await ReviewCards.deleteAllForTopic(ctx, topicId)
