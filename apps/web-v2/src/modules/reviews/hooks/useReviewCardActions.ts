@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon'
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -47,7 +48,9 @@ export function useReviewCardActions(
 				reviewCardId: reviewCard._id,
 				// `null` unsets the field; see `reviewCards.update`.
 				flaggedAt:
-					reviewCard.flaggedAt === undefined ? Date.now() : null,
+					reviewCard.flaggedAt === undefined
+						? DateTime.now().toMillis()
+						: null,
 			},
 			{ onError: () => toast.error('Failed to update review card flag') },
 		)

@@ -14,6 +14,7 @@ import {
 	Textarea,
 } from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
+import { useToday } from '~/hooks/useToday'
 import {
 	topicQueries,
 	useDeleteTopic,
@@ -24,7 +25,7 @@ import {
 	useCreateReviewCard,
 } from '~/modules/reviews/api/reviewCardQueries'
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
-import { unscheduledSrsState } from '~/modules/reviews/types/review.types'
+import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
 import {
 	fontSizes,
 	fontWeights,
@@ -77,6 +78,7 @@ export function TopicPage() {
 	const updateTopic = useUpdateTopic()
 	const createReviewCard = useCreateReviewCard()
 	const navigate = useNavigate()
+	const today = useToday()
 
 	const handleDeleteTopic = useCallback(() => {
 		deleteTopic.mutate({ topicId })
@@ -202,7 +204,8 @@ export function TopicPage() {
 						<ReviewCard
 							key={reviewCard._id}
 							reviewCard={reviewCard}
-							srs={unscheduledSrsState}
+							srs={deriveReviewCardSrsState(reviewCard, today)}
+							today={today}
 						/>
 					))}
 				</div>

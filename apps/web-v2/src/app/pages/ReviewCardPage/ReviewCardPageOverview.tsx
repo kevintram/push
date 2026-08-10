@@ -4,6 +4,7 @@ import { useParams } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
 import { Separator, Textarea } from '~/components/ui'
+import { useToday } from '~/hooks/useToday'
 import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
 import { Hideable } from '~/modules/reviews/components/Hideable'
 import { ReviewCardActions } from '~/modules/reviews/components/ReviewCardActions'
@@ -11,7 +12,7 @@ import { ReviewCardMetadata } from '~/modules/reviews/components/ReviewCardMetad
 import { ReviewsSidebar } from '~/modules/reviews/components/ReviewsSidebar'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { useReviewCardField } from '~/modules/reviews/hooks/useReviewCardField'
-import { unscheduledSrsState } from '~/modules/reviews/types/review.types'
+import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
 import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -71,6 +72,7 @@ export function ReviewCardPageOverview() {
 	const { hideMode } = useHideMode()
 	const [secondaryRevealed, setSecondaryRevealed] = useState(false)
 	const [notesRevealed, setNotesRevealed] = useState(false)
+	const today = useToday()
 
 	useEffect(() => {
 		setSecondaryRevealed(false)
@@ -136,7 +138,10 @@ export function ReviewCardPageOverview() {
 					</Hideable>
 					<div {...stylex.props(styles.separatorGroup)}>
 						<div {...stylex.props(styles.footer)}>
-							<ReviewCardMetadata {...unscheduledSrsState} />
+							<ReviewCardMetadata
+								{...deriveReviewCardSrsState(reviewCard, today)}
+								today={today}
+							/>
 							<ReviewCardActions reviewCard={reviewCard} />
 						</div>
 						<Separator />

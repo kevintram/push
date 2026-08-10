@@ -8,6 +8,7 @@ import {
 	iconSizes,
 	spacing,
 } from '~/styles/tokens.stylex'
+import type { DateString } from '~/types/date'
 import { formatRelativeDate } from '~/utils/date'
 
 import type { ReviewCardSrsState } from '../types/review.types'
@@ -31,16 +32,14 @@ const styles = stylex.create({
 	},
 })
 
-/**
- * Scheduling summary for a review card. Every field is optional because Convex
- * does not track SRS state yet, in which case the card reads as unreviewed.
- */
+/** Scheduling summary for a review card, including its recall estimate. */
 export function ReviewCardMetadata({
-	freshnessTier,
 	lastReviewedAt,
 	nextDueAt,
+	retrievability,
 	stability,
-}: ReviewCardSrsState) {
+	today,
+}: ReviewCardSrsState & { today: DateString }) {
 	if (lastReviewedAt === null) {
 		return (
 			<div {...stylex.props(styles.container)}>
@@ -51,17 +50,19 @@ export function ReviewCardMetadata({
 
 	return (
 		<div {...stylex.props(styles.container)}>
-			{freshnessTier !== null ? (
-				<span {...stylex.props(styles.item)}>{freshnessTier}</span>
+			{retrievability !== null ? (
+				<span {...stylex.props(styles.item)}>
+					{`${Math.round(retrievability * 100)}% recall`}
+				</span>
 			) : null}
 			{nextDueAt !== null ? (
 				<span {...stylex.props(styles.item)}>
-					{`Due ${formatRelativeDate(nextDueAt)}`}
+					{`Due ${formatRelativeDate(nextDueAt, today)}`}
 				</span>
 			) : null}
 			<span {...stylex.props(styles.item)}>
 				<Check size={iconSizes.md} />
-				{formatRelativeDate(lastReviewedAt)}
+				{formatRelativeDate(lastReviewedAt, today)}
 			</span>
 			{stability !== null ? (
 				<span {...stylex.props(styles.item)}>

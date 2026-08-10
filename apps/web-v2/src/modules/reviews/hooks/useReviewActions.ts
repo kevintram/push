@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
 import type { DateString } from '~/types/date'
+import { todayIso } from '~/utils/date'
 
 import { useDeleteReview, useUpdateReview } from '../api/reviewQueries'
 import type { Rating, Review } from '../types/review.types'
@@ -10,14 +11,12 @@ type UseReviewActionsReturn = {
 	isDeleteDialogOpen: boolean
 	isDeleting: boolean
 	/**
-	 * Sets the review's rating. A rating completes the review; `null` clears
-	 * both rating and completion. The backend derives `completedAt`.
+	 * Note: first rating a review completes it on the user's local today.
 	 */
 	setRating: (rating: Rating | null) => void
 	/**
-	 * Sets the review's date. Edits `completedAt` for an already-completed
-	 * review, otherwise `scheduledAt`. Clearing a completed review's date also
-	 * clears its rating, which the backend enforces.
+	 * Note: clearing the date also clears the
+	 * rating, since a completed review has to have happened on some day.
 	 */
 	setDate: (value: DateString | null) => void
 	setIsDeleteDialogOpen: (open: boolean) => void
@@ -37,31 +36,40 @@ export function useReviewActions(review: Review): UseReviewActionsReturn {
 
 	const setRating = useCallback(
 		(rating: Rating | null) => {
+			const date =
+				rating === null
+					? undefined
+					: review.rating === undefined
+						? todayIso()
+						: review.date
+			if (rating !== null && date === undefined) {
+				toast.error('Completed review is missing its date')
+				return
+			}
+
 			updateReview.mutate(
-				{ rating, reviewId: review._id },
+				{
+					...(date === undefined ? {} : { date }),
+					rating,
+					reviewId: review._id,
+				},
 				{
 					onError: () =>
 						toast.error('Failed to update review rating'),
 				},
 			)
 		},
-		[review._id, updateReview],
+		[review._id, review.date, review.rating, updateReview],
 	)
 
 	const setDate = useCallback(
 		(value: DateString | null) => {
-			const isCompleted = review.completedAt !== undefined
 			updateReview.mutate(
-				{
-					reviewId: review._id,
-					...(isCompleted
-						? { completedAt: value }
-						: { scheduledAt: value }),
-				},
+				{ date: value, reviewId: review._id },
 				{ onError: () => toast.error('Failed to update review date') },
 			)
 		},
-		[review._id, review.completedAt, updateReview],
+		[review._id, updateReview],
 	)
 
 	const confirmDelete = useCallback(() => {

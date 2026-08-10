@@ -1,4 +1,5 @@
 import type { Doc, Id } from '@convex/_generated/dataModel'
+import type { ReviewCard } from '@convex/validators/reviewCards'
 import { QueryClientProvider } from '@tanstack/react-query'
 import {
 	createMemoryHistory,
@@ -55,7 +56,7 @@ const topic: Doc<'topics'> = {
 	ownerId: 'user-1',
 }
 
-const reviewCard: Doc<'reviewCards'> = {
+const reviewCard: ReviewCard = {
 	_id: reviewCardId,
 	_creationTime: 0,
 	topicId,
@@ -64,6 +65,7 @@ const reviewCard: Doc<'reviewCards'> = {
 	primaryText: 'What problem do generics solve?',
 	secondaryText: 'They preserve type safety across reusable code.',
 	notes: '',
+	state: 'LEARNING',
 }
 
 const review: Doc<'reviews'> = {
@@ -74,7 +76,7 @@ const review: Doc<'reviews'> = {
 	rating: 'good',
 	description: 'Correctly described generics.',
 	notes: '',
-	completedAt: '2026-07-28',
+	date: '2026-07-28',
 }
 
 function renderRoute(
@@ -84,7 +86,7 @@ function renderRoute(
 		reviewCardType = 'flashcard',
 	}: {
 		missingReviewCard?: boolean
-		reviewCardType?: Doc<'reviewCards'>['type']
+		reviewCardType?: ReviewCard['type']
 	} = {},
 ) {
 	const queryClient = createTestQueryClient()

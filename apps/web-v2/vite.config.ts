@@ -45,6 +45,7 @@ export default defineConfig(() => ({
 	resolve: {
 		alias: {
 			'@convex': path.resolve(import.meta.dirname, './convex'),
+			'@shared': path.resolve(import.meta.dirname, './shared'),
 			'~': path.resolve(import.meta.dirname, './src'),
 		},
 		tsconfigPaths: true,
@@ -70,7 +71,7 @@ export default defineConfig(() => ({
 				'src/testing/**',
 				'src/app/routeTree.gen.ts',
 			],
-			include: ['convex/**/*.ts', 'src/**/*'],
+			include: ['convex/**/*.ts', 'shared/**/*.ts', 'src/**/*'],
 			reporter: ['text', 'lcov'],
 			reportsDirectory: 'coverage',
 		},
@@ -94,6 +95,14 @@ export default defineConfig(() => ({
 					environment: 'edge-runtime',
 					include: ['convex/**/*.test.ts'],
 					name: 'convex',
+				},
+			},
+			{
+				extends: true as const,
+				test: {
+					environment: 'node',
+					include: ['shared/**/*.test.ts'],
+					name: 'shared',
 				},
 			},
 		],

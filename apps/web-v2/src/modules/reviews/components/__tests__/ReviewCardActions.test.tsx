@@ -1,6 +1,7 @@
-import type { Doc } from '@convex/_generated/dataModel'
+import type { ReviewCard } from '@convex/validators/reviewCards'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { DateTime } from 'luxon'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ReviewCardActions } from '../ReviewCardActions'
@@ -13,15 +14,16 @@ vi.mock('../../api/reviewCardQueries', () => ({
 	useDeleteReviewCard: () => ({ mutate: deleteMutate, isPending: false }),
 }))
 
-const reviewCard: Doc<'reviewCards'> = {
-	_id: 'review-card-1' as Doc<'reviewCards'>['_id'],
+const reviewCard: ReviewCard = {
+	_id: 'review-card-1' as ReviewCard['_id'],
 	_creationTime: 0,
-	topicId: 'topic-1' as Doc<'reviewCards'>['topicId'],
+	topicId: 'topic-1' as ReviewCard['topicId'],
 	ownerId: 'user-1',
 	type: 'flashcard',
 	primaryText: 'Question',
 	secondaryText: 'Answer',
 	notes: '',
+	state: 'LEARNING',
 }
 
 function openMenu() {
@@ -51,7 +53,7 @@ describe('ReviewCardActions', () => {
 	})
 
 	it('flags an unflagged card with the current time', async () => {
-		const before = Date.now()
+		const before = DateTime.now().toMillis()
 		render(<ReviewCardActions reviewCard={reviewCard} />)
 
 		await openMenu()
