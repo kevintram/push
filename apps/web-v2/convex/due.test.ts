@@ -1,19 +1,14 @@
 import { convexTest } from 'convex-test'
 import { describe, expect, it } from 'vitest'
 
+import { api } from './_generated/api'
 import type { Id } from './_generated/dataModel'
-import * as Due from './model/due'
+import type * as Due from './model/due'
 import schema from './schema'
 import { modules } from './test.setup'
 
 const userAIdentity = { subject: 'user-a' }
 const userBIdentity = { subject: 'user-b' }
-
-/*
- * `due` has no public wrapper yet, so these call the model through `t.run`
- * rather than through `api.*`. Point them at the public function once one
- * exists.
- */
 
 type Harness = ReturnType<typeof convexTest>
 
@@ -70,9 +65,9 @@ async function listEntries(
 	userId: string,
 	dueDate: string | Due.DueDateRange,
 ): Promise<Array<Due.DueEntry>> {
-	return await t.run(
-		async ctx => await Due.listByDueDate(ctx, userId, dueDate),
-	)
+	return await t
+		.withIdentity({ subject: userId })
+		.query(api.due.listByDueDate, { dueDate })
 }
 
 /** The entries as `date` / `primaryText` pairs, for order-sensitive asserts. */
@@ -87,6 +82,14 @@ async function listByDueDate(
 }
 
 describe('due.listByDueDate', () => {
+	it('requires authentication', async () => {
+		const t = convexTest(schema, modules)
+
+		await expect(
+			t.query(api.due.listByDueDate, { dueDate: '2026-08-10' }),
+		).rejects.toThrow('Unauthenticated')
+	})
+
 	it('returns cards due on the date and cards with a review scheduled that day', async () => {
 		const t = convexTest(schema, modules)
 		const topicId = await seedTopic(t, userAIdentity.subject)

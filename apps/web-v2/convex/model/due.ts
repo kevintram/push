@@ -1,8 +1,9 @@
 import { assertIsoDate } from '../../shared/date'
 import { type Id } from '../_generated/dataModel'
 import { type QueryCtx } from '../_generated/server'
-import { type ReviewCard } from '../validators/reviewCards'
-import { type Review } from '../validators/reviews'
+import { type DueDateRange, type DueEntry } from '../validators/due'
+
+export type { DueDateRange, DueEntry } from '../validators/due'
 
 /**
  * A single day's worth of work for a single card.
@@ -11,32 +12,6 @@ import { type Review } from '../validators/reviews'
  * `dueDate`, or an uncompleted review dated that day — and one entry captures
  * both, so a caller never sees the same `(date, card)` pair twice.
  */
-export type DueEntry = {
-	/** The day this entry falls on (isoDate). */
-	date: string
-
-	/** The card that is due. */
-	card: ReviewCard
-
-	/**
-	 * True when the card's own SRS `dueDate` is `date`. False means the card
-	 * is here only because a review was scheduled onto this day.
-	 */
-	srsScheduled: boolean
-
-	/**
-	 * Uncompleted reviews dated `date`, newest first. Empty when the card is
-	 * here purely through its SRS `dueDate`.
-	 */
-	scheduledReviews: Array<Review>
-}
-
-/** A half-open due-date range. Omitted bounds extend indefinitely. */
-export type DueDateRange = {
-	from?: string
-	to?: string
-}
-
 /**
  * Lists the cards scheduled *on* `dueDate`, either by the card's own `dueDate`
  * or by an uncompleted review dated then.
