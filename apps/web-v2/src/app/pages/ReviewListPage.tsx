@@ -2,8 +2,8 @@ import * as stylex from '@stylexjs/stylex'
 import { Maximize2 } from 'lucide-react'
 import { useState } from 'react'
 
-import { FocusOverlay } from '~/components/FocusOverlay'
-import { Button } from '~/components/ui'
+import { Button, createDialogHandle, DialogTrigger } from '~/components/ui'
+import { FocusOverlay } from '~/modules/reviews/components/FocusOverlay'
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
 import type { ReviewCard as ReviewCardModel } from '~/modules/reviews/types/review.types'
 import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
@@ -48,23 +48,20 @@ export function ReviewListPage({
 	title,
 	today,
 }: ReviewListPageProps) {
-	const [focusOpen, setFocusOpen] = useState(false)
+	const [focusDialogHandle] = useState(createDialogHandle)
 
 	return (
 		<>
 			<div {...stylex.props(styles.content)}>
 				<div {...stylex.props(styles.heading)}>
 					<h2 {...stylex.props(styles.title)}>{title}</h2>
-					<Button
-						variant='secondary'
-						shape='round'
-						onClick={() => {
-							setFocusOpen(true)
-						}}
+					<DialogTrigger
+						handle={focusDialogHandle}
+						render={<Button variant='secondary' shape='round' />}
 					>
 						<Maximize2 size={iconSizes.md} />
 						Focus
-					</Button>
+					</DialogTrigger>
 				</div>
 				{reviewCards.length === 0 ? (
 					<p {...stylex.props(styles.empty)}>No cards here.</p>
@@ -80,7 +77,7 @@ export function ReviewListPage({
 					)
 				})}
 			</div>
-			<FocusOverlay open={focusOpen} onOpenChange={setFocusOpen} />
+			<FocusOverlay handle={focusDialogHandle} />
 		</>
 	)
 }
