@@ -1,7 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ReviewListPage } from '~/app/pages/ReviewListPage'
+import { ReviewDuePage } from '~/app/pages/ReviewDuePage'
+import { dueQueries } from '~/modules/reviews/api/dueQueries'
+import { todayIso } from '~/utils/date'
 
 export const Route = createFileRoute('/review/due')({
-	component: () => <ReviewListPage title='Due' />,
+	component: ReviewDuePage,
+	loader: ({ context: { auth, queryClient } }) => {
+		if (!auth.isAuthenticated) return
+
+		return queryClient.ensureQueryData(dueQueries.listByDueDate(todayIso()))
+	},
 })

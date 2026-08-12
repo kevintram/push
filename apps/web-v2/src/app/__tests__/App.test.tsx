@@ -1,4 +1,5 @@
 import type { Doc, Id } from '@convex/_generated/dataModel'
+import type { DueEntry } from '@convex/validators/due'
 import type { ReviewCard } from '@convex/validators/reviewCards'
 import { QueryClientProvider } from '@tanstack/react-query'
 import {
@@ -13,11 +14,13 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
 import { topicQueries } from '~/modules/library/api/topicQueries'
+import { dueQueries } from '~/modules/reviews/api/dueQueries'
 import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
 import { reviewQueries } from '~/modules/reviews/api/reviewQueries'
 import { HideModeProvider } from '~/modules/reviews/hide-mode/HideModeProvider'
 import { createTestConvexClient } from '~/testing/createTestConvexClient'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
+import { todayIso } from '~/utils/date'
 
 vi.mock('@clerk/react', () => ({
 	SignInButton: ({ children }: { children: ReactNode }) => children,
@@ -82,14 +85,21 @@ const review: Doc<'reviews'> = {
 function renderRoute(
 	path: string,
 	{
+		dueEntries = [],
+		lateEntries = [],
 		missingReviewCard = false,
+		newReviewCards = [],
 		reviewCardType = 'flashcard',
 	}: {
+		dueEntries?: Array<DueEntry>
+		lateEntries?: Array<DueEntry>
 		missingReviewCard?: boolean
+		newReviewCards?: Array<ReviewCard>
 		reviewCardType?: ReviewCard['type']
 	} = {},
 ) {
 	const queryClient = createTestQueryClient()
+	const today = todayIso()
 	if (missingReviewCard) {
 		queryClient.setDefaultOptions({
 			queries: {
@@ -102,6 +112,18 @@ function renderRoute(
 		})
 	}
 	queryClient.setQueryData(topicQueries.list().queryKey, [])
+	queryClient.setQueryData(
+		dueQueries.listByDueDate(today).queryKey,
+		dueEntries,
+	)
+	queryClient.setQueryData(
+		dueQueries.listByDueDate({ to: today }).queryKey,
+		lateEntries,
+	)
+	queryClient.setQueryData(
+		reviewCardQueries.listNew().queryKey,
+		newReviewCards,
+	)
 	queryClient.setQueryData(topicQueries.detail(topicId).queryKey, topic)
 	if (!missingReviewCard) {
 		queryClient.setQueryData(
@@ -160,6 +182,61 @@ describe('v2 app setup', () => {
 
 		expect(
 			await screen.findByRole('heading', { name: 'Due' }),
+		).toBeInTheDocument()
+	})
+
+	it('renders today’s due entry', async () => {
+		const today = todayIso()
+		renderRoute('/review/due', {
+			dueEntries: [
+				{
+					card: reviewCard,
+					date: today,
+					scheduledReviews: [{ ...review, rating: undefined }],
+					srsScheduled: true,
+				},
+			],
+		})
+
+		expect(
+			await screen.findByRole('link', {
+				name: 'What problem do generics solve?',
+			}),
+		).toBeInTheDocument()
+	})
+
+	it('deduplicates late entries for the same card on different days', async () => {
+		renderRoute('/review/late', {
+			lateEntries: [
+				{
+					card: reviewCard,
+					date: '2020-01-02',
+					scheduledReviews: [],
+					srsScheduled: true,
+				},
+				{
+					card: reviewCard,
+					date: '2020-01-01',
+					scheduledReviews: [{ ...review, rating: undefined }],
+					srsScheduled: false,
+				},
+			],
+		})
+
+		expect(
+			await screen.findAllByRole('link', {
+				name: 'What problem do generics solve?',
+			}),
+		).toHaveLength(1)
+	})
+
+	it('renders new cards without due-entry context', async () => {
+		renderRoute('/review/new', { newReviewCards: [reviewCard] })
+
+		expect(
+			await screen.findByRole('link', {
+				name: 'What problem do generics solve?',
+			}),
 		).toBeInTheDocument()
 	})
 
