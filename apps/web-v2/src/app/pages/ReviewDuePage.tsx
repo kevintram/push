@@ -7,7 +7,7 @@ import { ReviewListPage } from './ReviewListPage'
 
 export function ReviewDuePage() {
 	const today = useToday()
-	const { data: entries } = useSuspenseQuery(dueQueries.listByDueDate(today))
+	const { data: entries } = useSuspenseQuery(dueQueries.list(today))
 
 	return (
 		<ReviewListPage

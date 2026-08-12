@@ -5,6 +5,6 @@ import { convexQuery } from '@convex-dev/react-query'
 import type { DateString } from '~/types/date'
 
 export const dueQueries = {
-	listByDueDate: (dueDate: DateString | DueDateRange) =>
-		convexQuery(api.due.listByDueDate, { dueDate }),
+	list: (dueDate: DateString | DueDateRange) =>
+		convexQuery(api.due.list, { dueDate }),
 }

@@ -67,11 +67,11 @@ async function listEntries(
 ): Promise<Array<Due.DueEntry>> {
 	return await t
 		.withIdentity({ subject: userId })
-		.query(api.due.listByDueDate, { dueDate })
+		.query(api.due.list, { dueDate })
 }
 
 /** The entries as `date` / `primaryText` pairs, for order-sensitive asserts. */
-async function listByDueDate(
+async function list(
 	t: Harness,
 	userId: string,
 	dueDate: string | Due.DueDateRange,
@@ -81,12 +81,12 @@ async function listByDueDate(
 	return entries.map(entry => `${entry.date} ${entry.card.primaryText}`)
 }
 
-describe('due.listByDueDate', () => {
+describe('due.list', () => {
 	it('requires authentication', async () => {
 		const t = convexTest(schema, modules)
 
 		await expect(
-			t.query(api.due.listByDueDate, { dueDate: '2026-08-10' }),
+			t.query(api.due.list, { dueDate: '2026-08-10' }),
 		).rejects.toThrow('Unauthenticated')
 	})
 
@@ -112,7 +112,7 @@ describe('due.listByDueDate', () => {
 		})
 
 		await expect(
-			listByDueDate(t, userAIdentity.subject, '2026-08-10'),
+			list(t, userAIdentity.subject, '2026-08-10'),
 		).resolves.toEqual([
 			'2026-08-10 Scheduled today',
 			'2026-08-10 Due today',
@@ -137,7 +137,7 @@ describe('due.listByDueDate', () => {
 		})
 
 		await expect(
-			listByDueDate(t, userAIdentity.subject, '2026-08-10'),
+			list(t, userAIdentity.subject, '2026-08-10'),
 		).resolves.toEqual([])
 	})
 
@@ -157,7 +157,7 @@ describe('due.listByDueDate', () => {
 		})
 
 		await expect(
-			listByDueDate(t, userAIdentity.subject, '2026-08-10'),
+			list(t, userAIdentity.subject, '2026-08-10'),
 		).resolves.toEqual(['2026-08-10 Busy card'])
 	})
 
@@ -177,7 +177,7 @@ describe('due.listByDueDate', () => {
 		})
 
 		await expect(
-			listByDueDate(t, userAIdentity.subject, '2026-08-10'),
+			list(t, userAIdentity.subject, '2026-08-10'),
 		).resolves.toEqual(['2026-08-10 Due today'])
 	})
 
@@ -193,7 +193,7 @@ describe('due.listByDueDate', () => {
 		})
 
 		await expect(
-			listByDueDate(t, userAIdentity.subject, '2026-08-10'),
+			list(t, userAIdentity.subject, '2026-08-10'),
 		).resolves.toEqual([])
 	})
 
@@ -201,7 +201,7 @@ describe('due.listByDueDate', () => {
 		const t = convexTest(schema, modules)
 
 		await expect(
-			listByDueDate(t, userAIdentity.subject, '2026-8-10'),
+			list(t, userAIdentity.subject, '2026-8-10'),
 		).rejects.toThrow('Invalid date-only value')
 	})
 
@@ -209,14 +209,14 @@ describe('due.listByDueDate', () => {
 		const t = convexTest(schema, modules)
 
 		await expect(
-			listByDueDate(t, userAIdentity.subject, {
+			list(t, userAIdentity.subject, {
 				from: '2026-8-10',
 				to: '2026-08-12',
 			}),
 		).rejects.toThrow('Invalid date-only value')
 
 		await expect(
-			listByDueDate(t, userAIdentity.subject, {
+			list(t, userAIdentity.subject, {
 				from: '2026-08-12',
 				to: '2026-08-10',
 			}),
@@ -324,7 +324,7 @@ describe('due.listByDueDate', () => {
 			}
 
 			await expect(
-				listByDueDate(t, userAIdentity.subject, {
+				list(t, userAIdentity.subject, {
 					from: '2026-08-10',
 					to: '2026-08-12',
 				}),
@@ -340,7 +340,7 @@ describe('due.listByDueDate', () => {
 			})
 
 			await expect(
-				listByDueDate(t, userAIdentity.subject, {
+				list(t, userAIdentity.subject, {
 					from: '2026-08-10',
 					to: '2026-08-10',
 				}),
@@ -359,7 +359,7 @@ describe('due.listByDueDate', () => {
 			}
 
 			await expect(
-				listByDueDate(t, userAIdentity.subject, { from: '2026-08-10' }),
+				list(t, userAIdentity.subject, { from: '2026-08-10' }),
 			).resolves.toEqual([
 				'2026-08-12 Due 2026-08-12',
 				'2026-08-10 Due 2026-08-10',
@@ -378,7 +378,7 @@ describe('due.listByDueDate', () => {
 			}
 
 			await expect(
-				listByDueDate(t, userAIdentity.subject, { to: '2026-08-10' }),
+				list(t, userAIdentity.subject, { to: '2026-08-10' }),
 			).resolves.toEqual(['2026-08-09 Due 2026-08-09'])
 		})
 
@@ -403,9 +403,7 @@ describe('due.listByDueDate', () => {
 			})
 			await seedReview(t, scheduledCardId, userAIdentity.subject, {})
 
-			await expect(
-				listByDueDate(t, userAIdentity.subject, {}),
-			).resolves.toEqual([
+			await expect(list(t, userAIdentity.subject, {})).resolves.toEqual([
 				'2026-08-11 Dated review',
 				'2026-08-10 Dated card',
 			])
@@ -458,7 +456,7 @@ describe('due.listByDueDate', () => {
 			})
 
 			await expect(
-				listByDueDate(t, userAIdentity.subject, {
+				list(t, userAIdentity.subject, {
 					from: '2026-08-10',
 					to: '2026-08-13',
 				}),

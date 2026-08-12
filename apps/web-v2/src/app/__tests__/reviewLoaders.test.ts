@@ -52,7 +52,7 @@ describe('review queue loaders', () => {
 		await loaders.due({ context: loaderContext })
 
 		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledWith(
-			dueQueries.listByDueDate(todayIso()),
+			dueQueries.list(todayIso()),
 		)
 	})
 
@@ -62,7 +62,7 @@ describe('review queue loaders', () => {
 		await loaders.late({ context: loaderContext })
 
 		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledWith(
-			dueQueries.listByDueDate({ to: todayIso() }),
+			dueQueries.list({ to: todayIso() }),
 		)
 	})
 

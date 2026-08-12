@@ -24,7 +24,7 @@ export type { DueDateRange, DueEntry } from '../validators/due'
  * @returns one entry per day a card is due or has a scheduled review, sorted
  *   newest first by date, then by card creation time
  */
-export async function listByDueDate(
+export async function list(
 	ctx: QueryCtx,
 	userId: string,
 	dueDate: string | DueDateRange,

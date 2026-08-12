@@ -112,12 +112,9 @@ function renderRoute(
 		})
 	}
 	queryClient.setQueryData(topicQueries.list().queryKey, [])
+	queryClient.setQueryData(dueQueries.list(today).queryKey, dueEntries)
 	queryClient.setQueryData(
-		dueQueries.listByDueDate(today).queryKey,
-		dueEntries,
-	)
-	queryClient.setQueryData(
-		dueQueries.listByDueDate({ to: today }).queryKey,
+		dueQueries.list({ to: today }).queryKey,
 		lateEntries,
 	)
 	queryClient.setQueryData(

@@ -7,9 +7,7 @@ import { ReviewListPage } from './ReviewListPage'
 
 export function ReviewLatePage() {
 	const today = useToday()
-	const { data: entries } = useSuspenseQuery(
-		dueQueries.listByDueDate({ to: today }),
-	)
+	const { data: entries } = useSuspenseQuery(dueQueries.list({ to: today }))
 
 	const reviewCards = [
 		// dedupe by card._id
