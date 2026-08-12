@@ -31,6 +31,12 @@ export type DueEntry = {
 	scheduledReviews: Array<Review>
 }
 
+/** A half-open due-date range. Omitted bounds extend indefinitely. */
+export type DueDateRange = {
+	from?: string
+	to?: string
+}
+
 /**
  * Lists the cards scheduled *on* `dueDate`, either by the card's own `dueDate`
  * or by an uncompleted review dated then.
@@ -38,14 +44,15 @@ export type DueEntry = {
  * A card scheduled on several of the days yields one entry per day, so entries
  * are keyed by `(date, card)` rather than by card alone.
  *
- * @param dueDate a single day (isoDate), or a half-open range `[from, to)`
+ * @param dueDate a single day (isoDate), or a half-open range `[from, to)`.
+ *   Either range bound may be omitted; an empty object covers all dates.
  * @returns one entry per day a card is due or has a scheduled review, sorted
  *   newest first by date, then by card creation time
  */
 export async function listByDueDate(
 	ctx: QueryCtx,
 	userId: string,
-	dueDate: string | { from: string; to: string },
+	dueDate: string | DueDateRange,
 ): Promise<Array<DueEntry>> {
 	// validate `dueDate` param
 	if (typeof dueDate === 'string') {
@@ -53,10 +60,14 @@ export async function listByDueDate(
 		assertIsoDate(dueDate)
 	} else {
 		// must be range
-		assertIsoDate(dueDate.from)
-		assertIsoDate(dueDate.to)
+		if (dueDate.from !== undefined) assertIsoDate(dueDate.from)
+		if (dueDate.to !== undefined) assertIsoDate(dueDate.to)
 
-		if (dueDate.from > dueDate.to) {
+		if (
+			dueDate.from !== undefined &&
+			dueDate.to !== undefined &&
+			dueDate.from > dueDate.to
+		) {
 			throw new Error(
 				`Invalid date range: ${dueDate.from} is after ${dueDate.to}`,
 			)
@@ -66,23 +77,49 @@ export async function listByDueDate(
 	// The two sources of dueness, each answered by its own index:
 	//   1. Cards whose SRS `dueDate` falls in range.
 	//   2. Uncompleted reviews (`rating` unset) whose `date` falls in range.
+
 	const dueCardsQuery = ctx.db
 		.query('reviewCards')
 		.withIndex('by_ownerId_dueDate', q => {
 			const owned = q.eq('ownerId', userId)
 
-			return typeof dueDate === 'string'
-				? owned.eq('dueDate', dueDate)
-				: owned.gte('dueDate', dueDate.from).lt('dueDate', dueDate.to)
+			if (typeof dueDate === 'string') {
+				return owned.eq('dueDate', dueDate)
+			}
+
+			if (dueDate.from !== undefined) {
+				const lowerBounded = owned.gte('dueDate', dueDate.from)
+				return dueDate.to === undefined
+					? lowerBounded
+					: lowerBounded.lt('dueDate', dueDate.to)
+			}
+
+			const dated = owned.gt('dueDate', undefined)
+			return dueDate.to === undefined
+				? dated
+				: dated.lt('dueDate', dueDate.to)
 		})
+
 	const dueReviewsQuery = ctx.db
 		.query('reviews')
 		.withIndex('by_ownerId_rating_date', q => {
 			const owned = q.eq('ownerId', userId).eq('rating', undefined)
 
-			return typeof dueDate === 'string'
-				? owned.eq('date', dueDate)
-				: owned.gte('date', dueDate.from).lt('date', dueDate.to)
+			if (typeof dueDate === 'string') {
+				return owned.eq('date', dueDate)
+			}
+
+			if (dueDate.from !== undefined) {
+				const lowerBounded = owned.gte('date', dueDate.from)
+				return dueDate.to === undefined
+					? lowerBounded
+					: lowerBounded.lt('date', dueDate.to)
+			}
+
+			const dated = owned.gt('date', undefined)
+			return dueDate.to === undefined
+				? dated
+				: dated.lt('date', dueDate.to)
 		})
 
 	// The queries are independent, so issue them concurrently.

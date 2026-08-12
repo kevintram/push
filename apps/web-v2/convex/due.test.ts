@@ -68,7 +68,7 @@ async function seedReview(
 async function listEntries(
 	t: Harness,
 	userId: string,
-	dueDate: string | { from: string; to: string },
+	dueDate: string | Due.DueDateRange,
 ): Promise<Array<Due.DueEntry>> {
 	return await t.run(
 		async ctx => await Due.listByDueDate(ctx, userId, dueDate),
@@ -79,7 +79,7 @@ async function listEntries(
 async function listByDueDate(
 	t: Harness,
 	userId: string,
-	dueDate: string | { from: string; to: string },
+	dueDate: string | Due.DueDateRange,
 ): Promise<Array<string>> {
 	const entries = await listEntries(t, userId, dueDate)
 
@@ -342,6 +342,70 @@ describe('due.listByDueDate', () => {
 					to: '2026-08-10',
 				}),
 			).resolves.toEqual([])
+		})
+
+		it('supports a range with only a lower bound', async () => {
+			const t = convexTest(schema, modules)
+			const topicId = await seedTopic(t, userAIdentity.subject)
+
+			for (const dueDate of ['2026-08-09', '2026-08-10', '2026-08-12']) {
+				await seedCard(t, topicId, userAIdentity.subject, {
+					dueDate,
+					primaryText: `Due ${dueDate}`,
+				})
+			}
+
+			await expect(
+				listByDueDate(t, userAIdentity.subject, { from: '2026-08-10' }),
+			).resolves.toEqual([
+				'2026-08-12 Due 2026-08-12',
+				'2026-08-10 Due 2026-08-10',
+			])
+		})
+
+		it('supports a range with only an upper bound', async () => {
+			const t = convexTest(schema, modules)
+			const topicId = await seedTopic(t, userAIdentity.subject)
+
+			for (const dueDate of ['2026-08-09', '2026-08-10', '2026-08-12']) {
+				await seedCard(t, topicId, userAIdentity.subject, {
+					dueDate,
+					primaryText: `Due ${dueDate}`,
+				})
+			}
+
+			await expect(
+				listByDueDate(t, userAIdentity.subject, { to: '2026-08-10' }),
+			).resolves.toEqual(['2026-08-09 Due 2026-08-09'])
+		})
+
+		it('supports a fully unbounded range and excludes undated records', async () => {
+			const t = convexTest(schema, modules)
+			const topicId = await seedTopic(t, userAIdentity.subject)
+			await seedCard(t, topicId, userAIdentity.subject, {
+				dueDate: '2026-08-10',
+				primaryText: 'Dated card',
+			})
+			await seedCard(t, topicId, userAIdentity.subject, {
+				primaryText: 'Undated card',
+			})
+			const scheduledCardId = await seedCard(
+				t,
+				topicId,
+				userAIdentity.subject,
+				{ primaryText: 'Dated review' },
+			)
+			await seedReview(t, scheduledCardId, userAIdentity.subject, {
+				date: '2026-08-11',
+			})
+			await seedReview(t, scheduledCardId, userAIdentity.subject, {})
+
+			await expect(
+				listByDueDate(t, userAIdentity.subject, {}),
+			).resolves.toEqual([
+				'2026-08-11 Dated review',
+				'2026-08-10 Dated card',
+			])
 		})
 
 		it('yields one entry per day for a card scheduled on several days', async () => {
