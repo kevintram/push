@@ -21,6 +21,16 @@ export const listByTopic = query({
 	},
 })
 
+export const listNew = query({
+	args: {},
+	returns: v.array(reviewCardRead),
+	handler: async ctx => {
+		const { subject: userId } = await requireIdentity(ctx)
+
+		return await ReviewCards.listNew(ctx, userId)
+	},
+})
+
 export const get = query({
 	args: {
 		reviewCardId: v.id('reviewCards'),

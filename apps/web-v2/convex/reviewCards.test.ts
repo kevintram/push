@@ -2,7 +2,6 @@ import { convexTest } from 'convex-test'
 import { describe, expect, it } from 'vitest'
 
 import { api } from './_generated/api'
-import * as ReviewCards from './model/reviewCards'
 import schema from './schema'
 import { modules } from './test.setup'
 
@@ -34,6 +33,9 @@ describe('reviewCards', () => {
 		await expect(
 			t.query(api.reviewCards.listByTopic, { topicId }),
 		).rejects.toThrow('Unauthenticated')
+		await expect(t.query(api.reviewCards.listNew, {})).rejects.toThrow(
+			'Unauthenticated',
+		)
 		await expect(
 			t.query(api.reviewCards.get, { reviewCardId }),
 		).rejects.toThrow('Unauthenticated')
@@ -204,9 +206,7 @@ describe('reviewCards', () => {
 			return lastReviewedOnlyId
 		})
 
-		const newCards = await t.run(
-			async ctx => await ReviewCards.listNew(ctx, userAIdentity.subject),
-		)
+		const newCards = await asUserA.query(api.reviewCards.listNew, {})
 
 		expect(newCards.map(card => card._id)).toEqual([
 			missingStabilityId,
