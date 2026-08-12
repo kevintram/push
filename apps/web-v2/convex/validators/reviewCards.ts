@@ -33,8 +33,8 @@ export const reviewCardRead = reviewCardBase.extend({
 export const reviewCardCreate = v.object({
 	...reviewCardBase
 		.omit(
-			'ownerId', // omit because handled by us
-			// omit SRS columns because they're handled by us
+			'ownerId', // omit because handled by server
+			// omit SRS columns because they're handled by server
 			'stability',
 			'difficulty',
 			'state',
@@ -51,9 +51,9 @@ export const reviewCardCreate = v.object({
 // `topicId`/`ownerId` stay unsettable.
 export const reviewCardPatch = reviewCardBase
 	.omit(
-		'ownerId', // omit becuse handled by us
+		'ownerId', // omit because handled by server only
 		'flaggedAt', // omit to do three-state shape (see above comment)
-		// omit SRS columns because they're handled by us
+		// omit SRS columns because they're handled by server
 		'stability',
 		'difficulty',
 		'state',

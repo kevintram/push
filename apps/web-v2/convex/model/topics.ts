@@ -4,8 +4,8 @@ import type { TopicCreate, TopicPatch } from '../validators/topics'
 
 export async function requireUserOwns(
 	ctx: QueryCtx,
-	topicId: Id<'topics'>,
 	userId: string,
+	topicId: Id<'topics'>,
 ): Promise<Doc<'topics'>> {
 	const topic = await ctx.db.get('topics', topicId)
 
@@ -16,13 +16,72 @@ export async function requireUserOwns(
 	return topic
 }
 
+export async function list(
+	ctx: QueryCtx,
+	userId: string,
+): Promise<Array<Doc<'topics'>>> {
+	return await ctx.db
+		.query('topics')
+		.withIndex('by_ownerId', q => q.eq('ownerId', userId))
+		.collect()
+}
+
+export async function get(
+	ctx: QueryCtx,
+	userId: string,
+	topicId: Id<'topics'>,
+): Promise<Doc<'topics'>> {
+	return await requireUserOwns(ctx, userId, topicId)
+}
+
+export async function create(
+	ctx: MutationCtx,
+	userId: string,
+	fields: TopicCreate,
+): Promise<Id<'topics'>> {
+	if (fields.parentId) {
+		await validateParent(ctx, userId, fields.parentId)
+	}
+
+	return await ctx.db.insert('topics', {
+		title: fields.title ?? '',
+		description: fields.description ?? '',
+		parentId: fields.parentId,
+		ownerId: userId,
+	})
+}
+
+export async function update(
+	ctx: MutationCtx,
+	userId: string,
+	topicId: Id<'topics'>,
+	patch: TopicPatch,
+): Promise<void> {
+	await requireUserOwns(ctx, userId, topicId)
+
+	if (patch.parentId === topicId) {
+		throw new Error('A topic cannot be its own parent')
+	}
+
+	if (patch.parentId) {
+		await validateParent(ctx, userId, patch.parentId, topicId)
+	}
+
+	await ctx.db.patch('topics', topicId, {
+		...patch,
+		// An omitted key leaves the parent alone. `null` detaches the topic,
+		// which in Convex means patching an explicit `undefined`.
+		...(patch.parentId === null && { parentId: undefined }),
+	} as Partial<Doc<'topics'>>)
+}
+
 // TODO(3): this walks the ancestor chain one read at a time. Deep hierarchies
 // could reach Convex's per-function read limits; cap the depth if topic trees
 // get large.
 export async function validateParent(
 	ctx: MutationCtx,
-	parentId: Id<'topics'>,
 	userId: string,
+	parentId: Id<'topics'>,
 	topicId?: Id<'topics'>,
 ): Promise<void> {
 	const visited = new Set<Id<'topics'>>()
@@ -51,63 +110,4 @@ export async function validateParent(
 
 		ancestorId = ancestor.parentId
 	}
-}
-
-export async function list(
-	ctx: QueryCtx,
-	userId: string,
-): Promise<Array<Doc<'topics'>>> {
-	return await ctx.db
-		.query('topics')
-		.withIndex('by_ownerId', q => q.eq('ownerId', userId))
-		.collect()
-}
-
-export async function get(
-	ctx: QueryCtx,
-	userId: string,
-	topicId: Id<'topics'>,
-): Promise<Doc<'topics'>> {
-	return await requireUserOwns(ctx, topicId, userId)
-}
-
-export async function create(
-	ctx: MutationCtx,
-	userId: string,
-	fields: TopicCreate,
-): Promise<Id<'topics'>> {
-	if (fields.parentId) {
-		await validateParent(ctx, fields.parentId, userId)
-	}
-
-	return await ctx.db.insert('topics', {
-		title: fields.title ?? '',
-		description: fields.description ?? '',
-		parentId: fields.parentId,
-		ownerId: userId,
-	})
-}
-
-export async function update(
-	ctx: MutationCtx,
-	userId: string,
-	topicId: Id<'topics'>,
-	patch: TopicPatch,
-): Promise<void> {
-	await requireUserOwns(ctx, topicId, userId)
-
-	if (patch.parentId === topicId) {
-		throw new Error('A topic cannot be its own parent')
-	}
-
-	if (patch.parentId) {
-		await validateParent(ctx, patch.parentId, userId, topicId)
-	}
-
-	await ctx.db.patch('topics', topicId, {
-		...patch,
-		// An omitted key leaves the parent alone. `null` detaches the topic,
-		// which in Convex means patching an explicit `undefined`.
-		...(patch.parentId === null && { parentId: undefined }),
-	} as Partial<Doc<'topics'>>)
 }

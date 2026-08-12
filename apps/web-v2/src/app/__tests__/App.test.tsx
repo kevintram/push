@@ -1,4 +1,5 @@
 import type { Doc, Id } from '@convex/_generated/dataModel'
+import type { DueEntry } from '@convex/validators/due'
 import type { ReviewCard } from '@convex/validators/reviewCards'
 import { QueryClientProvider } from '@tanstack/react-query'
 import {
@@ -13,11 +14,13 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
 import { topicQueries } from '~/modules/library/api/topicQueries'
+import { dueQueries } from '~/modules/reviews/api/dueQueries'
 import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
 import { reviewQueries } from '~/modules/reviews/api/reviewQueries'
 import { HideModeProvider } from '~/modules/reviews/hide-mode/HideModeProvider'
 import { createTestConvexClient } from '~/testing/createTestConvexClient'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
+import { todayIso } from '~/utils/date'
 
 vi.mock('@clerk/react', () => ({
 	SignInButton: ({ children }: { children: ReactNode }) => children,
@@ -82,20 +85,52 @@ const review: Doc<'reviews'> = {
 function renderRoute(
 	path: string,
 	{
+		dueEntries = [],
+		lateEntries = [],
 		missingReviewCard = false,
+		newReviewCards = [],
 		reviewCardType = 'flashcard',
 	}: {
+		dueEntries?: Array<DueEntry>
+		lateEntries?: Array<DueEntry>
 		missingReviewCard?: boolean
+		newReviewCards?: Array<ReviewCard>
 		reviewCardType?: ReviewCard['type']
 	} = {},
 ) {
 	const queryClient = createTestQueryClient()
+	const today = todayIso()
+	if (missingReviewCard) {
+		queryClient.setDefaultOptions({
+			queries: {
+				queryFn: () => {
+					throw new Error('Review card not found')
+				},
+				retry: false,
+				staleTime: Infinity,
+			},
+		})
+	}
 	queryClient.setQueryData(topicQueries.list().queryKey, [])
-	queryClient.setQueryData(topicQueries.detail(topicId).queryKey, topic)
+	queryClient.setQueryData(dueQueries.list(today).queryKey, dueEntries)
 	queryClient.setQueryData(
-		reviewCardQueries.detail(reviewCardId).queryKey,
-		missingReviewCard ? null : { ...reviewCard, type: reviewCardType },
+		dueQueries.list({ to: today }).queryKey,
+		lateEntries,
 	)
+	queryClient.setQueryData(
+		reviewCardQueries.listNew().queryKey,
+		newReviewCards,
+	)
+	queryClient.setQueryData(topicQueries.detail(topicId).queryKey, topic)
+	if (!missingReviewCard) {
+		queryClient.setQueryData(
+			reviewCardQueries.detail(reviewCardId).queryKey,
+			{
+				...reviewCard,
+				type: reviewCardType,
+			},
+		)
+	}
 	queryClient.setQueryData(
 		reviewQueries.listByReviewCard(reviewCardId).queryKey,
 		[review],
@@ -144,6 +179,61 @@ describe('v2 app setup', () => {
 
 		expect(
 			await screen.findByRole('heading', { name: 'Due' }),
+		).toBeInTheDocument()
+	})
+
+	it('renders today’s due entry', async () => {
+		const today = todayIso()
+		renderRoute('/review/due', {
+			dueEntries: [
+				{
+					card: reviewCard,
+					date: today,
+					scheduledReviews: [{ ...review, rating: undefined }],
+					srsScheduled: true,
+				},
+			],
+		})
+
+		expect(
+			await screen.findByRole('link', {
+				name: 'What problem do generics solve?',
+			}),
+		).toBeInTheDocument()
+	})
+
+	it('deduplicates late entries for the same card on different days', async () => {
+		renderRoute('/review/late', {
+			lateEntries: [
+				{
+					card: reviewCard,
+					date: '2020-01-02',
+					scheduledReviews: [],
+					srsScheduled: true,
+				},
+				{
+					card: reviewCard,
+					date: '2020-01-01',
+					scheduledReviews: [{ ...review, rating: undefined }],
+					srsScheduled: false,
+				},
+			],
+		})
+
+		expect(
+			await screen.findAllByRole('link', {
+				name: 'What problem do generics solve?',
+			}),
+		).toHaveLength(1)
+	})
+
+	it('renders new cards without due-entry context', async () => {
+		renderRoute('/review/new', { newReviewCards: [reviewCard] })
+
+		expect(
+			await screen.findByRole('link', {
+				name: 'What problem do generics solve?',
+			}),
 		).toBeInTheDocument()
 	})
 
@@ -214,20 +304,17 @@ describe('v2 app setup', () => {
 		).toHaveAttribute('placeholder', 'Description')
 	})
 
-	it('404s a review card that no longer exists', async () => {
+	it('renders the shared error page when a review card does not exist', async () => {
 		renderRoute(`/review-cards/${reviewCardId}`, {
 			missingReviewCard: true,
 		})
 
 		expect(
-			await screen.findByRole('heading', { name: 'Page not found' }),
+			await screen.findByRole('heading', {
+				name: 'Something went wrong',
+			}),
 		).toBeInTheDocument()
-		// A deleted card must not reach the error boundary: `notFound()` is a
-		// router control-flow object, and the root boundary renders it as
-		// "[object Object]" if a component throws it during render.
-		expect(
-			screen.queryByText('Something went wrong'),
-		).not.toBeInTheDocument()
+		expect(screen.getByText('Review card not found')).toBeInTheDocument()
 	})
 
 	it('renders review history under the standalone review-card route', async () => {

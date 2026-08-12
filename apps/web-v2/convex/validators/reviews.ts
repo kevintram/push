@@ -61,7 +61,7 @@ export const reviewPatch = reviewBase
 		// (1. omit/undefined = leave alone 2. null = clear 3. value = set.)
 		'rating',
 		'date',
-		// omit SRS columns because they're handled by *us* ONLY
+		// omit SRS columns because they're handled by the *server* ONLY
 		'stabilityBefore',
 		'difficultyBefore',
 		'stateBefore',

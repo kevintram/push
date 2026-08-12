@@ -1,5 +1,5 @@
 import type { Id } from '@convex/_generated/dataModel'
-import { createFileRoute, notFound } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 
 import { ReviewCardPageLayout } from '~/app/pages/ReviewCardPage/ReviewCardPageLayout'
 import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
@@ -20,7 +20,7 @@ export const Route = createFileRoute('/review-cards/$reviewCardId')({
 	loader: async ({ context: { auth, queryClient }, params }) => {
 		if (!auth.isAuthenticated) return
 
-		const [reviewCard] = await Promise.all([
+		await Promise.all([
 			queryClient.ensureQueryData(
 				reviewCardQueries.detail(params.reviewCardId),
 			),
@@ -28,7 +28,5 @@ export const Route = createFileRoute('/review-cards/$reviewCardId')({
 				reviewQueries.listByReviewCard(params.reviewCardId),
 			),
 		])
-
-		if (!reviewCard) throw notFound()
 	},
 })

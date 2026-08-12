@@ -9,8 +9,8 @@ import * as Topics from './topics'
 
 export async function requireUserOwns(
 	ctx: QueryCtx,
-	reviewCardId: Id<'reviewCards'>,
 	userId: string,
+	reviewCardId: Id<'reviewCards'>,
 ): Promise<ReviewCard> {
 	const reviewCard = await ctx.db.get('reviewCards', reviewCardId)
 
@@ -21,34 +21,13 @@ export async function requireUserOwns(
 	return reviewCard
 }
 
-/**
- * Deletes every review card belonging to `topicId`. Called while removing a
- * topic subtree so deleted topics do not leave unreachable cards behind.
- */
-export async function deleteAllForTopic(
-	ctx: MutationCtx,
-	topicId: Id<'topics'>,
-): Promise<void> {
-	const reviewCards = ctx.db
-		.query('reviewCards')
-		.withIndex('by_topicId_ownerId', q => q.eq('topicId', topicId))
-
-	for await (const reviewCard of reviewCards) {
-		await ctx.db.delete('reviewCards', reviewCard._id)
-	}
-}
-
 export async function listByTopic(
 	ctx: QueryCtx,
 	userId: string,
 	topicId: Id<'topics'>,
 ): Promise<Array<ReviewCard>> {
-	await Topics.requireUserOwns(ctx, topicId, userId)
+	await Topics.requireUserOwns(ctx, userId, topicId)
 
-	// A card always carries the owner of the topic it was created under, so
-	// the topic check above is what authorizes this read. The `ownerId` half
-	// of the index restates that invariant rather than trusting it, keeping
-	// this consistent with `get`/`update`/`remove`, which check the card.
 	return await ctx.db
 		.query('reviewCards')
 		.withIndex('by_topicId_ownerId', q =>
@@ -57,21 +36,29 @@ export async function listByTopic(
 		.collect()
 }
 
+export async function listNew(
+	ctx: QueryCtx,
+	userId: string,
+): Promise<Array<ReviewCard>> {
+	return await ctx.db
+		.query('reviewCards')
+		.withIndex('by_ownerId_stability', q =>
+			q
+				.eq('ownerId', userId)
+				// Stability is the source of truth for whether a card has
+				// entered SRS. This also leaves room for inherited cards to
+				// carry stability without inheriting review timestamps.
+				.eq('stability', undefined),
+		)
+		.collect()
+}
+
 export async function get(
 	ctx: QueryCtx,
 	userId: string,
 	reviewCardId: Id<'reviewCards'>,
-): Promise<ReviewCard | null> {
-	const reviewCard = await ctx.db.get('reviewCards', reviewCardId)
-
-	// Null rather than a throw: a card the caller cannot see is a 404 for
-	// the route to render, not an error. Cards owned by someone else are
-	// reported the same way so this does not leak their existence.
-	if (!reviewCard || reviewCard.ownerId !== userId) {
-		return null
-	}
-
-	return reviewCard
+): Promise<ReviewCard> {
+	return await requireUserOwns(ctx, userId, reviewCardId)
 }
 
 export async function create(
@@ -79,7 +66,7 @@ export async function create(
 	userId: string,
 	fields: ReviewCardCreate,
 ): Promise<Id<'reviewCards'>> {
-	await Topics.requireUserOwns(ctx, fields.topicId, userId)
+	await Topics.requireUserOwns(ctx, userId, fields.topicId)
 
 	return await ctx.db.insert('reviewCards', {
 		ownerId: userId,
@@ -99,7 +86,7 @@ export async function update(
 	reviewCardId: Id<'reviewCards'>,
 	patch: ReviewCardPatch,
 ): Promise<void> {
-	await requireUserOwns(ctx, reviewCardId, userId)
+	await requireUserOwns(ctx, userId, reviewCardId)
 
 	const { flaggedAt, ...fields } = patch
 
@@ -118,8 +105,43 @@ export async function remove(
 	userId: string,
 	reviewCardId: Id<'reviewCards'>,
 ): Promise<ReviewCard> {
-	const reviewCard = await requireUserOwns(ctx, reviewCardId, userId)
-	await ctx.db.delete('reviewCards', reviewCardId)
+	const reviewCard = await requireUserOwns(ctx, userId, reviewCardId)
+	await deleteReviewCard(ctx, reviewCardId)
 	// Returned so callers can navigate back to the card's topic.
 	return reviewCard
+}
+
+/**
+ * Deletes every review card belonging to `topicId`. Called while removing a
+ * topic subtree so deleted topics do not leave unreachable cards behind.
+ */
+export async function deleteAllForTopic(
+	ctx: MutationCtx,
+	topicId: Id<'topics'>,
+): Promise<void> {
+	const reviewCards = ctx.db
+		.query('reviewCards')
+		.withIndex('by_topicId_ownerId', q => q.eq('topicId', topicId))
+
+	for await (const reviewCard of reviewCards) {
+		await deleteReviewCard(ctx, reviewCard._id)
+	}
+}
+
+/** Deletes a review card and every review that depends on it. */
+async function deleteReviewCard(
+	ctx: MutationCtx,
+	reviewCardId: Id<'reviewCards'>,
+): Promise<void> {
+	const reviews = ctx.db
+		.query('reviews')
+		.withIndex('by_reviewCardId_ownerId', q =>
+			q.eq('reviewCardId', reviewCardId),
+		)
+
+	for await (const review of reviews) {
+		await ctx.db.delete('reviews', review._id)
+	}
+
+	await ctx.db.delete('reviewCards', reviewCardId)
 }

@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useMatchRoute, useNavigate } from '@tanstack/react-router'
 
 export const reviewCardQueries = {
+	listNew: () => convexQuery(api.reviewCards.listNew, {}),
 	listByTopic: (topicId: Id<'topics'>) =>
 		convexQuery(api.reviewCards.listByTopic, { topicId }),
 	detail: (reviewCardId: Id<'reviewCards'>) =>
