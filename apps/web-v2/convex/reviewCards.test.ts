@@ -2,6 +2,7 @@ import { convexTest } from 'convex-test'
 import { describe, expect, it } from 'vitest'
 
 import { api } from './_generated/api'
+import * as ReviewCards from './model/reviewCards'
 import schema from './schema'
 import { modules } from './test.setup'
 
@@ -156,6 +157,60 @@ describe('reviewCards', () => {
 
 		expect(reviewCards.map(reviewCard => reviewCard._id)).toEqual([
 			ownCardId,
+		])
+	})
+
+	it('uses absent stability as the new-card criterion', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {})
+		const missingStabilityId = await asUserA.mutation(
+			api.reviewCards.create,
+			{ topicId },
+		)
+
+		const lastReviewedOnlyId = await t.run(async ctx => {
+			const baseCard = {
+				notes: '',
+				ownerId: userAIdentity.subject,
+				primaryText: '',
+				secondaryText: '',
+				state: 'LEARNING' as const,
+				topicId,
+				type: 'flashcard' as const,
+			}
+			await ctx.db.insert('reviewCards', {
+				...baseCard,
+				stability: 0,
+			})
+			const lastReviewedOnlyId = await ctx.db.insert('reviewCards', {
+				...baseCard,
+				lastReviewedAt: '2026-08-10',
+			})
+			await ctx.db.insert('reviewCards', {
+				...baseCard,
+				lastReviewedAt: '2026-08-10',
+				stability: 0,
+			})
+			await ctx.db.insert('reviewCards', {
+				...baseCard,
+				stability: 1,
+			})
+			await ctx.db.insert('reviewCards', {
+				...baseCard,
+				ownerId: userBIdentity.subject,
+			})
+
+			return lastReviewedOnlyId
+		})
+
+		const newCards = await t.run(
+			async ctx => await ReviewCards.listNew(ctx, userAIdentity.subject),
+		)
+
+		expect(newCards.map(card => card._id)).toEqual([
+			missingStabilityId,
+			lastReviewedOnlyId,
 		])
 	})
 

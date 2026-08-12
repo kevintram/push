@@ -36,6 +36,23 @@ export async function listByTopic(
 		.collect()
 }
 
+export async function listNew(
+	ctx: QueryCtx,
+	userId: string,
+): Promise<Array<ReviewCard>> {
+	return await ctx.db
+		.query('reviewCards')
+		.withIndex('by_ownerId_stability', q =>
+			q
+				.eq('ownerId', userId)
+				// Stability is the source of truth for whether a card has
+				// entered SRS. This also leaves room for inherited cards to
+				// carry stability without inheriting review timestamps.
+				.eq('stability', undefined),
+		)
+		.collect()
+}
+
 export async function get(
 	ctx: QueryCtx,
 	userId: string,

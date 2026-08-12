@@ -14,7 +14,8 @@ export default defineSchema({
 	reviewCards: defineTable(reviewCardBase)
 		.index('by_topicId_ownerId', ['topicId', 'ownerId'])
 		.index('by_ownerId_dueDate', ['ownerId', 'dueDate'])
-		.index('by_ownerId', ['ownerId']),
+		.index('by_ownerId', ['ownerId'])
+		.index('by_ownerId_stability', ['ownerId', 'stability']),
 
 	// `by_reviewCardId_date` backs SRS replay, which needs a card's reviews in
 	// date order. Rated and unrated reviews share the index; replay filters the
