@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 import { Button, createDialogHandle, DialogTrigger } from '~/components/ui'
 import { FocusOverlay } from '~/modules/reviews/components/FocusOverlay'
-import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
+import { ReviewCardItem } from '~/modules/reviews/components/ReviewCardItem'
 import type { ReviewCard as ReviewCardModel } from '~/modules/reviews/types/review.types'
 import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
 import { colors } from '~/styles/colors.stylex'
@@ -69,7 +69,7 @@ export function ReviewListPage({
 				) : null}
 				{reviewCards.map(reviewCard => {
 					return (
-						<ReviewCard
+						<ReviewCardItem
 							key={reviewCard._id}
 							reviewCard={reviewCard}
 							srs={deriveReviewCardSrsState(reviewCard, today)}

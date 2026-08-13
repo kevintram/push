@@ -24,7 +24,7 @@ import {
 	reviewCardQueries,
 	useCreateReviewCard,
 } from '~/modules/reviews/api/reviewCardQueries'
-import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
+import { ReviewCardItem } from '~/modules/reviews/components/ReviewCardItem'
 import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
 import {
 	fontSizes,
@@ -199,7 +199,7 @@ export function TopicPage() {
 
 				<div {...stylex.props(styles.reviewCardsList)}>
 					{reviewCards.map(reviewCard => (
-						<ReviewCard
+						<ReviewCardItem
 							key={reviewCard._id}
 							reviewCard={reviewCard}
 							srs={deriveReviewCardSrsState(reviewCard, today)}

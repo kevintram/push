@@ -62,13 +62,17 @@ const styles = stylex.create({
 	},
 })
 
-type ReviewCardProps = {
+type ReviewCardItemProps = {
 	reviewCard: ReviewCardModel
 	srs: ReviewCardSrsState
 	today: DateString
 }
 
-export function ReviewCard({ reviewCard, srs, today }: ReviewCardProps) {
+export function ReviewCardItem({
+	reviewCard,
+	srs,
+	today,
+}: ReviewCardItemProps) {
 	const { _id, type, primaryText, secondaryText } = reviewCard
 	const { hideMode } = useHideMode()
 
