@@ -7,6 +7,7 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 	Tooltip,
 	TooltipContent,
@@ -135,6 +136,7 @@ export function ReviewCardActions({
 						/>
 						{isFlagged ? 'Unflag' : 'Flag'}
 					</DropdownMenuItem>
+					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						onClick={() => setIsDeleteDialogOpen(true)}
 					>
