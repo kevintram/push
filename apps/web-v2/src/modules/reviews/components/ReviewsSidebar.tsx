@@ -1,6 +1,7 @@
+import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { Link, useParams } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
@@ -10,6 +11,7 @@ import { colors } from '~/styles/colors.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { reviewQueries, useCreateReview } from '../api/reviewQueries'
+import type { Review as ReviewModel } from '../types/review.types'
 import { Review } from './Review'
 
 const styles = stylex.create({
@@ -37,11 +39,22 @@ const styles = stylex.create({
 	},
 	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
 })
-export function ReviewsSidebar() {
-	const { reviewCardId } = useParams({ from: '/review-cards/$reviewCardId' })
-	const { data: reviews } = useSuspenseQuery(
-		reviewQueries.listByReviewCard(reviewCardId),
-	)
+type ReviewsSidebarProps = {
+	reviewCardId: Id<'reviewCards'>
+	readOnly?: boolean
+	reviews?: ReadonlyArray<ReviewModel>
+}
+
+export function ReviewsSidebar({
+	reviewCardId,
+	readOnly = false,
+	reviews: suppliedReviews,
+}: ReviewsSidebarProps) {
+	const { data: queriedReviews = [] } = useQuery({
+		...reviewQueries.listByReviewCard(reviewCardId),
+		enabled: suppliedReviews === undefined && !readOnly,
+	})
+	const reviews = suppliedReviews ?? queriedReviews
 	const createReview = useCreateReview()
 	const handleCreateReview = useCallback(() => {
 		createReview.mutate(
@@ -54,29 +67,35 @@ export function ReviewsSidebar() {
 		<aside {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.header)}>
 				<p {...stylex.props(styles.primaryText)}>Reviews</p>
-				<div {...stylex.props(styles.actions)}>
-					<Link
-						to='/review-cards/$reviewCardId/reviews'
-						params={{ reviewCardId }}
-						{...stylex.props(styles.seeAll)}
-					>
-						See all
-					</Link>
-					<Button.Icon
-						aria-label='Add review'
-						variant='ghost'
-						size='micro'
-						disabled={createReview.isPending}
-						onClick={handleCreateReview}
-						shape='round'
-					>
-						<Plus aria-hidden='true' size={iconSizes.md} />
-					</Button.Icon>
-				</div>
+				{readOnly ? null : (
+					<div {...stylex.props(styles.actions)}>
+						<Link
+							to='/review-cards/$reviewCardId/reviews'
+							params={{ reviewCardId }}
+							{...stylex.props(styles.seeAll)}
+						>
+							See all
+						</Link>
+						<Button.Icon
+							aria-label='Add review'
+							variant='ghost'
+							size='micro'
+							disabled={createReview.isPending}
+							onClick={handleCreateReview}
+							shape='round'
+						>
+							<Plus aria-hidden='true' size={iconSizes.md} />
+						</Button.Icon>
+					</div>
+				)}
 			</div>
 			<div {...stylex.props(styles.list)}>
 				{reviews.map(review => (
-					<Review key={review._id} review={review} />
+					<Review
+						key={review._id}
+						readOnly={readOnly}
+						review={review}
+					/>
 				))}
 			</div>
 		</aside>
