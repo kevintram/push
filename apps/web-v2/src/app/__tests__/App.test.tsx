@@ -258,6 +258,9 @@ describe('v2 app setup', () => {
 		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 
 		expect(
+			screen.getByRole('dialog', { name: 'Focus review cards' }),
+		).toBeInTheDocument()
+		expect(
 			await screen.findByDisplayValue('What problem do generics solve?'),
 		).toBeInTheDocument()
 		expect(screen.getByText('1 of 1')).toBeInTheDocument()

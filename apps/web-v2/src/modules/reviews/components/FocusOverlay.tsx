@@ -157,6 +157,7 @@ export function FocusOverlay({ handle, reviewCards }: FocusOverlayProps) {
 	return (
 		<Dialog handle={handle}>
 			<DialogContent
+				aria-label='Focus review cards'
 				size='fullscreen'
 				xstyle={styles.content}
 				showCloseButton={false}
