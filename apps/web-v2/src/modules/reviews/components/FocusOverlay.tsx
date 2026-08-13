@@ -1,12 +1,17 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
+import { QueryErrorResetBoundary } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import {
 	ChevronLeft,
 	ChevronRight,
 	SquareArrowOutUpRight,
 	X,
 } from 'lucide-react'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 
+import { LoadingIndicator } from '~/components/LoadingIndicator'
 import {
 	Button,
 	Dialog,
@@ -14,47 +19,17 @@ import {
 	DialogContent,
 	type DialogHandle,
 } from '~/components/ui'
-import { ReviewCardOverview } from '~/modules/reviews/components/ReviewCardOverview'
-import type { Review, ReviewCard } from '~/modules/reviews/types/review.types'
+import type { ReviewCard } from '~/modules/reviews/types/review.types'
 import { colors } from '~/styles/colors.stylex'
-import { iconSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
+
+import { FocusOverlayCardError } from './FocusOverlayCardError'
+import { ReviewCardOverview } from './ReviewCardOverview'
 
 type FocusOverlayProps = {
 	handle: DialogHandle
+	reviewCards: ReadonlyArray<ReviewCard>
 }
-
-const dummyReviewCard: ReviewCard = {
-	_id: 'focus-overlay-dummy-card' as Id<'reviewCards'>,
-	_creationTime: 0,
-	topicId: 'focus-overlay-dummy-topic' as Id<'topics'>,
-	ownerId: 'focus-overlay-dummy-owner',
-	type: 'flashcard',
-	primaryText: 'What should focused review feel like?',
-	secondaryText: 'Calm, clear, and free from the rest of the queue.',
-	notes: 'Dummy review card for testing the focus overlay layout.',
-	state: 'LEARNING',
-}
-
-const dummyReviews: ReadonlyArray<Review> = [
-	{
-		_id: 'focus-overlay-dummy-review-1' as Id<'reviews'>,
-		_creationTime: 1,
-		reviewCardId: dummyReviewCard._id,
-		ownerId: dummyReviewCard.ownerId,
-		rating: 'good',
-		date: '2026-08-10',
-		description: 'Stayed focused and recalled the answer.',
-		notes: '',
-	},
-	{
-		_id: 'focus-overlay-dummy-review-2' as Id<'reviews'>,
-		_creationTime: 0,
-		reviewCardId: dummyReviewCard._id,
-		ownerId: dummyReviewCard.ownerId,
-		description: 'Scheduled for another attempt.',
-		notes: 'Try recalling before revealing the answer.',
-	},
-]
 
 const styles = stylex.create({
 	content: {
@@ -67,6 +42,7 @@ const styles = stylex.create({
 		paddingBlockStart: 0,
 	},
 	inner: {
+		display: 'flex',
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
@@ -85,11 +61,78 @@ const styles = stylex.create({
 	},
 	headerButtonCluster: {
 		gap: spacing.xs,
+		alignItems: 'center',
 		display: 'flex',
+	},
+	position: {
+		paddingInline: spacing.xs,
+
+		color: colors.textSecondary,
+		fontSize: fontSizes.sm,
+	},
+	empty: {
+		alignItems: 'center',
+		display: 'flex',
+		flexBasis: 0,
+		flexGrow: 1,
+		flexShrink: 1,
+		justifyContent: 'center',
+
+		color: colors.textSecondary,
+		fontSize: fontSizes.sm,
 	},
 })
 
-export function FocusOverlay({ handle }: FocusOverlayProps) {
+/**
+ * Resolves the position to show. `-1` means there is nothing to show.
+ *
+ * A card can leave the list while it is on screen — rated out of the due query,
+ * or deleted. Rather than jumping the user elsewhere, hold the position they
+ * were reading, clamped to the shortened list.
+ */
+function resolveIndex(
+	reviewCards: ReadonlyArray<ReviewCard>,
+	currentId: Id<'reviewCards'> | null,
+	lastIndex: number,
+): number {
+	if (reviewCards.length === 0) return -1
+	if (currentId === null) return 0
+
+	const index = reviewCards.findIndex(({ _id }) => _id === currentId)
+	if (index !== -1) return index
+
+	return Math.min(lastIndex, reviewCards.length - 1)
+}
+
+/**
+ * The position state deliberately outlives a close: reopening Focus resumes on
+ * the card the user was reading rather than jumping back to the top of the
+ * queue. Reveal state does not — `ReviewCardOverview` unmounts with the popup,
+ * so a reopened card never shows its answer already revealed.
+ */
+export function FocusOverlay({ handle, reviewCards }: FocusOverlayProps) {
+	const [currentId, setCurrentId] = useState<Id<'reviewCards'> | null>(null)
+	const lastIndexRef = useRef(0)
+
+	const index = resolveIndex(reviewCards, currentId, lastIndexRef.current)
+	const currentReviewCard = reviewCards[index] ?? null
+
+	useEffect(() => {
+		if (index !== -1) lastIndexRef.current = index
+	}, [index])
+
+	// Clamped at both ends: in a review queue, wraparound makes "am I done?"
+	// unanswerable.
+	const goPrevious = useCallback(() => {
+		const previous = reviewCards[index - 1]
+		if (previous) setCurrentId(previous._id)
+	}, [index, reviewCards])
+
+	const goNext = useCallback(() => {
+		const next = index === -1 ? undefined : reviewCards[index + 1]
+		if (next) setCurrentId(next._id)
+	}, [index, reviewCards])
+
 	return (
 		<Dialog handle={handle}>
 			<DialogContent
@@ -99,32 +142,63 @@ export function FocusOverlay({ handle }: FocusOverlayProps) {
 			>
 				<div {...stylex.props(styles.header)}>
 					<div {...stylex.props(styles.headerButtonCluster)}>
-						<Button.Icon
-							aria-label='Previous review card'
-							shape='round'
-							variant='secondary'
-							size='small'
-						>
-							<ChevronLeft size={iconSizes.md} />
-						</Button.Icon>
-						<Button.Icon
-							aria-label='Next review card'
-							shape='round'
-							variant='secondary'
-							size='small'
-						>
-							<ChevronRight size={iconSizes.md} />
-						</Button.Icon>
+						{currentReviewCard === null ? null : (
+							<>
+								<Button.Icon
+									aria-label='Previous review card'
+									shape='round'
+									variant='secondary'
+									size='small'
+									disabled={index === 0}
+									onClick={goPrevious}
+								>
+									<ChevronLeft size={iconSizes.md} />
+								</Button.Icon>
+								<Button.Icon
+									aria-label='Next review card'
+									shape='round'
+									variant='secondary'
+									size='small'
+									disabled={index === reviewCards.length - 1}
+									onClick={goNext}
+								>
+									<ChevronRight size={iconSizes.md} />
+								</Button.Icon>
+								<span {...stylex.props(styles.position)}>
+									{index + 1} of {reviewCards.length}
+								</span>
+							</>
+						)}
 					</div>
 					<div {...stylex.props(styles.headerButtonCluster)}>
-						<Button.Icon
-							aria-label='Open review card'
-							shape='round'
-							variant='ghost'
-							size='small'
-						>
-							<SquareArrowOutUpRight size={iconSizes.md} />
-						</Button.Icon>
+						{/* This close renders an anchor, so both it and the button
+						    primitive it wraps need telling that the final element
+						    is not a native button. */}
+						{currentReviewCard === null ? null : (
+							<DialogClose
+								nativeButton={false}
+								render={
+									<Button.Icon
+										aria-label='Open review card'
+										shape='round'
+										variant='ghost'
+										size='small'
+										nativeButton={false}
+										render={
+											<Link
+												to='/review-cards/$reviewCardId'
+												params={{
+													reviewCardId:
+														currentReviewCard._id,
+												}}
+											/>
+										}
+									/>
+								}
+							>
+								<SquareArrowOutUpRight size={iconSizes.md} />
+							</DialogClose>
+						)}
 						<DialogClose
 							render={
 								<Button.Icon
@@ -140,11 +214,32 @@ export function FocusOverlay({ handle }: FocusOverlayProps) {
 					</div>
 				</div>
 				<div {...stylex.props(styles.inner)}>
-					<ReviewCardOverview
-						readOnly
-						reviewCard={dummyReviewCard}
-						reviews={dummyReviews}
-					/>
+					{currentReviewCard === null ? (
+						<div {...stylex.props(styles.empty)}>
+							No cards to review.
+						</div>
+					) : (
+						<QueryErrorResetBoundary>
+							{({ reset }) => (
+								<ErrorBoundary
+									onReset={reset}
+									resetKeys={[currentReviewCard._id]}
+									FallbackComponent={FocusOverlayCardError}
+								>
+									{/* Remount per card so the fallback shows
+									    cleanly and reveal state starts fresh. */}
+									<Suspense
+										key={currentReviewCard._id}
+										fallback={<LoadingIndicator />}
+									>
+										<ReviewCardOverview
+											reviewCardId={currentReviewCard._id}
+										/>
+									</Suspense>
+								</ErrorBoundary>
+							)}
+						</QueryErrorResetBoundary>
+					)}
 				</div>
 			</DialogContent>
 		</Dialog>

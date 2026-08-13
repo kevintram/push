@@ -7,7 +7,7 @@ import {
 	createRouter,
 	RouterProvider,
 } from '@tanstack/react-router'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ConvexProvider } from 'convex/react'
 import type { ReactNode } from 'react'
@@ -123,6 +123,17 @@ function renderRoute(
 		newReviewCards,
 	)
 	queryClient.setQueryData(topicQueries.detail(topicId).queryKey, topic)
+	// The focus overlay fetches each card it lands on by id.
+	for (const card of newReviewCards) {
+		queryClient.setQueryData(
+			reviewCardQueries.detail(card._id).queryKey,
+			card,
+		)
+		queryClient.setQueryData(
+			reviewQueries.listByReviewCard(card._id).queryKey,
+			[],
+		)
+	}
 	if (!missingReviewCard) {
 		queryClient.setQueryData(
 			reviewCardQueries.detail(reviewCardId).queryKey,
@@ -238,15 +249,16 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
-	it('renders the read-only dummy review card in focus mode', async () => {
+	it('renders the selected review card in focus mode', async () => {
 		const user = userEvent.setup()
 		renderRoute('/review/new', { newReviewCards: [reviewCard] })
 
 		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 
-		const primaryText = screen.getByLabelText('Review-card primary text')
-		expect(primaryText).toHaveValue('What should focused review feel like?')
-		expect(primaryText).toHaveAttribute('readonly')
+		expect(
+			await screen.findByDisplayValue('What problem do generics solve?'),
+		).toBeInTheDocument()
+		expect(screen.getByText('1 of 1')).toBeInTheDocument()
 		expect(
 			screen.getByRole('button', { name: 'Previous review card' }),
 		).toBeDisabled()
@@ -254,28 +266,61 @@ describe('v2 app setup', () => {
 			screen.getByRole('button', { name: 'Next review card' }),
 		).toBeDisabled()
 		expect(
-			screen.queryByRole('button', { name: 'Review card actions' }),
-		).not.toBeInTheDocument()
-		expect(screen.getByText('Reviews')).toBeInTheDocument()
+			screen.getByLabelText('Review-card primary text'),
+		).not.toHaveAttribute('readonly')
 		expect(
-			screen.getByText('Stayed focused and recalled the answer.'),
+			screen.getByText('Correctly described generics.'),
 		).toBeInTheDocument()
 		expect(
-			screen.getByText('Scheduled for another attempt.'),
+			screen.getByRole('link', { name: 'See all' }),
 		).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: 'Good' })).toBeDisabled()
+		// Base UI keeps `role="button"` on the non-native element, but it stays
+		// a real anchor so middle-click and open-in-new-tab still work.
+		const openLink = screen.getByRole('button', {
+			name: 'Open review card',
+		})
+		expect(openLink.tagName).toBe('A')
+		expect(openLink).toHaveAttribute('href', '/review-cards/review-card-1')
+	})
+
+	it('resumes on the card being read when focus is reopened', async () => {
+		const user = userEvent.setup()
+		const secondCard: ReviewCard = {
+			...reviewCard,
+			_id: 'review-card-2' as Id<'reviewCards'>,
+			primaryText: 'What is a discriminated union?',
+		}
+		renderRoute('/review/new', { newReviewCards: [reviewCard, secondCard] })
+
+		await user.click(await screen.findByRole('button', { name: 'Focus' }))
+		await user.click(
+			await screen.findByRole('button', { name: 'Next review card' }),
+		)
 		expect(
-			screen.getByRole('button', { name: 'Uncompleted' }),
+			await screen.findByDisplayValue('What is a discriminated union?'),
+		).toBeInTheDocument()
+		expect(screen.getByText('2 of 2')).toBeInTheDocument()
+
+		await user.click(screen.getByRole('button', { name: 'Close' }))
+		await waitFor(() =>
+			expect(
+				screen.queryByDisplayValue('What is a discriminated union?'),
+			).not.toBeInTheDocument(),
+		)
+
+		await user.click(screen.getByRole('button', { name: 'Focus' }))
+		expect(
+			await screen.findByDisplayValue('What is a discriminated union?'),
+		).toBeInTheDocument()
+		expect(screen.getByText('2 of 2')).toBeInTheDocument()
+	})
+
+	it('disables focus mode when the list is empty', async () => {
+		renderRoute('/review/new')
+
+		expect(
+			await screen.findByRole('button', { name: 'Focus' }),
 		).toBeDisabled()
-		expect(
-			screen.queryByRole('button', { name: 'Add review' }),
-		).not.toBeInTheDocument()
-		expect(
-			screen.queryByRole('button', { name: 'Review actions' }),
-		).not.toBeInTheDocument()
-		expect(
-			screen.queryByRole('link', { name: 'See all' }),
-		).not.toBeInTheDocument()
 	})
 
 	it.each([

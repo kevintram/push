@@ -57,6 +57,7 @@ export function ReviewListPage({
 					<h2 {...stylex.props(styles.title)}>{title}</h2>
 					<DialogTrigger
 						handle={focusDialogHandle}
+						disabled={reviewCards.length === 0}
 						render={<Button variant='secondary' shape='round' />}
 					>
 						<Maximize2 size={iconSizes.md} />
@@ -77,7 +78,10 @@ export function ReviewListPage({
 					)
 				})}
 			</div>
-			<FocusOverlay handle={focusDialogHandle} />
+			<FocusOverlay
+				handle={focusDialogHandle}
+				reviewCards={reviewCards}
+			/>
 		</>
 	)
 }
