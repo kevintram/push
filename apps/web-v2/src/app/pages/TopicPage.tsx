@@ -100,7 +100,7 @@ export function TopicPage() {
 
 	const saveTitle = useCallback(
 		async (title: string) => {
-			if (!topic || title === topic.title) return
+			if (title === topic.title) return
 
 			try {
 				await updateTopic.mutateAsync({ topicId, title })
@@ -112,7 +112,7 @@ export function TopicPage() {
 	)
 	const saveDescription = useCallback(
 		async (description: string) => {
-			if (!topic || description === topic.description) return
+			if (description === topic.description) return
 
 			try {
 				await updateTopic.mutateAsync({ topicId, description })
@@ -124,17 +124,15 @@ export function TopicPage() {
 	)
 
 	const title = useAutoSave({
-		initialValue: topic?.title ?? '',
+		initialValue: topic.title,
 		key: `${topicId}:title`,
 		onSave: saveTitle,
 	})
 	const description = useAutoSave({
-		initialValue: topic?.description ?? '',
+		initialValue: topic.description,
 		key: `${topicId}:description`,
 		onSave: saveDescription,
 	})
-
-	if (!topic) return null
 
 	return (
 		<div {...stylex.props(styles.container)}>
