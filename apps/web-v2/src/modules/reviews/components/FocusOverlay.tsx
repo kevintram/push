@@ -1,6 +1,11 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import {
+	ChevronLeft,
+	ChevronRight,
+	SquareArrowOutUpRight,
+	X,
+} from 'lucide-react'
 
 import {
 	Button,
@@ -57,7 +62,8 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 
-		paddingBlockEnd: 0,
+		backgroundColor: colors.bgSurface,
+
 		paddingBlockStart: 0,
 	},
 	inner: {
@@ -66,23 +72,20 @@ const styles = stylex.create({
 		flexShrink: 1,
 
 		borderRadius: radii.lg,
-		backgroundColor: colors.bgFill,
+		backgroundColor: colors.bg,
 
-		padding: spacing.lg
+		padding: spacing.lg,
 	},
 	header: {
-		display: 'flex',
-		justifyContent: 'end',
-
-		paddingBlock: spacing.md,
-	},
-	footer: {
-		gap: spacing.xs,
 		alignItems: 'center',
 		display: 'flex',
-		justifyContent: 'center',
+		justifyContent: 'space-between',
 
-		padding: spacing['3xl'],
+		paddingBlock: spacing.lg,
+	},
+	headerButtonCluster: {
+		gap: spacing.xs,
+		display: 'flex',
 	},
 })
 
@@ -95,18 +98,46 @@ export function FocusOverlay({ handle }: FocusOverlayProps) {
 				showCloseButton={false}
 			>
 				<div {...stylex.props(styles.header)}>
-					<DialogClose
-						render={
-							<Button.Icon
-								aria-label='Close'
-								shape='round'
-								variant='ghost'
-								size='small'
-							/>
-						}
-					>
-						<X aria-hidden='true' size={iconSizes.md} />
-					</DialogClose>
+					<div {...stylex.props(styles.headerButtonCluster)}>
+						<Button.Icon
+							aria-label='Previous review card'
+							shape='round'
+							variant='secondary'
+							size='small'
+						>
+							<ChevronLeft size={iconSizes.md} />
+						</Button.Icon>
+						<Button.Icon
+							aria-label='Next review card'
+							shape='round'
+							variant='secondary'
+							size='small'
+						>
+							<ChevronRight size={iconSizes.md} />
+						</Button.Icon>
+					</div>
+					<div {...stylex.props(styles.headerButtonCluster)}>
+						<Button.Icon
+							aria-label='Open review card'
+							shape='round'
+							variant='ghost'
+							size='small'
+						>
+							<SquareArrowOutUpRight size={iconSizes.md} />
+						</Button.Icon>
+						<DialogClose
+							render={
+								<Button.Icon
+									aria-label='Close'
+									shape='round'
+									variant='ghost'
+									size='small'
+								/>
+							}
+						>
+							<X aria-hidden='true' size={iconSizes.md} />
+						</DialogClose>
+					</div>
 				</div>
 				<div {...stylex.props(styles.inner)}>
 					<ReviewCardOverview
@@ -114,24 +145,6 @@ export function FocusOverlay({ handle }: FocusOverlayProps) {
 						reviewCard={dummyReviewCard}
 						reviews={dummyReviews}
 					/>
-				</div>
-				<div {...stylex.props(styles.footer)}>
-					<Button.Icon
-						aria-label='Previous review card'
-						disabled
-						shape='round'
-						variant='secondary'
-					>
-						<ChevronLeft size={iconSizes.lg} />
-					</Button.Icon>
-					<Button.Icon
-						aria-label='Next review card'
-						disabled
-						shape='round'
-						variant='secondary'
-					>
-						<ChevronRight size={iconSizes.lg} />
-					</Button.Icon>
 				</div>
 			</DialogContent>
 		</Dialog>
