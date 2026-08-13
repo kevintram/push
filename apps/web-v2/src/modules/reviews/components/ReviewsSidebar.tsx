@@ -1,6 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useCallback } from 'react'
@@ -43,7 +43,7 @@ type ReviewsSidebarProps = {
 }
 
 export function ReviewsSidebar({ reviewCardId }: ReviewsSidebarProps) {
-	const { data: reviews = [] } = useQuery(
+	const { data: reviews } = useSuspenseQuery(
 		reviewQueries.listByReviewCard(reviewCardId),
 	)
 	const createReview = useCreateReview()

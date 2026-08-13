@@ -90,12 +90,14 @@ function renderRoute(
 		lateEntries = [],
 		missingReviewCard = false,
 		newReviewCards = [],
+		reviewHistoryError = false,
 		reviewCardType = 'flashcard',
 	}: {
 		dueEntries?: Array<DueEntry>
 		lateEntries?: Array<DueEntry>
 		missingReviewCard?: boolean
 		newReviewCards?: Array<ReviewCard>
+		reviewHistoryError?: boolean
 		reviewCardType?: ReviewCard['type']
 	} = {},
 ) {
@@ -129,10 +131,12 @@ function renderRoute(
 			reviewCardQueries.detail(card._id).queryKey,
 			card,
 		)
-		queryClient.setQueryData(
-			reviewQueries.listByReviewCard(card._id).queryKey,
-			[],
-		)
+		if (!reviewHistoryError) {
+			queryClient.setQueryData(
+				reviewQueries.listByReviewCard(card._id).queryKey,
+				[],
+			)
+		}
 	}
 	if (!missingReviewCard) {
 		queryClient.setQueryData(
@@ -143,10 +147,12 @@ function renderRoute(
 			},
 		)
 	}
-	queryClient.setQueryData(
-		reviewQueries.listByReviewCard(reviewCardId).queryKey,
-		[review],
-	)
+	if (!reviewHistoryError) {
+		queryClient.setQueryData(
+			reviewQueries.listByReviewCard(reviewCardId).queryKey,
+			[review],
+		)
+	}
 	const convexClient = createTestConvexClient()
 
 	const router = createRouter({
@@ -286,6 +292,23 @@ describe('v2 app setup', () => {
 		})
 		expect(openLink.tagName).toBe('A')
 		expect(openLink).toHaveAttribute('href', '/review-cards/review-card-1')
+	})
+
+	it('keeps a review-history failure inside focus mode', async () => {
+		const user = userEvent.setup()
+		renderRoute('/review/new', {
+			newReviewCards: [reviewCard],
+			reviewHistoryError: true,
+		})
+
+		await user.click(await screen.findByRole('button', { name: 'Focus' }))
+
+		expect(
+			await screen.findByText('Could not load this review card.'),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('dialog', { name: 'Focus review cards' }),
+		).toBeInTheDocument()
 	})
 
 	it('resumes on the card being read when focus is reopened', async () => {

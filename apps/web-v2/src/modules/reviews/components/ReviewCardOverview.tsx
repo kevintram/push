@@ -64,6 +64,10 @@ type ReviewCardOverviewProps = {
 }
 
 export function ReviewCardOverview({ reviewCardId }: ReviewCardOverviewProps) {
+	// TODO(2): Focus mode already has the full live card, but this ID-only API
+	// opens another detail subscription for every card visited. Accept supplied
+	// card data and shorten overlay-only query GC so large queues do not retain
+	// redundant Convex subscriptions.
 	const { data: reviewCard } = useSuspenseQuery(
 		reviewCardQueries.detail(reviewCardId),
 	)
