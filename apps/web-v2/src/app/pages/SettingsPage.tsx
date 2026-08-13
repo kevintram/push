@@ -1,7 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/colors.stylex'
-import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+import { fontWeights, spacing } from '~/styles/tokens.stylex'
 
 import { AccountSettingsSection } from './AccountSettingsSection'
 
@@ -13,7 +12,7 @@ const styles = stylex.create({
 		width: '100%',
 	},
 	content: {
-		gap: spacing['4xl'],
+		gap: spacing.lg,
 		paddingBlock: spacing['3xl'],
 		paddingInline: spacing['2xl'],
 
@@ -38,13 +37,6 @@ const styles = stylex.create({
 		letterSpacing: '-0.04em',
 		lineHeight: 1.1,
 	},
-	description: {
-		margin: 0,
-
-		color: colors.textSecondary,
-		fontSize: fontSizes.sm,
-		lineHeight: 1.5,
-	},
 })
 
 export function SettingsPage() {
@@ -53,9 +45,6 @@ export function SettingsPage() {
 			<div {...stylex.props(styles.content)}>
 				<header {...stylex.props(styles.header)}>
 					<h1 {...stylex.props(styles.title)}>Settings</h1>
-					<p {...stylex.props(styles.description)}>
-						Manage your account and app preferences.
-					</p>
 				</header>
 
 				<AccountSettingsSection />
