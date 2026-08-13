@@ -152,11 +152,10 @@ const ratings = {
 } as const
 
 type ReviewProps = {
-	readOnly?: boolean
 	review: ReviewModel
 }
 
-export function Review({ readOnly = false, review }: ReviewProps) {
+export function Review({ review }: ReviewProps) {
 	const [isOpen, setIsOpen] = useState(false)
 
 	const {
@@ -188,15 +187,11 @@ export function Review({ readOnly = false, review }: ReviewProps) {
 
 	return (
 		<>
-			<Dialog
-				open={readOnly ? false : isOpen}
-				onOpenChange={readOnly ? undefined : setIsOpen}
-			>
+			<Dialog open={isOpen} onOpenChange={setIsOpen}>
 				<div {...stylex.props(styles.contentContainer)}>
 					<DropdownMenu>
 						<DropdownMenuTrigger
 							aria-label={rating?.label ?? 'Uncompleted'}
-							disabled={readOnly}
 							render={
 								<Button.Icon
 									shape='round'
@@ -223,15 +218,10 @@ export function Review({ readOnly = false, review }: ReviewProps) {
 						<DropdownMenuContent>
 							<DropdownMenuRadioGroup
 								value={review.rating ?? ''}
-								onValueChange={
-									readOnly
-										? undefined
-										: value =>
-												setRating(
-													value === ''
-														? null
-														: (value as Rating),
-												)
+								onValueChange={value =>
+									setRating(
+										value === '' ? null : (value as Rating),
+									)
 								}
 							>
 								<DropdownMenuRadioItem
@@ -264,10 +254,7 @@ export function Review({ readOnly = false, review }: ReviewProps) {
 							</DropdownMenuRadioGroup>
 						</DropdownMenuContent>
 					</DropdownMenu>
-					<DialogTrigger
-						disabled={readOnly}
-						{...stylex.props(styles.description)}
-					>
+					<DialogTrigger {...stylex.props(styles.description)}>
 						<span {...stylex.props(styles.descriptionText)}>
 							{description || 'No description'}
 						</span>
@@ -281,51 +268,43 @@ export function Review({ readOnly = false, review }: ReviewProps) {
 					<div {...stylex.props(styles.footer)}>
 						<div {...stylex.props(styles.raised)}>
 							<ReviewDatePicker
-								disabled={readOnly}
 								isCompleted={review.rating !== undefined}
-								onChange={readOnly ? undefined : setDate}
+								onChange={setDate}
 								value={
 									(review.date ?? null) as DateString | null
 								}
 							/>
 						</div>
 						<div {...stylex.props(styles.spacer)} />
-						{readOnly ? null : (
-							<DropdownMenu>
-								<DropdownMenuTrigger
-									render={
-										<Button.Icon
-											aria-label='Review actions'
-											shape='round'
-											size='micro'
-											variant='ghost'
-											xstyle={[
-												styles.more,
-												styles.raised,
-											]}
-										/>
-									}
+						<DropdownMenu>
+							<DropdownMenuTrigger
+								render={
+									<Button.Icon
+										aria-label='Review actions'
+										shape='round'
+										size='micro'
+										variant='ghost'
+										xstyle={[styles.more, styles.raised]}
+									/>
+								}
+							>
+								<Ellipsis
+									aria-hidden='true'
+									size={iconSizes.md}
+								/>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align='end'>
+								<DropdownMenuItem
+									onClick={() => setIsDeleteDialogOpen(true)}
 								>
-									<Ellipsis
+									<Trash2
 										aria-hidden='true'
 										size={iconSizes.md}
 									/>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align='end'>
-									<DropdownMenuItem
-										onClick={() =>
-											setIsDeleteDialogOpen(true)
-										}
-									>
-										<Trash2
-											aria-hidden='true'
-											size={iconSizes.md}
-										/>
-										Delete
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						)}
+									Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 				</div>
 
@@ -349,16 +328,14 @@ export function Review({ readOnly = false, review }: ReviewProps) {
 				</DialogContent>
 			</Dialog>
 
-			{readOnly ? null : (
-				<DeleteConfirmationDialog
-					description='This review will be permanently deleted.'
-					isPending={isDeleting}
-					onConfirm={confirmDelete}
-					onOpenChange={setIsDeleteDialogOpen}
-					open={isDeleteDialogOpen}
-					title='Delete review?'
-				/>
-			)}
+			<DeleteConfirmationDialog
+				description='This review will be permanently deleted.'
+				isPending={isDeleting}
+				onConfirm={confirmDelete}
+				onOpenChange={setIsDeleteDialogOpen}
+				open={isDeleteDialogOpen}
+				title='Delete review?'
+			/>
 		</>
 	)
 }

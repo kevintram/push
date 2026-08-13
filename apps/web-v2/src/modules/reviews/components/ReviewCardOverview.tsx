@@ -1,13 +1,15 @@
+import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 
 import { Separator, Textarea } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
 import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
 
+import { reviewCardQueries } from '../api/reviewCardQueries'
 import { useHideMode } from '../hide-mode/useHideMode'
 import { useReviewCardField } from '../hooks/useReviewCardField'
-import type { Review, ReviewCard } from '../types/review.types'
 import { deriveReviewCardSrsState } from '../utils/reviewCardSrs'
 import { Hideable } from './Hideable'
 import { ReviewCardActions } from './ReviewCardActions'
@@ -58,19 +60,13 @@ const styles = stylex.create({
 })
 
 type ReviewCardOverviewProps = {
-	// TODO(4): Reconsider accepting only reviewCardId if every caller eventually
-	// has a persisted card and benefits from an independent reactive subscription.
-	reviewCard: ReviewCard
-	readOnly?: boolean
-	reviews?: ReadonlyArray<Review>
+	reviewCardId: Id<'reviewCards'>
 }
 
-export function ReviewCardOverview({
-	reviewCard,
-	readOnly = false,
-	reviews,
-}: ReviewCardOverviewProps) {
-	const reviewCardId = reviewCard._id
+export function ReviewCardOverview({ reviewCardId }: ReviewCardOverviewProps) {
+	const { data: reviewCard } = useSuspenseQuery(
+		reviewCardQueries.detail(reviewCardId),
+	)
 	const { hideMode } = useHideMode()
 	const [secondaryRevealed, setSecondaryRevealed] = useState(false)
 	const [notesRevealed, setNotesRevealed] = useState(false)
@@ -112,9 +108,8 @@ export function ReviewCardOverview({
 					<Textarea
 						aria-label='Review-card primary text'
 						placeholder={primaryTextPlaceholder}
-						onBlur={readOnly ? undefined : primaryText.flush}
-						onChange={readOnly ? undefined : primaryText.onChange}
-						readOnly={readOnly}
+						onBlur={primaryText.flush}
+						onChange={primaryText.onChange}
 						value={primaryText.value}
 						xstyle={styles.primary}
 					/>
@@ -129,11 +124,8 @@ export function ReviewCardOverview({
 						<Textarea
 							aria-label='Review-card secondary text'
 							placeholder={secondaryTextPlaceholder}
-							onBlur={readOnly ? undefined : secondaryText.flush}
-							onChange={
-								readOnly ? undefined : secondaryText.onChange
-							}
-							readOnly={readOnly}
+							onBlur={secondaryText.flush}
+							onChange={secondaryText.onChange}
 							value={secondaryText.value}
 							xstyle={styles.secondary}
 						/>
@@ -144,9 +136,7 @@ export function ReviewCardOverview({
 								{...deriveReviewCardSrsState(reviewCard, today)}
 								today={today}
 							/>
-							{readOnly ? null : (
-								<ReviewCardActions reviewCard={reviewCard} />
-							)}
+							<ReviewCardActions reviewCard={reviewCard} />
 						</div>
 						<Separator />
 					</div>
@@ -158,20 +148,15 @@ export function ReviewCardOverview({
 						<Textarea
 							aria-label='Review-card notes'
 							placeholder='Add notes...'
-							onBlur={readOnly ? undefined : notes.flush}
-							onChange={readOnly ? undefined : notes.onChange}
-							readOnly={readOnly}
+							onBlur={notes.flush}
+							onChange={notes.onChange}
 							value={notes.value}
 							xstyle={styles.notes}
 						/>
 					</Hideable>
 				</div>
 			</main>
-			<ReviewsSidebar
-				readOnly={readOnly}
-				reviewCardId={reviewCardId}
-				reviews={reviews}
-			/>
+			<ReviewsSidebar reviewCardId={reviewCardId} />
 		</div>
 	)
 }

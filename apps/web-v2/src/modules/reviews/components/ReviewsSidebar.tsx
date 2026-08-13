@@ -11,7 +11,6 @@ import { colors } from '~/styles/colors.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { reviewQueries, useCreateReview } from '../api/reviewQueries'
-import type { Review as ReviewModel } from '../types/review.types'
 import { Review } from './Review'
 
 const styles = stylex.create({
@@ -41,20 +40,12 @@ const styles = stylex.create({
 })
 type ReviewsSidebarProps = {
 	reviewCardId: Id<'reviewCards'>
-	readOnly?: boolean
-	reviews?: ReadonlyArray<ReviewModel>
 }
 
-export function ReviewsSidebar({
-	reviewCardId,
-	readOnly = false,
-	reviews: suppliedReviews,
-}: ReviewsSidebarProps) {
-	const { data: queriedReviews = [] } = useQuery({
-		...reviewQueries.listByReviewCard(reviewCardId),
-		enabled: suppliedReviews === undefined && !readOnly,
-	})
-	const reviews = suppliedReviews ?? queriedReviews
+export function ReviewsSidebar({ reviewCardId }: ReviewsSidebarProps) {
+	const { data: reviews = [] } = useQuery(
+		reviewQueries.listByReviewCard(reviewCardId),
+	)
 	const createReview = useCreateReview()
 	const handleCreateReview = useCallback(() => {
 		createReview.mutate(
@@ -67,35 +58,29 @@ export function ReviewsSidebar({
 		<aside {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.header)}>
 				<p {...stylex.props(styles.primaryText)}>Reviews</p>
-				{readOnly ? null : (
-					<div {...stylex.props(styles.actions)}>
-						<Link
-							to='/review-cards/$reviewCardId/reviews'
-							params={{ reviewCardId }}
-							{...stylex.props(styles.seeAll)}
-						>
-							See all
-						</Link>
-						<Button.Icon
-							aria-label='Add review'
-							variant='ghost'
-							size='micro'
-							disabled={createReview.isPending}
-							onClick={handleCreateReview}
-							shape='round'
-						>
-							<Plus aria-hidden='true' size={iconSizes.md} />
-						</Button.Icon>
-					</div>
-				)}
+				<div {...stylex.props(styles.actions)}>
+					<Link
+						to='/review-cards/$reviewCardId/reviews'
+						params={{ reviewCardId }}
+						{...stylex.props(styles.seeAll)}
+					>
+						See all
+					</Link>
+					<Button.Icon
+						aria-label='Add review'
+						variant='ghost'
+						size='micro'
+						disabled={createReview.isPending}
+						onClick={handleCreateReview}
+						shape='round'
+					>
+						<Plus aria-hidden='true' size={iconSizes.md} />
+					</Button.Icon>
+				</div>
 			</div>
 			<div {...stylex.props(styles.list)}>
 				{reviews.map(review => (
-					<Review
-						key={review._id}
-						readOnly={readOnly}
-						review={review}
-					/>
+					<Review key={review._id} review={review} />
 				))}
 			</div>
 		</aside>
