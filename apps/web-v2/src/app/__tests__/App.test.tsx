@@ -8,6 +8,7 @@ import {
 	RouterProvider,
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { ConvexProvider } from 'convex/react'
 import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -235,6 +236,46 @@ describe('v2 app setup', () => {
 				name: 'What problem do generics solve?',
 			}),
 		).toBeInTheDocument()
+	})
+
+	it('renders the read-only dummy review card in focus mode', async () => {
+		const user = userEvent.setup()
+		renderRoute('/review/new', { newReviewCards: [reviewCard] })
+
+		await user.click(await screen.findByRole('button', { name: 'Focus' }))
+
+		const primaryText = screen.getByLabelText('Review-card primary text')
+		expect(primaryText).toHaveValue('What should focused review feel like?')
+		expect(primaryText).toHaveAttribute('readonly')
+		expect(
+			screen.getByRole('button', { name: 'Previous review card' }),
+		).toBeDisabled()
+		expect(
+			screen.getByRole('button', { name: 'Next review card' }),
+		).toBeDisabled()
+		expect(
+			screen.queryByRole('button', { name: 'Review card actions' }),
+		).not.toBeInTheDocument()
+		expect(screen.getByText('Reviews')).toBeInTheDocument()
+		expect(
+			screen.getByText('Stayed focused and recalled the answer.'),
+		).toBeInTheDocument()
+		expect(
+			screen.getByText('Scheduled for another attempt.'),
+		).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'Good' })).toBeDisabled()
+		expect(
+			screen.getByRole('button', { name: 'Uncompleted' }),
+		).toBeDisabled()
+		expect(
+			screen.queryByRole('button', { name: 'Add review' }),
+		).not.toBeInTheDocument()
+		expect(
+			screen.queryByRole('button', { name: 'Review actions' }),
+		).not.toBeInTheDocument()
+		expect(
+			screen.queryByRole('link', { name: 'See all' }),
+		).not.toBeInTheDocument()
 	})
 
 	it.each([
