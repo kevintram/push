@@ -7,7 +7,8 @@ import {
 	createRouter,
 	RouterProvider,
 } from '@tanstack/react-router'
-import { render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { ConvexProvider } from 'convex/react'
 import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -89,12 +90,14 @@ function renderRoute(
 		lateEntries = [],
 		missingReviewCard = false,
 		newReviewCards = [],
+		reviewHistoryError = false,
 		reviewCardType = 'flashcard',
 	}: {
 		dueEntries?: Array<DueEntry>
 		lateEntries?: Array<DueEntry>
 		missingReviewCard?: boolean
 		newReviewCards?: Array<ReviewCard>
+		reviewHistoryError?: boolean
 		reviewCardType?: ReviewCard['type']
 	} = {},
 ) {
@@ -122,6 +125,19 @@ function renderRoute(
 		newReviewCards,
 	)
 	queryClient.setQueryData(topicQueries.detail(topicId).queryKey, topic)
+	// The focus overlay fetches each card it lands on by id.
+	for (const card of newReviewCards) {
+		queryClient.setQueryData(
+			reviewCardQueries.detail(card._id).queryKey,
+			card,
+		)
+		if (!reviewHistoryError) {
+			queryClient.setQueryData(
+				reviewQueries.listByReviewCard(card._id).queryKey,
+				[],
+			)
+		}
+	}
 	if (!missingReviewCard) {
 		queryClient.setQueryData(
 			reviewCardQueries.detail(reviewCardId).queryKey,
@@ -131,10 +147,12 @@ function renderRoute(
 			},
 		)
 	}
-	queryClient.setQueryData(
-		reviewQueries.listByReviewCard(reviewCardId).queryKey,
-		[review],
-	)
+	if (!reviewHistoryError) {
+		queryClient.setQueryData(
+			reviewQueries.listByReviewCard(reviewCardId).queryKey,
+			[review],
+		)
+	}
 	const convexClient = createTestConvexClient()
 
 	const router = createRouter({
@@ -151,7 +169,7 @@ function renderRoute(
 		}),
 	})
 
-	return render(
+	const rendered = render(
 		<ConvexProvider client={convexClient}>
 			<QueryClientProvider client={queryClient}>
 				<HideModeProvider>
@@ -160,6 +178,8 @@ function renderRoute(
 			</QueryClientProvider>
 		</ConvexProvider>,
 	)
+
+	return { ...rendered, queryClient }
 }
 
 describe('v2 app setup', () => {
@@ -235,6 +255,154 @@ describe('v2 app setup', () => {
 				name: 'What problem do generics solve?',
 			}),
 		).toBeInTheDocument()
+	})
+
+	it('renders the selected review card in focus mode', async () => {
+		const user = userEvent.setup()
+		renderRoute('/review/new', { newReviewCards: [reviewCard] })
+
+		await user.click(await screen.findByRole('button', { name: 'Focus' }))
+
+		expect(
+			screen.getByRole('dialog', { name: 'Focus review cards' }),
+		).toBeInTheDocument()
+		expect(
+			await screen.findByDisplayValue('What problem do generics solve?'),
+		).toBeInTheDocument()
+		expect(screen.getByText('1 of 1')).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Previous review card' }),
+		).toBeDisabled()
+		expect(
+			screen.getByRole('button', { name: 'Next review card' }),
+		).toBeDisabled()
+		expect(
+			screen.getByLabelText('Review-card primary text'),
+		).not.toHaveAttribute('readonly')
+		expect(
+			screen.getByText('Correctly described generics.'),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('link', { name: 'See all' }),
+		).toBeInTheDocument()
+		// Base UI keeps `role="button"` on the non-native element, but it stays
+		// a real anchor so middle-click and open-in-new-tab still work.
+		const openLink = screen.getByRole('button', {
+			name: 'Open review card',
+		})
+		expect(openLink.tagName).toBe('A')
+		expect(openLink).toHaveAttribute('href', '/review-cards/review-card-1')
+	})
+
+	it('keeps a review-history failure inside focus mode', async () => {
+		const user = userEvent.setup()
+		renderRoute('/review/new', {
+			newReviewCards: [reviewCard],
+			reviewHistoryError: true,
+		})
+
+		await user.click(await screen.findByRole('button', { name: 'Focus' }))
+
+		expect(
+			await screen.findByText('Could not load this review card.'),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('dialog', { name: 'Focus review cards' }),
+		).toBeInTheDocument()
+	})
+
+	it('resumes on the card being read when focus is reopened', async () => {
+		const user = userEvent.setup()
+		const secondCard: ReviewCard = {
+			...reviewCard,
+			_id: 'review-card-2' as Id<'reviewCards'>,
+			primaryText: 'What is a discriminated union?',
+		}
+		renderRoute('/review/new', { newReviewCards: [reviewCard, secondCard] })
+
+		await user.click(await screen.findByRole('button', { name: 'Focus' }))
+		await user.click(
+			await screen.findByRole('button', { name: 'Next review card' }),
+		)
+		expect(
+			await screen.findByDisplayValue('What is a discriminated union?'),
+		).toBeInTheDocument()
+		expect(screen.getByText('2 of 2')).toBeInTheDocument()
+
+		await user.click(screen.getByRole('button', { name: 'Close' }))
+		await waitFor(() =>
+			expect(
+				screen.queryByDisplayValue('What is a discriminated union?'),
+			).not.toBeInTheDocument(),
+		)
+
+		await user.click(screen.getByRole('button', { name: 'Focus' }))
+		expect(
+			await screen.findByDisplayValue('What is a discriminated union?'),
+		).toBeInTheDocument()
+		expect(screen.getByText('2 of 2')).toBeInTheDocument()
+	})
+
+	it('keeps the selected card stable as the focus queue changes', async () => {
+		const user = userEvent.setup()
+		const secondCard: ReviewCard = {
+			...reviewCard,
+			_id: 'review-card-2' as Id<'reviewCards'>,
+			primaryText: 'What is a discriminated union?',
+		}
+		const thirdCard: ReviewCard = {
+			...reviewCard,
+			_id: 'review-card-3' as Id<'reviewCards'>,
+			primaryText: 'What is type narrowing?',
+		}
+		const { queryClient } = renderRoute('/review/new', {
+			newReviewCards: [reviewCard, secondCard, thirdCard],
+		})
+
+		await user.click(await screen.findByRole('button', { name: 'Focus' }))
+		await user.click(
+			await screen.findByRole('button', { name: 'Next review card' }),
+		)
+
+		act(() => {
+			queryClient.setQueryData(reviewCardQueries.listNew().queryKey, [
+				secondCard,
+				thirdCard,
+			])
+		})
+		expect(
+			await screen.findByDisplayValue('What is a discriminated union?'),
+		).toBeInTheDocument()
+		expect(screen.getByText('1 of 2')).toBeInTheDocument()
+
+		act(() => {
+			queryClient.setQueryData(reviewCardQueries.listNew().queryKey, [
+				thirdCard,
+			])
+		})
+		expect(
+			await screen.findByDisplayValue('What is type narrowing?'),
+		).toBeInTheDocument()
+		expect(screen.getByText('1 of 1')).toBeInTheDocument()
+
+		act(() => {
+			queryClient.setQueryData(reviewCardQueries.listNew().queryKey, [
+				reviewCard,
+				thirdCard,
+			])
+		})
+		expect(
+			await screen.findByDisplayValue('What is type narrowing?'),
+		).toBeInTheDocument()
+		expect(screen.getByText('2 of 2')).toBeInTheDocument()
+	})
+
+	it('disables focus mode when the list is empty', async () => {
+		renderRoute('/review/new')
+
+		expect(
+			await screen.findByRole('button', { name: 'Focus' }),
+		).toBeDisabled()
 	})
 
 	it.each([

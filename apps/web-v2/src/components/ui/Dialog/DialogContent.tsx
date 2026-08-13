@@ -12,6 +12,7 @@ export interface DialogContentProps extends Omit<
 	'className' | 'style'
 > {
 	showCloseButton?: boolean
+	size?: 'default' | 'fullscreen'
 	xstyle?: stylex.StyleXStyles
 }
 
@@ -26,6 +27,11 @@ const styles = stylex.create({
 		display: 'grid',
 		overflowX: 'hidden',
 		overflowY: 'auto',
+	},
+	viewportFullscreen: {
+		padding: spacing.none,
+		placeItems: 'stretch',
+		overflowY: 'hidden',
 	},
 	popup: {
 		position: 'relative',
@@ -58,6 +64,26 @@ const styles = stylex.create({
 		},
 		transitionProperty: 'opacity, transform',
 		transitionTimingFunction: 'ease-out',
+	},
+	popupFullscreen: {
+		blockSize: '100dvh',
+		inlineSize: '100dvw',
+		maxInlineSize: 'none',
+
+		paddingBlockEnd: `max(${spacing.xl}, env(safe-area-inset-bottom))`,
+		paddingBlockStart: `max(${spacing.xl}, env(safe-area-inset-top))`,
+		paddingInlineEnd: `max(${spacing.xl}, env(safe-area-inset-right))`,
+		paddingInlineStart: `max(${spacing.xl}, env(safe-area-inset-left))`,
+
+		borderRadius: 0,
+		borderWidth: '0px',
+		backgroundColor: colors.bg,
+		boxShadow: 'none',
+		transform: {
+			default: 'none',
+			':is([data-starting-style], [data-ending-style])': 'none',
+		},
+		overflowY: 'auto',
 	},
 	close: {
 		insetBlockStart: spacing.sm,
@@ -100,15 +126,27 @@ const styles = stylex.create({
 export function DialogContent({
 	children,
 	showCloseButton = true,
+	size = 'default',
 	xstyle,
 	...props
 }: DialogContentProps) {
+	const isFullscreen = size === 'fullscreen'
+
 	return (
 		<DialogPrimitive.Portal>
 			<DialogOverlay />
-			<DialogPrimitive.Viewport {...stylex.props(styles.viewport)}>
+			<DialogPrimitive.Viewport
+				{...stylex.props(
+					styles.viewport,
+					isFullscreen && styles.viewportFullscreen,
+				)}
+			>
 				<DialogPrimitive.Popup
-					{...stylex.props(styles.popup, xstyle)}
+					{...stylex.props(
+						styles.popup,
+						isFullscreen && styles.popupFullscreen,
+						xstyle,
+					)}
 					{...props}
 				>
 					{children}

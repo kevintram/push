@@ -51,16 +51,6 @@ export function ReviewCardPageLayout() {
 		? 'review'
 		: 'overview'
 
-	// The card can read as missing here in two ways: the loader bailed out while
-	// auth was still resolving, or it was just deleted and Convex pushed the
-	// removal before the redirect landed. Render nothing and let the loader
-	// (re-run on auth) or the delete's navigation decide where to go next.
-	//
-	// Deliberately not `throw notFound()`: `__root` wraps the outlet in a React
-	// error boundary, which would catch the router's control-flow object and
-	// render the error page instead of a 404.
-	if (!reviewCard) return null
-
 	return (
 		<div {...stylex.props(styles.outerContainer)}>
 			<header {...stylex.props(styles.header)}>

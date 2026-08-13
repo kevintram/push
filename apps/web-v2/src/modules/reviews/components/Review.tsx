@@ -151,7 +151,11 @@ const ratings = {
 	easy: { label: 'Easy', Icon: CheckCheck },
 } as const
 
-export function Review({ review }: { review: ReviewModel }) {
+type ReviewProps = {
+	review: ReviewModel
+}
+
+export function Review({ review }: ReviewProps) {
 	const [isOpen, setIsOpen] = useState(false)
 
 	const {

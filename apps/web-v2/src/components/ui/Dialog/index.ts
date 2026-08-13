@@ -1,5 +1,7 @@
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 
+export type DialogHandle<Payload = unknown> = DialogPrimitive.Handle<Payload>
+
 export { DialogContent, type DialogContentProps } from './DialogContent'
 export {
 	DialogDescription,

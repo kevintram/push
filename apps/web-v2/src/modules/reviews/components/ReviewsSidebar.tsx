@@ -1,6 +1,7 @@
+import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { Link, useParams } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
@@ -37,8 +38,11 @@ const styles = stylex.create({
 	},
 	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
 })
-export function ReviewsSidebar() {
-	const { reviewCardId } = useParams({ from: '/review-cards/$reviewCardId' })
+type ReviewsSidebarProps = {
+	reviewCardId: Id<'reviewCards'>
+}
+
+export function ReviewsSidebar({ reviewCardId }: ReviewsSidebarProps) {
 	const { data: reviews } = useSuspenseQuery(
 		reviewQueries.listByReviewCard(reviewCardId),
 	)
