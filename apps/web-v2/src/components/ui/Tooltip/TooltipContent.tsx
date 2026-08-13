@@ -48,7 +48,7 @@ export function TooltipContent({
 	align = 'center',
 	alignOffset,
 	role = 'tooltip',
-	side = 'top',
+	side = 'bottom',
 	sideOffset = 4,
 	...props
 }: TooltipContentProps) {
