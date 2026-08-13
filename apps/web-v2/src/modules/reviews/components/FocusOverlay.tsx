@@ -2,12 +2,7 @@ import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { QueryErrorResetBoundary } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import {
-	ChevronLeft,
-	ChevronRight,
-	SquareArrowOutUpRight,
-	X,
-} from 'lucide-react'
+import { ArrowUpRight, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
@@ -18,6 +13,9 @@ import {
 	DialogClose,
 	DialogContent,
 	type DialogHandle,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
 } from '~/components/ui'
 import type { ReviewCard } from '~/modules/reviews/types/review.types'
 import { colors } from '~/styles/colors.stylex'
@@ -44,7 +42,10 @@ const styles = stylex.create({
 
 		backgroundColor: colors.bgSurface,
 
+		paddingBlockEnd: spacing.md,
 		paddingBlockStart: 0,
+		paddingInlineEnd: spacing.md,
+		paddingInlineStart: spacing.md,
 	},
 	inner: {
 		display: 'flex',
@@ -62,7 +63,7 @@ const styles = stylex.create({
 		display: 'flex',
 		justifyContent: 'space-between',
 
-		paddingBlock: spacing.lg,
+		paddingBlock: spacing.md,
 	},
 	headerButtonCluster: {
 		gap: spacing.xs,
@@ -166,26 +167,47 @@ export function FocusOverlay({ handle, reviewCards }: FocusOverlayProps) {
 					<div {...stylex.props(styles.headerButtonCluster)}>
 						{currentReviewCard === null ? null : (
 							<>
-								<Button.Icon
-									aria-label='Previous review card'
-									shape='round'
-									variant='secondary'
-									size='small'
-									disabled={index === 0}
-									onClick={goPrevious}
-								>
-									<ChevronLeft size={iconSizes.md} />
-								</Button.Icon>
-								<Button.Icon
-									aria-label='Next review card'
-									shape='round'
-									variant='secondary'
-									size='small'
-									disabled={index === reviewCards.length - 1}
-									onClick={goNext}
-								>
-									<ChevronRight size={iconSizes.md} />
-								</Button.Icon>
+								<Tooltip>
+									<TooltipTrigger
+										render={
+											<Button.Icon
+												aria-label='Previous review card'
+												shape='round'
+												variant='secondary'
+												size='small'
+												disabled={index === 0}
+												onClick={goPrevious}
+											>
+												<ChevronLeft
+													size={iconSizes.md}
+												/>
+											</Button.Icon>
+										}
+									/>
+									<TooltipContent>Previous</TooltipContent>
+								</Tooltip>
+								<Tooltip>
+									<TooltipTrigger
+										render={
+											<Button.Icon
+												aria-label='Next review card'
+												shape='round'
+												variant='secondary'
+												size='small'
+												disabled={
+													index ===
+													reviewCards.length - 1
+												}
+												onClick={goNext}
+											>
+												<ChevronRight
+													size={iconSizes.md}
+												/>
+											</Button.Icon>
+										}
+									/>
+									<TooltipContent>Next</TooltipContent>
+								</Tooltip>
 								<span {...stylex.props(styles.position)}>
 									{index + 1} of {reviewCards.length}
 								</span>
@@ -197,36 +219,45 @@ export function FocusOverlay({ handle, reviewCards }: FocusOverlayProps) {
 						    primitive it wraps need telling that the final element
 						    is not a native button. */}
 						{currentReviewCard === null ? null : (
-							<DialogClose
-								nativeButton={false}
-								render={
-									<Button.Icon
-										aria-label='Open review card'
-										shape='round'
-										variant='ghost'
-										size='small'
-										nativeButton={false}
-										render={
-											<Link
-												to='/review-cards/$reviewCardId'
-												params={{
-													reviewCardId:
-														currentReviewCard._id,
-												}}
-											/>
-										}
-									/>
-								}
-							>
-								<SquareArrowOutUpRight size={iconSizes.md} />
-							</DialogClose>
+							<Tooltip>
+								<TooltipTrigger
+									render={
+										<DialogClose
+											nativeButton={false}
+											render={
+												<Button.Icon
+													aria-label='Open review card'
+													shape='round'
+													variant='secondary'
+													size='small'
+													nativeButton={false}
+													render={
+														<Link
+															to='/review-cards/$reviewCardId'
+															params={{
+																reviewCardId:
+																	currentReviewCard._id,
+															}}
+														/>
+													}
+												/>
+											}
+										>
+											<ArrowUpRight size={iconSizes.md} />
+										</DialogClose>
+									}
+								/>
+								<TooltipContent>
+									Open review card
+								</TooltipContent>
+							</Tooltip>
 						)}
 						<DialogClose
 							render={
 								<Button.Icon
 									aria-label='Close'
 									shape='round'
-									variant='ghost'
+									variant='secondary'
 									size='small'
 								/>
 							}
