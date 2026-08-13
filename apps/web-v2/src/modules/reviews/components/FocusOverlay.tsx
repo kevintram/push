@@ -8,7 +8,7 @@ import {
 	SquareArrowOutUpRight,
 	X,
 } from 'lucide-react'
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
@@ -29,6 +29,11 @@ import { ReviewCardOverview } from './ReviewCardOverview'
 type FocusOverlayProps = {
 	handle: DialogHandle
 	reviewCards: ReadonlyArray<ReviewCard>
+}
+
+type IdAndIndex = {
+	id: Id<'reviewCards'> | null
+	index: number
 }
 
 const styles = stylex.create({
@@ -84,24 +89,26 @@ const styles = stylex.create({
 })
 
 /**
- * Resolves the position to show. `-1` means there is nothing to show.
+ * Finds the selected card's current position in the live queue.
  *
- * A card can leave the list while it is on screen — rated out of the due query,
- * or deleted. Rather than jumping the user elsewhere, hold the position they
- * were reading, clamped to the shortened list.
+ * Tracking by ID keeps the same card selected when earlier cards are added or
+ * removed. If the selected card leaves the queue, its last known index chooses
+ * the card that replaced it, clamped to the new end of the queue. `-1` means
+ * the queue is empty.
  */
 function resolveIndex(
 	reviewCards: ReadonlyArray<ReviewCard>,
-	currentId: Id<'reviewCards'> | null,
-	lastIndex: number,
+	selection: IdAndIndex,
 ): number {
 	if (reviewCards.length === 0) return -1
-	if (currentId === null) return 0
+	if (selection.id === null) {
+		return Math.min(selection.index, reviewCards.length - 1)
+	}
 
-	const index = reviewCards.findIndex(({ _id }) => _id === currentId)
+	const index = reviewCards.findIndex(({ _id }) => _id === selection.id)
 	if (index !== -1) return index
 
-	return Math.min(lastIndex, reviewCards.length - 1)
+	return Math.min(selection.index, reviewCards.length - 1)
 }
 
 /**
@@ -111,26 +118,40 @@ function resolveIndex(
  * so a reopened card never shows its answer already revealed.
  */
 export function FocusOverlay({ handle, reviewCards }: FocusOverlayProps) {
-	const [currentId, setCurrentId] = useState<Id<'reviewCards'> | null>(null)
-	const lastIndexRef = useRef(0)
+	const [selection, setSelection] = useState<IdAndIndex>(() => ({
+		id: reviewCards[0]?._id ?? null,
+		index: 0,
+	}))
 
-	const index = resolveIndex(reviewCards, currentId, lastIndexRef.current)
+	const index = resolveIndex(reviewCards, selection)
 	const currentReviewCard = reviewCards[index] ?? null
+	const resolvedId = currentReviewCard?._id ?? null
 
+	// Keep the fallback position current when the selected card moves. If that
+	// card leaves the queue, adopt the card at its former position so subsequent
+	// queue updates continue tracking the replacement by identity.
 	useEffect(() => {
-		if (index !== -1) lastIndexRef.current = index
-	}, [index])
+		if (resolvedId === null) return
+
+		setSelection(current => {
+			if (current.id === resolvedId && current.index === index)
+				return current
+			return { id: resolvedId, index }
+		})
+	}, [index, resolvedId])
 
 	// Clamped at both ends: in a review queue, wraparound makes "am I done?"
 	// unanswerable.
 	const goPrevious = useCallback(() => {
-		const previous = reviewCards[index - 1]
-		if (previous) setCurrentId(previous._id)
+		const previousIndex = index - 1
+		const previous = reviewCards[previousIndex]
+		if (previous) setSelection({ id: previous._id, index: previousIndex })
 	}, [index, reviewCards])
 
 	const goNext = useCallback(() => {
-		const next = index === -1 ? undefined : reviewCards[index + 1]
-		if (next) setCurrentId(next._id)
+		const nextIndex = index + 1
+		const next = index === -1 ? undefined : reviewCards[nextIndex]
+		if (next) setSelection({ id: next._id, index: nextIndex })
 	}, [index, reviewCards])
 
 	return (

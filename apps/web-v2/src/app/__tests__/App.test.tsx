@@ -7,7 +7,7 @@ import {
 	createRouter,
 	RouterProvider,
 } from '@tanstack/react-router'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ConvexProvider } from 'convex/react'
 import type { ReactNode } from 'react'
@@ -163,7 +163,7 @@ function renderRoute(
 		}),
 	})
 
-	return render(
+	const rendered = render(
 		<ConvexProvider client={convexClient}>
 			<QueryClientProvider client={queryClient}>
 				<HideModeProvider>
@@ -172,6 +172,8 @@ function renderRoute(
 			</QueryClientProvider>
 		</ConvexProvider>,
 	)
+
+	return { ...rendered, queryClient }
 }
 
 describe('v2 app setup', () => {
@@ -311,6 +313,60 @@ describe('v2 app setup', () => {
 		await user.click(screen.getByRole('button', { name: 'Focus' }))
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
+		).toBeInTheDocument()
+		expect(screen.getByText('2 of 2')).toBeInTheDocument()
+	})
+
+	it('keeps the selected card stable as the focus queue changes', async () => {
+		const user = userEvent.setup()
+		const secondCard: ReviewCard = {
+			...reviewCard,
+			_id: 'review-card-2' as Id<'reviewCards'>,
+			primaryText: 'What is a discriminated union?',
+		}
+		const thirdCard: ReviewCard = {
+			...reviewCard,
+			_id: 'review-card-3' as Id<'reviewCards'>,
+			primaryText: 'What is type narrowing?',
+		}
+		const { queryClient } = renderRoute('/review/new', {
+			newReviewCards: [reviewCard, secondCard, thirdCard],
+		})
+
+		await user.click(await screen.findByRole('button', { name: 'Focus' }))
+		await user.click(
+			await screen.findByRole('button', { name: 'Next review card' }),
+		)
+
+		act(() => {
+			queryClient.setQueryData(reviewCardQueries.listNew().queryKey, [
+				secondCard,
+				thirdCard,
+			])
+		})
+		expect(
+			await screen.findByDisplayValue('What is a discriminated union?'),
+		).toBeInTheDocument()
+		expect(screen.getByText('1 of 2')).toBeInTheDocument()
+
+		act(() => {
+			queryClient.setQueryData(reviewCardQueries.listNew().queryKey, [
+				thirdCard,
+			])
+		})
+		expect(
+			await screen.findByDisplayValue('What is type narrowing?'),
+		).toBeInTheDocument()
+		expect(screen.getByText('1 of 1')).toBeInTheDocument()
+
+		act(() => {
+			queryClient.setQueryData(reviewCardQueries.listNew().queryKey, [
+				reviewCard,
+				thirdCard,
+			])
+		})
+		expect(
+			await screen.findByDisplayValue('What is type narrowing?'),
 		).toBeInTheDocument()
 		expect(screen.getByText('2 of 2')).toBeInTheDocument()
 	})
