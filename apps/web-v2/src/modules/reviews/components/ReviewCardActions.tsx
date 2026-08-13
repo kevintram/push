@@ -8,6 +8,9 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
 } from '~/components/ui'
 import { colors } from '~/styles/colors.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
@@ -56,34 +59,48 @@ export function ReviewCardActions({
 	return (
 		<div {...stylex.props(styles.container, xstyle)}>
 			{isFlashcard ? (
-				<Button.Icon
-					aria-label='Unflashcard'
-					shape='round'
-					variant='ghost'
-					size='small'
-					onClick={toggleType}
-				>
-					<Zap
-						aria-hidden='true'
-						size={iconSizes.md}
-						{...stylex.props(styles.flashcardOn)}
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button.Icon
+								aria-label='Unflashcard'
+								shape='round'
+								variant='ghost'
+								size='small'
+								onClick={toggleType}
+							>
+								<Zap
+									aria-hidden='true'
+									size={iconSizes.md}
+									{...stylex.props(styles.flashcardOn)}
+								/>
+							</Button.Icon>
+						}
 					/>
-				</Button.Icon>
+					<TooltipContent>Deflashcardify</TooltipContent>
+				</Tooltip>
 			) : null}
 			{isFlagged ? (
-				<Button.Icon
-					aria-label='Unflag'
-					shape='round'
-					variant='ghost'
-					size='small'
-					onClick={toggleFlag}
-				>
-					<Flag
-						aria-hidden='true'
-						size={iconSizes.md}
-						{...stylex.props(styles.flagOn)}
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button.Icon
+								aria-label='Unflag'
+								shape='round'
+								variant='ghost'
+								size='small'
+								onClick={toggleFlag}
+							>
+								<Flag
+									aria-hidden='true'
+									size={iconSizes.md}
+									{...stylex.props(styles.flagOn)}
+								/>
+							</Button.Icon>
+						}
 					/>
-				</Button.Icon>
+					<TooltipContent>Unflag</TooltipContent>
+				</Tooltip>
 			) : null}
 
 			<DropdownMenu>
@@ -108,7 +125,7 @@ export function ReviewCardActions({
 								? stylex.props(styles.flashcardOn)
 								: {})}
 						/>
-						{isFlashcard ? 'Unflashcard' : 'Flashcard'}
+						{isFlashcard ? 'Deflashcardify' : 'Flashcardify'}
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={toggleFlag}>
 						<Flag
