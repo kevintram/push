@@ -78,7 +78,7 @@ export function ReviewCardActions({
 							</Button.Icon>
 						}
 					/>
-					<TooltipContent>Deflashcardify</TooltipContent>
+					<TooltipContent>Unflashcardify</TooltipContent>
 				</Tooltip>
 			) : null}
 			{isFlagged ? (
@@ -126,7 +126,7 @@ export function ReviewCardActions({
 								? stylex.props(styles.flashcardOn)
 								: {})}
 						/>
-						{isFlashcard ? 'Deflashcardify' : 'Flashcardify'}
+						{isFlashcard ? 'Unflashcardify' : 'Flashcardify'}
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={toggleFlag}>
 						<Flag
