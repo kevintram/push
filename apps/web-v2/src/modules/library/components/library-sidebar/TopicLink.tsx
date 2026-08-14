@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router'
 import { ChevronRight, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
@@ -19,16 +19,26 @@ import { type TopicWithChildren } from '../../types/topic.types'
 const styles = stylex.create({
 	container: {
 		gap: spacing.xs,
-
 		display: 'flex',
 		flexDirection: 'column',
 	},
 	row: {
+		borderRadius: radii.lg,
 		gap: spacing.xs,
 
 		alignItems: 'center',
+		backgroundColor: {
+			default: 'inherit',
+			':hover': colors.navBgSurfaceHover,
+		},
 		display: 'grid',
 		gridTemplateColumns: '26px minmax(0, 1fr)',
+	},
+	rowActive: {
+		backgroundColor: {
+			default: colors.navBgSurfaceActive,
+			':hover': colors.navBgSurfaceActive,
+		},
 	},
 	togglePlaceholder: {
 		blockSize: '26px',
@@ -62,18 +72,10 @@ const styles = stylex.create({
 		display: 'none',
 	},
 	topicLink: {
-		padding: spacing.sm,
+		padding: spacing.xs,
 		textDecoration: 'none',
 
-		borderRadius: radii.lg,
-		gap: spacing.sm,
 		alignItems: 'center',
-		backgroundColor: {
-			'[data-status=active]': colors.navBgSurfaceActive,
-			default: colors.bg,
-			':is([data-status=active]:hover)': colors.navBgSurfaceActive,
-			':hover': colors.navBgSurfaceHover,
-		},
 		color: {
 			'[data-status=active]': colors.textLinkActive,
 			default: colors.textLink,
@@ -87,11 +89,21 @@ const styles = stylex.create({
 export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 	const topicTitle = title.trim() || 'Untitled'
 	const navigate = useNavigate()
+	const matchRoute = useMatchRoute()
 	const createTopic = useCreateTopic()
 	const deleteTopic = useDeleteTopic()
 	const [isExpanded, setIsExpanded] = useState(true)
 	const hasChildren = childTopics.length > 0
 	const childrenId = `topic-${_id}-children`
+
+	const isActive = Boolean(
+		matchRoute({
+			to: '/library/$topicId',
+			params: { topicId: _id },
+			fuzzy: false,
+			includeSearch: true,
+		}),
+	)
 
 	const handleCreateSubtopic = useCallback(() => {
 		createTopic.mutate(
@@ -113,7 +125,7 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 
 	return (
 		<li {...stylex.props(styles.container)}>
-			<div {...stylex.props(styles.row)}>
+			<div {...stylex.props(styles.row, isActive && styles.rowActive)}>
 				{hasChildren ? (
 					<Button.Icon
 						aria-controls={childrenId}
@@ -145,6 +157,7 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 							<Link
 								to='/library/$topicId'
 								params={{ topicId: _id }}
+								activeOptions={{ exact: true }}
 								aria-label={topicTitle}
 								{...stylex.props(styles.topicLink)}
 							/>
