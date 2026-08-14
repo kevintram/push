@@ -92,6 +92,7 @@ function renderRoute(
 		newReviewCards = [],
 		reviewHistoryError = false,
 		reviewCardType = 'flashcard',
+		topics = [],
 	}: {
 		dueEntries?: Array<DueEntry>
 		lateEntries?: Array<DueEntry>
@@ -99,6 +100,7 @@ function renderRoute(
 		newReviewCards?: Array<ReviewCard>
 		reviewHistoryError?: boolean
 		reviewCardType?: ReviewCard['type']
+		topics?: Array<Doc<'topics'>>
 	} = {},
 ) {
 	const queryClient = createTestQueryClient()
@@ -114,7 +116,7 @@ function renderRoute(
 			},
 		})
 	}
-	queryClient.setQueryData(topicQueries.list().queryKey, [])
+	queryClient.setQueryData(topicQueries.list().queryKey, topics)
 	queryClient.setQueryData(dueQueries.list(today).queryKey, dueEntries)
 	queryClient.setQueryData(
 		dueQueries.list({ to: today }).queryKey,
@@ -437,6 +439,71 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 		expect(
 			screen.queryByRole('heading', { name: 'Library' }),
+		).not.toBeInTheDocument()
+	})
+
+	it('collapses and expands nested library topics', async () => {
+		const user = userEvent.setup()
+		const childTopicId = 'topic-2' as Id<'topics'>
+		const grandchildTopicId = 'topic-3' as Id<'topics'>
+
+		renderRoute('/library', {
+			topics: [
+				{ ...topic, title: 'Languages' },
+				{
+					...topic,
+					_id: childTopicId,
+					parentId: topicId,
+					title: 'TypeScript',
+				},
+				{
+					...topic,
+					_id: grandchildTopicId,
+					parentId: childTopicId,
+					title: 'Generics',
+				},
+			],
+		})
+
+		const parentToggle = await screen.findByRole('button', {
+			name: 'Collapse Languages',
+		})
+		expect(parentToggle).toHaveAttribute('aria-expanded', 'true')
+		expect(
+			screen.getByRole('link', { name: 'TypeScript' }),
+		).toBeInTheDocument()
+
+		await user.click(parentToggle)
+
+		expect(
+			screen.queryByRole('link', { name: 'TypeScript' }),
+		).not.toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Expand Languages' }),
+		).toHaveAttribute('aria-expanded', 'false')
+
+		await user.click(
+			screen.getByRole('button', { name: 'Expand Languages' }),
+		)
+
+		expect(
+			screen.getByRole('link', { name: 'TypeScript' }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('link', { name: 'Generics' }),
+		).toBeInTheDocument()
+	})
+
+	it('does not render a collapse control for leaf topics', async () => {
+		renderRoute('/library', { topics: [topic] })
+
+		expect(
+			await screen.findByRole('link', { name: 'Learning TypeScript' }),
+		).toBeInTheDocument()
+		expect(
+			screen.queryByRole('button', {
+				name: 'Collapse Learning TypeScript',
+			}),
 		).not.toBeInTheDocument()
 	})
 
