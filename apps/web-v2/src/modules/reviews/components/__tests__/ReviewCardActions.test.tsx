@@ -44,7 +44,7 @@ describe('ReviewCardActions', () => {
 		await openMenu()
 		await userEvent
 			.setup()
-			.click(screen.getByRole('menuitem', { name: 'Unflashcard' }))
+			.click(screen.getByRole('menuitem', { name: 'Unflashcardify' }))
 
 		expect(updateMutate).toHaveBeenCalledWith(
 			{ reviewCardId: reviewCard._id, type: 'practice' },
