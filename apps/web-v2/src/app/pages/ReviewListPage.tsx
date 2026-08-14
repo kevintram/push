@@ -31,6 +31,7 @@ const styles = stylex.create({
 		alignItems: 'center',
 		display: 'flex',
 		justifyContent: 'space-between',
+		marginBlockEnd: spacing.sm,
 	},
 	title: {
 		fontSize: fontSizes.lg,

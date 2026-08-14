@@ -19,7 +19,10 @@ const styles = stylex.create({
 		alignItems: 'center',
 		display: 'flex',
 		flexGrow: 1,
-		flexWrap: 'wrap',
+		flexWrap: 'nowrap',
+
+		overflow: 'hidden',
+
 		fontSize: fontSizes.sm,
 	},
 	item: {

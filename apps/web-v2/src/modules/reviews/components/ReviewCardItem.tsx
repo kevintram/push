@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
 import { colors } from '~/styles/colors.stylex'
-import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
 import { useHideMode } from '../hide-mode/useHideMode'
@@ -16,22 +16,29 @@ import { ReviewCardActions } from './ReviewCardActions'
 import { ReviewCardMetadata } from './ReviewCardMetadata'
 
 const styles = stylex.create({
-	container: {
-		paddingBlock: spacing.lg,
+	outer: {
 		position: 'relative',
 
-		gap: spacing.md,
-		display: 'flex',
-		flexDirection: 'column',
+		marginInline: `calc(${spacing.lg} * -1)`,
+		paddingInline: spacing.lg,
 
-		borderBottomColor: colors.borderSecondary,
-		borderBottomStyle: 'solid',
-		borderBottomWidth: '1px',
+		borderRadius: radii.lg,
+
+		backgroundColor: {
+			':hover': colors.bgFillHover,
+		},
 
 		color: colors.text,
 	},
+	inner: {
+		paddingBlock: spacing.lg,
+
+		gap: spacing.xs,
+		display: 'flex',
+		flexDirection: 'column',
+	},
 	title: {
-		fontSize: fontSizes.md,
+		fontSize: fontSizes.lg,
 		fontWeight: fontWeights.semibold,
 
 		textDecoration: 'none',
@@ -51,10 +58,8 @@ const styles = stylex.create({
 		zIndex: 1,
 	},
 	secondaryText: {
-		paddingBlock: spacing.sm,
 		fontSize: fontSizes.sm,
 	},
-
 	footer: {
 		gap: spacing.md,
 		alignItems: 'center',
@@ -89,36 +94,38 @@ export function ReviewCardItem({
 	}, [hideMode, _id])
 
 	return (
-		<div {...stylex.props(styles.container)}>
-			<Link
-				to='/review-cards/$reviewCardId'
-				params={{ reviewCardId: _id }}
-				{...stylex.props(styles.title)}
-			>
-				{primaryText.trim() || 'Untitled'}
-			</Link>
-
-			{secondaryText ? (
-				<Hideable
-					revealed={secondaryShown}
-					onRevealedChange={setSecondaryRevealed}
-					// Only raise while hidden so the Reveal button stays
-					// clickable; once revealed, let the answer text fall
-					// under the stretched link so the card stays navigable.
-					xstyle={secondaryShown ? undefined : styles.raised}
+		<div {...stylex.props(styles.outer)}>
+			<div {...stylex.props(styles.inner)}>
+				<Link
+					to='/review-cards/$reviewCardId'
+					params={{ reviewCardId: _id }}
+					{...stylex.props(styles.title)}
 				>
-					<p {...stylex.props(styles.secondaryText)}>
-						{secondaryText}
-					</p>
-				</Hideable>
-			) : null}
+					{primaryText.trim() || 'Untitled'}
+				</Link>
 
-			<div {...stylex.props(styles.footer)}>
-				<ReviewCardMetadata {...srs} today={today} />
-				<ReviewCardActions
-					reviewCard={reviewCard}
-					xstyle={styles.raised}
-				/>
+				{secondaryText ? (
+					<Hideable
+						revealed={secondaryShown}
+						onRevealedChange={setSecondaryRevealed}
+						// Only raise while hidden so the Reveal button stays
+						// clickable; once revealed, let the answer text fall
+						// under the stretched link so the card stays navigable.
+						xstyle={secondaryShown ? undefined : styles.raised}
+					>
+						<p {...stylex.props(styles.secondaryText)}>
+							{secondaryText}
+						</p>
+					</Hideable>
+				) : null}
+
+				<div {...stylex.props(styles.footer)}>
+					<ReviewCardMetadata {...srs} today={today} />
+					<ReviewCardActions
+						reviewCard={reviewCard}
+						xstyle={styles.raised}
+					/>
+				</div>
 			</div>
 		</div>
 	)
