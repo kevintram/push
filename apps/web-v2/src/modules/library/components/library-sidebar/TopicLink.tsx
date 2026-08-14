@@ -1,9 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { ChevronRight, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
-import { SidebarLink } from '~/components/sidebar-link'
 import {
 	Button,
 	ContextMenu,
@@ -11,7 +10,8 @@ import {
 	ContextMenuItem,
 	ContextMenuTrigger,
 } from '~/components/ui'
-import { iconSizes, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { useCreateTopic, useDeleteTopic } from '../../api/topicQueries'
 import { type TopicWithChildren } from '../../types/topic.types'
@@ -60,6 +60,27 @@ const styles = stylex.create({
 	},
 	childrenListCollapsed: {
 		display: 'none',
+	},
+	topicLink: {
+		padding: spacing.sm,
+		textDecoration: 'none',
+
+		borderRadius: radii.lg,
+		gap: spacing.sm,
+		alignItems: 'center',
+		backgroundColor: {
+			'[data-status=active]': colors.navBgSurfaceActive,
+			default: colors.bg,
+			':is([data-status=active]:hover)': colors.navBgSurfaceActive,
+			':hover': colors.navBgSurfaceHover,
+		},
+		color: {
+			'[data-status=active]': colors.textLinkActive,
+			default: colors.textLink,
+			':hover': colors.textLinkHover,
+		},
+		display: 'flex',
+		fontSize: fontSizes.sm,
 	},
 })
 
@@ -121,10 +142,11 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 				<ContextMenu>
 					<ContextMenuTrigger
 						render={
-							<SidebarLink
+							<Link
 								to='/library/$topicId'
 								params={{ topicId: _id }}
-								text={topicTitle}
+								aria-label={topicTitle}
+								{...stylex.props(styles.topicLink)}
 							/>
 						}
 					>
