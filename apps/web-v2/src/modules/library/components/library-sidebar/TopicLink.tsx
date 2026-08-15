@@ -113,7 +113,20 @@ const styles = stylex.create({
 	},
 })
 
-export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
+type TopicLinkProps = TopicWithChildren & {
+	/**
+	 * Disables this topic and its descendants as drop targets. Parent links pass
+	 * this down while their subtree is being dragged to prevent cyclic reparenting.
+	 */
+	disableDrop?: boolean
+}
+
+export function TopicLink({
+	_id,
+	title,
+	childTopics,
+	disableDrop = false,
+}: TopicLinkProps) {
 	const topicTitle = title.trim() || 'Untitled'
 	const navigate = useNavigate()
 	const matchRoute = useMatchRoute()
@@ -131,9 +144,13 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 		id: `${_id}`,
 		sensors: [topicPointerSensor],
 	})
+	// Disable this subtree's drop targets when dragging
+	// (otherwise we could drop subtree root onto descendant)
+	const isDropDisabled = disableDrop || isDragging
 
 	const { ref: droppableElementRef, isDropTarget } = useDroppable({
 		id: `${_id}`,
+		disabled: isDropDisabled,
 	})
 
 	// Combined ref for both `draggableElementRef` and `draggableHandleRef`.
@@ -176,7 +193,6 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 		setIsExpanded(expanded => !expanded)
 	}, [])
 
-	// TODO(2): when dragging disable all subtree drop targets
 	return (
 		<li
 			{...stylex.props(
@@ -252,7 +268,11 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 					)}
 				>
 					{childTopics.map(child => (
-						<TopicLink key={child._id} {...child} />
+						<TopicLink
+							key={child._id}
+							{...child}
+							disableDrop={isDropDisabled}
+						/>
 					))}
 				</ul>
 			) : null}
