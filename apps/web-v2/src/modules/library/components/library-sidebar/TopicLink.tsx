@@ -1,3 +1,5 @@
+import { PointerActivationConstraints, PointerSensor } from '@dnd-kit/dom'
+import { useDraggable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router'
 import { ChevronRight, Plus, Trash2 } from 'lucide-react'
@@ -16,11 +18,33 @@ import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 import { useCreateTopic, useDeleteTopic } from '../../api/topicQueries'
 import { type TopicWithChildren } from '../../types/topic.types'
 
+const topicPointerSensor = PointerSensor.configure({
+	// sensor configuration so links can still be clicked while we do drag and drop
+	activationConstraints(event) {
+		if (event.pointerType === 'touch') {
+			return [
+				new PointerActivationConstraints.Delay({
+					value: 250,
+					tolerance: 5,
+				}),
+			]
+		}
+
+		return [new PointerActivationConstraints.Distance({ value: 6 })]
+	},
+})
+
 const styles = stylex.create({
+	// TODO: fix these damn color tokens
 	container: {
 		gap: spacing.xs,
 		display: 'flex',
 		flexDirection: 'column',
+
+		borderRadius: radii.lg,
+	},
+	containerDragging: {
+		backgroundColor: colors.navBgSurface,
 	},
 	row: {
 		borderRadius: radii.lg,
@@ -96,6 +120,25 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 	const hasChildren = childTopics.length > 0
 	const childrenId = `topic-${_id}-children`
 
+	const {
+		ref: draggableElementRef,
+		handleRef: draggableHandleRef,
+		isDragging,
+	} = useDraggable({
+		id: `draggable-topic-${_id}`,
+		sensors: [topicPointerSensor],
+	})
+
+	// Combined ref for both `draggableElementRef` and `draggableHandleRef`.
+	// 
+	// Need both because dnd-kit won't allow drag on interactive element unless
+	// it uses handleRef and you just need draggableElementRef mark what you're 
+	// actually dragging.
+	const combinedDraggableRef = useCallback((element: HTMLElement | null) => {
+		draggableElementRef(element)
+		draggableHandleRef(element)
+	}, [draggableElementRef, draggableHandleRef])
+
 	const isActive = Boolean(
 		matchRoute({
 			to: '/library/$topicId',
@@ -124,7 +167,13 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 	}, [])
 
 	return (
-		<li {...stylex.props(styles.container)}>
+		<li
+			{...stylex.props(
+				styles.container,
+				isDragging && styles.containerDragging,
+			)}
+			ref={combinedDraggableRef}
+		>
 			<div {...stylex.props(styles.row, isActive && styles.rowActive)}>
 				{hasChildren ? (
 					<Button.Icon
