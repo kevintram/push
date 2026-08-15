@@ -1,5 +1,5 @@
 import { PointerActivationConstraints, PointerSensor } from '@dnd-kit/dom'
-import { useDraggable } from '@dnd-kit/react'
+import { useDraggable, useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router'
 import { ChevronRight, Plus, Trash2 } from 'lucide-react'
@@ -129,15 +129,23 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 		sensors: [topicPointerSensor],
 	})
 
+	const { ref: droppableElementRef } = useDroppable({
+		id: `droppable-topic-${_id}`,
+	})
+
 	// Combined ref for both `draggableElementRef` and `draggableHandleRef`.
-	// 
+	//
 	// Need both because dnd-kit won't allow drag on interactive element unless
-	// it uses handleRef and you just need draggableElementRef mark what you're 
+	// it uses handleRef and you just need draggableElementRef mark what you're
 	// actually dragging.
-	const combinedDraggableRef = useCallback((element: HTMLElement | null) => {
-		draggableElementRef(element)
-		draggableHandleRef(element)
-	}, [draggableElementRef, draggableHandleRef])
+	const combinedDraggableRef = useCallback(
+		(element: HTMLElement | null) => {
+			draggableElementRef(element)
+			draggableHandleRef(element)
+			droppableElementRef(element)
+		},
+		[draggableElementRef, draggableHandleRef, droppableElementRef],
+	)
 
 	const isActive = Boolean(
 		matchRoute({
