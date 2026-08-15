@@ -3,6 +3,9 @@ import type { Id } from '@convex/_generated/dataModel'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { useMatchRoute, useNavigate } from '@tanstack/react-router'
+import { toast } from 'sonner'
+
+import { getErrorMessage } from '~/utils/error'
 
 export const topicQueries = {
 	list: () => convexQuery(api.topics.list, {}),
@@ -11,12 +14,24 @@ export const topicQueries = {
 
 export function useCreateTopic() {
 	const mutationFn = useConvexMutation(api.topics.create)
-	return useMutation({ mutationFn })
+	return useMutation({
+		mutationFn,
+		onError: error =>
+			toast.error('Failed to create topic', {
+				description: getErrorMessage(error),
+			}),
+	})
 }
 
 export function useUpdateTopic() {
 	const mutationFn = useConvexMutation(api.topics.update)
-	return useMutation({ mutationFn })
+	return useMutation({
+		mutationFn,
+		onError: error =>
+			toast.error('Failed to update topic', {
+				description: getErrorMessage(error),
+			}),
+	})
 }
 
 export function useDeleteTopic() {
