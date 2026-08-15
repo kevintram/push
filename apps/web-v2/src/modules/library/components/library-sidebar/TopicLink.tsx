@@ -125,12 +125,12 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 		handleRef: draggableHandleRef,
 		isDragging,
 	} = useDraggable({
-		id: `draggable-topic-${_id}`,
+		id: `${_id}`,
 		sensors: [topicPointerSensor],
 	})
 
 	const { ref: droppableElementRef } = useDroppable({
-		id: `droppable-topic-${_id}`,
+		id: `${_id}`,
 	})
 
 	// Combined ref for both `draggableElementRef` and `draggableHandleRef`.
@@ -142,9 +142,8 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 		(element: HTMLElement | null) => {
 			draggableElementRef(element)
 			draggableHandleRef(element)
-			droppableElementRef(element)
 		},
-		[draggableElementRef, draggableHandleRef, droppableElementRef],
+		[draggableElementRef, draggableHandleRef],
 	)
 
 	const isActive = Boolean(
@@ -182,7 +181,10 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 			)}
 			ref={combinedDraggableRef}
 		>
-			<div {...stylex.props(styles.row, isActive && styles.rowActive)}>
+			<div
+				ref={droppableElementRef}
+				{...stylex.props(styles.row, isActive && styles.rowActive)}
+			>
 				{hasChildren ? (
 					<Button.Icon
 						aria-controls={childrenId}

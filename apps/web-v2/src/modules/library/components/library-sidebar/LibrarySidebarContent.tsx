@@ -49,7 +49,7 @@ export function LibrarySidebarContent({ topics }: LibrarySidebarContentProps) {
 	const createTopic = useCreateTopic()
 	const navigate = useNavigate()
 	const { ref: droppableHeaderRef } = useDroppable({
-		id: 'droppable-library-root',
+		id: 'library-root',
 	})
 
 	const handleCreateTopic = useCallback(() => {
