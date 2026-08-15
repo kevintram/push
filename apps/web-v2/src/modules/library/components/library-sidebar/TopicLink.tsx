@@ -46,6 +46,9 @@ const styles = stylex.create({
 	containerDragging: {
 		backgroundColor: colors.navBgSurface,
 	},
+	containerIsDropTarget: {
+		backgroundColor: colors.navBgSurfaceActive,
+	},
 	row: {
 		borderRadius: radii.lg,
 		gap: spacing.xs,
@@ -129,7 +132,7 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 		sensors: [topicPointerSensor],
 	})
 
-	const { ref: droppableElementRef } = useDroppable({
+	const { ref: droppableElementRef, isDropTarget } = useDroppable({
 		id: `${_id}`,
 	})
 
@@ -173,11 +176,13 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 		setIsExpanded(expanded => !expanded)
 	}, [])
 
+	// TODO(2): when dragging disable all subtree drop targets
 	return (
 		<li
 			{...stylex.props(
 				styles.container,
 				isDragging && styles.containerDragging,
+				isDropTarget && styles.containerIsDropTarget,
 			)}
 			ref={combinedDraggableRef}
 		>

@@ -5,7 +5,8 @@ import { Plus } from 'lucide-react'
 import { useCallback } from 'react'
 
 import { Button } from '~/components/ui'
-import { fontWeights, iconSizes, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontWeights, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { useCreateTopic } from '../../api/topicQueries'
 import type { TopicWithChildren } from '../../types/topic.types'
@@ -14,9 +15,16 @@ import { TopicLink } from './TopicLink'
 const styles = stylex.create({
 	container: { overflowY: 'auto' },
 	header: {
-		padding: spacing.md,
+		padding: spacing.xs,
+		marginInline: spacing.xs,
+		marginBlockStart: spacing.md,
+
 		display: 'flex',
-		paddingBlockEnd: spacing.none,
+
+		borderRadius: radii.md,
+	},
+	headerIsDropTarget: {
+		backgroundColor: colors.navBgSurfaceActive,
 	},
 	headerText: {
 		paddingInline: spacing.sm,
@@ -48,9 +56,10 @@ type LibrarySidebarContentProps = {
 export function LibrarySidebarContent({ topics }: LibrarySidebarContentProps) {
 	const createTopic = useCreateTopic()
 	const navigate = useNavigate()
-	const { ref: droppableHeaderRef } = useDroppable({
-		id: 'library-root',
-	})
+	const { ref: droppableHeaderRef, isDropTarget: headerIsDropTarget } =
+		useDroppable({
+			id: 'library-root',
+		})
 
 	const handleCreateTopic = useCallback(() => {
 		createTopic.mutate(
@@ -64,7 +73,13 @@ export function LibrarySidebarContent({ topics }: LibrarySidebarContentProps) {
 
 	return (
 		<div {...stylex.props(styles.container)}>
-			<div ref={droppableHeaderRef} {...stylex.props(styles.header)}>
+			<div
+				ref={droppableHeaderRef}
+				{...stylex.props(
+					styles.header,
+					headerIsDropTarget && styles.headerIsDropTarget,
+				)}
+			>
 				<p {...stylex.props(styles.headerText)}>Library</p>
 				<Button.Icon
 					aria-label='Add topic'
