@@ -1,3 +1,5 @@
+import { PointerActivationConstraints, PointerSensor } from '@dnd-kit/dom'
+import { useDraggable, useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router'
 import { ChevronRight, Plus, Trash2 } from 'lucide-react'
@@ -16,11 +18,36 @@ import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 import { useCreateTopic, useDeleteTopic } from '../../api/topicQueries'
 import { type TopicWithChildren } from '../../types/topic.types'
 
+const topicPointerSensor = PointerSensor.configure({
+	// sensor configuration so links can still be clicked while we do drag and drop
+	activationConstraints(event) {
+		if (event.pointerType === 'touch') {
+			return [
+				new PointerActivationConstraints.Delay({
+					value: 250,
+					tolerance: 5,
+				}),
+			]
+		}
+
+		return [new PointerActivationConstraints.Distance({ value: 6 })]
+	},
+})
+
 const styles = stylex.create({
+	// TODO: fix these damn color tokens
 	container: {
 		gap: spacing.xs,
 		display: 'flex',
 		flexDirection: 'column',
+
+		borderRadius: radii.lg,
+	},
+	containerDragging: {
+		backgroundColor: colors.navBgSurface,
+	},
+	containerIsDropTarget: {
+		backgroundColor: colors.navBgSurfaceActive,
 	},
 	row: {
 		borderRadius: radii.lg,
@@ -86,7 +113,20 @@ const styles = stylex.create({
 	},
 })
 
-export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
+type TopicLinkProps = TopicWithChildren & {
+	/**
+	 * Disables this topic and its descendants as drop targets. Parent links pass
+	 * this down while their subtree is being dragged to prevent cyclic reparenting.
+	 */
+	disableDrop?: boolean
+}
+
+export function TopicLink({
+	_id,
+	title,
+	childTopics,
+	disableDrop = false,
+}: TopicLinkProps) {
 	const topicTitle = title.trim() || 'Untitled'
 	const navigate = useNavigate()
 	const matchRoute = useMatchRoute()
@@ -95,6 +135,36 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 	const [isExpanded, setIsExpanded] = useState(true)
 	const hasChildren = childTopics.length > 0
 	const childrenId = `topic-${_id}-children`
+
+	const {
+		ref: draggableElementRef,
+		handleRef: draggableHandleRef,
+		isDragging,
+	} = useDraggable({
+		id: `${_id}`,
+		sensors: [topicPointerSensor],
+	})
+	// Disable this subtree's drop targets when dragging
+	// (otherwise we could drop subtree root onto descendant)
+	const isDropDisabled = disableDrop || isDragging
+
+	const { ref: droppableElementRef, isDropTarget } = useDroppable({
+		id: `${_id}`,
+		disabled: isDropDisabled,
+	})
+
+	// Combined ref for both `draggableElementRef` and `draggableHandleRef`.
+	//
+	// Need both because dnd-kit won't allow drag on interactive element unless
+	// it uses handleRef and you just need draggableElementRef mark what you're
+	// actually dragging.
+	const combinedDraggableRef = useCallback(
+		(element: HTMLElement | null) => {
+			draggableElementRef(element)
+			draggableHandleRef(element)
+		},
+		[draggableElementRef, draggableHandleRef],
+	)
 
 	const isActive = Boolean(
 		matchRoute({
@@ -124,8 +194,18 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 	}, [])
 
 	return (
-		<li {...stylex.props(styles.container)}>
-			<div {...stylex.props(styles.row, isActive && styles.rowActive)}>
+		<li
+			{...stylex.props(
+				styles.container,
+				isDragging && styles.containerDragging,
+				isDropTarget && styles.containerIsDropTarget,
+			)}
+			ref={combinedDraggableRef}
+		>
+			<div
+				ref={droppableElementRef}
+				{...stylex.props(styles.row, isActive && styles.rowActive)}
+			>
 				{hasChildren ? (
 					<Button.Icon
 						aria-controls={childrenId}
@@ -188,7 +268,11 @@ export function TopicLink({ _id, title, childTopics }: TopicWithChildren) {
 					)}
 				>
 					{childTopics.map(child => (
-						<TopicLink key={child._id} {...child} />
+						<TopicLink
+							key={child._id}
+							{...child}
+							disableDrop={isDropDisabled}
+						/>
 					))}
 				</ul>
 			) : null}
