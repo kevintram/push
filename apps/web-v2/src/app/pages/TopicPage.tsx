@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { queryOptions, useSuspenseQueries } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
 
 import {
@@ -68,17 +68,23 @@ const styles = stylex.create({
 
 export function TopicPage() {
 	const { topicId } = useParams({ from: '/library/$topicId' })
-	const [{ data: topic }, { data: reviewCards }] = useSuspenseQueries({
-		queries: [
-			queryOptions(topicQueries.detail(topicId)),
-			queryOptions(reviewCardQueries.listByTopic(topicId)),
-		],
-	})
+	const [{ data: topic }, { data: ancestors }, { data: reviewCards }] =
+		useSuspenseQueries({
+			queries: [
+				queryOptions(topicQueries.detail(topicId)),
+				queryOptions(topicQueries.ancestorsOf(topicId)),
+				queryOptions(reviewCardQueries.listByTopic(topicId)),
+			],
+		})
 	const deleteTopic = useDeleteTopic()
 	const updateTopic = useUpdateTopic()
 	const createReviewCard = useCreateReviewCard()
 	const navigate = useNavigate()
 	const today = useToday()
+
+	useEffect(() => {
+		console.log('Topic ancestors:', ancestors)
+	}, [ancestors])
 
 	const handleDeleteTopic = useCallback(() => {
 		deleteTopic.mutate({ topicId })

@@ -86,6 +86,7 @@ const review: Doc<'reviews'> = {
 function renderRoute(
 	path: string,
 	{
+		ancestors = [],
 		dueEntries = [],
 		lateEntries = [],
 		missingReviewCard = false,
@@ -94,6 +95,7 @@ function renderRoute(
 		reviewCardType = 'flashcard',
 		topics = [],
 	}: {
+		ancestors?: Array<Doc<'topics'>>
 		dueEntries?: Array<DueEntry>
 		lateEntries?: Array<DueEntry>
 		missingReviewCard?: boolean
@@ -127,6 +129,14 @@ function renderRoute(
 		newReviewCards,
 	)
 	queryClient.setQueryData(topicQueries.detail(topicId).queryKey, topic)
+	queryClient.setQueryData(
+		topicQueries.ancestorsOf(topicId).queryKey,
+		ancestors,
+	)
+	queryClient.setQueryData(
+		reviewCardQueries.listByTopic(topicId).queryKey,
+		[],
+	)
 	// The focus overlay fetches each card it lands on by id.
 	for (const card of newReviewCards) {
 		queryClient.setQueryData(
@@ -505,6 +515,28 @@ describe('v2 app setup', () => {
 				name: 'Collapse Learning TypeScript',
 			}),
 		).not.toBeInTheDocument()
+	})
+
+	it('fetches and logs a topic’s ancestors', async () => {
+		const root: Doc<'topics'> = {
+			...topic,
+			_id: 'topic-root' as Id<'topics'>,
+			title: 'Programming',
+		}
+		const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+		try {
+			renderRoute(`/library/${topicId}`, { ancestors: [root] })
+
+			expect(
+				await screen.findByDisplayValue('Learning TypeScript'),
+			).toBeInTheDocument()
+			await waitFor(() =>
+				expect(log).toHaveBeenCalledWith('Topic ancestors:', [root]),
+			)
+		} finally {
+			log.mockRestore()
+		}
 	})
 
 	it('renders a review card at its standalone route', async () => {
