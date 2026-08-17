@@ -7,7 +7,7 @@ import {
 	createRouter,
 	RouterProvider,
 } from '@tanstack/react-router'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ConvexProvider } from 'convex/react'
 import type { ReactNode } from 'react'
@@ -86,6 +86,7 @@ const review: Doc<'reviews'> = {
 function renderRoute(
 	path: string,
 	{
+		ancestors = [],
 		dueEntries = [],
 		lateEntries = [],
 		missingReviewCard = false,
@@ -94,6 +95,7 @@ function renderRoute(
 		reviewCardType = 'flashcard',
 		topics = [],
 	}: {
+		ancestors?: Array<Doc<'topics'>>
 		dueEntries?: Array<DueEntry>
 		lateEntries?: Array<DueEntry>
 		missingReviewCard?: boolean
@@ -127,6 +129,18 @@ function renderRoute(
 		newReviewCards,
 	)
 	queryClient.setQueryData(topicQueries.detail(topicId).queryKey, topic)
+	queryClient.setQueryData(
+		topicQueries.ancestorsOf(topicId, false).queryKey,
+		ancestors,
+	)
+	queryClient.setQueryData(topicQueries.ancestorsOf(topicId, true).queryKey, [
+		...ancestors,
+		topic,
+	])
+	queryClient.setQueryData(
+		reviewCardQueries.listByTopic(topicId).queryKey,
+		[],
+	)
 	// The focus overlay fetches each card it lands on by id.
 	for (const card of newReviewCards) {
 		queryClient.setQueryData(
@@ -507,8 +521,46 @@ describe('v2 app setup', () => {
 		).not.toBeInTheDocument()
 	})
 
+	it('renders a topic breadcrumb from the library through its ancestors', async () => {
+		const root: Doc<'topics'> = {
+			...topic,
+			_id: 'topic-root' as Id<'topics'>,
+			title: 'Programming',
+		}
+		const parent: Doc<'topics'> = {
+			...topic,
+			_id: 'topic-parent' as Id<'topics'>,
+			parentId: root._id,
+			title: 'Languages',
+		}
+
+		renderRoute(`/library/${topicId}`, { ancestors: [root, parent] })
+
+		const breadcrumb = await screen.findByRole('navigation', {
+			name: 'Breadcrumb',
+		})
+		const links = within(breadcrumb).getAllByRole('link')
+		expect(links.map(link => link.textContent)).toEqual([
+			'Library',
+			'Programming',
+			'Languages',
+		])
+		expect(links[0]).toHaveAttribute('href', '/library')
+		expect(links[1]).toHaveAttribute('href', `/library/${root._id}`)
+		expect(links[2]).toHaveAttribute('href', `/library/${parent._id}`)
+		expect(
+			within(breadcrumb).getByText('Learning TypeScript'),
+		).toHaveAttribute('aria-current', 'page')
+	})
+
 	it('renders a review card at its standalone route', async () => {
-		renderRoute(`/review-cards/${reviewCardId}`)
+		const root: Doc<'topics'> = {
+			...topic,
+			_id: 'topic-root' as Id<'topics'>,
+			title: 'Programming',
+		}
+
+		renderRoute(`/review-cards/${reviewCardId}`, { ancestors: [root] })
 
 		const primaryText = await screen.findByLabelText(
 			'Review-card primary text',
@@ -518,9 +570,21 @@ describe('v2 app setup', () => {
 		expect(
 			screen.getByLabelText('Review-card secondary text'),
 		).toHaveAttribute('placeholder', 'Answer')
+		const breadcrumb = screen.getByRole('navigation', {
+			name: 'Breadcrumb',
+		})
+		const links = within(breadcrumb).getAllByRole('link')
+		expect(links.map(link => link.textContent)).toEqual([
+			'Library',
+			'Programming',
+			'Learning TypeScript',
+		])
+		expect(links[0]).toHaveAttribute('href', '/library')
+		expect(links[1]).toHaveAttribute('href', `/library/${root._id}`)
+		expect(links[2]).toHaveAttribute('href', `/library/${topicId}`)
 		expect(
-			screen.getByRole('link', { name: 'Learning TypeScript' }),
-		).toHaveAttribute('href', `/library/${topicId}`)
+			within(breadcrumb).getByText('What problem do generics solve?'),
+		).toHaveAttribute('aria-current', 'page')
 		expect(
 			screen.queryByRole('navigation', { name: 'Library topics' }),
 		).not.toBeInTheDocument()
