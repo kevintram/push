@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { queryOptions, useSuspenseQueries } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { toast } from 'sonner'
 
 import {
@@ -20,6 +20,7 @@ import {
 	useDeleteTopic,
 	useUpdateTopic,
 } from '~/modules/library/api/topicQueries'
+import { TopicBreadcrumbs } from '~/modules/library/components/TopicBreadcrumbs'
 import {
 	reviewCardQueries,
 	useCreateReviewCard,
@@ -82,10 +83,6 @@ export function TopicPage() {
 	const navigate = useNavigate()
 	const today = useToday()
 
-	useEffect(() => {
-		console.log('Topic ancestors:', ancestors)
-	}, [ancestors])
-
 	const handleDeleteTopic = useCallback(() => {
 		deleteTopic.mutate({ topicId })
 	}, [deleteTopic, topicId])
@@ -143,6 +140,10 @@ export function TopicPage() {
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.content)}>
+				<TopicBreadcrumbs
+					ancestors={ancestors}
+					currentTitle={title.value}
+				/>
 				<header {...stylex.props(styles.header)}>
 					<div {...stylex.props(styles.titleBar)}>
 						<Textarea

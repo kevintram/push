@@ -7,7 +7,7 @@ import {
 	createRouter,
 	RouterProvider,
 } from '@tanstack/react-router'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ConvexProvider } from 'convex/react'
 import type { ReactNode } from 'react'
@@ -517,26 +517,36 @@ describe('v2 app setup', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('fetches and logs a topic’s ancestors', async () => {
+	it('renders a topic breadcrumb from the library through its ancestors', async () => {
 		const root: Doc<'topics'> = {
 			...topic,
 			_id: 'topic-root' as Id<'topics'>,
 			title: 'Programming',
 		}
-		const log = vi.spyOn(console, 'log').mockImplementation(() => {})
-
-		try {
-			renderRoute(`/library/${topicId}`, { ancestors: [root] })
-
-			expect(
-				await screen.findByDisplayValue('Learning TypeScript'),
-			).toBeInTheDocument()
-			await waitFor(() =>
-				expect(log).toHaveBeenCalledWith('Topic ancestors:', [root]),
-			)
-		} finally {
-			log.mockRestore()
+		const parent: Doc<'topics'> = {
+			...topic,
+			_id: 'topic-parent' as Id<'topics'>,
+			parentId: root._id,
+			title: 'Languages',
 		}
+
+		renderRoute(`/library/${topicId}`, { ancestors: [root, parent] })
+
+		const breadcrumb = await screen.findByRole('navigation', {
+			name: 'Breadcrumb',
+		})
+		const links = within(breadcrumb).getAllByRole('link')
+		expect(links.map(link => link.textContent)).toEqual([
+			'Library',
+			'Programming',
+			'Languages',
+		])
+		expect(links[0]).toHaveAttribute('href', '/library')
+		expect(links[1]).toHaveAttribute('href', `/library/${root._id}`)
+		expect(links[2]).toHaveAttribute('href', `/library/${parent._id}`)
+		expect(
+			within(breadcrumb).getByText('Learning TypeScript'),
+		).toHaveAttribute('aria-current', 'page')
 	})
 
 	it('renders a review card at its standalone route', async () => {
