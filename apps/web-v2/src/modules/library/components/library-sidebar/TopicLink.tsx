@@ -7,6 +7,9 @@ import { useCallback, useState } from 'react'
 
 import {
 	Button,
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
 	ContextMenu,
 	ContextMenuContent,
 	ContextMenuItem,
@@ -86,7 +89,10 @@ const styles = stylex.create({
 	childrenList: {
 		gap: spacing.xs,
 
-		display: 'flex',
+		display: {
+			default: 'flex',
+			':is([hidden])': 'none',
+		},
 		flexDirection: 'column',
 
 		margin: 0,
@@ -94,9 +100,6 @@ const styles = stylex.create({
 		listStyleType: 'none',
 		paddingInlineEnd: 0,
 		paddingInlineStart: spacing.md,
-	},
-	childrenListCollapsed: {
-		display: 'none',
 	},
 	topicLink: {
 		padding: spacing.xs,
@@ -132,12 +135,8 @@ export function TopicLink({
 	const matchRoute = useMatchRoute()
 	const createTopic = useCreateTopic()
 	const deleteTopic = useDeleteTopic()
-	// TODO(3): Replace the hand-rolled expansion behavior with Base UI's
-	// Collapsible, keeping the child panel mounted so collapsed descendants stay
-	// registered with dnd-kit.
 	const [isExpanded, setIsExpanded] = useState(true)
 	const hasChildren = childTopics.length > 0
-	const childrenId = `topic-${_id}-children`
 
 	const {
 		ref: draggableElementRef,
@@ -192,32 +191,32 @@ export function TopicLink({
 		deleteTopic.mutate({ topicId: _id })
 	}, [_id, deleteTopic])
 
-	const handleExpandedChange = useCallback(() => {
-		setIsExpanded(expanded => !expanded)
-	}, [])
-
 	return (
-		<li
-			{...stylex.props(
+		<Collapsible
+			ref={combinedDraggableRef}
+			open={isExpanded}
+			onOpenChange={setIsExpanded}
+			render={<li />}
+			xstyle={[
 				styles.container,
 				isDragging && styles.containerDragging,
 				isDropTarget && styles.containerIsDropTarget,
-			)}
-			ref={combinedDraggableRef}
+			]}
 		>
 			<div
 				ref={droppableElementRef}
 				{...stylex.props(styles.row, isActive && styles.rowActive)}
 			>
 				{hasChildren ? (
-					<Button.Icon
-						aria-controls={childrenId}
-						aria-expanded={isExpanded}
-						aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${topicTitle}`}
-						shape='round'
-						size='micro'
-						variant='ghost'
-						onClick={handleExpandedChange}
+					<CollapsibleTrigger
+						render={
+							<Button.Icon
+								aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${topicTitle}`}
+								shape='round'
+								size='micro'
+								variant='ghost'
+							/>
+						}
 					>
 						<ChevronRight
 							aria-hidden='true'
@@ -227,7 +226,7 @@ export function TopicLink({
 								isExpanded && styles.chevronExpanded,
 							)}
 						/>
-					</Button.Icon>
+					</CollapsibleTrigger>
 				) : (
 					<span
 						aria-hidden='true'
@@ -262,13 +261,10 @@ export function TopicLink({
 			</div>
 
 			{hasChildren ? (
-				<ul
-					id={childrenId}
-					hidden={!isExpanded}
-					{...stylex.props(
-						styles.childrenList,
-						!isExpanded && styles.childrenListCollapsed,
-					)}
+				<CollapsibleContent
+					keepMounted
+					render={<ul />}
+					xstyle={styles.childrenList}
 				>
 					{childTopics.map(child => (
 						<TopicLink
@@ -277,8 +273,8 @@ export function TopicLink({
 							disableDrop={isDropDisabled}
 						/>
 					))}
-				</ul>
+				</CollapsibleContent>
 			) : null}
-		</li>
+		</Collapsible>
 	)
 }

@@ -1,9 +1,14 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { ChevronRight } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 
-import { Button } from '~/components/ui'
+import {
+	Button,
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from '~/components/ui'
 import type { TopicWithChildren } from '~/modules/library/types/topic.types'
 import { colors } from '~/styles/colors.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
@@ -53,7 +58,10 @@ const styles = stylex.create({
 	childrenList: {
 		gap: spacing.xs,
 
-		display: 'flex',
+		display: {
+			default: 'flex',
+			':is([hidden])': 'none',
+		},
 		flexDirection: 'column',
 
 		margin: 0,
@@ -61,9 +69,6 @@ const styles = stylex.create({
 		listStyleType: 'none',
 		paddingInlineEnd: 0,
 		paddingInlineStart: spacing.md,
-	},
-	childrenListCollapsed: {
-		display: 'none',
 	},
 	topicButton: {
 		padding: spacing.xs,
@@ -110,26 +115,27 @@ export function MoveTopicLink({
 	const [isExpanded, setIsExpanded] = useState(true)
 	const hasChildren = childTopics.length > 0
 	const isSelected = selectedTopicId === _id
-	const childrenId = `move-topic-${_id}-children`
-
-	const handleExpandedChange = useCallback(() => {
-		setIsExpanded(expanded => !expanded)
-	}, [])
 
 	return (
-		<li {...stylex.props(styles.container)}>
+		<Collapsible
+			open={isExpanded}
+			onOpenChange={setIsExpanded}
+			render={<li />}
+			xstyle={styles.container}
+		>
 			<div
 				{...stylex.props(styles.row, isSelected && styles.rowSelected)}
 			>
 				{hasChildren ? (
-					<Button.Icon
-						aria-controls={childrenId}
-						aria-expanded={isExpanded}
-						aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${topicTitle}`}
-						shape='round'
-						size='micro'
-						variant='ghost'
-						onClick={handleExpandedChange}
+					<CollapsibleTrigger
+						render={
+							<Button.Icon
+								aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${topicTitle}`}
+								shape='round'
+								size='micro'
+								variant='ghost'
+							/>
+						}
 					>
 						<ChevronRight
 							aria-hidden='true'
@@ -139,7 +145,7 @@ export function MoveTopicLink({
 								isExpanded && styles.chevronExpanded,
 							)}
 						/>
-					</Button.Icon>
+					</CollapsibleTrigger>
 				) : (
 					<span
 						aria-hidden='true'
@@ -160,13 +166,10 @@ export function MoveTopicLink({
 			</div>
 
 			{hasChildren ? (
-				<ul
-					id={childrenId}
-					hidden={!isExpanded}
-					{...stylex.props(
-						styles.childrenList,
-						!isExpanded && styles.childrenListCollapsed,
-					)}
+				<CollapsibleContent
+					keepMounted
+					render={<ul />}
+					xstyle={styles.childrenList}
 				>
 					{childTopics.map(child => (
 						<MoveTopicLink
@@ -176,8 +179,8 @@ export function MoveTopicLink({
 							selectedTopicId={selectedTopicId}
 						/>
 					))}
-				</ul>
+				</CollapsibleContent>
 			) : null}
-		</li>
+		</Collapsible>
 	)
 }

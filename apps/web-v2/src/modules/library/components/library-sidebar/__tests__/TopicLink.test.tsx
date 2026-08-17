@@ -55,34 +55,39 @@ vi.mock('@tanstack/react-router', () => ({
 	useNavigate: () => vi.fn(),
 }))
 
-vi.mock('~/components/ui', () => ({
-	Button: {
-		Icon: ({
+vi.mock('~/components/ui', async importOriginal => {
+	const actual = await importOriginal<typeof import('~/components/ui')>()
+
+	return {
+		...actual,
+		Button: {
+			Icon: ({
+				children,
+				shape: _shape,
+				size: _size,
+				variant: _variant,
+				...props
+			}: {
+				children?: ReactNode
+				shape?: string
+				size?: string
+				variant?: string
+			}) => <button {...props}>{children}</button>,
+		},
+		ContextMenu: ({ children }: { children: ReactNode }) => children,
+		ContextMenuContent: ({ children }: { children: ReactNode }) => children,
+		ContextMenuItem: ({ children }: { children: ReactNode }) => (
+			<div>{children}</div>
+		),
+		ContextMenuTrigger: ({
 			children,
-			shape: _shape,
-			size: _size,
-			variant: _variant,
-			...props
+			render: trigger,
 		}: {
-			children?: ReactNode
-			shape?: string
-			size?: string
-			variant?: string
-		}) => <button {...props}>{children}</button>,
-	},
-	ContextMenu: ({ children }: { children: ReactNode }) => children,
-	ContextMenuContent: ({ children }: { children: ReactNode }) => children,
-	ContextMenuItem: ({ children }: { children: ReactNode }) => (
-		<div>{children}</div>
-	),
-	ContextMenuTrigger: ({
-		children,
-		render: trigger,
-	}: {
-		children: ReactNode
-		render: ReactElement<{ children?: ReactNode }>
-	}) => cloneElement(trigger, {}, children),
-}))
+			children: ReactNode
+			render: ReactElement<{ children?: ReactNode }>
+		}) => cloneElement(trigger, {}, children),
+	}
+})
 
 vi.mock('../../../api/topicQueries', () => ({
 	useCreateTopic: () => ({ mutate: vi.fn() }),
