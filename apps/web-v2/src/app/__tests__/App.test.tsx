@@ -130,9 +130,13 @@ function renderRoute(
 	)
 	queryClient.setQueryData(topicQueries.detail(topicId).queryKey, topic)
 	queryClient.setQueryData(
-		topicQueries.ancestorsOf(topicId).queryKey,
+		topicQueries.ancestorsOf(topicId, false).queryKey,
 		ancestors,
 	)
+	queryClient.setQueryData(topicQueries.ancestorsOf(topicId, true).queryKey, [
+		...ancestors,
+		topic,
+	])
 	queryClient.setQueryData(
 		reviewCardQueries.listByTopic(topicId).queryKey,
 		[],
@@ -550,7 +554,13 @@ describe('v2 app setup', () => {
 	})
 
 	it('renders a review card at its standalone route', async () => {
-		renderRoute(`/review-cards/${reviewCardId}`)
+		const root: Doc<'topics'> = {
+			...topic,
+			_id: 'topic-root' as Id<'topics'>,
+			title: 'Programming',
+		}
+
+		renderRoute(`/review-cards/${reviewCardId}`, { ancestors: [root] })
 
 		const primaryText = await screen.findByLabelText(
 			'Review-card primary text',
@@ -560,9 +570,21 @@ describe('v2 app setup', () => {
 		expect(
 			screen.getByLabelText('Review-card secondary text'),
 		).toHaveAttribute('placeholder', 'Answer')
+		const breadcrumb = screen.getByRole('navigation', {
+			name: 'Breadcrumb',
+		})
+		const links = within(breadcrumb).getAllByRole('link')
+		expect(links.map(link => link.textContent)).toEqual([
+			'Library',
+			'Programming',
+			'Learning TypeScript',
+		])
+		expect(links[0]).toHaveAttribute('href', '/library')
+		expect(links[1]).toHaveAttribute('href', `/library/${root._id}`)
+		expect(links[2]).toHaveAttribute('href', `/library/${topicId}`)
 		expect(
-			screen.getByRole('link', { name: 'Learning TypeScript' }),
-		).toHaveAttribute('href', `/library/${topicId}`)
+			within(breadcrumb).getByText('What problem do generics solve?'),
+		).toHaveAttribute('aria-current', 'page')
 		expect(
 			screen.queryByRole('navigation', { name: 'Library topics' }),
 		).not.toBeInTheDocument()

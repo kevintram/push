@@ -7,8 +7,8 @@ import { useMatchRoute, useNavigate } from '@tanstack/react-router'
 export const topicQueries = {
 	list: () => convexQuery(api.topics.list, {}),
 	detail: (topicId: Id<'topics'>) => convexQuery(api.topics.get, { topicId }),
-	ancestorsOf: (topicId: Id<'topics'>) =>
-		convexQuery(api.topics.ancestorsOf, { topicId }),
+	ancestorsOf: (topicId: Id<'topics'>, includeSelf: boolean) =>
+		convexQuery(api.topics.ancestorsOf, { includeSelf, topicId }),
 }
 
 export function useCreateTopic() {

@@ -73,7 +73,7 @@ export function TopicPage() {
 		useSuspenseQueries({
 			queries: [
 				queryOptions(topicQueries.detail(topicId)),
-				queryOptions(topicQueries.ancestorsOf(topicId)),
+				queryOptions(topicQueries.ancestorsOf(topicId, false)),
 				queryOptions(reviewCardQueries.listByTopic(topicId)),
 			],
 		})
