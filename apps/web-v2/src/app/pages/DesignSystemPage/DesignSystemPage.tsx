@@ -3,6 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { colors } from '~/styles/colors.stylex'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
+import { BreadcrumbSection } from './BreadcrumbSection'
 import { ComponentSection } from './ComponentSection'
 import { ScaleSection } from './ScaleSection'
 import { SeparatorSection } from './SeparatorSection'
@@ -32,6 +33,7 @@ const sections = [
 	{ href: '#dropdown-menu', label: 'Dropdown menu', count: 8 },
 	{ href: '#context-menu', label: 'Context menu', count: 3 },
 	{ href: '#separator', label: 'Separator', count: 2 },
+	{ href: '#breadcrumb', label: 'Breadcrumb', count: 3 },
 	{ href: '#tabs', label: 'Tabs', count: 2 },
 	{ href: '#toast', label: 'Toast', count: 5 },
 ]
@@ -171,6 +173,7 @@ export function DesignSystemPage() {
 					<ScaleSection />
 					<ComponentSection />
 					<SeparatorSection />
+					<BreadcrumbSection />
 					<TabsSection />
 				</div>
 			</div>

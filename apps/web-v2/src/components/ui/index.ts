@@ -1,3 +1,4 @@
+export * from './Breadcrumb'
 export { Button, type ButtonProps } from './Button/Button'
 export { ButtonIcon, type ButtonIconProps } from './Button/ButtonIcon'
 export * from './Calendar'
