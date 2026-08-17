@@ -34,6 +34,35 @@ export async function get(
 	return await requireUserOwns(ctx, userId, topicId)
 }
 
+export async function ancestorsOf(
+	ctx: QueryCtx,
+	userId: string,
+	topicId: Id<'topics'>,
+): Promise<Array<Doc<'topics'>>> {
+	const topic = await requireUserOwns(ctx, userId, topicId)
+	const ancestors: Array<Doc<'topics'>> = []
+	const visited = new Set<Id<'topics'>>([topicId])
+	let ancestorId = topic.parentId
+
+	while (ancestorId) {
+		if (visited.has(ancestorId)) {
+			throw new Error('Parent topic hierarchy contains a cycle')
+		}
+
+		visited.add(ancestorId)
+
+		const ancestor = await ctx.db.get('topics', ancestorId)
+		if (!ancestor || ancestor.ownerId !== userId) {
+			throw new Error('Parent topic not found')
+		}
+
+		ancestors.push(ancestor)
+		ancestorId = ancestor.parentId
+	}
+
+	return ancestors.reverse()
+}
+
 export async function create(
 	ctx: MutationCtx,
 	userId: string,

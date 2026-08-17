@@ -28,6 +28,18 @@ export const get = query({
 	},
 })
 
+export const ancestorsOf = query({
+	args: {
+		topicId: v.id('topics'),
+	},
+	returns: v.array(topicRead),
+	handler: async (ctx, args) => {
+		const { subject: userId } = await requireIdentity(ctx)
+
+		return await Topics.ancestorsOf(ctx, userId, args.topicId)
+	},
+})
+
 export const create = mutation({
 	args: topicCreate.fields,
 	returns: v.id('topics'),

@@ -25,6 +25,9 @@ describe('topics', () => {
 		await expect(t.query(api.topics.get, { topicId })).rejects.toThrow(
 			'Unauthenticated',
 		)
+		await expect(
+			t.query(api.topics.ancestorsOf, { topicId }),
+		).rejects.toThrow('Unauthenticated')
 		await expect(t.mutation(api.topics.create, {})).rejects.toThrow(
 			'Unauthenticated',
 		)
@@ -34,6 +37,80 @@ describe('topics', () => {
 		await expect(
 			t.mutation(api.topics.remove, { topicId }),
 		).rejects.toThrow('Unauthenticated')
+	})
+
+	it('lists ancestors from the root down to the immediate parent', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Root',
+		})
+		const parentId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Parent',
+		})
+		const topicId = await asUserA.mutation(api.topics.create, {
+			parentId,
+			title: 'Topic',
+		})
+
+		await expect(
+			asUserA.query(api.topics.ancestorsOf, { topicId: rootId }),
+		).resolves.toEqual([])
+
+		const ancestors = await asUserA.query(api.topics.ancestorsOf, {
+			topicId,
+		})
+		expect(ancestors.map(ancestor => ancestor._id)).toEqual([
+			rootId,
+			parentId,
+		])
+	})
+
+	it('hides missing and foreign-owned topics when listing ancestors', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const asUserB = t.withIdentity(userBIdentity)
+		const foreignTopicId = await asUserB.mutation(api.topics.create, {})
+		const missingTopicId = await asUserA.mutation(api.topics.create, {})
+
+		await asUserA.mutation(api.topics.remove, { topicId: missingTopicId })
+
+		await expect(
+			asUserA.query(api.topics.ancestorsOf, {
+				topicId: foreignTopicId,
+			}),
+		).rejects.toThrow('Topic not found')
+		await expect(
+			asUserA.query(api.topics.ancestorsOf, {
+				topicId: missingTopicId,
+			}),
+		).rejects.toThrow('Topic not found')
+	})
+
+	it('rejects malformed ancestor chains', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const asUserB = t.withIdentity(userBIdentity)
+		const foreignRootId = await asUserB.mutation(api.topics.create, {})
+		const parentId = await asUserA.mutation(api.topics.create, {})
+		const topicId = await asUserA.mutation(api.topics.create, {
+			parentId,
+		})
+
+		await t.run(async ctx =>
+			ctx.db.patch('topics', parentId, { parentId: foreignRootId }),
+		)
+		await expect(
+			asUserA.query(api.topics.ancestorsOf, { topicId }),
+		).rejects.toThrow('Parent topic not found')
+
+		await t.run(async ctx =>
+			ctx.db.patch('topics', parentId, { parentId: topicId }),
+		)
+		await expect(
+			asUserA.query(api.topics.ancestorsOf, { topicId }),
+		).rejects.toThrow('Parent topic hierarchy contains a cycle')
 	})
 
 	it('lists only topics owned by the authenticated user', async () => {
