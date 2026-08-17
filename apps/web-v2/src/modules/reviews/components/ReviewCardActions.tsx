@@ -1,5 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
-import { Ellipsis, Flag, Trash2, Zap } from 'lucide-react'
+import { Ellipsis, Flag, FolderInput, Trash2, Zap } from 'lucide-react'
+import { useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
@@ -18,6 +19,7 @@ import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { useReviewCardActions } from '../hooks/useReviewCardActions'
 import type { ReviewCard } from '../types/review.types'
+import { MoveReviewCardDialog } from './MoveReviewCardDialog'
 
 const styles = stylex.create({
 	container: {
@@ -45,6 +47,7 @@ export function ReviewCardActions({
 	reviewCard,
 	xstyle,
 }: ReviewCardActionsProps) {
+	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
 	const {
 		confirmDelete,
 		isDeleteDialogOpen,
@@ -136,6 +139,10 @@ export function ReviewCardActions({
 						/>
 						{isFlagged ? 'Unflag' : 'Flag'}
 					</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => setIsMoveDialogOpen(true)}>
+						<FolderInput aria-hidden='true' size={iconSizes.md} />
+						Move
+					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						onClick={() => setIsDeleteDialogOpen(true)}
@@ -145,6 +152,13 @@ export function ReviewCardActions({
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
+
+			{isMoveDialogOpen ? (
+				<MoveReviewCardDialog
+					onOpenChange={setIsMoveDialogOpen}
+					reviewCard={reviewCard}
+				/>
+			) : null}
 
 			<DeleteConfirmationDialog
 				description='This review card and its content will be permanently deleted.'
