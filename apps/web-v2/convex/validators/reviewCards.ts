@@ -48,7 +48,7 @@ export const reviewCardCreate = v.object({
 
 // The mutable card fields, plus `flaggedAt` as a three-state shape
 // where 1. omit/undefined = leave alone 2. null = unflag 3. number = flag.
-// `topicId`/`ownerId` stay unsettable.
+// Moving via `topicId` is authorized in the model; `ownerId` stays unsettable.
 export const reviewCardPatch = reviewCardBase
 	.omit(
 		'ownerId', // omit because handled by server only

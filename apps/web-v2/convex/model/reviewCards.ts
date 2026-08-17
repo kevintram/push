@@ -88,10 +88,17 @@ export async function update(
 ): Promise<void> {
 	await requireUserOwns(ctx, userId, reviewCardId)
 
-	const { flaggedAt, ...fields } = patch
+	const { flaggedAt, topicId, ...fields } = patch
+
+	// A card can only move to another topic owned by the same user. Validate the
+	// destination in this transaction so a failed check cannot orphan the card.
+	if (topicId !== undefined) {
+		await Topics.requireUserOwns(ctx, userId, topicId)
+	}
 
 	await ctx.db.patch('reviewCards', reviewCardId, {
 		...fields,
+		...(topicId !== undefined && { topicId }),
 		// An omitted key leaves the flag alone. `null` clears it, which in
 		// Convex means patching an explicit `undefined`.
 		...(flaggedAt !== undefined && {
