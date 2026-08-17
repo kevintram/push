@@ -1,12 +1,12 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ReviewCardPageLayout } from '~/app/pages/ReviewCardPage/ReviewCardPageLayout'
+import { ReviewCardPageShell } from '~/app/pages/ReviewCardPage/ReviewCardPageShell'
 import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
 import { reviewQueries } from '~/modules/reviews/api/reviewQueries'
 
 export const Route = createFileRoute('/review-cards/$reviewCardId')({
-	component: ReviewCardPageLayout,
+	component: ReviewCardPageShell,
 	// The path segment is only ever a review-card document id, so brand it once
 	// here instead of casting at every consumer.
 	params: {

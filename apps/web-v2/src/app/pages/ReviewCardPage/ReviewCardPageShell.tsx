@@ -36,7 +36,7 @@ const styles = stylex.create({
 	},
 })
 
-export function ReviewCardPageLayout() {
+export function ReviewCardPageShell() {
 	const { reviewCardId } = useParams({
 		from: '/review-cards/$reviewCardId',
 	})
