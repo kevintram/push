@@ -38,6 +38,7 @@ export async function ancestorsOf(
 	ctx: QueryCtx,
 	userId: string,
 	topicId: Id<'topics'>,
+	includeSelf: boolean,
 ): Promise<Array<Doc<'topics'>>> {
 	const topic = await requireUserOwns(ctx, userId, topicId)
 	const ancestors: Array<Doc<'topics'>> = []
@@ -60,7 +61,13 @@ export async function ancestorsOf(
 		ancestorId = ancestor.parentId
 	}
 
-	return ancestors.reverse()
+	ancestors.reverse()
+
+	if (includeSelf) {
+		ancestors.push(topic)
+	}
+
+	return ancestors
 }
 
 export async function create(

@@ -26,7 +26,7 @@ describe('topics', () => {
 			'Unauthenticated',
 		)
 		await expect(
-			t.query(api.topics.ancestorsOf, { topicId }),
+			t.query(api.topics.ancestorsOf, { includeSelf: false, topicId }),
 		).rejects.toThrow('Unauthenticated')
 		await expect(t.mutation(api.topics.create, {})).rejects.toThrow(
 			'Unauthenticated',
@@ -55,15 +55,29 @@ describe('topics', () => {
 		})
 
 		await expect(
-			asUserA.query(api.topics.ancestorsOf, { topicId: rootId }),
+			asUserA.query(api.topics.ancestorsOf, {
+				includeSelf: false,
+				topicId: rootId,
+			}),
 		).resolves.toEqual([])
 
 		const ancestors = await asUserA.query(api.topics.ancestorsOf, {
+			includeSelf: false,
 			topicId,
 		})
 		expect(ancestors.map(ancestor => ancestor._id)).toEqual([
 			rootId,
 			parentId,
+		])
+
+		const path = await asUserA.query(api.topics.ancestorsOf, {
+			includeSelf: true,
+			topicId,
+		})
+		expect(path.map(pathTopic => pathTopic._id)).toEqual([
+			rootId,
+			parentId,
+			topicId,
 		])
 	})
 
@@ -78,11 +92,13 @@ describe('topics', () => {
 
 		await expect(
 			asUserA.query(api.topics.ancestorsOf, {
+				includeSelf: false,
 				topicId: foreignTopicId,
 			}),
 		).rejects.toThrow('Topic not found')
 		await expect(
 			asUserA.query(api.topics.ancestorsOf, {
+				includeSelf: false,
 				topicId: missingTopicId,
 			}),
 		).rejects.toThrow('Topic not found')
@@ -102,14 +118,20 @@ describe('topics', () => {
 			ctx.db.patch('topics', parentId, { parentId: foreignRootId }),
 		)
 		await expect(
-			asUserA.query(api.topics.ancestorsOf, { topicId }),
+			asUserA.query(api.topics.ancestorsOf, {
+				includeSelf: false,
+				topicId,
+			}),
 		).rejects.toThrow('Parent topic not found')
 
 		await t.run(async ctx =>
 			ctx.db.patch('topics', parentId, { parentId: topicId }),
 		)
 		await expect(
-			asUserA.query(api.topics.ancestorsOf, { topicId }),
+			asUserA.query(api.topics.ancestorsOf, {
+				includeSelf: false,
+				topicId,
+			}),
 		).rejects.toThrow('Parent topic hierarchy contains a cycle')
 	})
 

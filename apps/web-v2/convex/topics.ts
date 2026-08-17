@@ -30,13 +30,19 @@ export const get = query({
 
 export const ancestorsOf = query({
 	args: {
+		includeSelf: v.boolean(),
 		topicId: v.id('topics'),
 	},
 	returns: v.array(topicRead),
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
 
-		return await Topics.ancestorsOf(ctx, userId, args.topicId)
+		return await Topics.ancestorsOf(
+			ctx,
+			userId,
+			args.topicId,
+			args.includeSelf,
+		)
 	},
 })
 
