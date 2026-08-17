@@ -20,6 +20,7 @@ import {
 	useDeleteTopic,
 	useUpdateTopic,
 } from '~/modules/library/api/topicQueries'
+import { TopicBreadcrumbs } from '~/modules/library/components/TopicBreadcrumbs'
 import {
 	reviewCardQueries,
 	useCreateReviewCard,
@@ -68,12 +69,14 @@ const styles = stylex.create({
 
 export function TopicPage() {
 	const { topicId } = useParams({ from: '/library/$topicId' })
-	const [{ data: topic }, { data: reviewCards }] = useSuspenseQueries({
-		queries: [
-			queryOptions(topicQueries.detail(topicId)),
-			queryOptions(reviewCardQueries.listByTopic(topicId)),
-		],
-	})
+	const [{ data: topic }, { data: ancestors }, { data: reviewCards }] =
+		useSuspenseQueries({
+			queries: [
+				queryOptions(topicQueries.detail(topicId)),
+				queryOptions(topicQueries.ancestorsOf(topicId, false)),
+				queryOptions(reviewCardQueries.listByTopic(topicId)),
+			],
+		})
 	const deleteTopic = useDeleteTopic()
 	const updateTopic = useUpdateTopic()
 	const createReviewCard = useCreateReviewCard()
@@ -137,6 +140,10 @@ export function TopicPage() {
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.content)}>
+				<TopicBreadcrumbs
+					ancestors={ancestors}
+					currentTitle={title.value}
+				/>
 				<header {...stylex.props(styles.header)}>
 					<div {...stylex.props(styles.titleBar)}>
 						<Textarea

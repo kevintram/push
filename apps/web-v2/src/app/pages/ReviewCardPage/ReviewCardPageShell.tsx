@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
 import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
 import { spacing } from '~/styles/tokens.stylex'
 
-import { ReviewCardTopicLink } from './ReviewCardTopicLink'
+import { ReviewCardBreadcrumbs } from './ReviewCardBreadcrumbs'
 
 const styles = stylex.create({
 	outerContainer: {
@@ -36,7 +36,7 @@ const styles = stylex.create({
 	},
 })
 
-export function ReviewCardPageLayout() {
+export function ReviewCardPageShell() {
 	const { reviewCardId } = useParams({
 		from: '/review-cards/$reviewCardId',
 	})
@@ -55,7 +55,10 @@ export function ReviewCardPageLayout() {
 		<div {...stylex.props(styles.outerContainer)}>
 			<header {...stylex.props(styles.header)}>
 				<Tabs value={activeTab} xstyle={styles.tabs}>
-					<ReviewCardTopicLink topicId={reviewCard.topicId} />
+					<ReviewCardBreadcrumbs
+						primaryText={reviewCard.primaryText}
+						topicId={reviewCard.topicId}
+					/>
 					<TabsList aria-label='Review card sections'>
 						<TabsTrigger
 							value='overview'

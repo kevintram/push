@@ -10,6 +10,8 @@ import { getErrorMessage } from '~/utils/error'
 export const topicQueries = {
 	list: () => convexQuery(api.topics.list, {}),
 	detail: (topicId: Id<'topics'>) => convexQuery(api.topics.get, { topicId }),
+	ancestorsOf: (topicId: Id<'topics'>, includeSelf: boolean) =>
+		convexQuery(api.topics.ancestorsOf, { includeSelf, topicId }),
 }
 
 export function useCreateTopic() {
