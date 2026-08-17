@@ -132,6 +132,9 @@ export function TopicLink({
 	const matchRoute = useMatchRoute()
 	const createTopic = useCreateTopic()
 	const deleteTopic = useDeleteTopic()
+	// TODO(3): Replace the hand-rolled expansion behavior with Base UI's
+	// Collapsible, keeping the child panel mounted so collapsed descendants stay
+	// registered with dnd-kit.
 	const [isExpanded, setIsExpanded] = useState(true)
 	const hasChildren = childTopics.length > 0
 	const childrenId = `topic-${_id}-children`
