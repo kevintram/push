@@ -6,7 +6,7 @@ import { cloneElement } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { TopicWithChildren } from '../../../types/topic.types'
-import { TopicLink } from '../TopicLink'
+import { LibraryTopicItem } from '../LibraryTopicItem'
 
 type DraggableInput = {
 	id: string
@@ -94,6 +94,10 @@ vi.mock('../../../api/topicQueries', () => ({
 	useDeleteTopic: () => ({ mutate: vi.fn() }),
 }))
 
+vi.mock('../../MoveTopicDialog', () => ({
+	MoveTopicDialog: () => null,
+}))
+
 function topic(
 	id: string,
 	childTopics: Array<TopicWithChildren> = [],
@@ -123,7 +127,7 @@ describe('TopicLink drag and drop', () => {
 	})
 
 	it('registers every topic as a draggable and drop target using its topic ID', () => {
-		render(<TopicLink {...topic('parent', [topic('child')])} />)
+		render(<LibraryTopicItem {...topic('parent', [topic('child')])} />)
 
 		expect(dnd.draggableInputs.map(({ id }) => id)).toEqual([
 			'parent',
@@ -140,12 +144,12 @@ describe('TopicLink drag and drop', () => {
 
 		render(
 			<ul>
-				<TopicLink
+				<LibraryTopicItem
 					{...topic('parent', [
 						topic('child', [topic('grandchild')]),
 					])}
 				/>
-				<TopicLink {...topic('sibling')} />
+				<LibraryTopicItem {...topic('sibling')} />
 			</ul>,
 		)
 
@@ -159,7 +163,7 @@ describe('TopicLink drag and drop', () => {
 
 	it('propagates an inherited disabled state through the entire subtree', () => {
 		render(
-			<TopicLink
+			<LibraryTopicItem
 				{...topic('parent', [topic('child', [topic('grandchild')])])}
 				disableDrop
 			/>,
@@ -173,11 +177,11 @@ describe('TopicLink drag and drop', () => {
 	})
 
 	it('applies a visual state while a topic is being dragged', () => {
-		const rendered = render(<TopicLink {...topic('topic')} />)
+		const rendered = render(<LibraryTopicItem {...topic('topic')} />)
 		const defaultClassName = screen.getByRole('listitem').className
 
 		dnd.draggingIds.add('topic')
-		rendered.rerender(<TopicLink {...topic('topic')} />)
+		rendered.rerender(<LibraryTopicItem {...topic('topic')} />)
 
 		expect(screen.getByRole('listitem').className).not.toBe(
 			defaultClassName,
@@ -185,11 +189,11 @@ describe('TopicLink drag and drop', () => {
 	})
 
 	it('applies a visual state while a topic is the active drop target', () => {
-		const rendered = render(<TopicLink {...topic('topic')} />)
+		const rendered = render(<LibraryTopicItem {...topic('topic')} />)
 		const defaultClassName = screen.getByRole('listitem').className
 
 		dnd.dropTargetIds.add('topic')
-		rendered.rerender(<TopicLink {...topic('topic')} />)
+		rendered.rerender(<LibraryTopicItem {...topic('topic')} />)
 
 		expect(screen.getByRole('listitem').className).not.toBe(
 			defaultClassName,
@@ -197,7 +201,7 @@ describe('TopicLink drag and drop', () => {
 	})
 
 	it('requires pointer movement before activating mouse and pen drags', () => {
-		render(<TopicLink {...topic('topic')} />)
+		render(<LibraryTopicItem {...topic('topic')} />)
 		const sensor = dnd.draggableInputs[0]?.sensors?.[0]
 		const activate = sensor?.options?.activationConstraints
 
@@ -220,7 +224,7 @@ describe('TopicLink drag and drop', () => {
 	})
 
 	it('uses a delay and movement tolerance before activating touch drags', () => {
-		render(<TopicLink {...topic('topic')} />)
+		render(<LibraryTopicItem {...topic('topic')} />)
 		const sensor = dnd.draggableInputs[0]?.sensors?.[0]
 		const activate = sensor?.options?.activationConstraints
 
@@ -233,5 +237,11 @@ describe('TopicLink drag and drop', () => {
 			PointerActivationConstraints.Delay,
 		)
 		expect(constraints[0]?.options).toEqual({ value: 250, tolerance: 5 })
+	})
+
+	it('exposes a Move action in the context menu', () => {
+		render(<LibraryTopicItem {...topic('topic')} />)
+
+		expect(screen.getByText('Move')).toBeInTheDocument()
 	})
 })

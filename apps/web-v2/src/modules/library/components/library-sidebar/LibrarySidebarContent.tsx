@@ -10,7 +10,7 @@ import { fontWeights, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { useCreateTopic } from '../../api/topicQueries'
 import type { TopicWithChildren } from '../../types/topic.types'
-import { TopicLink } from './TopicLink'
+import { LibraryTopicItem } from './LibraryTopicItem'
 
 const styles = stylex.create({
 	container: { overflowY: 'auto' },
@@ -86,7 +86,7 @@ export function LibrarySidebarContent({ topics }: LibrarySidebarContentProps) {
 			<nav aria-label='Library topics' {...stylex.props(styles.nav)}>
 				<Tree>
 					{topics.map(topic => (
-						<TopicLink key={topic._id} {...topic} />
+						<LibraryTopicItem key={topic._id} {...topic} />
 					))}
 				</Tree>
 			</nav>

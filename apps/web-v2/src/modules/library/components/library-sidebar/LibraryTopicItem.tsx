@@ -2,13 +2,14 @@ import { PointerActivationConstraints, PointerSensor } from '@dnd-kit/dom'
 import { useDraggable, useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router'
-import { Plus, Trash2 } from 'lucide-react'
-import { useCallback } from 'react'
+import { FolderInput, Plus, Trash2 } from 'lucide-react'
+import { useCallback, useState } from 'react'
 
 import {
 	ContextMenu,
 	ContextMenuContent,
 	ContextMenuItem,
+	ContextMenuSeparator,
 	ContextMenuTrigger,
 	TreeItem,
 	TreeItemChildren,
@@ -21,6 +22,7 @@ import { iconSizes } from '~/styles/tokens.stylex'
 
 import { useCreateTopic, useDeleteTopic } from '../../api/topicQueries'
 import { type TopicWithChildren } from '../../types/topic.types'
+import { MoveTopicDialog } from '../MoveTopicDialog'
 
 const topicPointerSensor = PointerSensor.configure({
 	// sensor configuration so links can still be clicked while we do drag and drop
@@ -48,7 +50,7 @@ const styles = stylex.create({
 	},
 })
 
-type TopicLinkProps = TopicWithChildren & {
+type LibraryTopicItemProps = TopicWithChildren & {
 	/**
 	 * Disables this topic and its descendants as drop targets. Parent links pass
 	 * this down while their subtree is being dragged to prevent cyclic reparenting.
@@ -56,12 +58,14 @@ type TopicLinkProps = TopicWithChildren & {
 	disableDrop?: boolean
 }
 
-export function TopicLink({
+export function LibraryTopicItem({
 	_id,
 	title,
 	childTopics,
+	parentId,
 	disableDrop = false,
-}: TopicLinkProps) {
+}: LibraryTopicItemProps) {
+	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
 	const topicTitle = title.trim() || 'Untitled'
 	const navigate = useNavigate()
 	const matchRoute = useMatchRoute()
@@ -157,6 +161,16 @@ export function TopicLink({
 							<Plus aria-hidden='true' size={iconSizes.md} />
 							Add subtopic
 						</ContextMenuItem>
+						<ContextMenuItem
+							onClick={() => setIsMoveDialogOpen(true)}
+						>
+							<FolderInput
+								aria-hidden='true'
+								size={iconSizes.md}
+							/>
+							Move
+						</ContextMenuItem>
+						<ContextMenuSeparator />
 						<ContextMenuItem onClick={handleDeleteTopic}>
 							<Trash2 aria-hidden='true' size={iconSizes.md} />
 							Delete
@@ -167,13 +181,21 @@ export function TopicLink({
 
 			<TreeItemChildren>
 				{childTopics.map(child => (
-					<TopicLink
+					<LibraryTopicItem
 						key={child._id}
 						{...child}
 						disableDrop={isDropDisabled}
 					/>
 				))}
 			</TreeItemChildren>
+
+			{isMoveDialogOpen ? (
+				<MoveTopicDialog
+					onOpenChange={setIsMoveDialogOpen}
+					parentId={parentId}
+					topicId={_id}
+				/>
+			) : null}
 		</TreeItem>
 	)
 }
