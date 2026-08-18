@@ -25,14 +25,11 @@ export function TopicBreadcrumbs({
 	return (
 		<Breadcrumb>
 			<BreadcrumbList>
-				<BreadcrumbItem>
-					<BreadcrumbLink render={<Link to='/library' />}>
-						Library
-					</BreadcrumbLink>
-				</BreadcrumbItem>
-				{ancestors.map(ancestor => (
+				{ancestors.map((ancestor, index) => (
 					<Fragment key={ancestor._id}>
-						<BreadcrumbSeparator />
+						{index > 0 && (
+							<BreadcrumbSeparator>/</BreadcrumbSeparator>
+						)}
 						<BreadcrumbItem>
 							<BreadcrumbLink
 								render={
@@ -47,7 +44,9 @@ export function TopicBreadcrumbs({
 						</BreadcrumbItem>
 					</Fragment>
 				))}
-				<BreadcrumbSeparator />
+				{ancestors.length > 0 && (
+					<BreadcrumbSeparator>/</BreadcrumbSeparator>
+				)}
 				<BreadcrumbItem>
 					<BreadcrumbPage>
 						{displayTitle(currentTitle)}
