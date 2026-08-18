@@ -36,7 +36,7 @@ const styles = stylex.create({
 	popup: {
 		position: 'relative',
 
-		padding: spacing.xl,
+		padding: spacing.md,
 		gap: spacing.lg,
 		display: 'grid',
 		inlineSize: '100%',
