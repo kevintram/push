@@ -1,0 +1,1 @@
+export { MoveTopicDialogBase } from './MoveTopicDialogBase'

@@ -1,8 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
 import { queryOptions, useSuspenseQueries } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
-import { Ellipsis, Plus, Trash2 } from 'lucide-react'
-import { useCallback } from 'react'
+import { Ellipsis, FolderInput, Plus, Trash2 } from 'lucide-react'
+import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
 import {
@@ -20,6 +20,7 @@ import {
 	useDeleteTopic,
 	useUpdateTopic,
 } from '~/modules/library/api/topicQueries'
+import { MoveTopicDialog } from '~/modules/library/components/MoveTopicDialog'
 import { TopicBreadcrumbs } from '~/modules/library/components/TopicBreadcrumbs'
 import {
 	reviewCardQueries,
@@ -77,6 +78,7 @@ export function TopicPage() {
 				queryOptions(reviewCardQueries.listByTopic(topicId)),
 			],
 		})
+	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
 	const deleteTopic = useDeleteTopic()
 	const updateTopic = useUpdateTopic()
 	const createReviewCard = useCreateReviewCard()
@@ -168,6 +170,15 @@ export function TopicPage() {
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align='end'>
 								<DropdownMenuItem
+									onClick={() => setIsMoveDialogOpen(true)}
+								>
+									<FolderInput
+										aria-hidden='true'
+										size={iconSizes.md}
+									/>
+									Move
+								</DropdownMenuItem>
+								<DropdownMenuItem
 									disabled={deleteTopic.isPending}
 									onClick={handleDeleteTopic}
 								>
@@ -180,6 +191,13 @@ export function TopicPage() {
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</div>
+					{isMoveDialogOpen ? (
+						<MoveTopicDialog
+							onOpenChange={setIsMoveDialogOpen}
+							parentId={topic.parentId}
+							topicId={topic._id}
+						/>
+					) : null}
 					<Textarea
 						placeholder='Add description...'
 						aria-label='Topic description'

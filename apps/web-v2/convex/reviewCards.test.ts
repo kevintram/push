@@ -305,6 +305,68 @@ describe('reviewCards', () => {
 		expect(unflagged?.flaggedAt).toBeUndefined()
 	})
 
+	it('moves a card between owned topics', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const sourceTopicId = await asUserA.mutation(api.topics.create, {
+			title: 'Source',
+		})
+		const destinationTopicId = await asUserA.mutation(api.topics.create, {
+			title: 'Destination',
+		})
+		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId: sourceTopicId,
+		})
+
+		await asUserA.mutation(api.reviewCards.update, {
+			reviewCardId,
+			topicId: destinationTopicId,
+		})
+
+		await expect(
+			asUserA.query(api.reviewCards.get, { reviewCardId }),
+		).resolves.toMatchObject({ topicId: destinationTopicId })
+		await expect(
+			asUserA.query(api.reviewCards.listByTopic, {
+				topicId: sourceTopicId,
+			}),
+		).resolves.toEqual([])
+		await expect(
+			asUserA.query(api.reviewCards.listByTopic, {
+				topicId: destinationTopicId,
+			}),
+		).resolves.toMatchObject([{ _id: reviewCardId }])
+	})
+
+	it('rejects moving a card to a missing or foreign-owned topic', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const asUserB = t.withIdentity(userBIdentity)
+		const sourceTopicId = await asUserA.mutation(api.topics.create, {})
+		const missingTopicId = await asUserA.mutation(api.topics.create, {})
+		const foreignTopicId = await asUserB.mutation(api.topics.create, {})
+		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId: sourceTopicId,
+		})
+
+		await asUserA.mutation(api.topics.remove, {
+			topicId: missingTopicId,
+		})
+
+		for (const topicId of [missingTopicId, foreignTopicId]) {
+			await expect(
+				asUserA.mutation(api.reviewCards.update, {
+					reviewCardId,
+					topicId,
+				}),
+			).rejects.toThrow('Topic not found')
+		}
+
+		await expect(
+			asUserA.query(api.reviewCards.get, { reviewCardId }),
+		).resolves.toMatchObject({ topicId: sourceTopicId })
+	})
+
 	it('returns the removed card and leaves its siblings alone', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
