@@ -4,7 +4,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useCallback } from 'react'
 
-import { Button } from '~/components/ui'
+import { Button, Tree } from '~/components/ui'
 import { colors } from '~/styles/colors.stylex'
 import { fontWeights, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
@@ -38,14 +38,6 @@ const styles = stylex.create({
 		flexShrink: 0,
 		inlineSize: '240px',
 		height: '100%',
-	},
-	list: {
-		margin: 0,
-		padding: 0,
-		gap: spacing.xs,
-		display: 'flex',
-		flexDirection: 'column',
-		listStyleType: 'none',
 	},
 })
 
@@ -92,11 +84,11 @@ export function LibrarySidebarContent({ topics }: LibrarySidebarContentProps) {
 				</Button.Icon>
 			</div>
 			<nav aria-label='Library topics' {...stylex.props(styles.nav)}>
-				<ul {...stylex.props(styles.list)}>
+				<Tree>
 					{topics.map(topic => (
 						<TopicLink key={topic._id} {...topic} />
 					))}
-				</ul>
+				</Tree>
 			</nav>
 		</div>
 	)

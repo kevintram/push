@@ -2,21 +2,22 @@ import { PointerActivationConstraints, PointerSensor } from '@dnd-kit/dom'
 import { useDraggable, useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router'
-import { ChevronRight, Plus, Trash2 } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { Plus, Trash2 } from 'lucide-react'
+import { useCallback } from 'react'
 
 import {
-	Button,
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
 	ContextMenu,
 	ContextMenuContent,
 	ContextMenuItem,
 	ContextMenuTrigger,
+	TreeItem,
+	TreeItemChildren,
+	TreeItemCollapsibleTrigger,
+	TreeItemContent,
+	TreeItemLabel,
 } from '~/components/ui'
 import { colors } from '~/styles/colors.stylex'
-import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { iconSizes } from '~/styles/tokens.stylex'
 
 import { useCreateTopic, useDeleteTopic } from '../../api/topicQueries'
 import { type TopicWithChildren } from '../../types/topic.types'
@@ -39,80 +40,11 @@ const topicPointerSensor = PointerSensor.configure({
 
 const styles = stylex.create({
 	// TODO: fix these damn color tokens
-	container: {
-		gap: spacing.xs,
-		display: 'flex',
-		flexDirection: 'column',
-
-		borderRadius: radii.lg,
-	},
 	containerDragging: {
 		backgroundColor: colors.navBgSurface,
 	},
 	containerIsDropTarget: {
 		backgroundColor: colors.navBgSurfaceActive,
-	},
-	row: {
-		borderRadius: radii.lg,
-		gap: spacing.xs,
-
-		alignItems: 'center',
-		backgroundColor: {
-			default: 'inherit',
-			':hover': colors.navBgSurfaceHover,
-		},
-		display: 'grid',
-		gridTemplateColumns: '26px minmax(0, 1fr)',
-	},
-	rowActive: {
-		backgroundColor: {
-			default: colors.navBgSurfaceActive,
-			':hover': colors.navBgSurfaceActive,
-		},
-	},
-	togglePlaceholder: {
-		blockSize: '26px',
-		inlineSize: '26px',
-	},
-	chevron: {
-		transform: 'rotate(0deg)',
-		transitionDuration: {
-			default: '125ms',
-			'@media (prefers-reduced-motion: reduce)': '1ms',
-		},
-		transitionProperty: 'transform',
-		transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
-	},
-	chevronExpanded: {
-		transform: 'rotate(90deg)',
-	},
-	childrenList: {
-		gap: spacing.xs,
-
-		display: {
-			default: 'flex',
-			':is([hidden])': 'none',
-		},
-		flexDirection: 'column',
-
-		margin: 0,
-		paddingBlock: 0,
-		listStyleType: 'none',
-		paddingInlineEnd: 0,
-		paddingInlineStart: spacing.md,
-	},
-	topicLink: {
-		padding: spacing.xs,
-		textDecoration: 'none',
-
-		alignItems: 'center',
-		color: {
-			'[data-status=active]': colors.textLinkActive,
-			default: colors.textLink,
-			':hover': colors.textLinkHover,
-		},
-		display: 'flex',
-		fontSize: fontSizes.sm,
 	},
 })
 
@@ -135,7 +67,6 @@ export function TopicLink({
 	const matchRoute = useMatchRoute()
 	const createTopic = useCreateTopic()
 	const deleteTopic = useDeleteTopic()
-	const [isExpanded, setIsExpanded] = useState(true)
 	const hasChildren = childTopics.length > 0
 
 	const {
@@ -192,56 +123,30 @@ export function TopicLink({
 	}, [_id, deleteTopic])
 
 	return (
-		<Collapsible
+		<TreeItem
 			ref={combinedDraggableRef}
-			open={isExpanded}
-			onOpenChange={setIsExpanded}
-			render={<li />}
+			expandable={hasChildren}
+			label={topicTitle}
+			selected={isActive}
 			xstyle={[
-				styles.container,
 				isDragging && styles.containerDragging,
 				isDropTarget && styles.containerIsDropTarget,
 			]}
 		>
-			<div
-				ref={droppableElementRef}
-				{...stylex.props(styles.row, isActive && styles.rowActive)}
-			>
-				{hasChildren ? (
-					<CollapsibleTrigger
-						render={
-							<Button.Icon
-								aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${topicTitle}`}
-								shape='round'
-								size='micro'
-								variant='ghost'
-							/>
-						}
-					>
-						<ChevronRight
-							aria-hidden='true'
-							size={iconSizes.md}
-							{...stylex.props(
-								styles.chevron,
-								isExpanded && styles.chevronExpanded,
-							)}
-						/>
-					</CollapsibleTrigger>
-				) : (
-					<span
-						aria-hidden='true'
-						{...stylex.props(styles.togglePlaceholder)}
-					/>
-				)}
+			<TreeItemContent ref={droppableElementRef}>
+				<TreeItemCollapsibleTrigger />
 				<ContextMenu>
 					<ContextMenuTrigger
 						render={
-							<Link
-								to='/library/$topicId'
-								params={{ topicId: _id }}
-								activeOptions={{ exact: true }}
-								aria-label={topicTitle}
-								{...stylex.props(styles.topicLink)}
+							<TreeItemLabel
+								render={
+									<Link
+										to='/library/$topicId'
+										params={{ topicId: _id }}
+										activeOptions={{ exact: true }}
+										aria-label={topicTitle}
+									/>
+								}
 							/>
 						}
 					>
@@ -258,23 +163,17 @@ export function TopicLink({
 						</ContextMenuItem>
 					</ContextMenuContent>
 				</ContextMenu>
-			</div>
+			</TreeItemContent>
 
-			{hasChildren ? (
-				<CollapsibleContent
-					keepMounted
-					render={<ul />}
-					xstyle={styles.childrenList}
-				>
-					{childTopics.map(child => (
-						<TopicLink
-							key={child._id}
-							{...child}
-							disableDrop={isDropDisabled}
-						/>
-					))}
-				</CollapsibleContent>
-			) : null}
-		</Collapsible>
+			<TreeItemChildren>
+				{childTopics.map(child => (
+					<TopicLink
+						key={child._id}
+						{...child}
+						disableDrop={isDropDisabled}
+					/>
+				))}
+			</TreeItemChildren>
+		</TreeItem>
 	)
 }

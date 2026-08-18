@@ -8,10 +8,10 @@ import {
 	Button,
 	Dialog,
 	DialogContent,
-	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	Tree,
 } from '~/components/ui'
 import { topicQueries } from '~/modules/library/api/topicQueries'
 import { treeifyTopics } from '~/modules/library/utils/treeifyTopics'
@@ -35,14 +35,6 @@ const styles = stylex.create({
 		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
-	},
-	topicList: {
-		margin: 0,
-		padding: 0,
-		gap: spacing.xs,
-		display: 'flex',
-		flexDirection: 'column',
-		listStyleType: 'none',
 	},
 	status: {
 		margin: 0,
@@ -94,9 +86,6 @@ export function MoveReviewCardDialog({
 			<DialogContent>
 				<DialogHeader xstyle={styles.header}>
 					<DialogTitle>Move review card</DialogTitle>
-					<DialogDescription>
-						Choose a topic for this review card.
-					</DialogDescription>
 				</DialogHeader>
 
 				<nav
@@ -114,7 +103,7 @@ export function MoveReviewCardDialog({
 							No topics available.
 						</p>
 					) : (
-						<ul {...stylex.props(styles.topicList)}>
+						<Tree>
 							{topicTree.map(topic => (
 								<MoveTopicLink
 									key={topic._id}
@@ -123,7 +112,7 @@ export function MoveReviewCardDialog({
 									selectedTopicId={selectedTopicId}
 								/>
 							))}
-						</ul>
+						</Tree>
 					)}
 				</nav>
 
