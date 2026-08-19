@@ -46,6 +46,18 @@ export const ancestorsOf = query({
 	},
 })
 
+export const search = query({
+	args: {
+		query: v.string(),
+	},
+	returns: v.array(topicRead),
+	handler: async (ctx, args) => {
+		const { subject: userId } = await requireIdentity(ctx)
+
+		return await Topics.search(ctx, userId, args.query)
+	},
+})
+
 export const create = mutation({
 	args: topicCreate.fields,
 	returns: v.id('topics'),

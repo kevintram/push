@@ -58,6 +58,7 @@ const topic: Doc<'topics'> = {
 	title: 'Learning TypeScript',
 	description: '',
 	ownerId: 'user-1',
+	searchText: 'Learning TypeScript',
 }
 
 const reviewCard: ReviewCard = {
@@ -70,6 +71,8 @@ const reviewCard: ReviewCard = {
 	secondaryText: 'They preserve type safety across reusable code.',
 	notes: '',
 	state: 'LEARNING',
+	searchText:
+		'What problem do generics solve?\nThey preserve type safety across reusable code.',
 }
 
 const review: Doc<'reviews'> = {

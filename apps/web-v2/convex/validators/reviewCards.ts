@@ -20,6 +20,9 @@ export const reviewCardBase = v.object({
 	step: v.optional(v.number()),
 	dueDate: v.optional(v.string()),
 	lastReviewedAt: v.optional(v.string()),
+	// Derived from `primaryText`, `secondaryText`, and `notes`. Server-owned:
+	// never settable by a client, always recomputed alongside its sources.
+	searchText: v.string(),
 })
 
 export const reviewCardRead = reviewCardBase.extend({
@@ -41,6 +44,7 @@ export const reviewCardCreate = v.object({
 			'step',
 			'dueDate',
 			'lastReviewedAt',
+			'searchText', // omit because derived by server
 		)
 		.partial().fields,
 	topicId: v.id('topics'), // require topicId
@@ -60,6 +64,7 @@ export const reviewCardPatch = reviewCardBase
 		'step',
 		'dueDate',
 		'lastReviewedAt',
+		'searchText', // omit because derived by server
 	)
 	.extend({
 		flaggedAt: v.union(v.number(), v.null()),
