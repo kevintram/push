@@ -448,6 +448,25 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
+	it('opens search over the current page without navigating away', async () => {
+		const user = userEvent.setup()
+		renderRoute('/settings')
+
+		await screen.findByRole('heading', { name: 'Account' })
+		await user.click(screen.getByRole('button', { name: 'Search' }))
+
+		expect(
+			await screen.findByRole('searchbox', {
+				name: 'Search topics and review cards',
+			}),
+		).toBeInTheDocument()
+		// The settings page stays mounted behind the modal, so it is only
+		// hidden from the accessibility tree rather than unmounted.
+		expect(
+			screen.getByRole('heading', { hidden: true, name: 'Account' }),
+		).toBeInTheDocument()
+	})
+
 	it('renders the blank library index route', async () => {
 		renderRoute('/library')
 
