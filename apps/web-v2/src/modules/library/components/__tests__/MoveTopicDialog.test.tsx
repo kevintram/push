@@ -15,6 +15,7 @@ const topics: ReadonlyArray<Topic> = [
 		_creationTime: 0,
 		description: '',
 		ownerId: 'user-1',
+		searchText: 'Languages',
 		title: 'Languages',
 	},
 	{
@@ -23,6 +24,7 @@ const topics: ReadonlyArray<Topic> = [
 		description: '',
 		ownerId: 'user-1',
 		parentId: 'topic-1' as Id<'topics'>,
+		searchText: 'Spanish',
 		title: 'Spanish',
 	},
 	{
@@ -30,6 +32,7 @@ const topics: ReadonlyArray<Topic> = [
 		_creationTime: 2,
 		description: '',
 		ownerId: 'user-1',
+		searchText: 'Science',
 		title: 'Science',
 	},
 ]

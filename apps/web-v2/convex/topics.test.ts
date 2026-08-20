@@ -16,6 +16,7 @@ describe('topics', () => {
 				title: 'Topic',
 				description: '',
 				ownerId: userAIdentity.subject,
+				searchText: 'Topic',
 			}),
 		)
 
@@ -25,6 +26,9 @@ describe('topics', () => {
 		await expect(t.query(api.topics.get, { topicId })).rejects.toThrow(
 			'Unauthenticated',
 		)
+		await expect(
+			t.query(api.topics.search, { query: 'Topic' }),
+		).rejects.toThrow('Unauthenticated')
 		await expect(
 			t.query(api.topics.ancestorsOf, { includeSelf: false, topicId }),
 		).rejects.toThrow('Unauthenticated')
@@ -400,6 +404,66 @@ describe('topics', () => {
 		expect(remaining.map(topic => topic._id)).toEqual([unrelatedId])
 	})
 
+	it("searches title and description without leaking another owner's topics", async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const asUserB = t.withIdentity(userBIdentity)
+		const titleMatchId = await asUserA.mutation(api.topics.create, {
+			title: 'Cellular biology',
+		})
+		const descriptionMatchId = await asUserA.mutation(api.topics.create, {
+			description: 'Practice mitosis vocabulary',
+			title: 'Exam prep',
+		})
+		await asUserB.mutation(api.topics.create, {
+			title: 'Cellular secrets',
+		})
+
+		const titleMatches = await asUserA.query(api.topics.search, {
+			query: 'cellular',
+		})
+		const descriptionMatches = await asUserA.query(api.topics.search, {
+			query: 'mitosis',
+		})
+
+		expect(titleMatches.map(topic => topic._id)).toEqual([titleMatchId])
+		expect(descriptionMatches.map(topic => topic._id)).toEqual([
+			descriptionMatchId,
+		])
+		await expect(
+			asUserA.query(api.topics.search, { query: '' }),
+		).resolves.toEqual([])
+		await expect(
+			asUserA.query(api.topics.search, { query: '   ' }),
+		).resolves.toEqual([])
+	})
+
+	it('keeps topic search text synchronized through updates and deletion', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {
+			description: 'Original description',
+			title: 'Oldname',
+		})
+
+		await asUserA.mutation(api.topics.update, {
+			title: 'Newname',
+			topicId,
+		})
+
+		await expect(
+			asUserA.query(api.topics.search, { query: 'Oldname' }),
+		).resolves.toEqual([])
+		await expect(
+			asUserA.query(api.topics.search, { query: 'Newname' }),
+		).resolves.toMatchObject([{ _id: topicId }])
+
+		await asUserA.mutation(api.topics.remove, { topicId })
+		await expect(
+			asUserA.query(api.topics.search, { query: 'Newname' }),
+		).resolves.toEqual([])
+	})
+
 	it('rolls back removal when malformed data contains a foreign-owned child', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
@@ -412,6 +476,7 @@ describe('topics', () => {
 				description: '',
 				ownerId: userBIdentity.subject,
 				parentId: rootId,
+				searchText: 'Foreign child',
 				title: 'Foreign child',
 			}),
 		)

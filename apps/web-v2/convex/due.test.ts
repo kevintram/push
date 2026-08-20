@@ -18,6 +18,7 @@ async function seedTopic(t: Harness, ownerId: string): Promise<Id<'topics'>> {
 			await ctx.db.insert('topics', {
 				description: '',
 				ownerId,
+				searchText: 'Topic',
 				title: 'Topic',
 			}),
 	)
@@ -35,6 +36,7 @@ async function seedCard(
 				notes: '',
 				ownerId,
 				secondaryText: '',
+				searchText: fields.primaryText,
 				state: 'LEARNING',
 				topicId,
 				type: 'flashcard',

@@ -9,6 +9,7 @@ import { getErrorMessage } from '~/utils/error'
 
 export const topicQueries = {
 	list: () => convexQuery(api.topics.list, {}),
+	search: (query: string) => convexQuery(api.topics.search, { query }),
 	detail: (topicId: Id<'topics'>) => convexQuery(api.topics.get, { topicId }),
 	ancestorsOf: (topicId: Id<'topics'>, includeSelf: boolean) =>
 		convexQuery(api.topics.ancestorsOf, { includeSelf, topicId }),

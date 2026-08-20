@@ -1,4 +1,4 @@
-import type { Id } from '../_generated/dataModel'
+import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import type {
 	ReviewCard,
@@ -68,15 +68,25 @@ export async function create(
 ): Promise<Id<'reviewCards'>> {
 	await Topics.requireUserOwns(ctx, userId, fields.topicId)
 
+	const primaryText = fields.primaryText ?? ''
+	const secondaryText = fields.secondaryText ?? ''
+	const notes = fields.notes ?? ''
+
 	return await ctx.db.insert('reviewCards', {
 		ownerId: userId,
 		topicId: fields.topicId,
 		type: fields.type ?? 'flashcard',
-		primaryText: fields.primaryText ?? '',
-		secondaryText: fields.secondaryText ?? '',
-		notes: fields.notes ?? '',
+		primaryText,
+		secondaryText,
+		notes,
 		...(fields.flaggedAt !== undefined && { flaggedAt: fields.flaggedAt }),
 		state: 'LEARNING',
+		// Newline-separated so the last word of one field cannot fuse to the
+		// first word of the next into a single bogus token. Nothing is
+		// normalized: Convex tokenizes and case-folds while indexing.
+		searchText: [primaryText, secondaryText, notes]
+			.filter(Boolean)
+			.join('\n'),
 	})
 }
 
@@ -86,7 +96,7 @@ export async function update(
 	reviewCardId: Id<'reviewCards'>,
 	patch: ReviewCardPatch,
 ): Promise<void> {
-	await requireUserOwns(ctx, userId, reviewCardId)
+	const reviewCard = await requireUserOwns(ctx, userId, reviewCardId)
 
 	const { flaggedAt, topicId, ...fields } = patch
 
@@ -96,8 +106,18 @@ export async function update(
 		await Topics.requireUserOwns(ctx, userId, topicId)
 	}
 
+	// Recomputed unconditionally from the merged doc: when the patch touches no
+	// text field this rewrites the identical string, which is cheaper than a
+	// second copy of the field list that could drift from the one below.
+	const primaryText = fields.primaryText ?? reviewCard.primaryText
+	const secondaryText = fields.secondaryText ?? reviewCard.secondaryText
+	const notes = fields.notes ?? reviewCard.notes
+
 	await ctx.db.patch('reviewCards', reviewCardId, {
 		...fields,
+		searchText: [primaryText, secondaryText, notes]
+			.filter(Boolean)
+			.join('\n'),
 		...(topicId !== undefined && { topicId }),
 		// An omitted key leaves the flag alone. `null` clears it, which in
 		// Convex means patching an explicit `undefined`.
@@ -151,4 +171,31 @@ async function deleteReviewCard(
 	}
 
 	await ctx.db.delete('reviewCards', reviewCardId)
+}
+
+export async function search(
+	ctx: QueryCtx,
+	userId: string,
+	rawQuery: string,
+): Promise<Array<Doc<'reviewCards'>>> {
+	const query = rawQuery.trim()
+
+	// Short-circuit rather than issue a search for the empty string, whose
+	// behavior is unspecified and which can never produce a useful result.
+	if (query === '') {
+		return []
+	}
+
+	// TODO(2): paginate. This returns every match in one relevance-ordered
+	// batch, which Convex caps at 1024 documents; past that, hits are dropped
+	// with no signal to the caller. Switch to `.paginate()` and have the
+	// dialog page as the user scrolls the expanded group.
+	return await ctx.db
+		.query('reviewCards')
+		.withSearchIndex('by_searchText', q =>
+			// The owner filter is the only thing keeping one user's documents
+			// out of another's results. It is not an optimization.
+			q.search('searchText', query).eq('ownerId', userId),
+		)
+		.collect()
 }

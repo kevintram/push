@@ -58,6 +58,7 @@ const topic: Doc<'topics'> = {
 	title: 'Learning TypeScript',
 	description: '',
 	ownerId: 'user-1',
+	searchText: 'Learning TypeScript',
 }
 
 const reviewCard: ReviewCard = {
@@ -70,6 +71,8 @@ const reviewCard: ReviewCard = {
 	secondaryText: 'They preserve type safety across reusable code.',
 	notes: '',
 	state: 'LEARNING',
+	searchText:
+		'What problem do generics solve?\nThey preserve type safety across reusable code.',
 }
 
 const review: Doc<'reviews'> = {
@@ -442,6 +445,25 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 		expect(
 			screen.getByRole('button', { name: 'Sign out' }),
+		).toBeInTheDocument()
+	})
+
+	it('opens search over the current page without navigating away', async () => {
+		const user = userEvent.setup()
+		renderRoute('/settings')
+
+		await screen.findByRole('heading', { name: 'Account' })
+		await user.click(screen.getByRole('button', { name: 'Search' }))
+
+		expect(
+			await screen.findByRole('searchbox', {
+				name: 'Search topics and review cards',
+			}),
+		).toBeInTheDocument()
+		// The settings page stays mounted behind the modal, so it is only
+		// hidden from the accessibility tree rather than unmounted.
+		expect(
+			screen.getByRole('heading', { hidden: true, name: 'Account' }),
 		).toBeInTheDocument()
 	})
 

@@ -17,6 +17,7 @@ const topics = [
 		_creationTime: 0,
 		description: '',
 		ownerId: 'user-1',
+		searchText: 'Languages',
 		title: 'Languages',
 	},
 	{
@@ -25,6 +26,7 @@ const topics = [
 		description: '',
 		ownerId: 'user-1',
 		parentId: 'topic-1' as Topic['_id'],
+		searchText: 'Spanish',
 		title: 'Spanish',
 	},
 ] as const satisfies ReadonlyArray<Topic>
@@ -68,6 +70,7 @@ const reviewCard: ReviewCard = {
 	secondaryText: 'Answer',
 	notes: '',
 	state: 'LEARNING',
+	searchText: 'Question\nAnswer',
 }
 
 function openMenu() {
