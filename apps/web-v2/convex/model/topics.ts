@@ -79,11 +79,18 @@ export async function create(
 		await validateParent(ctx, userId, fields.parentId)
 	}
 
+	const title = fields.title ?? ''
+	const description = fields.description ?? ''
+
 	return await ctx.db.insert('topics', {
-		title: fields.title ?? '',
-		description: fields.description ?? '',
+		title,
+		description,
 		parentId: fields.parentId,
 		ownerId: userId,
+		// Newline-separated so the last word of one field cannot fuse to the
+		// first word of the next into a single bogus token. Nothing is
+		// normalized: Convex tokenizes and case-folds while indexing.
+		searchText: [title, description].filter(Boolean).join('\n'),
 	})
 }
 
@@ -93,7 +100,7 @@ export async function update(
 	topicId: Id<'topics'>,
 	patch: TopicPatch,
 ): Promise<void> {
-	await requireUserOwns(ctx, userId, topicId)
+	const topic = await requireUserOwns(ctx, userId, topicId)
 
 	if (patch.parentId === topicId) {
 		throw new Error('A topic cannot be its own parent')
@@ -103,11 +110,18 @@ export async function update(
 		await validateParent(ctx, userId, patch.parentId, topicId)
 	}
 
+	// Recomputed unconditionally from the merged doc: when the patch touches no
+	// text field this rewrites the identical string, which is cheaper than a
+	// second copy of the field list that could drift from the one below.
+	const title = patch.title ?? topic.title
+	const description = patch.description ?? topic.description
+
 	await ctx.db.patch('topics', topicId, {
 		...patch,
 		// An omitted key leaves the parent alone. `null` detaches the topic,
 		// which in Convex means patching an explicit `undefined`.
 		...(patch.parentId === null && { parentId: undefined }),
+		searchText: [title, description].filter(Boolean).join('\n'),
 	} as Partial<Doc<'topics'>>)
 }
 
@@ -146,4 +160,31 @@ export async function validateParent(
 
 		ancestorId = ancestor.parentId
 	}
+}
+
+export async function search(
+	ctx: QueryCtx,
+	userId: string,
+	rawQuery: string,
+): Promise<Array<Doc<'topics'>>> {
+	const query = rawQuery.trim()
+
+	// Short-circuit rather than issue a search for the empty string, whose
+	// behavior is unspecified and which can never produce a useful result.
+	if (query === '') {
+		return []
+	}
+
+	// TODO(2): paginate. This returns every match in one relevance-ordered
+	// batch, which Convex caps at 1024 documents; past that, hits are dropped
+	// with no signal to the caller. Switch to `.paginate()` and have the
+	// dialog page as the user scrolls the expanded group.
+	return await ctx.db
+		.query('topics')
+		.withSearchIndex('by_searchText', q =>
+			// The owner filter is the only thing keeping one user's documents
+			// out of another's results. It is not an optimization.
+			q.search('searchText', query).eq('ownerId', userId),
+		)
+		.collect()
 }

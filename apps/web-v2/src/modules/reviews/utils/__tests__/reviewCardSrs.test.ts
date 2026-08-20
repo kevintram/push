@@ -11,6 +11,7 @@ function reviewCard(overrides: Partial<ReviewCard> = {}): ReviewCard {
 		notes: '',
 		ownerId: 'user-id',
 		primaryText: '',
+		searchText: '',
 		secondaryText: '',
 		state: 'LEARNING',
 		topicId: 'topic-id' as ReviewCard['topicId'],

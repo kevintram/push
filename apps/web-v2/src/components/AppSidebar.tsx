@@ -1,11 +1,13 @@
 import * as stylex from '@stylexjs/stylex'
+import { Link } from '@tanstack/react-router'
 import { BookOpen, Clock, Flag, Library, PinIcon, Settings } from 'lucide-react'
 
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
+import { SearchDialogTrigger } from '~/modules/search/components/SearchDialogTrigger'
 import { colors } from '~/styles/colors.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
-import { SidebarLink } from './sidebar-link'
+import { SidebarItem } from './sidebar-item'
 
 const styles = stylex.create({
 	container: {
@@ -33,19 +35,38 @@ const styles = stylex.create({
 export function AppSidebar() {
 	return (
 		<nav aria-label='primary' {...stylex.props(styles.container)}>
-			{/* TODO: make SidebarLink.Fat and HideModeButton DRY */}
-			<SidebarLink.Fat icon={BookOpen} text='Review' to='/review' />
-			<SidebarLink.Fat icon={Flag} text='Flagged' to='/flagged' />
-			<SidebarLink.Fat icon={Clock} text='Recent' to='/recent' />
-			<SidebarLink.Fat icon={PinIcon} text='Pinned' to='/pinned' />
-			<SidebarLink.Fat icon={Library} text='Library' to='/library' />
+			<SearchDialogTrigger />
+			<SidebarItem
+				icon={BookOpen}
+				render={<Link to='/review' />}
+				text='Review'
+			/>
+			<SidebarItem
+				icon={Flag}
+				render={<Link to='/flagged' />}
+				text='Flagged'
+			/>
+			<SidebarItem
+				icon={Clock}
+				render={<Link to='/recent' />}
+				text='Recent'
+			/>
+			<SidebarItem
+				icon={PinIcon}
+				render={<Link to='/pinned' />}
+				text='Pinned'
+			/>
+			<SidebarItem
+				icon={Library}
+				render={<Link to='/library' />}
+				text='Library'
+			/>
 			<div {...stylex.props(styles.spacer)} />
 			<HideModeButton />
-			<SidebarLink.Fat
-				ariaLabel='Settings'
-				text='Settings'
+			<SidebarItem
 				icon={Settings}
-				to='/settings'
+				render={<Link to='/settings' />}
+				text='Settings'
 			/>
 		</nav>
 	)

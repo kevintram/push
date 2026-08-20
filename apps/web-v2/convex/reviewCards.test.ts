@@ -16,6 +16,7 @@ describe('reviewCards', () => {
 				title: 'Topic',
 				description: '',
 				ownerId: userAIdentity.subject,
+				searchText: 'Topic',
 			})
 			const reviewCardId = await ctx.db.insert('reviewCards', {
 				topicId,
@@ -25,6 +26,7 @@ describe('reviewCards', () => {
 				secondaryText: '',
 				notes: '',
 				state: 'LEARNING',
+				searchText: '',
 			})
 
 			return { reviewCardId, topicId }
@@ -38,6 +40,9 @@ describe('reviewCards', () => {
 		)
 		await expect(
 			t.query(api.reviewCards.get, { reviewCardId }),
+		).rejects.toThrow('Unauthenticated')
+		await expect(
+			t.query(api.reviewCards.search, { query: 'card' }),
 		).rejects.toThrow('Unauthenticated')
 		await expect(
 			t.mutation(api.reviewCards.create, { topicId }),
@@ -150,6 +155,7 @@ describe('reviewCards', () => {
 				secondaryText: '',
 				notes: '',
 				state: 'LEARNING',
+				searchText: 'Not user A’s',
 			})
 		})
 
@@ -177,6 +183,7 @@ describe('reviewCards', () => {
 				ownerId: userAIdentity.subject,
 				primaryText: '',
 				secondaryText: '',
+				searchText: '',
 				state: 'LEARNING' as const,
 				topicId,
 				type: 'flashcard' as const,
@@ -419,6 +426,69 @@ describe('reviewCards', () => {
 			ctx.db.query('reviews').collect(),
 		)
 		expect(remaining.map(review => review._id)).toEqual([keptReviewId])
+	})
+
+	it("searches every card text field without leaking another owner's cards", async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const asUserB = t.withIdentity(userBIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {})
+		const foreignTopicId = await asUserB.mutation(api.topics.create, {})
+		const primaryMatchId = await asUserA.mutation(api.reviewCards.create, {
+			primaryText: 'Mitochondria produce energy',
+			topicId,
+		})
+		const secondaryMatchId = await asUserA.mutation(
+			api.reviewCards.create,
+			{
+				primaryText: 'Organelle answer',
+				secondaryText: 'Chloroplast',
+				topicId,
+			},
+		)
+		const notesMatchId = await asUserA.mutation(api.reviewCards.create, {
+			notes: 'Remember homeostasis',
+			topicId,
+		})
+		await asUserB.mutation(api.reviewCards.create, {
+			primaryText: 'Mitochondria private card',
+			topicId: foreignTopicId,
+		})
+
+		await expect(
+			asUserA.query(api.reviewCards.search, { query: 'Mitochondria' }),
+		).resolves.toMatchObject([{ _id: primaryMatchId }])
+		await expect(
+			asUserA.query(api.reviewCards.search, { query: 'Chloroplast' }),
+		).resolves.toMatchObject([{ _id: secondaryMatchId }])
+		await expect(
+			asUserA.query(api.reviewCards.search, { query: 'homeostasis' }),
+		).resolves.toMatchObject([{ _id: notesMatchId }])
+		await expect(
+			asUserA.query(api.reviewCards.search, { query: '   ' }),
+		).resolves.toEqual([])
+	})
+
+	it('keeps review card search text synchronized through edits', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {})
+		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
+			primaryText: 'Oldterm',
+			topicId,
+		})
+
+		await asUserA.mutation(api.reviewCards.update, {
+			primaryText: 'Newterm',
+			reviewCardId,
+		})
+
+		await expect(
+			asUserA.query(api.reviewCards.search, { query: 'Oldterm' }),
+		).resolves.toEqual([])
+		await expect(
+			asUserA.query(api.reviewCards.search, { query: 'Newterm' }),
+		).resolves.toMatchObject([{ _id: reviewCardId }])
 	})
 
 	it('deletes the cards and reviews of a removed topic subtree', async () => {

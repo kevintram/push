@@ -43,6 +43,18 @@ export const get = query({
 	},
 })
 
+export const search = query({
+	args: {
+		query: v.string(),
+	},
+	returns: v.array(reviewCardRead),
+	handler: async (ctx, args) => {
+		const { subject: userId } = await requireIdentity(ctx)
+
+		return await ReviewCards.search(ctx, userId, args.query)
+	},
+})
+
 export const create = mutation({
 	args: reviewCardCreate.fields,
 	returns: v.id('reviewCards'),

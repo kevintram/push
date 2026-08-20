@@ -17,6 +17,7 @@ function topic(
 		title: id,
 		description: '',
 		ownerId: 'owner',
+		searchText: id,
 		childTopics,
 	}
 }
