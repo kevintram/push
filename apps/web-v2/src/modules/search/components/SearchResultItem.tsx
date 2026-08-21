@@ -12,13 +12,13 @@ const styles = stylex.create({
 		listStyle: 'none',
 	},
 	link: {
-		gap: '2px',
-		paddingBlock: spacing.sm,
+		gap: '3px',
+		paddingBlock: spacing.md,
 		paddingInline: spacing.md,
 		display: 'flex',
 		flexDirection: 'column',
 
-		borderRadius: radii.md,
+		borderRadius: radii.lg,
 		textDecoration: 'none',
 		backgroundColor: {
 			default: colors.bgSurfaceTransparent,
@@ -36,8 +36,8 @@ const styles = stylex.create({
 	},
 	title: {
 		overflow: 'hidden',
-		fontSize: fontSizes.sm,
-		fontWeight: fontWeights.semibold,
+		fontSize: fontSizes.md,
+		fontWeight: fontWeights.medium,
 		lineHeight: 1.4,
 		textOverflow: 'ellipsis',
 		whiteSpace: 'nowrap',
@@ -45,7 +45,7 @@ const styles = stylex.create({
 	secondary: {
 		overflow: 'hidden',
 		color: colors.textSecondary,
-		fontSize: fontSizes.xs,
+		fontSize: fontSizes.sm,
 		lineHeight: 1.4,
 		textOverflow: 'ellipsis',
 		whiteSpace: 'nowrap',

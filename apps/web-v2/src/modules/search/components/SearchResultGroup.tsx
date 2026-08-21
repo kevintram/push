@@ -17,22 +17,26 @@ const PREVIEW_COUNT = 3
 
 const styles = stylex.create({
 	section: {
-		paddingInline: spacing.sm,
+		paddingInline: spacing.xs,
 		paddingBlockEnd: spacing.sm,
+		paddingBlockStart: spacing.lg,
 	},
 	header: {
 		paddingBlock: spacing.xs,
-		paddingInline: spacing.xs,
+		// Matches the inline padding of a result link so the heading sits on
+		// the same text edge as the titles below it.
+		paddingInline: spacing.md,
 		alignItems: 'center',
 		display: 'flex',
 		minBlockSize: '32px',
 	},
 	title: {
+		color: colors.textSecondary,
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
 		fontSize: fontSizes.sm,
-		fontWeight: fontWeights.bold,
+		fontWeight: fontWeights.regular,
 	},
 	control: {
 		color: colors.textSecondary,
@@ -85,7 +89,7 @@ export function SearchResultGroup({
 						onClick={() => onExpandedChange(!expanded)}
 						shape='round'
 						size='tiny'
-						variant='ghost'
+						variant={expanded ? 'secondary' : 'ghost'}
 						xstyle={styles.control}
 					>
 						{expanded ? (
@@ -99,7 +103,7 @@ export function SearchResultGroup({
 								{...stylex.props(styles.icon)}
 							/>
 						)}
-						{expanded ? 'Collapse' : `View all`}
+						{expanded ? 'Collapse' : 'View all'}
 					</Button>
 				) : null}
 			</div>
