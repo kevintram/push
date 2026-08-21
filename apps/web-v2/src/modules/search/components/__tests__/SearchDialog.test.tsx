@@ -159,11 +159,11 @@ describe('SearchDialog', () => {
 		await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(6))
 	})
 
-	it('closes through the dialog control', async () => {
+	it('closes on escape', async () => {
 		const user = userEvent.setup()
 		const { onOpenChange } = renderDialog()
 
-		await user.click(screen.getByRole('button', { name: 'Close' }))
+		await user.keyboard('{Escape}')
 		expect(onOpenChange.mock.calls[0]?.[0]).toBe(false)
 	})
 
