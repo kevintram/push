@@ -219,7 +219,8 @@ export async function search(
 		)
 		.collect()
 
-	// get all ancestors of hits so we can return paths in search results
+	// Get all ancestors of hits so we can return paths in search results
+	// TODO(3): lazy loads the path from client?
 	const pathTopicsById = new Map(hits.map(hit => [hit._id, hit]))
 	const ancestorIds = [...new Set(hits.flatMap(hit => hit.path))].filter(
 		ancestorId => !pathTopicsById.has(ancestorId),

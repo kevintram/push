@@ -200,7 +200,10 @@ export async function search(
 		)
 		.collect()
 
-	// the topics that contain the hit review cards
+	// Construct path for each review card.
+	// TODO(3): lazy loads the path from client?
+	//
+	// fetch topics that contain the hit review cards
 	const containingTopicIds = [...new Set(hits.map(hit => hit.topicId))]
 	const containingTopics = await Topics.getMany(
 		ctx,
@@ -211,7 +214,7 @@ export async function search(
 		containingTopics.map(topic => [topic._id, topic]),
 	)
 
-	// all the ancestor topics of containingTopics
+	// fetch all the ancestor topics of containingTopics
 	const ancestorTopicIds = [
 		...new Set(containingTopics.flatMap(topic => topic.path)),
 	].filter(topicId => !containingTopicsById.has(topicId))
