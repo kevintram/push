@@ -1,4 +1,5 @@
 import type { Id } from '@convex/_generated/dataModel'
+import type { Topic } from '@convex/validators/topics'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Fragment } from 'react'
@@ -17,13 +18,6 @@ function displayText(text: string) {
 	return text.trim() || 'Untitled'
 }
 
-/**
- * This topic-path lookup depends on the review card's topicId, creating a query
- * waterfall after the shell loads the review card.
- *
- * TODO(2): Remove the waterfall by returning the topic path with the review
- * card. Use stripe api style `expand` param?? (https://docs.stripe.com/api/expanding_objects).
- */
 export function ReviewCardBreadcrumbs({
 	primaryText,
 	topicId,
@@ -31,13 +25,10 @@ export function ReviewCardBreadcrumbs({
 	primaryText: string
 	topicId: Id<'topics'>
 }) {
-	const { data: topicPath } = useSuspenseQuery(
-		topicQueries.ancestorsOf(topicId, true),
+	const { data: topic } = useSuspenseQuery(
+		topicQueries.detail(topicId, { expandPath: true }),
 	)
-
-	if (topicPath.length === 0) {
-		throw new Error('Topic path is empty')
-	}
+	const path = [...(topic.path as Array<Topic>), topic]
 
 	return (
 		<Breadcrumb>
@@ -47,19 +38,19 @@ export function ReviewCardBreadcrumbs({
 						Library
 					</BreadcrumbLink>
 				</BreadcrumbItem>
-				{topicPath.map(topic => (
-					<Fragment key={topic._id}>
+				{path.map(crumb => (
+					<Fragment key={crumb._id}>
 						<BreadcrumbSeparator>/</BreadcrumbSeparator>
 						<BreadcrumbItem>
 							<BreadcrumbLink
 								render={
 									<Link
 										to='/library/$topicId'
-										params={{ topicId: topic._id }}
+										params={{ topicId: crumb._id }}
 									/>
 								}
 							>
-								{displayText(topic.title)}
+								{displayText(crumb.title)}
 							</BreadcrumbLink>
 						</BreadcrumbItem>
 					</Fragment>

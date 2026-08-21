@@ -11,6 +11,7 @@ function topic(id: string, parentId?: string): Doc<'topics'> {
 		description: '',
 		parentId: parentId as Id<'topics'> | undefined,
 		ownerId: 'owner',
+		path: parentId ? [parentId as Id<'topics'>] : [],
 		searchText: id,
 	}
 }

@@ -7,12 +7,16 @@ import { toast } from 'sonner'
 
 import { getErrorMessage } from '~/utils/error'
 
+// `expandPath` decides whether `path` holds ancestor ids or the documents they
+// name. It is a runtime argument, so `path` is typed as the union of both;
+// callers that pass `expandPath: true` cast `path` to `Array<Topic>`. The two
+// values are distinct Convex cache entries, so a caller wanting both shapes
+// subscribes twice.
 export const topicQueries = {
 	list: () => convexQuery(api.topics.list, {}),
 	search: (query: string) => convexQuery(api.topics.search, { query }),
-	detail: (topicId: Id<'topics'>) => convexQuery(api.topics.get, { topicId }),
-	ancestorsOf: (topicId: Id<'topics'>, includeSelf: boolean) =>
-		convexQuery(api.topics.ancestorsOf, { includeSelf, topicId }),
+	detail: (topicId: Id<'topics'>, { expandPath }: { expandPath: boolean }) =>
+		convexQuery(api.topics.get, { expandPath, topicId }),
 }
 
 export function useCreateTopic() {

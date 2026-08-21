@@ -38,6 +38,7 @@ const topics: Array<Doc<'topics'>> = Array.from({ length: 4 }, (_, index) => ({
 	_creationTime: index,
 	description: `Topic description ${index}`,
 	ownerId: 'user-1',
+	path: [],
 	searchText: `Topic ${index}\nTopic description ${index}`,
 	title: `Topic ${index}`,
 }))

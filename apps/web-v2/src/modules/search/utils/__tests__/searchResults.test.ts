@@ -10,6 +10,7 @@ const topic: Doc<'topics'> = {
 	_creationTime: 0,
 	description: 'Foundations',
 	ownerId: 'user-1',
+	path: [],
 	searchText: 'Biology\nFoundations',
 	title: 'Biology',
 }
