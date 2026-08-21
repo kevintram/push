@@ -98,9 +98,6 @@ export function SearchDialog() {
 		useSearchResults()
 
 	const [expandedGroup, setExpandedGroup] = useState<ExpandedGroup>(null)
-	// TODO(2): results show no topic path, so same-titled topics in different
-	// parents are indistinguishable. Restoring it needs the search functions to
-	// return ancestry per hit rather than the client fetching every topic.
 	const topicResults = useMemo(() => buildTopicResults(topics), [topics])
 	const cardResults = useMemo(
 		() => buildCardResults(reviewCards, query),

@@ -1,60 +1,93 @@
-import type { Doc, Id } from '@convex/_generated/dataModel'
+import type { Id } from '@convex/_generated/dataModel'
+import type { ReviewCardSearchResult } from '@convex/validators/reviewCards'
+import type { TopicSearchResult } from '@convex/validators/topics'
 import { describe, expect, it } from 'vitest'
 
 import { buildCardResults, buildTopicResults } from '../searchResults'
 
 const topicId = 'topic-1' as Id<'topics'>
 
-const topic: Doc<'topics'> = {
+const topic: TopicSearchResult = {
 	_id: topicId,
-	_creationTime: 0,
 	description: 'Foundations',
-	ownerId: 'user-1',
-	path: [],
-	searchText: 'Biology\nFoundations',
+	pathTitles: ['Science'],
 	title: 'Biology',
 }
 
 describe('searchResults', () => {
 	it('builds topic and card labels', () => {
-		const card: Doc<'reviewCards'> = {
+		const card: ReviewCardSearchResult = {
 			_id: 'card-1' as Id<'reviewCards'>,
-			_creationTime: 2,
 			notes: '',
-			ownerId: 'user-1',
+			pathTitles: ['Science', 'Biology'],
 			primaryText: 'What is mitosis?',
-			searchText: 'What is mitosis?\nCell division',
 			secondaryText: 'Cell division',
-			state: 'LEARNING',
-			topicId,
-			type: 'flashcard',
 		}
 
 		expect(buildTopicResults([topic])).toMatchObject([
-			{ secondaryText: 'Foundations', title: 'Biology' },
+			{
+				pathText: 'Library / Science / Biology',
+				secondaryText: 'Foundations',
+				title: 'Biology',
+			},
 		])
 		expect(buildCardResults([card], 'mitosis')).toMatchObject([
-			{ secondaryText: 'Cell division', title: 'What is mitosis?' },
+			{
+				pathText: 'Library / Science / Biology / What is mitosis?',
+				secondaryText: 'Cell division',
+				title: 'What is mitosis?',
+			},
 		])
 	})
 
 	it('shows notes when they explain why a card matched', () => {
-		const card: Doc<'reviewCards'> = {
+		const card: ReviewCardSearchResult = {
 			_id: 'card-notes' as Id<'reviewCards'>,
-			_creationTime: 2,
 			notes: 'Compare cytokinesis after mitosis.',
-			ownerId: 'user-1',
+			pathTitles: [],
 			primaryText: 'Cell division detail',
-			searchText:
-				'Cell division detail\nUnrelated answer\nCompare cytokinesis after mitosis.',
 			secondaryText: 'Unrelated answer',
-			state: 'LEARNING',
-			topicId,
-			type: 'flashcard',
 		}
 
 		expect(buildCardResults([card], 'cytokinesis')).toMatchObject([
 			{ secondaryText: 'Compare cytokinesis after mitosis.' },
+		])
+	})
+
+	it('renders Library / title for a root topic and Library / Root / Card for a root-topic card', () => {
+		const rootTopic: TopicSearchResult = {
+			_id: topicId,
+			description: '',
+			pathTitles: [],
+			title: 'Root',
+		}
+		const rootCard: ReviewCardSearchResult = {
+			_id: 'card-root' as Id<'reviewCards'>,
+			notes: '',
+			pathTitles: ['Root'],
+			primaryText: 'Card',
+			secondaryText: '',
+		}
+
+		expect(buildTopicResults([rootTopic])).toMatchObject([
+			{ pathText: 'Library / Root' },
+		])
+		expect(buildCardResults([rootCard], '')).toMatchObject([
+			{ pathText: 'Library / Root / Card' },
+		])
+	})
+
+	it('falls back to Untitled for blank ancestor titles', () => {
+		const card: ReviewCardSearchResult = {
+			_id: 'card-blank' as Id<'reviewCards'>,
+			notes: '',
+			pathTitles: ['  ', 'Biology'],
+			primaryText: 'Card',
+			secondaryText: '',
+		}
+
+		expect(buildCardResults([card], '')).toMatchObject([
+			{ pathText: 'Library / Untitled / Biology / Card' },
 		])
 	})
 })

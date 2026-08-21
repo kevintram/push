@@ -50,6 +50,14 @@ const styles = stylex.create({
 		textOverflow: 'ellipsis',
 		whiteSpace: 'nowrap',
 	},
+	path: {
+		overflow: 'hidden',
+		color: colors.textSecondary,
+		fontSize: fontSizes.xs,
+		lineHeight: 1.4,
+		textOverflow: 'ellipsis',
+		whiteSpace: 'nowrap',
+	},
 })
 
 type SearchResultItemProps = {
@@ -59,6 +67,7 @@ type SearchResultItemProps = {
 export function SearchResultItem({ result }: SearchResultItemProps) {
 	const content = (
 		<>
+			<span {...stylex.props(styles.path)}>{result.pathText}</span>
 			<span {...stylex.props(styles.title)}>{result.title}</span>
 			{result.secondaryText ? (
 				<span {...stylex.props(styles.secondary)}>
