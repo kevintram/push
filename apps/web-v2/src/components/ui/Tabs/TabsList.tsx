@@ -2,7 +2,7 @@ import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
 import * as stylex from '@stylexjs/stylex'
 
 import { colors } from '~/styles/colors.stylex'
-import { radii, spacing } from '~/styles/tokens.stylex'
+import { radii } from '~/styles/tokens.stylex'
 
 import { type TabsVariant, TabsVariantContext } from './TabsContext'
 
@@ -11,6 +11,7 @@ export interface TabsListProps extends Omit<
 	'className' | 'style'
 > {
 	variant?: TabsVariant
+	xstyle?: stylex.StyleXStyles
 }
 
 const styles = stylex.create({
@@ -28,8 +29,6 @@ const styles = stylex.create({
 		justifyContent: 'center',
 	},
 	default: {
-		padding: spacing.xs,
-
 		borderRadius: radii.lg,
 		backgroundColor: colors.bgSurfaceSecondary,
 		color: colors.textSecondary,
@@ -59,7 +58,11 @@ export function TabsList({ variant = 'default', ...props }: TabsListProps) {
 	return (
 		<TabsVariantContext value={variant}>
 			<TabsPrimitive.List
-				{...stylex.props(styles.base, variantStyles[variant])}
+				{...stylex.props(
+					styles.base,
+					variantStyles[variant],
+					props.xstyle,
+				)}
 				{...props}
 			/>
 		</TabsVariantContext>

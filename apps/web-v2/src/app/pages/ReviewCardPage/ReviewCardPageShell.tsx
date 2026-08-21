@@ -4,35 +4,45 @@ import { Link, Outlet, useMatchRoute, useParams } from '@tanstack/react-router'
 
 import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
 import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
+import { ReviewCardActions } from '~/modules/reviews/components/ReviewCardActions'
+import { baseColors } from '~/styles/colorPrimitives.stylex'
+import { colors } from '~/styles/colors.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
 import { ReviewCardBreadcrumbs } from './ReviewCardBreadcrumbs'
 
 const styles = stylex.create({
-	outerContainer: {
+	container: {
 		blockSize: '100%',
 		inlineSize: '100%',
 
 		display: 'flex',
 		flexDirection: 'column',
 
-		padding: spacing.sm,
-
 		overflow: 'hidden',
 	},
-	header: {
+	toolbar: {
+		padding: spacing.lg,
 		display: 'flex',
 
-		gap: spacing.sm,
 		alignItems: 'center',
+		justifyContent: 'space-between',
+
+		borderBottomColor: colors.border,
+		borderBottomStyle: 'solid',
+		borderBottomWidth: '1px',
+	},
+	tabsContainer: {
+		padding: spacing.lg,
 	},
 	tabs: {
-		flexBasis: 0,
-		flexGrow: 1,
-		flexShrink: 1,
+		backgroundColor: baseColors.transparent,
 	},
 	tabLink: {
 		textDecoration: 'none',
+	},
+	content: {
+		padding: spacing.lg,
 	},
 })
 
@@ -52,44 +62,50 @@ export function ReviewCardPageShell() {
 		: 'overview'
 
 	return (
-		<div {...stylex.props(styles.outerContainer)}>
-			<header {...stylex.props(styles.header)}>
-				<Tabs value={activeTab} xstyle={styles.tabs}>
-					<ReviewCardBreadcrumbs
-						primaryText={reviewCard.primaryText}
-						topicId={reviewCard.topicId}
-					/>
-					<TabsList aria-label='Review card sections'>
-						<TabsTrigger
-							value='overview'
-							nativeButton={false}
-							render={
-								<Link
-									to='/review-cards/$reviewCardId'
-									params={{ reviewCardId }}
-									{...stylex.props(styles.tabLink)}
-								/>
-							}
-						>
-							Overview
-						</TabsTrigger>
-						<TabsTrigger
-							value='review'
-							nativeButton={false}
-							render={
-								<Link
-									to='/review-cards/$reviewCardId/reviews'
-									params={{ reviewCardId }}
-									{...stylex.props(styles.tabLink)}
-								/>
-							}
-						>
-							Review
-						</TabsTrigger>
-					</TabsList>
-				</Tabs>
-			</header>
-			<Outlet />
+		<div {...stylex.props(styles.container)}>
+			<div {...stylex.props(styles.toolbar)}>
+				<ReviewCardBreadcrumbs
+					primaryText={reviewCard.primaryText}
+					topicId={reviewCard.topicId}
+				/>
+				<ReviewCardActions reviewCard={reviewCard} />
+			</div>
+			<Tabs value={activeTab} xstyle={styles.tabsContainer}>
+				<TabsList
+					aria-label='Review card sections'
+					xstyle={styles.tabs}
+				>
+					<TabsTrigger
+						value='overview'
+						nativeButton={false}
+						render={
+							<Link
+								to='/review-cards/$reviewCardId'
+								params={{ reviewCardId }}
+								{...stylex.props(styles.tabLink)}
+							/>
+						}
+					>
+						Overview
+					</TabsTrigger>
+					<TabsTrigger
+						value='reviews'
+						nativeButton={false}
+						render={
+							<Link
+								to='/review-cards/$reviewCardId/reviews'
+								params={{ reviewCardId }}
+								{...stylex.props(styles.tabLink)}
+							/>
+						}
+					>
+						Reviews
+					</TabsTrigger>
+				</TabsList>
+			</Tabs>
+			<div {...stylex.props(styles.content)}>
+				<Outlet />
+			</div>
 		</div>
 	)
 }

@@ -12,7 +12,6 @@ import { useHideMode } from '../hide-mode/useHideMode'
 import { useReviewCardField } from '../hooks/useReviewCardField'
 import { deriveReviewCardSrsState } from '../utils/reviewCardSrs'
 import { Hideable } from './Hideable'
-import { ReviewCardActions } from './ReviewCardActions'
 import { ReviewCardMetadata } from './ReviewCardMetadata'
 import { ReviewsSidebar } from './ReviewsSidebar'
 
@@ -25,15 +24,9 @@ const styles = stylex.create({
 		flexShrink: 1,
 	},
 	main: {
-		overflow: 'auto',
-		paddingBlock: spacing.xl,
-		paddingInline: spacing.sm,
+		paddingInline: spacing.lg,
 		display: 'flex',
-		flexBasis: 0,
-		flexGrow: 1,
-		flexShrink: 1,
 		justifyContent: 'center',
-		minWidth: 0,
 	},
 	content: {
 		gap: spacing.xl,
@@ -140,7 +133,6 @@ export function ReviewCardOverview({ reviewCardId }: ReviewCardOverviewProps) {
 								{...deriveReviewCardSrsState(reviewCard, today)}
 								today={today}
 							/>
-							<ReviewCardActions reviewCard={reviewCard} />
 						</div>
 						<Separator />
 					</div>
