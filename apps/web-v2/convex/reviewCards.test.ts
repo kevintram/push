@@ -16,6 +16,7 @@ describe('reviewCards', () => {
 				title: 'Topic',
 				description: '',
 				ownerId: userAIdentity.subject,
+				path: [],
 				searchText: 'Topic',
 			})
 			const reviewCardId = await ctx.db.insert('reviewCards', {

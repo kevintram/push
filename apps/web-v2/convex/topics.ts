@@ -4,7 +4,12 @@ import { mutation, query } from './_generated/server'
 import { requireIdentity } from './model/auth'
 import * as TopicRemoval from './model/topicRemoval'
 import * as Topics from './model/topics'
-import { topicCreate, topicPatch, topicRead } from './validators/topics'
+import {
+	topicCreate,
+	topicDetail,
+	topicPatch,
+	topicRead,
+} from './validators/topics'
 
 export const list = query({
 	args: {},
@@ -19,30 +24,15 @@ export const list = query({
 export const get = query({
 	args: {
 		topicId: v.id('topics'),
+		// Required rather than defaulted: an omitted arg and an explicit
+		// `false` are distinct Convex cache keys for identical data.
+		expandPath: v.boolean(),
 	},
-	returns: topicRead,
+	returns: topicDetail,
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
 
-		return await Topics.get(ctx, userId, args.topicId)
-	},
-})
-
-export const ancestorsOf = query({
-	args: {
-		includeSelf: v.boolean(),
-		topicId: v.id('topics'),
-	},
-	returns: v.array(topicRead),
-	handler: async (ctx, args) => {
-		const { subject: userId } = await requireIdentity(ctx)
-
-		return await Topics.ancestorsOf(
-			ctx,
-			userId,
-			args.topicId,
-			args.includeSelf,
-		)
+		return await Topics.get(ctx, userId, args.topicId, args.expandPath)
 	},
 })
 

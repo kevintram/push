@@ -18,6 +18,7 @@ async function seedTopic(t: Harness, ownerId: string): Promise<Id<'topics'>> {
 			await ctx.db.insert('topics', {
 				description: '',
 				ownerId,
+				path: [],
 				searchText: 'Topic',
 				title: 'Topic',
 			}),
