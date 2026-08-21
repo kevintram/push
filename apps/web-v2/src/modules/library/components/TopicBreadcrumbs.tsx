@@ -32,7 +32,7 @@ export function TopicBreadcrumbs({
 				</BreadcrumbItem>
 				{ancestors.map(ancestor => (
 					<Fragment key={ancestor._id}>
-						<BreadcrumbSeparator />
+						<BreadcrumbSeparator>/</BreadcrumbSeparator>
 						<BreadcrumbItem>
 							<BreadcrumbLink
 								render={
@@ -47,7 +47,7 @@ export function TopicBreadcrumbs({
 						</BreadcrumbItem>
 					</Fragment>
 				))}
-				<BreadcrumbSeparator />
+				<BreadcrumbSeparator>/</BreadcrumbSeparator>
 				<BreadcrumbItem>
 					<BreadcrumbPage>
 						{displayTitle(currentTitle)}

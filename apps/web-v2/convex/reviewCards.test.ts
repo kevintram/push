@@ -16,6 +16,7 @@ describe('reviewCards', () => {
 				title: 'Topic',
 				description: '',
 				ownerId: userAIdentity.subject,
+				path: [],
 				searchText: 'Topic',
 			})
 			const reviewCardId = await ctx.db.insert('reviewCards', {
@@ -489,6 +490,186 @@ describe('reviewCards', () => {
 		await expect(
 			asUserA.query(api.reviewCards.search, { query: 'Newterm' }),
 		).resolves.toMatchObject([{ _id: reviewCardId }])
+	})
+
+	it('includes the containing topic in a search hit path for a root topic card', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Root topic',
+		})
+		await asUserA.mutation(api.reviewCards.create, {
+			primaryText: 'Findme',
+			topicId: rootId,
+		})
+
+		await expect(
+			asUserA.query(api.reviewCards.search, { query: 'Findme' }),
+		).resolves.toMatchObject([{ pathTitles: ['Root topic'] }])
+	})
+
+	it('includes every ancestor and the containing topic root-first for a deeply nested card', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Math',
+		})
+		const parentId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Calculus',
+		})
+		const topicId = await asUserA.mutation(api.topics.create, {
+			parentId,
+			title: 'Derivatives',
+		})
+		await asUserA.mutation(api.reviewCards.create, {
+			primaryText: 'Findme',
+			topicId,
+		})
+
+		await expect(
+			asUserA.query(api.reviewCards.search, { query: 'Findme' }),
+		).resolves.toMatchObject([
+			{ pathTitles: ['Math', 'Calculus', 'Derivatives'] },
+		])
+	})
+
+	it('gives cards sharing a topic identical location paths', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {
+			title: 'Shared topic',
+		})
+		await asUserA.mutation(api.reviewCards.create, {
+			primaryText: 'Shared match one',
+			topicId,
+		})
+		await asUserA.mutation(api.reviewCards.create, {
+			primaryText: 'Shared match two',
+			topicId,
+		})
+
+		const results = await asUserA.query(api.reviewCards.search, {
+			query: 'Shared match',
+		})
+
+		expect(results).toHaveLength(2)
+		expect(
+			results.every(
+				result =>
+					result.pathTitles.length === 1 &&
+					result.pathTitles[0] === 'Shared topic',
+			),
+		).toBe(true)
+	})
+
+	it('changes the returned path when a card moves to another owned topic', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const originTopicId = await asUserA.mutation(api.topics.create, {
+			title: 'Origin',
+		})
+		const destinationTopicId = await asUserA.mutation(api.topics.create, {
+			title: 'Destination',
+		})
+		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
+			primaryText: 'Findme',
+			topicId: originTopicId,
+		})
+
+		await asUserA.mutation(api.reviewCards.update, {
+			reviewCardId,
+			topicId: destinationTopicId,
+		})
+
+		await expect(
+			asUserA.query(api.reviewCards.search, { query: 'Findme' }),
+		).resolves.toMatchObject([{ pathTitles: ['Destination'] }])
+	})
+
+	it('changes the returned path when a containing topic is renamed or reparented', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const oldRootId = await asUserA.mutation(api.topics.create, {
+			title: 'Old root',
+		})
+		const newRootId = await asUserA.mutation(api.topics.create, {
+			title: 'New root',
+		})
+		const topicId = await asUserA.mutation(api.topics.create, {
+			parentId: oldRootId,
+			title: 'Old topic name',
+		})
+		await asUserA.mutation(api.reviewCards.create, {
+			primaryText: 'Findme',
+			topicId,
+		})
+
+		await asUserA.mutation(api.topics.update, {
+			parentId: newRootId,
+			title: 'New topic name',
+			topicId,
+		})
+
+		await expect(
+			asUserA.query(api.reviewCards.search, { query: 'Findme' }),
+		).resolves.toMatchObject([
+			{ pathTitles: ['New root', 'New topic name'] },
+		])
+	})
+
+	it('degrades to an empty path for an orphaned card rather than leaking foreign data', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const asUserB = t.withIdentity(userBIdentity)
+		const foreignTopicId = await asUserB.mutation(api.topics.create, {
+			title: 'Foreign topic',
+		})
+
+		await t.run(async ctx => {
+			await ctx.db.insert('reviewCards', {
+				notes: '',
+				ownerId: userAIdentity.subject,
+				primaryText: 'Findme orphan',
+				secondaryText: '',
+				searchText: 'Findme orphan',
+				state: 'LEARNING',
+				topicId: foreignTopicId,
+				type: 'flashcard',
+			})
+		})
+
+		await expect(
+			asUserA.query(api.reviewCards.search, { query: 'Findme' }),
+		).resolves.toMatchObject([{ pathTitles: [] }])
+	})
+
+	it("drops a foreign-owned ancestor from an owned card's topic path", async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const asUserB = t.withIdentity(userBIdentity)
+		const foreignTopicId = await asUserB.mutation(api.topics.create, {
+			title: 'Foreign secret',
+		})
+		const topicId = await asUserA.mutation(api.topics.create, {
+			title: 'Owned topic',
+		})
+		await asUserA.mutation(api.reviewCards.create, {
+			primaryText: 'Findme card',
+			topicId,
+		})
+
+		// Malformed data: the card and its containing topic are owned, but the
+		// topic's server-owned path references another user's live topic.
+		await t.run(async ctx => {
+			await ctx.db.patch('topics', topicId, { path: [foreignTopicId] })
+		})
+
+		await expect(
+			asUserA.query(api.reviewCards.search, { query: 'Findme' }),
+		).resolves.toMatchObject([
+			{ pathTitles: ['Owned topic'], primaryText: 'Findme card' },
+		])
 	})
 
 	it('deletes the cards and reviews of a removed topic subtree', async () => {

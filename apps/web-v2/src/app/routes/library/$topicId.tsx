@@ -21,9 +21,8 @@ export const Route = createFileRoute('/library/$topicId')({
 		if (!auth.isAuthenticated) return
 
 		await Promise.all([
-			queryClient.ensureQueryData(topicQueries.detail(params.topicId)),
 			queryClient.ensureQueryData(
-				topicQueries.ancestorsOf(params.topicId, false),
+				topicQueries.detail(params.topicId, { expandPath: true }),
 			),
 			queryClient.ensureQueryData(
 				reviewCardQueries.listByTopic(params.topicId),

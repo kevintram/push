@@ -12,13 +12,13 @@ const styles = stylex.create({
 		listStyle: 'none',
 	},
 	link: {
-		gap: '2px',
-		paddingBlock: spacing.sm,
+		gap: '3px',
+		paddingBlock: spacing.md,
 		paddingInline: spacing.md,
 		display: 'flex',
 		flexDirection: 'column',
 
-		borderRadius: radii.md,
+		borderRadius: radii.lg,
 		textDecoration: 'none',
 		backgroundColor: {
 			default: colors.bgSurfaceTransparent,
@@ -36,13 +36,21 @@ const styles = stylex.create({
 	},
 	title: {
 		overflow: 'hidden',
-		fontSize: fontSizes.sm,
-		fontWeight: fontWeights.semibold,
+		fontSize: fontSizes.md,
+		fontWeight: fontWeights.medium,
 		lineHeight: 1.4,
 		textOverflow: 'ellipsis',
 		whiteSpace: 'nowrap',
 	},
 	secondary: {
+		overflow: 'hidden',
+		color: colors.textSecondary,
+		fontSize: fontSizes.sm,
+		lineHeight: 1.4,
+		textOverflow: 'ellipsis',
+		whiteSpace: 'nowrap',
+	},
+	path: {
 		overflow: 'hidden',
 		color: colors.textSecondary,
 		fontSize: fontSizes.xs,
@@ -59,6 +67,7 @@ type SearchResultItemProps = {
 export function SearchResultItem({ result }: SearchResultItemProps) {
 	const content = (
 		<>
+			<span {...stylex.props(styles.path)}>{result.pathText}</span>
 			<span {...stylex.props(styles.title)}>{result.title}</span>
 			{result.secondaryText ? (
 				<span {...stylex.props(styles.secondary)}>

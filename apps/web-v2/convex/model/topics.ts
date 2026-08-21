@@ -1,16 +1,22 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
-import type { TopicCreate, TopicPatch } from '../validators/topics'
+import type {
+	TopicCreate,
+	TopicDetail,
+	TopicPatch,
+	TopicSearchResult,
+} from '../validators/topics'
 
 export async function requireUserOwns(
 	ctx: QueryCtx,
 	userId: string,
 	topicId: Id<'topics'>,
+	notFoundMessage = 'Topic not found',
 ): Promise<Doc<'topics'>> {
 	const topic = await ctx.db.get('topics', topicId)
 
 	if (!topic || topic.ownerId !== userId) {
-		throw new Error('Topic not found')
+		throw new Error(notFoundMessage)
 	}
 
 	return topic
@@ -30,44 +36,43 @@ export async function get(
 	ctx: QueryCtx,
 	userId: string,
 	topicId: Id<'topics'>,
-): Promise<Doc<'topics'>> {
-	return await requireUserOwns(ctx, userId, topicId)
+	expandPath: boolean,
+): Promise<TopicDetail> {
+	const topic = await requireUserOwns(ctx, userId, topicId)
+
+	if (!expandPath) {
+		return topic
+	}
+
+	const expandedPath = await Promise.all(
+		topic.path.map(ancestorId => ctx.db.get('topics', ancestorId)),
+	)
+
+	// Ancestors that do not resolve are dropped rather than thrown on, so a
+	// torn read renders a shorter trail. The ownership check is redundant with
+	// the one above given a well-formed `path`, but keeps the invariant local.
+	return {
+		...topic,
+		path: expandedPath.filter(
+			(doc): doc is Doc<'topics'> =>
+				doc !== null && doc.ownerId === userId,
+		),
+	}
 }
 
-export async function ancestorsOf(
+export async function getMany(
 	ctx: QueryCtx,
 	userId: string,
-	topicId: Id<'topics'>,
-	includeSelf: boolean,
+	topicIds: ReadonlyArray<Id<'topics'>>,
 ): Promise<Array<Doc<'topics'>>> {
-	const topic = await requireUserOwns(ctx, userId, topicId)
-	const ancestors: Array<Doc<'topics'>> = []
-	const visited = new Set<Id<'topics'>>([topicId])
-	let ancestorId = topic.parentId
+	const topics = await Promise.all(
+		topicIds.map(topicId => ctx.db.get('topics', topicId)),
+	)
 
-	while (ancestorId) {
-		if (visited.has(ancestorId)) {
-			throw new Error('Parent topic hierarchy contains a cycle')
-		}
-
-		visited.add(ancestorId)
-
-		const ancestor = await ctx.db.get('topics', ancestorId)
-		if (!ancestor || ancestor.ownerId !== userId) {
-			throw new Error('Parent topic not found')
-		}
-
-		ancestors.push(ancestor)
-		ancestorId = ancestor.parentId
-	}
-
-	ancestors.reverse()
-
-	if (includeSelf) {
-		ancestors.push(topic)
-	}
-
-	return ancestors
+	return topics.filter(
+		(topic): topic is Doc<'topics'> =>
+			topic !== null && topic.ownerId === userId,
+	)
 }
 
 export async function create(
@@ -75,9 +80,18 @@ export async function create(
 	userId: string,
 	fields: TopicCreate,
 ): Promise<Id<'topics'>> {
-	if (fields.parentId) {
-		await validateParent(ctx, userId, fields.parentId)
-	}
+	// Ownership only. A new topic has no descendants, so it cannot close a
+	// cycle, and walking the parent's whole ancestor chain here would cost
+	// O(depth) reads on every create to guard against corruption no API path
+	// can produce: `path` is server-owned and mutations are transactional.
+	const parent = fields.parentId
+		? await requireUserOwns(
+				ctx,
+				userId,
+				fields.parentId,
+				'Parent topic not found',
+			)
+		: undefined
 
 	const title = fields.title ?? ''
 	const description = fields.description ?? ''
@@ -87,6 +101,7 @@ export async function create(
 		description,
 		parentId: fields.parentId,
 		ownerId: userId,
+		path: parent ? [...parent.path, parent._id] : [],
 		// Newline-separated so the last word of one field cannot fuse to the
 		// first word of the next into a single bogus token. Nothing is
 		// normalized: Convex tokenizes and case-folds while indexing.
@@ -101,64 +116,80 @@ export async function update(
 	patch: TopicPatch,
 ): Promise<void> {
 	const topic = await requireUserOwns(ctx, userId, topicId)
+	const { parentId: requestedParentId, ...fields } = patch
 
-	if (patch.parentId === topicId) {
-		throw new Error('A topic cannot be its own parent')
-	}
+	// An omitted key leaves the parent alone; `null` detaches the topic, which
+	// in Convex means patching an explicit `undefined`.
+	const parentChangeRequested = requestedParentId !== undefined
+	const newParentId =
+		requestedParentId === null ? undefined : requestedParentId
+	const parentChanged =
+		parentChangeRequested && newParentId !== topic.parentId
+	let path = topic.path
+	if (parentChanged && newParentId) {
+		// get new path and check there are no cycle
+		const parent = await requireUserOwns(
+			ctx,
+			userId,
+			newParentId,
+			'Parent topic not found',
+		)
 
-	if (patch.parentId) {
-		await validateParent(ctx, userId, patch.parentId, topicId)
-	}
+		if (newParentId === topicId) {
+			throw new Error('A topic cannot be its own parent')
+		}
 
-	// Recomputed unconditionally from the merged doc: when the patch touches no
-	// text field this rewrites the identical string, which is cheaper than a
-	// second copy of the field list that could drift from the one below.
-	const title = patch.title ?? topic.title
-	const description = patch.description ?? topic.description
-
-	await ctx.db.patch('topics', topicId, {
-		...patch,
-		// An omitted key leaves the parent alone. `null` detaches the topic,
-		// which in Convex means patching an explicit `undefined`.
-		...(patch.parentId === null && { parentId: undefined }),
-		searchText: [title, description].filter(Boolean).join('\n'),
-	} as Partial<Doc<'topics'>>)
-}
-
-// TODO(3): this walks the ancestor chain one read at a time. Deep hierarchies
-// could reach Convex's per-function read limits; cap the depth if topic trees
-// get large.
-export async function validateParent(
-	ctx: MutationCtx,
-	userId: string,
-	parentId: Id<'topics'>,
-	topicId?: Id<'topics'>,
-): Promise<void> {
-	const visited = new Set<Id<'topics'>>()
-	let ancestorId: Id<'topics'> | undefined = parentId
-
-	while (ancestorId) {
-		if (ancestorId === topicId) {
+		if (parent.path.includes(topicId)) {
 			throw new Error(
 				'A topic cannot be nested below one of its descendants',
 			)
 		}
 
-		if (visited.has(ancestorId)) {
-			throw new Error('Parent topic hierarchy contains a cycle')
+		path = [...parent.path, parent._id]
+	} else if (parentChanged) {
+		// newParentId is null so the topic was detached and is now a root
+		path = []
+	}
+
+	const title = fields.title ?? topic.title
+	const description = fields.description ?? topic.description
+
+	await ctx.db.patch('topics', topicId, {
+		...fields,
+		...(parentChanged && { parentId: newParentId, path }),
+		searchText: [title, description].filter(Boolean).join('\n'),
+	} as Partial<Doc<'topics'>>)
+
+	if (parentChanged) {
+		await updateDescendantPathsOf(ctx, userId, { id: topicId, path })
+	}
+}
+
+/**
+ * Recursively update child paths of `topic`
+ */
+async function updateDescendantPathsOf(
+	ctx: MutationCtx,
+	userId: string,
+	topic: { id: Id<'topics'>; path: ReadonlyArray<Id<'topics'>> },
+): Promise<void> {
+	// TODO(3): this could reach Convex's per-mutation read/write limits; cap depth
+	// if topic trees get large.
+	const childPath = [...topic.path, topic.id]
+	const children = ctx.db
+		.query('topics')
+		.withIndex('by_parentId', q => q.eq('parentId', topic.id))
+
+	for await (const child of children) {
+		if (child.ownerId !== userId) {
+			throw new Error('Unable to move children')
 		}
 
-		visited.add(ancestorId)
-
-		const ancestor: Doc<'topics'> | null = await ctx.db.get(
-			'topics',
-			ancestorId,
-		)
-		if (!ancestor || ancestor.ownerId !== userId) {
-			throw new Error('Parent topic not found')
-		}
-
-		ancestorId = ancestor.parentId
+		await ctx.db.patch('topics', child._id, { path: childPath })
+		await updateDescendantPathsOf(ctx, userId, {
+			id: child._id,
+			path: childPath,
+		})
 	}
 }
 
@@ -166,7 +197,7 @@ export async function search(
 	ctx: QueryCtx,
 	userId: string,
 	rawQuery: string,
-): Promise<Array<Doc<'topics'>>> {
+): Promise<Array<TopicSearchResult>> {
 	const query = rawQuery.trim()
 
 	// Short-circuit rather than issue a search for the empty string, whose
@@ -179,7 +210,7 @@ export async function search(
 	// batch, which Convex caps at 1024 documents; past that, hits are dropped
 	// with no signal to the caller. Switch to `.paginate()` and have the
 	// dialog page as the user scrolls the expanded group.
-	return await ctx.db
+	const hits = await ctx.db
 		.query('topics')
 		.withSearchIndex('by_searchText', q =>
 			// The owner filter is the only thing keeping one user's documents
@@ -187,4 +218,23 @@ export async function search(
 			q.search('searchText', query).eq('ownerId', userId),
 		)
 		.collect()
+
+	// get all ancestors of hits so we can return paths in search results
+	const pathTopicsById = new Map(hits.map(hit => [hit._id, hit]))
+	const ancestorIds = [...new Set(hits.flatMap(hit => hit.path))].filter(
+		ancestorId => !pathTopicsById.has(ancestorId),
+	)
+	const ancestors = await getMany(ctx, userId, ancestorIds)
+	for (const ancestor of ancestors) {
+		pathTopicsById.set(ancestor._id, ancestor)
+	}
+
+	return hits.map(hit => ({
+		_id: hit._id,
+		title: hit.title,
+		description: hit.description,
+		pathTitles: hit.path
+			.map(ancestorId => pathTopicsById.get(ancestorId)?.title)
+			.filter((title): title is string => title !== undefined),
+	}))
 }

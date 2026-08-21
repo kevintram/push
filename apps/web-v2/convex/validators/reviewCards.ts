@@ -71,6 +71,15 @@ export const reviewCardPatch = reviewCardBase
 	})
 	.partial()
 
+export const reviewCardSearchResult = v.object({
+	_id: v.id('reviewCards'),
+	primaryText: v.string(),
+	secondaryText: v.string(),
+	notes: v.string(),
+	pathTitles: v.array(v.string()), // the titles of the review card's topic path
+})
+
 export type ReviewCard = Infer<typeof reviewCardRead>
 export type ReviewCardCreate = Infer<typeof reviewCardCreate>
 export type ReviewCardPatch = Infer<typeof reviewCardPatch>
+export type ReviewCardSearchResult = Infer<typeof reviewCardSearchResult>

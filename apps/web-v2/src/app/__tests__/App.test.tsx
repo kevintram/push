@@ -58,6 +58,7 @@ const topic: Doc<'topics'> = {
 	title: 'Learning TypeScript',
 	description: '',
 	ownerId: 'user-1',
+	path: [],
 	searchText: 'Learning TypeScript',
 }
 
@@ -121,7 +122,22 @@ function renderRoute(
 			},
 		})
 	}
-	queryClient.setQueryData(topicQueries.list().queryKey, topics)
+	// Breadcrumbs read `detailWithPath()`, while the sidebar and move dialog
+	// read `list()`, so the `ancestors` fixture has to seed both. Deduped by id
+	// so a topic passed in both `topics` and `ancestors` cannot appear twice,
+	// and the detail seeds are resolved from the same map `list()` holds so the
+	// caches can never disagree about the current topic.
+	const topicsById = new Map(
+		[...topics, ...ancestors].map(entry => [entry._id, entry]),
+	)
+	const currentTopic = {
+		...(topicsById.get(topicId) ?? topic),
+		path: ancestors.map(({ _id }) => _id),
+	}
+	topicsById.set(topicId, currentTopic)
+	queryClient.setQueryData(topicQueries.list().queryKey, [
+		...topicsById.values(),
+	])
 	queryClient.setQueryData(dueQueries.list(today).queryKey, dueEntries)
 	queryClient.setQueryData(
 		dueQueries.list({ to: today }).queryKey,
@@ -131,15 +147,19 @@ function renderRoute(
 		reviewCardQueries.listNew().queryKey,
 		newReviewCards,
 	)
-	queryClient.setQueryData(topicQueries.detail(topicId).queryKey, topic)
+	// Every reader of `detail` expands, and `expandPath` keys its own cache
+	// entry, so only the expanded shape is seeded. Its ancestors resolve
+	// through the same map, so a topic overridden via `topics` is the one the
+	// trail renders.
 	queryClient.setQueryData(
-		topicQueries.ancestorsOf(topicId, false).queryKey,
-		ancestors,
+		topicQueries.detail(topicId, { expandPath: true }).queryKey,
+		{
+			...currentTopic,
+			path: currentTopic.path.map(ancestorId =>
+				topicsById.get(ancestorId),
+			),
+		},
 	)
-	queryClient.setQueryData(topicQueries.ancestorsOf(topicId, true).queryKey, [
-		...ancestors,
-		topic,
-	])
 	queryClient.setQueryData(
 		reviewCardQueries.listByTopic(topicId).queryKey,
 		[],

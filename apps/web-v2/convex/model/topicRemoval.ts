@@ -21,34 +21,43 @@ export async function remove(
 	// Returned so callers can navigate away from the deleted topic.
 	return topic
 }
-// TODO(3): this walks the topic tree one read at a time. Deep hierarchies
-// could reach Convex's per-function read limits; cap the depth if topic trees
-// get large.
+
+/**
+ * Recursive helper for deleting `topicId`.
+ */
 async function removeTree(
 	ctx: MutationCtx,
 	userId: string,
 	topicId: Id<'topics'>,
 	visited: Set<Id<'topics'>>,
 ): Promise<void> {
+	// TODO(3): this walks the topic tree one level at a time. Deep hierarchies
+	// could reach Convex's per-function read limits; cap the depth if topic trees
+	// get large.
 	if (visited.has(topicId)) {
-		return // if have cycle, just stop the recursion here
+		// if have cycle
+		// just stop the recursion here so don't try to delete something already deleted
+		return
 	}
 
 	visited.add(topicId)
 
-	const children = ctx.db
+	const children = await ctx.db
 		.query('topics')
 		.withIndex('by_parentId', q => q.eq('parentId', topicId))
+		.collect()
 
-	for await (const child of children) {
+	for (const child of children) {
 		if (child.ownerId !== userId) {
 			throw new Error('Unable to delete children')
 		}
-
-		await removeTree(ctx, userId, child._id, visited)
 	}
 
-	await ReviewCards.deleteAllForTopic(ctx, topicId)
+	// Delete children in parallel
+	await Promise.all([
+		...children.map(child => removeTree(ctx, userId, child._id, visited)),
+		ReviewCards.deleteAllForTopic(ctx, topicId),
+	])
 
 	await ctx.db.delete('topics', topicId)
 }

@@ -14,6 +14,8 @@ const styles = stylex.create({
 	content: {
 		padding: 0,
 		gap: 0,
+		// Search bar sizes to content, results take the rest and scroll.
+		gridTemplateRows: 'auto minmax(0, 1fr)',
 		maxBlockSize: 'min(76dvh, 46rem)',
 		maxInlineSize: '42rem',
 
@@ -35,7 +37,7 @@ const styles = stylex.create({
 	},
 	searchBar: {
 		gap: spacing.sm,
-		paddingBlock: spacing.md,
+		paddingBlock: spacing.lg,
 		alignItems: 'center',
 		display: 'flex',
 		paddingInlineEnd: '52px',
@@ -57,19 +59,23 @@ const styles = stylex.create({
 
 		borderWidth: 0,
 		outline: 'none',
-		// Suppresses the WebKit search clear button so `type='search'` looks
-		// identical to the text input it replaced.
 		appearance: 'none',
 		backgroundColor: colors.bgSurfaceTransparent,
 		color: colors.text,
 		fontFamily: 'inherit',
-		fontSize: fontSizes.lg,
+		fontSize: fontSizes.xl,
 		lineHeight: 1.4,
+		// Suppresses the WebKit search clear button so `type='search'` looks
+		// identical to the text input it replaced. `appearance: none` on the
+		// input itself does not remove it in Chrome.
+		'::-webkit-search-cancel-button': { display: 'none' },
 		'::placeholder': { color: colors.textSecondary },
 	},
 	results: {
-		paddingBlock: spacing.xs,
-		maxBlockSize: 'calc(min(76dvh, 46rem) - 60px)',
+		// The grid row is the scroll container, so this needs `minBlockSize: 0`
+		// to be allowed to shrink below its content height.
+		minBlockSize: 0,
+		paddingBlockEnd: spacing.xs,
 		overflowX: 'hidden',
 		overflowY: 'auto',
 	},
@@ -77,7 +83,7 @@ const styles = stylex.create({
 		paddingBlock: spacing['2xl'],
 		paddingInline: spacing.xl,
 		color: colors.textSecondary,
-		fontSize: fontSizes.sm,
+		fontSize: fontSizes.md,
 		textAlign: 'center',
 	},
 })
@@ -92,9 +98,6 @@ export function SearchDialog() {
 		useSearchResults()
 
 	const [expandedGroup, setExpandedGroup] = useState<ExpandedGroup>(null)
-	// TODO(2): results show no topic path, so same-titled topics in different
-	// parents are indistinguishable. Restoring it needs the search functions to
-	// return ancestry per hit rather than the client fetching every topic.
 	const topicResults = useMemo(() => buildTopicResults(topics), [topics])
 	const cardResults = useMemo(
 		() => buildCardResults(reviewCards, query),
@@ -112,7 +115,7 @@ export function SearchDialog() {
 				: `${topicResults.length} topics and ${cardResults.length} cards found.`
 
 	return (
-		<DialogContent xstyle={styles.content}>
+		<DialogContent xstyle={styles.content} showCloseButton={false}>
 			<DialogTitle xstyle={styles.visuallyHidden}>Search</DialogTitle>
 			<DialogDescription xstyle={styles.visuallyHidden}>
 				Search your topics and review cards.

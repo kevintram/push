@@ -16,6 +16,7 @@ describe('topics', () => {
 				title: 'Topic',
 				description: '',
 				ownerId: userAIdentity.subject,
+				path: [],
 				searchText: 'Topic',
 			}),
 		)
@@ -23,14 +24,14 @@ describe('topics', () => {
 		await expect(t.query(api.topics.list, {})).rejects.toThrow(
 			'Unauthenticated',
 		)
-		await expect(t.query(api.topics.get, { topicId })).rejects.toThrow(
-			'Unauthenticated',
-		)
 		await expect(
-			t.query(api.topics.search, { query: 'Topic' }),
+			t.query(api.topics.get, { expandPath: false, topicId }),
 		).rejects.toThrow('Unauthenticated')
 		await expect(
-			t.query(api.topics.ancestorsOf, { includeSelf: false, topicId }),
+			t.query(api.topics.get, { expandPath: true, topicId }),
+		).rejects.toThrow('Unauthenticated')
+		await expect(
+			t.query(api.topics.search, { query: 'Topic' }),
 		).rejects.toThrow('Unauthenticated')
 		await expect(t.mutation(api.topics.create, {})).rejects.toThrow(
 			'Unauthenticated',
@@ -43,7 +44,7 @@ describe('topics', () => {
 		).rejects.toThrow('Unauthenticated')
 	})
 
-	it('lists ancestors from the root down to the immediate parent', async () => {
+	it('stores the ancestor chain on each topic, root-first and excluding self', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const rootId = await asUserA.mutation(api.topics.create, {
@@ -59,84 +60,274 @@ describe('topics', () => {
 		})
 
 		await expect(
-			asUserA.query(api.topics.ancestorsOf, {
-				includeSelf: false,
+			asUserA.query(api.topics.get, {
+				expandPath: false,
 				topicId: rootId,
 			}),
-		).resolves.toEqual([])
-
-		const ancestors = await asUserA.query(api.topics.ancestorsOf, {
-			includeSelf: false,
-			topicId,
-		})
-		expect(ancestors.map(ancestor => ancestor._id)).toEqual([
-			rootId,
-			parentId,
-		])
-
-		const path = await asUserA.query(api.topics.ancestorsOf, {
-			includeSelf: true,
-			topicId,
-		})
-		expect(path.map(pathTopic => pathTopic._id)).toEqual([
-			rootId,
-			parentId,
-			topicId,
-		])
+		).resolves.toMatchObject({ path: [] })
+		await expect(
+			asUserA.query(api.topics.get, {
+				expandPath: false,
+				topicId: parentId,
+			}),
+		).resolves.toMatchObject({ path: [rootId] })
+		await expect(
+			asUserA.query(api.topics.get, { expandPath: false, topicId }),
+		).resolves.toMatchObject({ path: [rootId, parentId] })
 	})
 
-	it('hides missing and foreign-owned topics when listing ancestors', async () => {
+	it('rewrites the paths of every descendant when a mid-tree topic moves', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const asUserB = t.withIdentity(userBIdentity)
-		const foreignTopicId = await asUserB.mutation(api.topics.create, {})
-		const missingTopicId = await asUserA.mutation(api.topics.create, {})
+		const oldRootId = await asUserA.mutation(api.topics.create, {
+			title: 'Old root',
+		})
+		const newRootId = await asUserA.mutation(api.topics.create, {
+			title: 'New root',
+		})
+		const movedId = await asUserA.mutation(api.topics.create, {
+			parentId: oldRootId,
+			title: 'Moved',
+		})
+		const childId = await asUserA.mutation(api.topics.create, {
+			parentId: movedId,
+			title: 'Child',
+		})
+		const grandchildId = await asUserA.mutation(api.topics.create, {
+			parentId: childId,
+			title: 'Grandchild',
+		})
 
-		await asUserA.mutation(api.topics.remove, { topicId: missingTopicId })
+		await asUserA.mutation(api.topics.update, {
+			parentId: newRootId,
+			topicId: movedId,
+		})
 
 		await expect(
-			asUserA.query(api.topics.ancestorsOf, {
-				includeSelf: false,
-				topicId: foreignTopicId,
+			asUserA.query(api.topics.get, {
+				expandPath: false,
+				topicId: movedId,
 			}),
-		).rejects.toThrow('Topic not found')
+		).resolves.toMatchObject({ path: [newRootId] })
 		await expect(
-			asUserA.query(api.topics.ancestorsOf, {
-				includeSelf: false,
-				topicId: missingTopicId,
+			asUserA.query(api.topics.get, {
+				expandPath: false,
+				topicId: childId,
 			}),
-		).rejects.toThrow('Topic not found')
+		).resolves.toMatchObject({ path: [newRootId, movedId] })
+		await expect(
+			asUserA.query(api.topics.get, {
+				expandPath: false,
+				topicId: grandchildId,
+			}),
+		).resolves.toMatchObject({ path: [newRootId, movedId, childId] })
 	})
 
-	it('rejects malformed ancestor chains', async () => {
+	it('empties the path and rewrites descendants when a topic detaches to the root', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const asUserB = t.withIdentity(userBIdentity)
-		const foreignRootId = await asUserB.mutation(api.topics.create, {})
-		const parentId = await asUserA.mutation(api.topics.create, {})
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Root',
+		})
+		const movedId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Moved',
+		})
+		const childId = await asUserA.mutation(api.topics.create, {
+			parentId: movedId,
+			title: 'Child',
+		})
+
+		await asUserA.mutation(api.topics.update, {
+			parentId: null,
+			topicId: movedId,
+		})
+
+		const moved = await asUserA.query(api.topics.get, {
+			expandPath: false,
+			topicId: movedId,
+		})
+		expect(moved.parentId).toBeUndefined()
+		expect(moved.path).toEqual([])
+		await expect(
+			asUserA.query(api.topics.get, {
+				expandPath: false,
+				topicId: childId,
+			}),
+		).resolves.toMatchObject({ path: [movedId] })
+	})
+
+	it('leaves the path untouched when an update does not move the topic', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Root',
+		})
+		const topicId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Topic',
+		})
+
+		await asUserA.mutation(api.topics.update, {
+			title: 'Renamed',
+			topicId,
+		})
+
+		await expect(
+			asUserA.query(api.topics.get, { expandPath: false, topicId }),
+		).resolves.toMatchObject({ path: [rootId], title: 'Renamed' })
+	})
+
+	it('does not inspect or rewrite paths when a re-save names the same parent', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Root',
+		})
+		const topicId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Topic',
+		})
+		const childId = await asUserA.mutation(api.topics.create, {
+			parentId: topicId,
+			title: 'Child',
+		})
+
+		// Path integrity is maintained by hierarchy mutations, not audited by
+		// unrelated updates or a no-op parent assignment.
+		await t.run(async ctx => {
+			await ctx.db.patch('topics', topicId, { path: [] })
+			await ctx.db.patch('topics', childId, { path: [topicId] })
+		})
+
+		await asUserA.mutation(api.topics.update, {
+			parentId: rootId,
+			title: 'Renamed',
+			topicId,
+		})
+
+		await expect(
+			asUserA.query(api.topics.get, { expandPath: false, topicId }),
+		).resolves.toMatchObject({
+			parentId: rootId,
+			path: [],
+			title: 'Renamed',
+		})
+		await expect(
+			asUserA.query(api.topics.get, {
+				expandPath: false,
+				topicId: childId,
+			}),
+		).resolves.toMatchObject({ path: [topicId] })
+	})
+
+	it('expands the ancestor chain root-first, excluding the topic itself', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Root',
+		})
+		const parentId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Parent',
+		})
 		const topicId = await asUserA.mutation(api.topics.create, {
 			parentId,
+			title: 'Topic',
 		})
 
-		await t.run(async ctx =>
-			ctx.db.patch('topics', parentId, { parentId: foreignRootId }),
-		)
 		await expect(
-			asUserA.query(api.topics.ancestorsOf, {
-				includeSelf: false,
-				topicId,
+			asUserA.query(api.topics.get, { expandPath: true, topicId }),
+		).resolves.toMatchObject({
+			path: [{ title: 'Root' }, { title: 'Parent' }],
+			title: 'Topic',
+		})
+		await expect(
+			asUserA.query(api.topics.get, {
+				expandPath: true,
+				topicId: rootId,
 			}),
-		).rejects.toThrow('Parent topic not found')
+		).resolves.toMatchObject({ path: [], title: 'Root' })
+	})
 
-		await t.run(async ctx =>
-			ctx.db.patch('topics', parentId, { parentId: topicId }),
-		)
+	it('leaves the ancestor chain as ids when expandPath is false', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Root',
+		})
+		const topicId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Topic',
+		})
+
 		await expect(
-			asUserA.query(api.topics.ancestorsOf, {
-				includeSelf: false,
-				topicId,
-			}),
-		).rejects.toThrow('Parent topic hierarchy contains a cycle')
+			asUserA.query(api.topics.get, { expandPath: false, topicId }),
+		).resolves.toMatchObject({ path: [rootId], title: 'Topic' })
+	})
+
+	it('follows a reparent when expanding ancestors', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const oldParentId = await asUserA.mutation(api.topics.create, {
+			title: 'Old parent',
+		})
+		const newParentId = await asUserA.mutation(api.topics.create, {
+			title: 'New parent',
+		})
+		const topicId = await asUserA.mutation(api.topics.create, {
+			parentId: oldParentId,
+			title: 'Topic',
+		})
+
+		await asUserA.mutation(api.topics.update, {
+			parentId: newParentId,
+			topicId,
+		})
+
+		await expect(
+			asUserA.query(api.topics.get, { expandPath: true, topicId }),
+		).resolves.toMatchObject({ path: [{ title: 'New parent' }] })
+	})
+
+	it('drops ancestors that no longer resolve rather than throwing', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Root',
+		})
+		const topicId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Topic',
+		})
+
+		// Delete the ancestor out from under the stored `path` without the
+		// cascade that keeps the two consistent, so the read is torn the way a
+		// concurrent removal would leave it.
+		await t.run(async ctx => {
+			await ctx.db.delete('topics', rootId)
+		})
+
+		await expect(
+			asUserA.query(api.topics.get, { expandPath: true, topicId }),
+		).resolves.toMatchObject({ path: [], title: 'Topic' })
+	})
+
+	it('refuses to expand ancestors for a topic owned by another user', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const asUserB = t.withIdentity(userBIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Root',
+		})
+		const topicId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Topic',
+		})
+
+		await expect(
+			asUserB.query(api.topics.get, { expandPath: true, topicId }),
+		).rejects.toThrow('Topic not found')
 	})
 
 	it('lists only topics owned by the authenticated user', async () => {
@@ -172,14 +363,20 @@ describe('topics', () => {
 		})
 
 		await expect(
-			asUserA.query(api.topics.get, { topicId: defaultTopicId }),
+			asUserA.query(api.topics.get, {
+				expandPath: false,
+				topicId: defaultTopicId,
+			}),
 		).resolves.toMatchObject({
 			description: '',
 			ownerId: userAIdentity.subject,
 			title: '',
 		})
 		await expect(
-			asUserA.query(api.topics.get, { topicId: childId }),
+			asUserA.query(api.topics.get, {
+				expandPath: false,
+				topicId: childId,
+			}),
 		).resolves.toMatchObject({
 			description: 'Description',
 			ownerId: userAIdentity.subject,
@@ -218,13 +415,22 @@ describe('topics', () => {
 		await asUserA.mutation(api.topics.remove, { topicId: missingTopicId })
 
 		await expect(
-			asUserA.query(api.topics.get, { topicId: ownedTopicId }),
+			asUserA.query(api.topics.get, {
+				expandPath: false,
+				topicId: ownedTopicId,
+			}),
 		).resolves.toMatchObject({ title: 'Owned' })
 		await expect(
-			asUserA.query(api.topics.get, { topicId: foreignTopicId }),
+			asUserA.query(api.topics.get, {
+				expandPath: false,
+				topicId: foreignTopicId,
+			}),
 		).rejects.toThrow('Topic not found')
 		await expect(
-			asUserA.query(api.topics.get, { topicId: missingTopicId }),
+			asUserA.query(api.topics.get, {
+				expandPath: false,
+				topicId: missingTopicId,
+			}),
 		).rejects.toThrow('Topic not found')
 	})
 
@@ -243,7 +449,10 @@ describe('topics', () => {
 			topicId,
 		})
 
-		const updated = await asUserA.query(api.topics.get, { topicId })
+		const updated = await asUserA.query(api.topics.get, {
+			expandPath: false,
+			topicId,
+		})
 		expect(updated).toMatchObject({
 			description: 'Original description',
 			parentId,
@@ -252,7 +461,10 @@ describe('topics', () => {
 
 		await asUserA.mutation(api.topics.update, { parentId: null, topicId })
 
-		const withoutParent = await asUserA.query(api.topics.get, { topicId })
+		const withoutParent = await asUserA.query(api.topics.get, {
+			expandPath: false,
+			topicId,
+		})
 		expect(withoutParent.parentId).toBeUndefined()
 	})
 
@@ -319,43 +531,81 @@ describe('topics', () => {
 			'A topic cannot be nested below one of its descendants',
 		)
 
-		const root = await asUserA.query(api.topics.get, { topicId: rootId })
+		const root = await asUserA.query(api.topics.get, {
+			expandPath: false,
+			topicId: rootId,
+		})
 		expect(root.parentId).toBeUndefined()
 	})
 
-	it('rejects a parent whose own ancestors are foreign-owned', async () => {
+	it('creates under an owned parent without validating its ancestor chain', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {})
+		const parentId = await asUserA.mutation(api.topics.create, {})
+
+		// Malformed data: a real parent link that `path` does not record.
+		// `create` deliberately does not walk the chain, so it copies the
+		// stale path forward rather than rejecting.
+		await t.run(async ctx =>
+			ctx.db.patch('topics', parentId, { parentId: rootId, path: [] }),
+		)
+
+		const topicId = await asUserA.mutation(api.topics.create, { parentId })
+		const topic = await asUserA.query(api.topics.get, {
+			expandPath: false,
+			topicId,
+		})
+
+		expect(topic.path).toEqual([parentId])
+	})
+
+	it('rolls back a move when malformed data hangs a foreign-owned child in the subtree', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const asUserB = t.withIdentity(userBIdentity)
-		const foreignRootId = await asUserB.mutation(api.topics.create, {})
-		const parentId = await asUserA.mutation(api.topics.create, {})
-
-		// Malformed data: an owned topic parented under a foreign-owned one.
-		await t.run(async ctx =>
-			ctx.db.patch('topics', parentId, { parentId: foreignRootId }),
+		const oldRootId = await asUserA.mutation(api.topics.create, {
+			title: 'Old root',
+		})
+		const newRootId = await asUserA.mutation(api.topics.create, {
+			title: 'New root',
+		})
+		const movedId = await asUserA.mutation(api.topics.create, {
+			parentId: oldRootId,
+			title: 'Moved',
+		})
+		const foreignChildId = await t.run(async ctx =>
+			ctx.db.insert('topics', {
+				description: '',
+				ownerId: userBIdentity.subject,
+				parentId: movedId,
+				path: [oldRootId, movedId],
+				searchText: 'Foreign child',
+				title: 'Foreign child',
+			}),
 		)
 
 		await expect(
-			asUserA.mutation(api.topics.create, { parentId }),
-		).rejects.toThrow('Parent topic not found')
-	})
+			asUserA.mutation(api.topics.update, {
+				parentId: newRootId,
+				topicId: movedId,
+			}),
+		).rejects.toThrow('Unable to move children')
 
-	it('rejects a parent chain that already contains a cycle', async () => {
-		const t = convexTest(schema, modules)
-		const asUserA = t.withIdentity(userAIdentity)
-		const firstId = await asUserA.mutation(api.topics.create, {})
-		const secondId = await asUserA.mutation(api.topics.create, {})
-		const topicId = await asUserA.mutation(api.topics.create, {})
-
-		// Malformed data: two topics parented under each other.
-		await t.run(async ctx => {
-			await ctx.db.patch('topics', firstId, { parentId: secondId })
-			await ctx.db.patch('topics', secondId, { parentId: firstId })
-		})
-
+		// The whole move rolls back: the mover keeps its old path and the
+		// foreign document is untouched.
 		await expect(
-			asUserA.mutation(api.topics.update, { parentId: firstId, topicId }),
-		).rejects.toThrow('Parent topic hierarchy contains a cycle')
+			asUserA.query(api.topics.get, {
+				expandPath: false,
+				topicId: movedId,
+			}),
+		).resolves.toMatchObject({ parentId: oldRootId, path: [oldRootId] })
+		await expect(asUserB.query(api.topics.list, {})).resolves.toEqual([
+			expect.objectContaining({
+				_id: foreignChildId,
+				path: [oldRootId, movedId],
+			}),
+		])
 	})
 
 	it('recursively removes a topic subtree and leaves unrelated topics', async () => {
@@ -464,6 +714,123 @@ describe('topics', () => {
 		).resolves.toEqual([])
 	})
 
+	it('returns a root-first ancestor path for search hits, excluding the hit itself', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Math',
+		})
+		const parentId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Calculus',
+		})
+		await asUserA.mutation(api.topics.create, {
+			parentId,
+			title: 'Derivatives',
+		})
+
+		await expect(
+			asUserA.query(api.topics.search, { query: 'Derivatives' }),
+		).resolves.toMatchObject([
+			{ pathTitles: ['Math', 'Calculus'], title: 'Derivatives' },
+		])
+		await expect(
+			asUserA.query(api.topics.search, { query: 'Math' }),
+		).resolves.toMatchObject([{ pathTitles: [], title: 'Math' }])
+	})
+
+	it('resolves paths for hits sharing ancestors without changing relevance order', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Science',
+		})
+		const firstId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Biology basics',
+		})
+		const secondId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Biology advanced',
+		})
+
+		const results = await asUserA.query(api.topics.search, {
+			query: 'Biology',
+		})
+
+		expect(results.map(result => result._id)).toEqual([firstId, secondId])
+		expect(results.every(result => result.pathTitles.length === 1)).toBe(
+			true,
+		)
+	})
+
+	it('reflects an ancestor rename in the next search result without rewriting descendants', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Old root name',
+		})
+		await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Child',
+		})
+
+		await asUserA.mutation(api.topics.update, {
+			title: 'New root name',
+			topicId: rootId,
+		})
+
+		await expect(
+			asUserA.query(api.topics.search, { query: 'Child' }),
+		).resolves.toMatchObject([{ pathTitles: ['New root name'] }])
+	})
+
+	it('reflects a reparent in the next search result path', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const oldRootId = await asUserA.mutation(api.topics.create, {
+			title: 'Old root',
+		})
+		const newRootId = await asUserA.mutation(api.topics.create, {
+			title: 'New root',
+		})
+		const movedId = await asUserA.mutation(api.topics.create, {
+			parentId: oldRootId,
+			title: 'Moved',
+		})
+
+		await asUserA.mutation(api.topics.update, {
+			parentId: newRootId,
+			topicId: movedId,
+		})
+
+		await expect(
+			asUserA.query(api.topics.search, { query: 'Moved' }),
+		).resolves.toMatchObject([{ pathTitles: ['New root'] }])
+	})
+
+	it('drops a foreign-owned ancestor from a search hit path', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const asUserB = t.withIdentity(userBIdentity)
+		const foreignTopicId = await asUserB.mutation(api.topics.create, {
+			title: 'Foreign secret',
+		})
+		const topicId = await asUserA.mutation(api.topics.create, {
+			title: 'Findme',
+		})
+
+		// Malformed data: an owned search hit references another user's topic in
+		// its server-owned path. Search must not expose that topic's title.
+		await t.run(async ctx => {
+			await ctx.db.patch('topics', topicId, { path: [foreignTopicId] })
+		})
+
+		await expect(
+			asUserA.query(api.topics.search, { query: 'Findme' }),
+		).resolves.toMatchObject([{ pathTitles: [] }])
+	})
+
 	it('rolls back removal when malformed data contains a foreign-owned child', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
@@ -476,6 +843,7 @@ describe('topics', () => {
 				description: '',
 				ownerId: userBIdentity.subject,
 				parentId: rootId,
+				path: [rootId],
 				searchText: 'Foreign child',
 				title: 'Foreign child',
 			}),
@@ -485,7 +853,10 @@ describe('topics', () => {
 			asUserA.mutation(api.topics.remove, { topicId: rootId }),
 		).rejects.toThrow('Unable to delete children')
 		await expect(
-			asUserA.query(api.topics.get, { topicId: rootId }),
+			asUserA.query(api.topics.get, {
+				expandPath: false,
+				topicId: rootId,
+			}),
 		).resolves.toMatchObject({ title: 'Root' })
 		await expect(asUserB.query(api.topics.list, {})).resolves.toEqual([
 			expect.objectContaining({ _id: foreignChildId }),

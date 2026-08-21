@@ -1,9 +1,10 @@
-import type { Doc, Id } from '../_generated/dataModel'
+import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import type {
 	ReviewCard,
 	ReviewCardCreate,
 	ReviewCardPatch,
+	ReviewCardSearchResult,
 } from '../validators/reviewCards'
 import * as Topics from './topics'
 
@@ -177,7 +178,7 @@ export async function search(
 	ctx: QueryCtx,
 	userId: string,
 	rawQuery: string,
-): Promise<Array<Doc<'reviewCards'>>> {
+): Promise<Array<ReviewCardSearchResult>> {
 	const query = rawQuery.trim()
 
 	// Short-circuit rather than issue a search for the empty string, whose
@@ -190,7 +191,7 @@ export async function search(
 	// batch, which Convex caps at 1024 documents; past that, hits are dropped
 	// with no signal to the caller. Switch to `.paginate()` and have the
 	// dialog page as the user scrolls the expanded group.
-	return await ctx.db
+	const hits = await ctx.db
 		.query('reviewCards')
 		.withSearchIndex('by_searchText', q =>
 			// The owner filter is the only thing keeping one user's documents
@@ -198,4 +199,46 @@ export async function search(
 			q.search('searchText', query).eq('ownerId', userId),
 		)
 		.collect()
+
+	// the topics that contain the hit review cards
+	const containingTopicIds = [...new Set(hits.map(hit => hit.topicId))]
+	const containingTopics = await Topics.getMany(
+		ctx,
+		userId,
+		containingTopicIds,
+	)
+	const containingTopicsById = new Map(
+		containingTopics.map(topic => [topic._id, topic]),
+	)
+
+	// all the ancestor topics of containingTopics
+	const ancestorTopicIds = [
+		...new Set(containingTopics.flatMap(topic => topic.path)),
+	].filter(topicId => !containingTopicsById.has(topicId))
+	const ancestorTopics = await Topics.getMany(ctx, userId, ancestorTopicIds)
+	const pathTopicsById = new Map(
+		[...containingTopics, ...ancestorTopics].map(topic => [
+			topic._id,
+			topic,
+		]),
+	)
+
+	return hits.map(hit => {
+		const containingTopic = containingTopicsById.get(hit.topicId)
+		// A missing containing topic (an orphaned or foreign-owned card) has no
+		// location to show rather than a partially wrong one.
+		const pathIds = containingTopic
+			? [...containingTopic.path, containingTopic._id]
+			: []
+
+		return {
+			_id: hit._id,
+			primaryText: hit.primaryText,
+			secondaryText: hit.secondaryText,
+			notes: hit.notes,
+			pathTitles: pathIds
+				.map(topicId => pathTopicsById.get(topicId)?.title)
+				.filter((title): title is string => title !== undefined),
+		}
+	})
 }

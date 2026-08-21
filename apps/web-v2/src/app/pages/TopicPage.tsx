@@ -1,3 +1,4 @@
+import type { Topic } from '@convex/validators/topics'
 import * as stylex from '@stylexjs/stylex'
 import { queryOptions, useSuspenseQueries } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
@@ -70,14 +71,13 @@ const styles = stylex.create({
 
 export function TopicPage() {
 	const { topicId } = useParams({ from: '/library/$topicId' })
-	const [{ data: topic }, { data: ancestors }, { data: reviewCards }] =
-		useSuspenseQueries({
-			queries: [
-				queryOptions(topicQueries.detail(topicId)),
-				queryOptions(topicQueries.ancestorsOf(topicId, false)),
-				queryOptions(reviewCardQueries.listByTopic(topicId)),
-			],
-		})
+	const [{ data: topic }, { data: reviewCards }] = useSuspenseQueries({
+		queries: [
+			queryOptions(topicQueries.detail(topicId, { expandPath: true })),
+			queryOptions(reviewCardQueries.listByTopic(topicId)),
+		],
+	})
+
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
 	const deleteTopic = useDeleteTopic()
 	const updateTopic = useUpdateTopic()
@@ -142,8 +142,9 @@ export function TopicPage() {
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.content)}>
+				{/* `expandPath: true` above guarantees `path` holds documents, not ids. */}
 				<TopicBreadcrumbs
-					ancestors={ancestors}
+					ancestors={topic.path as Array<Topic>}
 					currentTitle={title.value}
 				/>
 				<header {...stylex.props(styles.header)}>

@@ -1,6 +1,8 @@
-import type { Doc, Id } from '@convex/_generated/dataModel'
+import type { Id } from '@convex/_generated/dataModel'
+import type { ReviewCardSearchResult } from '@convex/validators/reviewCards'
+import type { TopicSearchResult } from '@convex/validators/topics'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ConvexProvider } from 'convex/react'
 import type { ComponentProps } from 'react'
@@ -33,28 +35,24 @@ vi.mock('@tanstack/react-router', async importOriginal => {
 	}
 })
 
-const topics: Array<Doc<'topics'>> = Array.from({ length: 4 }, (_, index) => ({
-	_id: `topic-${index}` as Id<'topics'>,
-	_creationTime: index,
-	description: `Topic description ${index}`,
-	ownerId: 'user-1',
-	searchText: `Topic ${index}\nTopic description ${index}`,
-	title: `Topic ${index}`,
-}))
+const topics: Array<TopicSearchResult> = Array.from(
+	{ length: 4 },
+	(_, index) => ({
+		_id: `topic-${index}` as Id<'topics'>,
+		description: `Topic description ${index}`,
+		pathTitles: [],
+		title: `Topic ${index}`,
+	}),
+)
 
-const cards: Array<Doc<'reviewCards'>> = Array.from(
+const cards: Array<ReviewCardSearchResult> = Array.from(
 	{ length: 4 },
 	(_, index) => ({
 		_id: `card-${index}` as Id<'reviewCards'>,
-		_creationTime: index,
 		notes: '',
-		ownerId: 'user-1',
+		pathTitles: ['Topic 0'],
 		primaryText: `Card ${index}`,
-		searchText: `Card ${index}\nAnswer ${index}`,
 		secondaryText: `Answer ${index}`,
-		state: 'LEARNING',
-		topicId: topics[0]!._id,
-		type: 'flashcard',
 	}),
 )
 
@@ -65,7 +63,15 @@ function prefixesOf(term: string) {
 	)
 }
 
-function renderDialog({ searchError = false }: { searchError?: boolean } = {}) {
+function renderDialog({
+	searchError = false,
+	topicResults = topics,
+	reviewCardResults = cards,
+}: {
+	searchError?: boolean
+	topicResults?: Array<TopicSearchResult>
+	reviewCardResults?: Array<ReviewCardSearchResult>
+} = {}) {
 	const queryClient = createTestQueryClient()
 	// `searchError` seeds nothing, so every search falls through to the test
 	// client's default `queryFn`, which throws on an unseeded key.
@@ -73,11 +79,11 @@ function renderDialog({ searchError = false }: { searchError?: boolean } = {}) {
 		for (const prefix of prefixesOf('topicx')) {
 			queryClient.setQueryData(
 				topicQueries.search(prefix).queryKey,
-				topics,
+				topicResults,
 			)
 			queryClient.setQueryData(
 				reviewCardQueries.search(prefix).queryKey,
-				cards,
+				reviewCardResults,
 			)
 		}
 	}
@@ -141,6 +147,47 @@ describe('SearchDialog', () => {
 		expect(screen.getAllByRole('link')).toHaveLength(6)
 	})
 
+	it('renders distinct paths separately from same-titled topic descriptions', async () => {
+		const user = userEvent.setup()
+		const duplicateTopics: Array<TopicSearchResult> = [
+			{
+				_id: 'topic-duplicate-a' as Id<'topics'>,
+				description: 'First description',
+				pathTitles: ['Science'],
+				title: 'Shared title',
+			},
+			{
+				_id: 'topic-duplicate-b' as Id<'topics'>,
+				description: 'Second description',
+				pathTitles: ['Humanities'],
+				title: 'Shared title',
+			},
+		]
+		renderDialog({
+			reviewCardResults: [],
+			topicResults: duplicateTopics,
+		})
+
+		await user.type(getSearchbox(), 'topic')
+		await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(2))
+
+		const sciencePath = screen.getByText('Library / Science / Shared title')
+		const humanitiesPath = screen.getByText(
+			'Library / Humanities / Shared title',
+		)
+		const scienceLink = sciencePath.closest('a')
+		const humanitiesLink = humanitiesPath.closest('a')
+
+		expect(scienceLink).not.toBeNull()
+		expect(humanitiesLink).not.toBeNull()
+		expect(
+			within(scienceLink!).getByText('First description'),
+		).toBeVisible()
+		expect(
+			within(humanitiesLink!).getByText('Second description'),
+		).toBeVisible()
+	})
+
 	it('refines results as the query keeps being typed', async () => {
 		const user = userEvent.setup()
 		renderDialog()
@@ -159,11 +206,11 @@ describe('SearchDialog', () => {
 		await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(6))
 	})
 
-	it('closes through the dialog control', async () => {
+	it('closes on escape', async () => {
 		const user = userEvent.setup()
 		const { onOpenChange } = renderDialog()
 
-		await user.click(screen.getByRole('button', { name: 'Close' }))
+		await user.keyboard('{Escape}')
 		expect(onOpenChange.mock.calls[0]?.[0]).toBe(false)
 	})
 
