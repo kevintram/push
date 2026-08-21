@@ -7,6 +7,7 @@ import {
 	reviewCardCreate,
 	reviewCardPatch,
 	reviewCardRead,
+	reviewCardSearchResult,
 } from './validators/reviewCards'
 
 export const listByTopic = query({
@@ -47,7 +48,7 @@ export const search = query({
 	args: {
 		query: v.string(),
 	},
-	returns: v.array(reviewCardRead),
+	returns: v.array(reviewCardSearchResult),
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
 

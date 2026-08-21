@@ -714,6 +714,123 @@ describe('topics', () => {
 		).resolves.toEqual([])
 	})
 
+	it('returns a root-first ancestor path for search hits, excluding the hit itself', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Math',
+		})
+		const parentId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Calculus',
+		})
+		await asUserA.mutation(api.topics.create, {
+			parentId,
+			title: 'Derivatives',
+		})
+
+		await expect(
+			asUserA.query(api.topics.search, { query: 'Derivatives' }),
+		).resolves.toMatchObject([
+			{ pathTitles: ['Math', 'Calculus'], title: 'Derivatives' },
+		])
+		await expect(
+			asUserA.query(api.topics.search, { query: 'Math' }),
+		).resolves.toMatchObject([{ pathTitles: [], title: 'Math' }])
+	})
+
+	it('resolves paths for hits sharing ancestors without changing relevance order', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Science',
+		})
+		const firstId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Biology basics',
+		})
+		const secondId = await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Biology advanced',
+		})
+
+		const results = await asUserA.query(api.topics.search, {
+			query: 'Biology',
+		})
+
+		expect(results.map(result => result._id)).toEqual([firstId, secondId])
+		expect(results.every(result => result.pathTitles.length === 1)).toBe(
+			true,
+		)
+	})
+
+	it('reflects an ancestor rename in the next search result without rewriting descendants', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.topics.create, {
+			title: 'Old root name',
+		})
+		await asUserA.mutation(api.topics.create, {
+			parentId: rootId,
+			title: 'Child',
+		})
+
+		await asUserA.mutation(api.topics.update, {
+			title: 'New root name',
+			topicId: rootId,
+		})
+
+		await expect(
+			asUserA.query(api.topics.search, { query: 'Child' }),
+		).resolves.toMatchObject([{ pathTitles: ['New root name'] }])
+	})
+
+	it('reflects a reparent in the next search result path', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const oldRootId = await asUserA.mutation(api.topics.create, {
+			title: 'Old root',
+		})
+		const newRootId = await asUserA.mutation(api.topics.create, {
+			title: 'New root',
+		})
+		const movedId = await asUserA.mutation(api.topics.create, {
+			parentId: oldRootId,
+			title: 'Moved',
+		})
+
+		await asUserA.mutation(api.topics.update, {
+			parentId: newRootId,
+			topicId: movedId,
+		})
+
+		await expect(
+			asUserA.query(api.topics.search, { query: 'Moved' }),
+		).resolves.toMatchObject([{ pathTitles: ['New root'] }])
+	})
+
+	it('drops a foreign-owned ancestor from a search hit path', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const asUserB = t.withIdentity(userBIdentity)
+		const foreignTopicId = await asUserB.mutation(api.topics.create, {
+			title: 'Foreign secret',
+		})
+		const topicId = await asUserA.mutation(api.topics.create, {
+			title: 'Findme',
+		})
+
+		// Malformed data: an owned search hit references another user's topic in
+		// its server-owned path. Search must not expose that topic's title.
+		await t.run(async ctx => {
+			await ctx.db.patch('topics', topicId, { path: [foreignTopicId] })
+		})
+
+		await expect(
+			asUserA.query(api.topics.search, { query: 'Findme' }),
+		).resolves.toMatchObject([{ pathTitles: [] }])
+	})
+
 	it('rolls back removal when malformed data contains a foreign-owned child', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)

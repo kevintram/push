@@ -9,6 +9,7 @@ import {
 	topicDetail,
 	topicPatch,
 	topicRead,
+	topicSearchResult,
 } from './validators/topics'
 
 export const list = query({
@@ -40,7 +41,7 @@ export const search = query({
 	args: {
 		query: v.string(),
 	},
-	returns: v.array(topicRead),
+	returns: v.array(topicSearchResult),
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
 

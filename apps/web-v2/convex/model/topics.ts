@@ -1,6 +1,11 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
-import type { TopicCreate, TopicDetail, TopicPatch } from '../validators/topics'
+import type {
+	TopicCreate,
+	TopicDetail,
+	TopicPatch,
+	TopicSearchResult,
+} from '../validators/topics'
 
 export async function requireUserOwns(
 	ctx: QueryCtx,
@@ -53,6 +58,21 @@ export async function get(
 				doc !== null && doc.ownerId === userId,
 		),
 	}
+}
+
+export async function getMany(
+	ctx: QueryCtx,
+	userId: string,
+	topicIds: ReadonlyArray<Id<'topics'>>,
+): Promise<Array<Doc<'topics'>>> {
+	const topics = await Promise.all(
+		topicIds.map(topicId => ctx.db.get('topics', topicId)),
+	)
+
+	return topics.filter(
+		(topic): topic is Doc<'topics'> =>
+			topic !== null && topic.ownerId === userId,
+	)
 }
 
 export async function create(
@@ -177,7 +197,7 @@ export async function search(
 	ctx: QueryCtx,
 	userId: string,
 	rawQuery: string,
-): Promise<Array<Doc<'topics'>>> {
+): Promise<Array<TopicSearchResult>> {
 	const query = rawQuery.trim()
 
 	// Short-circuit rather than issue a search for the empty string, whose
@@ -190,7 +210,7 @@ export async function search(
 	// batch, which Convex caps at 1024 documents; past that, hits are dropped
 	// with no signal to the caller. Switch to `.paginate()` and have the
 	// dialog page as the user scrolls the expanded group.
-	return await ctx.db
+	const hits = await ctx.db
 		.query('topics')
 		.withSearchIndex('by_searchText', q =>
 			// The owner filter is the only thing keeping one user's documents
@@ -198,4 +218,23 @@ export async function search(
 			q.search('searchText', query).eq('ownerId', userId),
 		)
 		.collect()
+
+	// get all ancestors of hits so we can return paths in search results
+	const pathTopicsById = new Map(hits.map(hit => [hit._id, hit]))
+	const ancestorIds = [...new Set(hits.flatMap(hit => hit.path))].filter(
+		ancestorId => !pathTopicsById.has(ancestorId),
+	)
+	const ancestors = await getMany(ctx, userId, ancestorIds)
+	for (const ancestor of ancestors) {
+		pathTopicsById.set(ancestor._id, ancestor)
+	}
+
+	return hits.map(hit => ({
+		_id: hit._id,
+		title: hit.title,
+		description: hit.description,
+		pathTitles: hit.path
+			.map(ancestorId => pathTopicsById.get(ancestorId)?.title)
+			.filter((title): title is string => title !== undefined),
+	}))
 }

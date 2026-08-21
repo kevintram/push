@@ -39,7 +39,15 @@ export const topicPatch = topicBase
 		parentId: v.optional(v.union(v.id('topics'), v.null())),
 	})
 
+export const topicSearchResult = v.object({
+	_id: v.id('topics'),
+	title: v.string(),
+	description: v.string(),
+	pathTitles: v.array(v.string()), // the titles of the topic's path
+})
+
 export type Topic = Infer<typeof topicRead>
 export type TopicDetail = Infer<typeof topicDetail>
 export type TopicCreate = Infer<typeof topicCreate>
 export type TopicPatch = Infer<typeof topicPatch>
+export type TopicSearchResult = Infer<typeof topicSearchResult>
