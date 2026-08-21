@@ -42,11 +42,14 @@ export function ReviewCardBreadcrumbs({
 	return (
 		<Breadcrumb>
 			<BreadcrumbList>
-				{topicPath.map((topic, index) => (
+				<BreadcrumbItem>
+					<BreadcrumbLink render={<Link to='/library' />}>
+						Library
+					</BreadcrumbLink>
+				</BreadcrumbItem>
+				{topicPath.map(topic => (
 					<Fragment key={topic._id}>
-						{index > 0 && (
-							<BreadcrumbSeparator>/</BreadcrumbSeparator>
-						)}
+						<BreadcrumbSeparator>/</BreadcrumbSeparator>
 						<BreadcrumbItem>
 							<BreadcrumbLink
 								render={
@@ -61,9 +64,7 @@ export function ReviewCardBreadcrumbs({
 						</BreadcrumbItem>
 					</Fragment>
 				))}
-				{topicPath.length > 0 && (
-					<BreadcrumbSeparator>/</BreadcrumbSeparator>
-				)}
+				<BreadcrumbSeparator>/</BreadcrumbSeparator>
 				<BreadcrumbItem>
 					<BreadcrumbPage>{displayText(primaryText)}</BreadcrumbPage>
 				</BreadcrumbItem>
