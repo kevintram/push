@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Loader } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { colors } from '~/styles/colors.stylex'
+import { notAuthenticatedPageColors } from '~/styles/componentColors.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -41,7 +41,7 @@ const styles = stylex.create({
 		animationIterationCount: 'infinite',
 		animationName: spin,
 		animationTimingFunction: 'linear',
-		color: colors.textSecondary,
+		color: notAuthenticatedPageColors.loadingIndicatorForeground,
 		display: 'flex',
 		justifyContent: 'center',
 		height: iconSizes.xl,

@@ -2,7 +2,7 @@ import { Menu } from '@base-ui/react/menu'
 import * as stylex from '@stylexjs/stylex'
 import { Circle } from 'lucide-react'
 
-import { colors } from '~/styles/colors.stylex'
+import { dropdownMenuColors } from '~/styles/componentColors.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -18,13 +18,15 @@ const styles = stylex.create({
 		borderRadius: radii.xs,
 		outline: 'none',
 		backgroundColor: {
-			default: colors.bgSurfaceTransparent,
-			':is([data-highlighted])': colors.bgSurfaceSecondaryHover,
+			default: dropdownMenuColors.itemBackground,
+			':is([data-highlighted])':
+				dropdownMenuColors.itemBackgroundHighlighted,
 		},
 		color: {
-			default: colors.textInteractive,
-			':is([data-highlighted])': colors.textInteractiveHover,
-			':active': colors.textInteractiveActive,
+			default: dropdownMenuColors.itemForeground,
+			':is([data-highlighted])':
+				dropdownMenuColors.itemForegroundHighlighted,
+			':active': dropdownMenuColors.itemForegroundPressed,
 		},
 		cursor: 'default',
 		fontSize: fontSizes.sm,

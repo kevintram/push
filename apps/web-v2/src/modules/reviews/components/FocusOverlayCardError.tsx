@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import type { FallbackProps } from 'react-error-boundary'
 
 import { Button } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { focusOverlayCardErrorColors } from '~/styles/componentColors.stylex'
 import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -18,7 +18,7 @@ const styles = stylex.create({
 
 		fontSize: fontSizes.sm,
 	},
-	message: { color: colors.textSecondary },
+	message: { color: focusOverlayCardErrorColors.messageForeground },
 })
 
 /**

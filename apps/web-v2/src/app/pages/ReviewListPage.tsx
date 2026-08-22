@@ -7,7 +7,7 @@ import { FocusOverlay } from '~/modules/reviews/components/FocusOverlay'
 import { ReviewCardItem } from '~/modules/reviews/components/ReviewCardItem'
 import type { ReviewCard as ReviewCardModel } from '~/modules/reviews/types/review.types'
 import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
-import { colors } from '~/styles/colors.stylex'
+import { reviewListPageColors } from '~/styles/componentColors.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -39,7 +39,7 @@ const styles = stylex.create({
 		marginBlockEnd: spacing.md,
 	},
 	empty: {
-		color: colors.textSecondary,
+		color: reviewListPageColors.emptyForeground,
 		fontSize: fontSizes.sm,
 	},
 })

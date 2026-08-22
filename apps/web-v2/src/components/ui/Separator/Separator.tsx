@@ -1,7 +1,7 @@
 import { Separator as SeparatorPrimitive } from '@base-ui/react/separator'
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/colors.stylex'
+import { separatorColors } from '~/styles/componentColors.stylex'
 
 export interface SeparatorProps extends Omit<
 	React.ComponentProps<typeof SeparatorPrimitive>,
@@ -16,7 +16,7 @@ const styles = stylex.create({
 			default: 'auto',
 			':is([data-orientation="vertical"])': 'stretch',
 		},
-		backgroundColor: colors.borderSecondary,
+		backgroundColor: separatorColors.background,
 		blockSize: {
 			default: '1px',
 			':is([data-orientation="vertical"])': 'auto',

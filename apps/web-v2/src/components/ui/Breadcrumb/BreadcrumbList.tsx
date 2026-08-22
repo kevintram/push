@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/colors.stylex'
+import { breadcrumbColors } from '~/styles/componentColors.stylex'
 import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
 export interface BreadcrumbListProps extends Omit<
@@ -16,7 +16,7 @@ const styles = stylex.create({
 
 		listStyle: 'none',
 		alignItems: 'center',
-		color: colors.textSecondary,
+		color: breadcrumbColors.listForeground,
 		display: 'flex',
 		flexWrap: 'wrap',
 		fontSize: fontSizes.sm,

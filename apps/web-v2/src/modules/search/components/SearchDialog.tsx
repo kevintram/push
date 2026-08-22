@@ -3,7 +3,7 @@ import { Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { DialogContent, DialogDescription, DialogTitle } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { searchDialogColors } from '~/styles/componentColors.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { useSearchResults } from '../hooks/useSearchResults'
@@ -19,9 +19,9 @@ const styles = stylex.create({
 		maxBlockSize: 'min(76dvh, 46rem)',
 		maxInlineSize: '42rem',
 
-		borderColor: colors.borderSecondary,
+		borderColor: searchDialogColors.popupBorder,
 		borderRadius: radii.xl,
-		backgroundColor: colors.bg,
+		backgroundColor: searchDialogColors.popupBackground,
 		overflowX: 'hidden',
 		overflowY: 'hidden',
 	},
@@ -43,13 +43,13 @@ const styles = stylex.create({
 		paddingInlineEnd: '52px',
 		paddingInlineStart: spacing.lg,
 
-		borderBlockEndColor: colors.borderSecondary,
+		borderBlockEndColor: searchDialogColors.headerBorder,
 		borderBlockEndStyle: 'solid',
 		borderBlockEndWidth: '1px',
 	},
 	searchIcon: {
 		blockSize: iconSizes.lg,
-		color: colors.textSecondary,
+		color: searchDialogColors.searchIconForeground,
 		flexShrink: 0,
 		inlineSize: iconSizes.lg,
 	},
@@ -60,8 +60,8 @@ const styles = stylex.create({
 		borderWidth: 0,
 		outline: 'none',
 		appearance: 'none',
-		backgroundColor: colors.bgSurfaceTransparent,
-		color: colors.text,
+		backgroundColor: searchDialogColors.inputBackground,
+		color: searchDialogColors.inputForeground,
 		fontFamily: 'inherit',
 		fontSize: fontSizes.xl,
 		lineHeight: 1.4,
@@ -69,7 +69,9 @@ const styles = stylex.create({
 		// identical to the text input it replaced. `appearance: none` on the
 		// input itself does not remove it in Chrome.
 		'::-webkit-search-cancel-button': { display: 'none' },
-		'::placeholder': { color: colors.textSecondary },
+		'::placeholder': {
+			color: searchDialogColors.inputPlaceholderForeground,
+		},
 	},
 	results: {
 		// The grid row is the scroll container, so this needs `minBlockSize: 0`
@@ -82,7 +84,7 @@ const styles = stylex.create({
 	status: {
 		paddingBlock: spacing['2xl'],
 		paddingInline: spacing.xl,
-		color: colors.textSecondary,
+		color: searchDialogColors.statusForeground,
 		fontSize: fontSizes.md,
 		textAlign: 'center',
 	},

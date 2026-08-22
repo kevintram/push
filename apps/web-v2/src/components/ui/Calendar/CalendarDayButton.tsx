@@ -1,36 +1,40 @@
 import * as stylex from '@stylexjs/stylex'
 import { DayButton } from 'react-day-picker'
 
-import { colors } from '~/styles/colors.stylex'
+import { calendarColors } from '~/styles/componentColors.stylex'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	button: {
 		padding: spacing.none,
-		borderColor: 'transparent',
+		borderColor: calendarColors.dayButtonBorder,
 		borderRadius: radii.full,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		backgroundColor: {
-			default: colors.bgSurfaceTransparent,
-			':is([data-selected-single="true"])': colors.bgFillBrand,
-			':is([data-today="true"])': colors.bgSurfaceInfo,
+			default: calendarColors.dayButtonBackground,
+			':is([data-selected-single="true"])':
+				calendarColors.dayButtonBackgroundSelected,
+			':is([data-today="true"])': calendarColors.dayButtonBackgroundToday,
 
-			':is([data-selected-single="true"]):hover': colors.bgFillBrandHover,
-			':is([data-today="true"]):hover': colors.bgSurfaceInfoHover,
-			':hover': colors.bgFillTransparentHover,
+			':is([data-selected-single="true"]):hover':
+				calendarColors.dayButtonBackgroundSelectedHover,
+			':is([data-today="true"]):hover':
+				calendarColors.dayButtonBackgroundTodayHover,
+			':hover': calendarColors.dayButtonBackgroundHover,
 		},
 		blockSize: '32px',
 		color: {
-			default: colors.text,
-			':is([data-selected-single="true"])': colors.textBrandOnBgFill,
+			default: calendarColors.dayButtonForeground,
+			':is([data-selected-single="true"])':
+				calendarColors.dayButtonForegroundSelected,
 		},
 		cursor: 'pointer',
 		fontSize: fontSizes.sm,
 		inlineSize: '32px',
 		outlineColor: {
-			default: 'transparent',
-			':focus-visible': colors.borderFocus,
+			default: calendarColors.dayButtonFocusRingRest,
+			':focus-visible': calendarColors.dayButtonFocusRing,
 		},
 		outlineOffset: '1px',
 		outlineStyle: 'solid',

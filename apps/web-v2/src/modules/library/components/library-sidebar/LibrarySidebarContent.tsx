@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react'
 import { useCallback } from 'react'
 
 import { Button, Tree } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { librarySidebarColors } from '~/styles/componentColors.stylex'
 import { fontWeights, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { useCreateTopic } from '../../api/topicQueries'
@@ -24,7 +24,7 @@ const styles = stylex.create({
 		borderRadius: radii.md,
 	},
 	headerIsDropTarget: {
-		backgroundColor: colors.navBgSurfaceActive,
+		backgroundColor: librarySidebarColors.headerBackgroundDropTarget,
 	},
 	headerText: {
 		paddingInline: spacing.sm,

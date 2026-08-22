@@ -1,7 +1,7 @@
 import { Popover } from '@base-ui/react/popover'
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/colors.stylex'
+import { popoverColors } from '~/styles/componentColors.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
 export interface PopoverContentProps extends Omit<
@@ -20,14 +20,14 @@ const styles = stylex.create({
 	popup: {
 		padding: spacing.lg,
 
-		borderColor: colors.border,
+		borderColor: popoverColors.popupBorder,
 		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		outline: 'none',
-		backgroundColor: colors.bgSurface,
-		boxShadow: `0 8px 24px ${colors.shadowSubtle}`,
-		color: colors.text,
+		backgroundColor: popoverColors.popupBackground,
+		boxShadow: `0 8px 24px ${popoverColors.popupShadow}`,
+		color: popoverColors.popupForeground,
 		opacity: {
 			default: 1,
 			':is([data-starting-style], [data-ending-style])': 0,

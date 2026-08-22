@@ -1,7 +1,7 @@
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/colors.stylex'
+import { tabsColors } from '~/styles/componentColors.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 import { type TabsVariant, useTabsVariant } from './TabsContext'
@@ -16,19 +16,19 @@ const styles = stylex.create({
 		paddingBlock: spacing.sm,
 		paddingInline: spacing.md,
 
-		borderColor: 'transparent',
+		borderColor: tabsColors.triggerBorder,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		gap: spacing.sm,
 		alignItems: 'center',
-		backgroundColor: colors.bgSurfaceTransparent,
+		backgroundColor: tabsColors.triggerBackground,
 		color: {
-			default: colors.textInteractive,
-			':is([data-active])': colors.textInteractiveActive,
-			':is([data-disabled])': colors.textDisabled,
-			':is([data-disabled]:hover)': colors.textDisabled,
-			':hover': colors.textInteractiveHover,
-			':active': colors.textInteractiveActive,
+			default: tabsColors.triggerForeground,
+			':is([data-active])': tabsColors.triggerForegroundSelected,
+			':is([data-disabled])': tabsColors.triggerForegroundDisabled,
+			':is([data-disabled]:hover)': tabsColors.triggerForegroundDisabled,
+			':hover': tabsColors.triggerForegroundHover,
+			':active': tabsColors.triggerForegroundPressed,
 		},
 		cursor: {
 			default: 'pointer',
@@ -40,8 +40,8 @@ const styles = stylex.create({
 		justifyContent: 'center',
 		lineHeight: 1,
 		outlineColor: {
-			default: 'transparent',
-			':focus-visible': colors.borderFocus,
+			default: tabsColors.triggerFocusRingRest,
+			':focus-visible': tabsColors.triggerFocusRing,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
@@ -55,25 +55,26 @@ const styles = stylex.create({
 	default: {
 		borderRadius: radii.lg,
 		backgroundColor: {
-			default: colors.bgSurfaceTransparent,
-			':is([data-active])': colors.bgFillTransparentSelected,
+			default: tabsColors.defaultTriggerBackground,
+			':is([data-active])': tabsColors.defaultTriggerBackgroundSelected,
 		},
 		boxShadow: {
 			default: 'none',
-			':is([data-active])': `0 1px 2px ${colors.shadowSubtle}`,
+			':is([data-active])': `0 1px 2px ${tabsColors.defaultTriggerShadowSelected}`,
 		},
 	},
 	line: {
 		borderRadius: 0,
 		borderBlockEndColor: {
-			default: 'transparent',
-			':is([data-active])': colors.borderBrand,
-			':is([data-orientation="vertical"])': 'transparent',
+			default: tabsColors.lineTriggerBorderRest,
+			':is([data-active])': tabsColors.lineTriggerBorderSelected,
+			':is([data-orientation="vertical"])':
+				tabsColors.lineTriggerBorderRest,
 		},
 		borderInlineEndColor: {
-			default: 'transparent',
+			default: tabsColors.lineTriggerBorderRest,
 			':is([data-active][data-orientation="vertical"])':
-				colors.borderBrand,
+				tabsColors.lineTriggerBorderSelected,
 		},
 		marginBlockEnd: {
 			default: '-1px',

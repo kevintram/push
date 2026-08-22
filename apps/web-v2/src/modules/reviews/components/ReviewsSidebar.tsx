@@ -7,7 +7,7 @@ import { useCallback } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { reviewsSidebarColors } from '~/styles/componentColors.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { reviewQueries, useCreateReview } from '../api/reviewQueries'
@@ -17,7 +17,7 @@ const styles = stylex.create({
 	container: {
 		padding: spacing.lg,
 		borderRadius: radii.xl,
-		backgroundColor: colors.bgSurfaceSecondary,
+		backgroundColor: reviewsSidebarColors.containerBackground,
 		inlineSize: '320px',
 	},
 	header: {
@@ -30,9 +30,9 @@ const styles = stylex.create({
 	seeAll: {
 		textDecoration: 'none',
 		color: {
-			default: colors.textLink,
-			':hover': colors.textLinkHover,
-			':active': colors.textLinkActive,
+			default: reviewsSidebarColors.seeAllForeground,
+			':hover': reviewsSidebarColors.seeAllForegroundHover,
+			':active': reviewsSidebarColors.seeAllForegroundPressed,
 		},
 		fontSize: fontSizes.sm,
 	},

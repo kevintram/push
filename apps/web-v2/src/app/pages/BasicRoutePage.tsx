@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/colors.stylex'
+import { basicRoutePageColors } from '~/styles/componentColors.stylex'
 import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
 
 type BasicRoutePageProps = {
@@ -37,7 +37,7 @@ const styles = stylex.create({
 	description: {
 		margin: 0,
 
-		color: colors.textSecondary,
+		color: basicRoutePageColors.descriptionForeground,
 		fontSize: fontSizes.md,
 		lineHeight: 1.5,
 		maxWidth: '52ch',

@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { type ReactNode, useCallback, useState } from 'react'
 
 import { Button } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { hideableColors } from '~/styles/componentColors.stylex'
 import { radii } from '~/styles/tokens.stylex'
 
 type HideableProps = {
@@ -30,7 +30,7 @@ const styles = stylex.create({
 		display: 'flex',
 		justifyContent: 'center',
 
-		backgroundColor: colors.bgFillSecondary,
+		backgroundColor: hideableColors.placeholderBackground,
 	},
 })
 

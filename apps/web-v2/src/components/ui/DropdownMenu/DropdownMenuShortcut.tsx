@@ -1,11 +1,11 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/colors.stylex'
+import { dropdownMenuColors } from '~/styles/componentColors.stylex'
 import { fontSizes } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	shortcut: {
-		color: colors.textSecondary,
+		color: dropdownMenuColors.shortcutForeground,
 		fontSize: fontSizes.xs,
 		letterSpacing: '0.1em',
 		marginInlineStart: 'auto',

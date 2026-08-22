@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
 
 import { Button } from '~/components/ui/Button'
-import { colors } from '~/styles/colors.stylex'
+import { searchResultGroupColors } from '~/styles/componentColors.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -31,7 +31,7 @@ const styles = stylex.create({
 		minBlockSize: '32px',
 	},
 	title: {
-		color: colors.textSecondary,
+		color: searchResultGroupColors.titleForeground,
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
@@ -39,7 +39,7 @@ const styles = stylex.create({
 		fontWeight: fontWeights.regular,
 	},
 	control: {
-		color: colors.textSecondary,
+		color: searchResultGroupColors.controlForeground,
 		fontSize: fontSizes.xs,
 	},
 	icon: {
@@ -55,7 +55,7 @@ const styles = stylex.create({
 	empty: {
 		paddingBlock: spacing.lg,
 		paddingInline: spacing.md,
-		color: colors.textSecondary,
+		color: searchResultGroupColors.emptyForeground,
 		fontSize: fontSizes.sm,
 	},
 })

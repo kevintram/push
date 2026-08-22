@@ -25,7 +25,7 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { reviewColors } from '~/styles/componentColors.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
@@ -45,7 +45,7 @@ const styles = stylex.create({
 		gridTemplateRows: 'auto auto',
 		position: 'relative',
 
-		backgroundColor: colors.bgSurfaceTransparent,
+		backgroundColor: reviewColors.rowBackground,
 		cursor: 'pointer',
 	},
 	rating: {
@@ -61,9 +61,9 @@ const styles = stylex.create({
 	ratingBadge: {
 		borderRadius: radii.full,
 		alignItems: 'center',
-		backgroundColor: colors.bgFillBrand,
+		backgroundColor: reviewColors.ratingBadgeBackground,
 		blockSize: iconSizes.md,
-		color: colors.textBrandOnBgFill,
+		color: reviewColors.ratingBadgeForeground,
 		display: 'flex',
 		flexShrink: 0,
 		inlineSize: iconSizes.md,
@@ -86,8 +86,8 @@ const styles = stylex.create({
 		fontSize: fontSizes.sm,
 		textAlign: 'start',
 
-		backgroundColor: colors.bgSurfaceTransparent,
-		color: colors.text,
+		backgroundColor: reviewColors.notesButtonBackground,
+		color: reviewColors.notesButtonForeground,
 		cursor: 'pointer',
 
 		borderWidth: 0,
@@ -111,7 +111,7 @@ const styles = stylex.create({
 	},
 	notesIndicator: {
 		blockSize: iconSizes.md,
-		color: colors.textSecondary,
+		color: reviewColors.notesIndicatorForeground,
 		flexShrink: 0,
 		inlineSize: iconSizes.md,
 	},

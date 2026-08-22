@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Check } from 'lucide-react'
 
-import { colors } from '~/styles/colors.stylex'
+import { reviewCardMetadataColors } from '~/styles/componentColors.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -28,7 +28,7 @@ const styles = stylex.create({
 	item: {
 		gap: spacing.xs,
 		alignItems: 'center',
-		color: colors.textSecondary,
+		color: reviewCardMetadataColors.itemForeground,
 		display: 'inline-flex',
 		fontWeight: fontWeights.semibold,
 		whiteSpace: 'nowrap',

@@ -4,7 +4,7 @@ import { BookOpen, Clock, Flag, Library, PinIcon, Settings } from 'lucide-react'
 
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { SearchDialogTrigger } from '~/modules/search/components/SearchDialogTrigger'
-import { colors } from '~/styles/colors.stylex'
+import { appSidebarColors } from '~/styles/componentColors.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
 import { SidebarItem } from './sidebar-item'
@@ -14,9 +14,9 @@ const styles = stylex.create({
 		padding: spacing.sm,
 		gap: spacing.xs,
 
-		backgroundColor: colors.navBg,
+		backgroundColor: appSidebarColors.background,
 
-		borderInlineEndColor: colors.borderSecondary,
+		borderInlineEndColor: appSidebarColors.border,
 		borderInlineEndStyle: 'solid',
 		borderInlineEndWidth: '1px',
 
