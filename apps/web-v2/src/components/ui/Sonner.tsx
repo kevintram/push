@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Toaster as SonnerToaster, type ToasterProps } from 'sonner'
 
-import { toasterColors } from '~/styles/componentColors.stylex'
+import { toasterColors } from '~/styles/colors/components.stylex'
 import { fonts, radii } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({

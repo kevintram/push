@@ -48,7 +48,7 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
-import { grayDark, grayLight } from '~/styles/colorPrimitives.stylex'
+import { neutral } from '~/styles/colors/primitives.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
@@ -73,7 +73,7 @@ const styles = stylex.create({
 		},
 	},
 	rowLabel: {
-		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.xs,
 
 		paddingBlock: {
@@ -121,7 +121,7 @@ const styles = stylex.create({
 		minWidth: 0,
 	},
 	fieldLabel: {
-		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.xs,
 	},
 	contextMenuTrigger: {
@@ -129,11 +129,11 @@ const styles = stylex.create({
 		display: 'flex',
 		justifyContent: 'center',
 
-		borderColor: { [DARK]: grayDark.s7, default: grayLight.s7 },
+		borderColor: { [DARK]: neutral.s600, default: neutral.s300 },
 		borderRadius: radii.xs,
 		borderStyle: 'dashed',
 		borderWidth: '1px',
-		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 
 		blockSize: '8rem',
 		inlineSize: '16rem',

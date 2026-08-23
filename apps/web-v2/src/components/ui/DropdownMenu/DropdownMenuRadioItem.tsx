@@ -2,7 +2,7 @@ import { Menu } from '@base-ui/react/menu'
 import * as stylex from '@stylexjs/stylex'
 import { Circle } from 'lucide-react'
 
-import { dropdownMenuColors } from '~/styles/componentColors.stylex'
+import { dropdownMenuColors } from '~/styles/colors/components.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({

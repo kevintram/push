@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Loader } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { notAuthenticatedPageColors } from '~/styles/componentColors.stylex'
+import { notAuthenticatedPageColors } from '~/styles/colors/components.stylex'
 import {
 	fontSizes,
 	fontWeights,

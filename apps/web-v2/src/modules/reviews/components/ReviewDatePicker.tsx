@@ -14,7 +14,7 @@ import {
 	TooltipTrigger,
 } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
-import { reviewDatePickerColors } from '~/styles/componentColors.stylex'
+import { reviewDatePickerColors } from '~/styles/colors/components.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 import {

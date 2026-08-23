@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 
 import { Separator } from '~/components/ui'
-import { grayDark, grayLight } from '~/styles/colorPrimitives.stylex'
+import { neutral } from '~/styles/colors/primitives.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
@@ -24,7 +24,7 @@ const styles = stylex.create({
 		alignItems: 'center',
 		display: 'flex',
 
-		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.sm,
 	},
 	panel: {
@@ -34,11 +34,11 @@ const styles = stylex.create({
 		display: 'flex',
 
 		blockSize: '4rem',
-		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.sm,
 	},
 	panelItem: {
-		borderColor: { [DARK]: grayDark.s6, default: grayLight.s6 },
+		borderColor: { [DARK]: neutral.s700, default: neutral.s200 },
 		borderRadius: radii.sm,
 		borderStyle: 'solid',
 		borderWidth: '1px',

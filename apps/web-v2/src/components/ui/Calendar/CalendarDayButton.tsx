@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { DayButton } from 'react-day-picker'
 
-import { calendarColors } from '~/styles/componentColors.stylex'
+import { calendarColors } from '~/styles/colors/components.stylex'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({

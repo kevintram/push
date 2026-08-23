@@ -3,7 +3,7 @@ import { Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { DialogContent, DialogDescription, DialogTitle } from '~/components/ui'
-import { searchDialogColors } from '~/styles/componentColors.stylex'
+import { searchDialogColors } from '~/styles/colors/components.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { useSearchResults } from '../hooks/useSearchResults'

@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
 
 import { Button } from '~/components/ui/Button'
-import { searchResultGroupColors } from '~/styles/componentColors.stylex'
+import { searchResultGroupColors } from '~/styles/colors/components.stylex'
 import {
 	fontSizes,
 	fontWeights,

@@ -14,7 +14,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { reviewCardActionsColors } from '~/styles/componentColors.stylex'
+import { reviewCardActionsColors } from '~/styles/colors/components.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { useReviewCardActions } from '../hooks/useReviewCardActions'

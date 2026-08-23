@@ -1,10 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import {
-	baseColors,
-	grayDark,
-	grayLight,
-} from '~/styles/colorPrimitives.stylex'
+import { baseColors, neutral } from '~/styles/colors/primitives.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
@@ -70,7 +66,7 @@ const styles = stylex.create({
 		},
 	},
 	kicker: {
-		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.xs,
 		letterSpacing: '0.08em',
 		textTransform: 'uppercase',
@@ -102,7 +98,7 @@ const styles = stylex.create({
 	description: {
 		margin: 0,
 
-		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.md,
 		lineHeight: 1.55,
 		maxWidth: '54ch',
@@ -127,7 +123,7 @@ const styles = stylex.create({
 		fontSize: fontSizes.sm,
 	},
 	indexCount: {
-		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.xs,
 	},
 	sections: {

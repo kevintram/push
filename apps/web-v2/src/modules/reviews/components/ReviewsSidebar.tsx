@@ -7,7 +7,7 @@ import { useCallback } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '~/components/ui'
-import { reviewsSidebarColors } from '~/styles/componentColors.stylex'
+import { reviewsSidebarColors } from '~/styles/colors/components.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { reviewQueries, useCreateReview } from '../api/reviewQueries'

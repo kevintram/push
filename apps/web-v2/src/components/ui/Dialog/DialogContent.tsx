@@ -2,7 +2,7 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import * as stylex from '@stylexjs/stylex'
 import { X } from 'lucide-react'
 
-import { dialogColors } from '~/styles/componentColors.stylex'
+import { dialogColors } from '~/styles/colors/components.stylex'
 import { iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { DialogOverlay } from './DialogOverlay'

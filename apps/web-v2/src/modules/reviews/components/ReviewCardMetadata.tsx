@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Check } from 'lucide-react'
 
-import { reviewCardMetadataColors } from '~/styles/componentColors.stylex'
+import { reviewCardMetadataColors } from '~/styles/colors/components.stylex'
 import {
 	fontSizes,
 	fontWeights,

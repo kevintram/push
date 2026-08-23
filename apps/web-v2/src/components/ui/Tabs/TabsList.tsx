@@ -1,7 +1,7 @@
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
 import * as stylex from '@stylexjs/stylex'
 
-import { tabsColors } from '~/styles/componentColors.stylex'
+import { tabsColors } from '~/styles/colors/components.stylex'
 import { radii } from '~/styles/tokens.stylex'
 
 import { type TabsVariant, TabsVariantContext } from './TabsContext'

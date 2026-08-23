@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { breadcrumbColors } from '~/styles/componentColors.stylex'
+import { breadcrumbColors } from '~/styles/colors/components.stylex'
 
 export interface BreadcrumbPageProps extends Omit<
 	React.ComponentProps<'span'>,

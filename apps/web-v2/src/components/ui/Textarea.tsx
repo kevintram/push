@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { textareaColors } from '~/styles/componentColors.stylex'
+import { textareaColors } from '~/styles/colors/components.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
 export interface TextareaProps extends Omit<

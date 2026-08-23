@@ -1,7 +1,7 @@
 import { Tooltip } from '@base-ui/react/tooltip'
 import * as stylex from '@stylexjs/stylex'
 
-import { tooltipColors } from '~/styles/componentColors.stylex'
+import { tooltipColors } from '~/styles/colors/components.stylex'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 export interface TooltipContentProps extends Omit<

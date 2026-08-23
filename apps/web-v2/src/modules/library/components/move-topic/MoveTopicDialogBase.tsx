@@ -14,7 +14,7 @@ import {
 } from '~/components/ui'
 import { topicQueries } from '~/modules/library/api/topicQueries'
 import { treeifyTopics } from '~/modules/library/utils/treeifyTopics'
-import { moveTopicDialogColors } from '~/styles/componentColors.stylex'
+import { moveTopicDialogColors } from '~/styles/colors/components.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
 import { MoveTopicTree } from './MoveTopicTree'

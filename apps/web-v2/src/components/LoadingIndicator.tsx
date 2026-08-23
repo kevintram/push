@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Loader } from 'lucide-react'
 
-import { loadingIndicatorColors } from '~/styles/componentColors.stylex'
+import { loadingIndicatorColors } from '~/styles/colors/components.stylex'
 import { iconSizes } from '~/styles/tokens.stylex'
 
 const spin = stylex.keyframes({

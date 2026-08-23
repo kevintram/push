@@ -4,7 +4,7 @@ import { BookOpen, Clock, Flag, Library, PinIcon, Settings } from 'lucide-react'
 
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { SearchDialogTrigger } from '~/modules/search/components/SearchDialogTrigger'
-import { appSidebarColors } from '~/styles/componentColors.stylex'
+import { appSidebarColors } from '~/styles/colors/components.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
 import { SidebarItem } from './sidebar-item'

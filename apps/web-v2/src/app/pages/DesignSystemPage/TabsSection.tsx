@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui'
-import { grayDark, grayLight } from '~/styles/colorPrimitives.stylex'
+import { neutral } from '~/styles/colors/primitives.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
 import { fontSizes, spacing } from '~/styles/tokens.stylex'
@@ -27,13 +27,13 @@ const styles = stylex.create({
 	label: {
 		marginBottom: spacing.md,
 
-		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.xs,
 	},
 	panel: {
 		paddingBlock: spacing.lg,
 
-		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.sm,
 		lineHeight: 1.5,
 	},

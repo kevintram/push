@@ -1,7 +1,7 @@
 import { Menu } from '@base-ui/react/menu'
 import * as stylex from '@stylexjs/stylex'
 
-import { dropdownMenuColors } from '~/styles/componentColors.stylex'
+import { dropdownMenuColors } from '~/styles/colors/components.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({

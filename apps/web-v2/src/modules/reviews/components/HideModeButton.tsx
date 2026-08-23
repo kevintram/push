@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Copy } from 'lucide-react'
 
 import { SidebarItem } from '~/components/sidebar-item'
-import { hideModeButtonColors } from '~/styles/componentColors.stylex'
+import { hideModeButtonColors } from '~/styles/colors/components.stylex'
 
 import { useHideMode } from '../hide-mode/useHideMode'
 

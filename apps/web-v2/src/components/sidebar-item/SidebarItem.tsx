@@ -3,7 +3,7 @@ import { useRender } from '@base-ui/react/use-render'
 import * as stylex from '@stylexjs/stylex'
 import { type LucideIcon } from 'lucide-react'
 
-import { sidebarItemColors } from '~/styles/componentColors.stylex'
+import { sidebarItemColors } from '~/styles/colors/components.stylex'
 import {
 	fontSizes,
 	fontWeights,

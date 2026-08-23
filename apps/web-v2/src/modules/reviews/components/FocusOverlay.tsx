@@ -18,7 +18,7 @@ import {
 	TooltipTrigger,
 } from '~/components/ui'
 import type { ReviewCard } from '~/modules/reviews/types/review.types'
-import { focusOverlayColors } from '~/styles/componentColors.stylex'
+import { focusOverlayColors } from '~/styles/colors/components.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { FocusOverlayCardError } from './FocusOverlayCardError'

@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 
 import { DialogClose } from '~/components/ui'
-import { searchResultItemColors } from '~/styles/componentColors.stylex'
+import { searchResultItemColors } from '~/styles/colors/components.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 import type { SearchResultItem as SearchResultItemModel } from '../utils/searchResults'

@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { breadcrumbColors } from '~/styles/componentColors.stylex'
+import { breadcrumbColors } from '~/styles/colors/components.stylex'
 import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
 export interface BreadcrumbListProps extends Omit<

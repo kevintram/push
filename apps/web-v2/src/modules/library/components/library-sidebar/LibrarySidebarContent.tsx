@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react'
 import { useCallback } from 'react'
 
 import { Button, Tree } from '~/components/ui'
-import { librarySidebarColors } from '~/styles/componentColors.stylex'
+import { librarySidebarColors } from '~/styles/colors/components.stylex'
 import { fontWeights, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { useCreateTopic } from '../../api/topicQueries'

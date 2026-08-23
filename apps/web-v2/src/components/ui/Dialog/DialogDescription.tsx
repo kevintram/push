@@ -1,7 +1,7 @@
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import * as stylex from '@stylexjs/stylex'
 
-import { dialogColors } from '~/styles/componentColors.stylex'
+import { dialogColors } from '~/styles/colors/components.stylex'
 import { fontSizes } from '~/styles/tokens.stylex'
 
 export interface DialogDescriptionProps extends Omit<

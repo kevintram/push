@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { type ReactNode } from 'react'
 
-import { grayDark, grayLight } from '~/styles/colorPrimitives.stylex'
+import { neutral } from '~/styles/colors/primitives.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
@@ -29,7 +29,7 @@ const styles = stylex.create({
 		lineHeight: 1,
 	},
 	meta: {
-		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.sm,
 	},
 	body: {

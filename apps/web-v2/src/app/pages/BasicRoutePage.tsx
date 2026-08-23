@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { basicRoutePageColors } from '~/styles/componentColors.stylex'
+import { basicRoutePageColors } from '~/styles/colors/components.stylex'
 import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
 
 type BasicRoutePageProps = {

@@ -1,7 +1,7 @@
 import { Separator as SeparatorPrimitive } from '@base-ui/react/separator'
 import * as stylex from '@stylexjs/stylex'
 
-import { separatorColors } from '~/styles/componentColors.stylex'
+import { separatorColors } from '~/styles/colors/components.stylex'
 
 export interface SeparatorProps extends Omit<
 	React.ComponentProps<typeof SeparatorPrimitive>,

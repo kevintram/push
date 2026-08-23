@@ -17,7 +17,7 @@ import {
 	TreeItemContent,
 	TreeItemLabel,
 } from '~/components/ui'
-import { libraryTopicItemColors } from '~/styles/componentColors.stylex'
+import { libraryTopicItemColors } from '~/styles/colors/components.stylex'
 import { iconSizes } from '~/styles/tokens.stylex'
 
 import { useCreateTopic, useDeleteTopic } from '../../api/topicQueries'

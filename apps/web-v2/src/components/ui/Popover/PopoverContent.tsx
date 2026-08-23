@@ -1,7 +1,7 @@
 import { Popover } from '@base-ui/react/popover'
 import * as stylex from '@stylexjs/stylex'
 
-import { popoverColors } from '~/styles/componentColors.stylex'
+import { popoverColors } from '~/styles/colors/components.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
 export interface PopoverContentProps extends Omit<
