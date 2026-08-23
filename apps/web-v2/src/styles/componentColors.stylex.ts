@@ -1,399 +1,378 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from './colors.stylex'
+import {
+	amberDark,
+	amberLight,
+	blueDark,
+	blueLight,
+	orangeDark,
+	orangeLight,
+} from './colorPrimitives.stylex'
+import { colorsV2 } from './colorsV2.stylex'
 
 export const breadcrumbColors = stylex.defineVars({
-	linkForeground: colors.textLink,
-	linkForegroundHover: colors.textLinkHover,
-	linkForegroundPressed: colors.textLinkActive,
-	linkFocusRingRest: colors.bgSurfaceTransparent,
-	linkFocusRing: colors.borderFocus,
+	linkForeground: colorsV2.textInteractive,
+	linkForegroundHover: colorsV2.textInteractiveHover,
+	linkForegroundPressed: colorsV2.textInteractiveActive,
+	linkFocusRingRest: colorsV2.surfaceTransparent,
+	linkFocusRing: colorsV2.borderFocus,
 
-	listForeground: colors.textSecondary,
-	pageForeground: colors.text,
+	listForeground: colorsV2.textSecondary,
+	pageForeground: colorsV2.textPrimary,
 })
 
 export const buttonColors = stylex.defineVars({
-	focusRingRest: colors.bgSurfaceTransparent,
-	focusRing: colors.borderFocus,
+	focusRingRest: colorsV2.surfaceTransparent,
+	focusRing: colorsV2.borderFocus,
 
-	primaryBorder: colors.bgSurfaceTransparent,
-	primaryBackground: colors.bgFillBrand,
-	primaryBackgroundHover: colors.bgFillBrandHover,
-	primaryBackgroundPressed: colors.bgFillBrandActive,
-	primaryForeground: colors.textBrandOnBgFill,
-	primaryForegroundHover: colors.textBrandOnBgFillHover,
-	primaryForegroundPressed: colors.textBrandOnBgFillActive,
+	primaryBorder: colorsV2.surfaceTransparent,
+	primaryBackground: colorsV2.surfaceInteractivePrimary,
+	primaryBackgroundHover: colorsV2.surfaceInteractivePrimaryHover,
+	primaryBackgroundPressed: colorsV2.surfaceInteractivePrimaryActive,
+	primaryForeground: colorsV2.textOnBrand,
+	primaryForegroundHover: colorsV2.textOnBrand,
+	primaryForegroundPressed: colorsV2.textOnBrand,
 
-	secondaryBorder: colors.bgSurfaceTransparent,
-	secondaryBackground: colors.bgFillSecondary,
-	secondaryBackgroundHover: colors.bgFillSecondaryHover,
-	secondaryBackgroundPressed: colors.bgFillSecondaryActive,
-	secondaryForeground: colors.textInteractive,
-	secondaryForegroundHover: colors.textInteractiveHover,
-	secondaryForegroundPressed: colors.textInteractiveActive,
+	secondaryBorder: colorsV2.surfaceTransparent,
+	secondaryBackground: colorsV2.surfaceInteractiveSecondary,
+	secondaryBackgroundHover: colorsV2.surfaceInteractiveSecondaryHover,
+	secondaryBackgroundPressed: colorsV2.surfaceInteractiveSecondaryActive,
+	secondaryForeground: colorsV2.textInteractive,
+	secondaryForegroundHover: colorsV2.textInteractiveHover,
+	secondaryForegroundPressed: colorsV2.textInteractiveActive,
 
-	outlineBorder: colors.borderTertiary,
-	outlineBackground: colors.bgFillTertiary,
-	outlineBackgroundHover: colors.bgFillTertiaryHover,
-	outlineBackgroundPressed: colors.bgFillTertiaryActive,
-	outlineForeground: colors.textInteractive,
-	outlineForegroundHover: colors.textInteractiveHover,
-	outlineForegroundPressed: colors.textInteractiveActive,
+	outlineBorder: colorsV2.borderSubtle,
+	outlineBackground: colorsV2.surfaceInteractiveSecondary,
+	outlineBackgroundHover: colorsV2.surfaceInteractiveSecondaryHover,
+	outlineBackgroundPressed: colorsV2.surfaceInteractiveSecondaryActive,
+	outlineForeground: colorsV2.textInteractive,
+	outlineForegroundHover: colorsV2.textInteractiveHover,
+	outlineForegroundPressed: colorsV2.textInteractiveActive,
 
-	ghostBorder: colors.bgSurfaceTransparent,
-	ghostBackground: colors.bgSurfaceTransparent,
-	ghostBackgroundHover: colors.bgFillTransparentHover,
-	ghostBackgroundPressed: colors.bgFillTransparentActive,
-	ghostForeground: colors.textInteractive,
-	ghostForegroundHover: colors.textInteractiveHover,
-	ghostForegroundPressed: colors.textInteractiveActive,
+	ghostBorder: colorsV2.surfaceTransparent,
+	ghostBackground: colorsV2.surfaceTransparent,
+	ghostBackgroundHover: colorsV2.surfaceTransparentHover,
+	ghostBackgroundPressed: colorsV2.surfaceTransparentActive,
+	ghostForeground: colorsV2.textInteractive,
+	ghostForegroundHover: colorsV2.textInteractiveHover,
+	ghostForegroundPressed: colorsV2.textInteractiveActive,
 
-	dangerPrimaryBorder: colors.bgSurfaceTransparent,
-	dangerPrimaryBackground: colors.bgFillDanger,
-	dangerPrimaryBackgroundHover: colors.bgFillDangerHover,
-	dangerPrimaryBackgroundPressed: colors.bgFillDangerActive,
-	dangerPrimaryForeground: colors.textDangerOnBgFill,
-	dangerPrimaryInsetBorder: colors.insetContrast,
+	dangerBorder: colorsV2.surfaceTransparent,
+	dangerBackground: colorsV2.surfaceInteractiveDanger,
+	dangerBackgroundHover: colorsV2.surfaceInteractiveDangerHover,
+	dangerBackgroundPressed: colorsV2.surfaceInteractiveDangerActive,
+	dangerForeground: colorsV2.textDanger,
+	dangerForegroundHover: colorsV2.textDangerHover,
+	dangerForegroundPressed: colorsV2.textDangerActive,
 
-	dangerSecondaryBorder: colors.bgSurfaceTransparent,
-	dangerSecondaryBackground: colors.bgFillDangerSecondary,
-	dangerSecondaryBackgroundHover: colors.bgFillDangerSecondaryHover,
-	dangerSecondaryBackgroundPressed: colors.bgFillDangerSecondaryActive,
-	dangerSecondaryForeground: colors.textDanger,
-	dangerSecondaryForegroundHover: colors.textDangerHover,
-	dangerSecondaryForegroundPressed: colors.textDangerActive,
+	primaryDisabledBorder: colorsV2.surfaceTransparent,
+	primaryDisabledBackground: colorsV2.surfaceInteractivePrimaryDisabled,
+	primaryDisabledForeground: colorsV2.textOnBrandDisabled,
 
-	dangerOutlineBorder: colors.borderDanger,
-	dangerOutlineBorderHover: colors.borderDangerHover,
-	dangerOutlineBorderPressed: colors.borderDangerActive,
-	dangerOutlineBackground: colors.bgFillDangerTertiary,
-	dangerOutlineBackgroundHover: colors.bgFillDangerTertiaryHover,
-	dangerOutlineBackgroundPressed: colors.bgFillDangerTertiaryActive,
-	dangerOutlineForeground: colors.textDanger,
-	dangerOutlineForegroundHover: colors.textDangerHover,
-	dangerOutlineForegroundPressed: colors.textDangerActive,
-
-	dangerGhostBorder: colors.bgSurfaceTransparent,
-	dangerGhostBackground: colors.bgSurfaceTransparent,
-	dangerGhostBackgroundHover: colors.bgFillDangerTransparentHover,
-	dangerGhostBackgroundPressed: colors.bgFillDangerTransparentActive,
-	dangerGhostForeground: colors.textDanger,
-	dangerGhostForegroundHover: colors.textDangerHover,
-	dangerGhostForegroundPressed: colors.textDangerActive,
-
-	primaryDisabledBorder: colors.bgSurfaceTransparent,
-	primaryDisabledBackground: colors.bgFillBrandDisabled,
-	primaryDisabledForeground: colors.textBrandOnBgFillDisabled,
-
-	disabledBorder: colors.borderDisabled,
-	disabledBackground: colors.bgFillDisabled,
-	disabledForeground: colors.textDisabled,
+	disabledBorder: colorsV2.borderDisabled,
+	disabledBackground: colorsV2.surfaceInteractiveSecondaryDisabled,
+	disabledForeground: colorsV2.textDisabled,
 })
 
 export const calendarColors = stylex.defineVars({
-	navButtonBorder: colors.bgSurfaceTransparent,
-	navButtonBackground: colors.bgSurfaceTransparent,
-	navButtonBackgroundHover: colors.bgFillTransparentHover,
-	navButtonBackgroundPressed: colors.bgFillTransparentActive,
-	navButtonForeground: colors.textInteractive,
-	navButtonFocusRingRest: colors.bgSurfaceTransparent,
-	navButtonFocusRing: colors.borderFocus,
+	navButtonBorder: colorsV2.surfaceTransparent,
+	navButtonBackground: colorsV2.surfaceTransparent,
+	navButtonBackgroundHover: colorsV2.surfaceTransparentHover,
+	navButtonBackgroundPressed: colorsV2.surfaceTransparentActive,
+	navButtonForeground: colorsV2.textInteractive,
+	navButtonFocusRingRest: colorsV2.surfaceTransparent,
+	navButtonFocusRing: colorsV2.borderFocus,
 
-	weekdayForeground: colors.textSecondary,
+	weekdayForeground: colorsV2.textSecondary,
 
-	dayButtonBorder: colors.bgSurfaceTransparent,
-	dayButtonBackground: colors.bgSurfaceTransparent,
-	dayButtonBackgroundHover: colors.bgFillTransparentHover,
-	dayButtonBackgroundSelected: colors.bgFillBrand,
-	dayButtonBackgroundSelectedHover: colors.bgFillBrandHover,
-	dayButtonBackgroundToday: colors.bgSurfaceInfo,
-	dayButtonBackgroundTodayHover: colors.bgSurfaceInfoHover,
-	dayButtonForeground: colors.text,
-	dayButtonForegroundSelected: colors.textBrandOnBgFill,
-	dayButtonFocusRingRest: colors.bgSurfaceTransparent,
-	dayButtonFocusRing: colors.borderFocus,
+	dayButtonBorder: colorsV2.surfaceTransparent,
+	dayButtonBackground: colorsV2.surfaceTransparent,
+	dayButtonBackgroundHover: colorsV2.surfaceTransparentHover,
+	dayButtonBackgroundSelected: colorsV2.surfaceInteractivePrimary,
+	dayButtonBackgroundSelectedHover: colorsV2.surfaceInteractivePrimaryHover,
+	dayButtonBackgroundToday: {
+		default: blueLight.s3,
+		'@media (prefers-color-scheme: dark)': blueDark.s3,
+	},
+	dayButtonBackgroundTodayHover: {
+		default: blueLight.s4,
+		'@media (prefers-color-scheme: dark)': blueDark.s4,
+	},
+	dayButtonForeground: colorsV2.textPrimary,
+	dayButtonForegroundSelected: colorsV2.textOnBrand,
+	dayButtonFocusRingRest: colorsV2.surfaceTransparent,
+	dayButtonFocusRing: colorsV2.borderFocus,
 })
 
 export const dialogColors = stylex.defineVars({
-	overlayBackground: colors.backdropBg,
+	overlayBackground: colorsV2.surfaceBackdrop,
 
-	popupBorder: colors.border,
-	popupBackground: colors.bgSurface,
-	popupForeground: colors.text,
-	popupShadow: colors.shadowStrong,
+	popupBorder: colorsV2.borderPrimary,
+	popupBackground: colorsV2.surfaceRaised,
+	popupForeground: colorsV2.textPrimary,
+	popupShadow: colorsV2.shadowStrong,
 
-	fullscreenBackground: colors.bg,
+	fullscreenBackground: colorsV2.surfacePrimary,
 
-	closeButtonBorder: colors.bgSurfaceTransparent,
-	closeButtonBackground: colors.bgSurfaceTransparent,
-	closeButtonBackgroundHover: colors.bgFillTransparentHover,
-	closeButtonBackgroundPressed: colors.bgFillTransparentActive,
-	closeButtonFocusRingRest: colors.bgSurfaceTransparent,
-	closeButtonFocusRing: colors.borderFocus,
+	closeButtonBorder: colorsV2.surfaceTransparent,
+	closeButtonBackground: colorsV2.surfaceTransparent,
+	closeButtonBackgroundHover: colorsV2.surfaceTransparentHover,
+	closeButtonBackgroundPressed: colorsV2.surfaceTransparentActive,
+	closeButtonFocusRingRest: colorsV2.surfaceTransparent,
+	closeButtonFocusRing: colorsV2.borderFocus,
 
-	descriptionForeground: colors.textSecondary,
+	descriptionForeground: colorsV2.textSecondary,
 })
 
 export const dropdownMenuColors = stylex.defineVars({
-	popupBorder: colors.border,
-	popupBackground: colors.bgSurface,
-	popupForeground: colors.text,
-	popupShadow: colors.shadowSubtle,
+	popupBorder: colorsV2.borderPrimary,
+	popupBackground: colorsV2.surfaceRaised,
+	popupForeground: colorsV2.textPrimary,
+	popupShadow: colorsV2.shadowSubtle,
 
-	itemBackground: colors.bgSurfaceTransparent,
-	itemBackgroundHighlighted: colors.bgSurfaceSecondaryHover,
-	itemForeground: colors.textInteractive,
-	itemForegroundHighlighted: colors.textInteractiveHover,
-	itemForegroundPressed: colors.textInteractiveActive,
+	itemBackground: colorsV2.surfaceTransparent,
+	itemBackgroundHighlighted: colorsV2.surfaceTransparentHover,
+	itemForeground: colorsV2.textInteractive,
+	itemForegroundHighlighted: colorsV2.textInteractiveHover,
+	itemForegroundPressed: colorsV2.textInteractiveActive,
 
-	subTriggerBackground: colors.bgSurfaceTransparent,
-	subTriggerBackgroundHighlighted: colors.bgSurfaceSecondaryHover,
-	subTriggerForeground: colors.textInteractive,
-	subTriggerForegroundHighlighted: colors.textInteractiveHover,
-	subTriggerForegroundPressed: colors.textInteractiveActive,
+	subTriggerBackground: colorsV2.surfaceTransparent,
+	subTriggerBackgroundHighlighted: colorsV2.surfaceTransparentHover,
+	subTriggerForeground: colorsV2.textInteractive,
+	subTriggerForegroundHighlighted: colorsV2.textInteractiveHover,
+	subTriggerForegroundPressed: colorsV2.textInteractiveActive,
 
-	shortcutForeground: colors.textSecondary,
-	separatorBackground: colors.borderSecondary,
+	shortcutForeground: colorsV2.textSecondary,
+	separatorBackground: colorsV2.borderSubtle,
 })
 
 export const popoverColors = stylex.defineVars({
-	popupBorder: colors.border,
-	popupBackground: colors.bgSurface,
-	popupForeground: colors.text,
-	popupShadow: colors.shadowSubtle,
+	popupBorder: colorsV2.borderPrimary,
+	popupBackground: colorsV2.surfaceRaised,
+	popupForeground: colorsV2.textPrimary,
+	popupShadow: colorsV2.shadowSubtle,
 })
 
 export const separatorColors = stylex.defineVars({
-	background: colors.borderSecondary,
+	background: colorsV2.borderSubtle,
 })
 
 export const toasterColors = stylex.defineVars({
-	normalBackground: colors.bgSurface,
-	normalBorder: colors.border,
-	normalForeground: colors.text,
+	normalBackground: colorsV2.surfaceRaised,
+	normalBorder: colorsV2.borderPrimary,
+	normalForeground: colorsV2.textPrimary,
 
-	infoBackground: colors.bgSurfaceInfo,
-	infoBorder: colors.borderInfo,
-	infoForeground: colors.textInfo,
-
-	successBackground: colors.bgSurfaceSuccess,
-	successBorder: colors.borderSuccess,
-	successForeground: colors.textSuccess,
-
-	warningBackground: colors.bgSurfaceWarning,
-	warningBorder: colors.borderWarning,
-	warningForeground: colors.textWarning,
-
-	errorBackground: colors.bgSurfaceDanger,
-	errorBorder: colors.borderDanger,
-	errorForeground: colors.textDanger,
+	errorBackground: colorsV2.surfaceInteractiveDanger,
+	errorBorder: colorsV2.borderDanger,
+	errorForeground: colorsV2.textDanger,
 })
 
 export const tabsColors = stylex.defineVars({
-	listBackground: colors.bgSurfaceSecondary,
-	listForeground: colors.textSecondary,
-	lineListBorder: colors.borderSecondary,
-	lineListBorderRest: colors.bgSurfaceTransparent,
+	listBackground: colorsV2.surfaceSecondary,
+	listForeground: colorsV2.textSecondary,
+	lineListBorder: colorsV2.borderSubtle,
+	lineListBorderRest: colorsV2.surfaceTransparent,
 
-	triggerBorder: colors.bgSurfaceTransparent,
-	triggerBackground: colors.bgSurfaceTransparent,
-	triggerForeground: colors.textInteractive,
-	triggerForegroundHover: colors.textInteractiveHover,
-	triggerForegroundPressed: colors.textInteractiveActive,
-	triggerForegroundSelected: colors.textInteractiveActive,
-	triggerForegroundDisabled: colors.textDisabled,
-	triggerFocusRingRest: colors.bgSurfaceTransparent,
-	triggerFocusRing: colors.borderFocus,
+	triggerBorder: colorsV2.surfaceTransparent,
+	triggerBackground: colorsV2.surfaceTransparent,
+	triggerForeground: colorsV2.textInteractive,
+	triggerForegroundHover: colorsV2.textInteractiveHover,
+	triggerForegroundPressed: colorsV2.textInteractiveActive,
+	triggerForegroundSelected: colorsV2.textInteractiveActive,
+	triggerForegroundDisabled: colorsV2.textDisabled,
+	triggerFocusRingRest: colorsV2.surfaceTransparent,
+	triggerFocusRing: colorsV2.borderFocus,
 
-	defaultTriggerBackground: colors.bgSurfaceTransparent,
-	defaultTriggerBackgroundSelected: colors.bgFillTransparentSelected,
-	defaultTriggerShadowSelected: colors.shadowSubtle,
+	defaultTriggerBackground: colorsV2.surfaceTransparent,
+	defaultTriggerBackgroundSelected: colorsV2.surfaceTransparentHover,
+	defaultTriggerShadowSelected: colorsV2.shadowSubtle,
 
-	lineTriggerBorderRest: colors.bgSurfaceTransparent,
-	lineTriggerBorderSelected: colors.borderBrand,
+	lineTriggerBorderRest: colorsV2.surfaceTransparent,
+	lineTriggerBorderSelected: colorsV2.borderBrand,
 
-	contentFocusRingRest: colors.bgSurfaceTransparent,
-	contentFocusRing: colors.borderFocus,
+	contentFocusRingRest: colorsV2.surfaceTransparent,
+	contentFocusRing: colorsV2.borderFocus,
 })
 
 export const textareaColors = stylex.defineVars({
-	border: colors.bgSurfaceTransparent,
-	background: colors.bgSurfaceTransparent,
-	foreground: colors.text,
-	foregroundDisabled: colors.textDisabled,
-	focusRingRest: colors.bgSurfaceTransparent,
-	placeholderForeground: colors.textSecondary,
+	border: colorsV2.surfaceTransparent,
+	background: colorsV2.surfaceTransparent,
+	foreground: colorsV2.textPrimary,
+	foregroundDisabled: colorsV2.textDisabled,
+	focusRingRest: colorsV2.surfaceTransparent,
+	placeholderForeground: colorsV2.textSecondary,
 })
 
 export const tooltipColors = stylex.defineVars({
-	popupBackground: colors.bgSurfaceInverse,
-	popupForeground: colors.textInverse,
-	popupShadow: colors.shadowSubtle,
+	popupBackground: colorsV2.surfaceInverse,
+	popupForeground: colorsV2.textOnInverse,
+	popupShadow: colorsV2.shadowSubtle,
 })
 
 export const treeColors = stylex.defineVars({
-	itemBackgroundHover: colors.navBgSurfaceHover,
-	itemBackgroundSelected: colors.navBgSurfaceActive,
-	itemBackgroundSelectedHover: colors.navBgSurfaceActive,
+	itemBackgroundHover: colorsV2.surfaceTransparentHover,
+	itemBackgroundSelected: colorsV2.surfaceTransparentActive,
+	itemBackgroundSelectedHover: colorsV2.surfaceTransparentActive,
 
-	labelBackground: colors.bgSurfaceTransparent,
-	labelForeground: colors.textLink,
-	labelForegroundHover: colors.textLinkHover,
-	labelForegroundSelected: colors.textLinkActive,
-	labelFocusRingRest: colors.bgSurfaceTransparent,
-	labelFocusRing: colors.borderFocus,
-})
-
-export const appShellColors = stylex.defineVars({
-	background: colors.bg,
-	foreground: colors.text,
+	labelBackground: colorsV2.surfaceTransparent,
+	labelForeground: colorsV2.textInteractive,
+	labelForegroundHover: colorsV2.textInteractiveHover,
+	labelForegroundSelected: colorsV2.textInteractiveActive,
+	labelFocusRingRest: colorsV2.surfaceTransparent,
+	labelFocusRing: colorsV2.borderFocus,
 })
 
 export const appSidebarColors = stylex.defineVars({
-	background: colors.navBg,
-	border: colors.borderSecondary,
+	background: colorsV2.surfaceTransparent,
+	border: colorsV2.borderSubtle,
 })
 
 export const loadingIndicatorColors = stylex.defineVars({
-	foreground: colors.textSecondary,
+	foreground: colorsV2.textSecondary,
 })
 
 export const sidebarItemColors = stylex.defineVars({
-	background: colors.bg,
-	backgroundHover: colors.navBgSurfaceHover,
-	backgroundSelected: colors.navBgSurfaceActive,
-	backgroundSelectedHover: colors.navBgSurfaceActive,
+	background: colorsV2.surfaceTransparent,
+	backgroundHover: colorsV2.surfaceTransparentHover,
+	backgroundSelected: colorsV2.surfaceTransparentActive,
+	backgroundSelectedHover: colorsV2.surfaceTransparentActive,
 
-	foreground: colors.textLink,
-	foregroundHover: colors.textLinkHover,
-	foregroundSelected: colors.textLinkActive,
+	foreground: colorsV2.textInteractive,
+	foregroundHover: colorsV2.textInteractiveHover,
+	foregroundSelected: colorsV2.textInteractiveActive,
 })
 
 export const notAuthenticatedPageColors = stylex.defineVars({
-	loadingIndicatorForeground: colors.textSecondary,
+	loadingIndicatorForeground: colorsV2.textSecondary,
 })
 
 export const librarySidebarColors = stylex.defineVars({
-	headerBackgroundDropTarget: colors.navBgSurfaceActive,
+	headerBackgroundDropTarget: colorsV2.surfaceTransparentActive,
 })
 
 export const libraryTopicItemColors = stylex.defineVars({
-	containerBackgroundDragging: colors.navBgSurface,
-	containerBackgroundDropTarget: colors.navBgSurfaceActive,
+	containerBackgroundDragging: colorsV2.surfaceSecondary,
+	containerBackgroundDropTarget: colorsV2.surfaceTransparentHover,
 })
 
 export const moveTopicDialogColors = stylex.defineVars({
-	treeBorder: colors.border,
-	statusForeground: colors.textSecondary,
+	treeBorder: colorsV2.borderPrimary,
+	statusForeground: colorsV2.textSecondary,
 })
 
 export const focusOverlayColors = stylex.defineVars({
-	containerBackground: colors.bgSurface,
-	cardBackground: colors.bg,
+	containerBackground: colorsV2.surfaceRaised,
+	cardBackground: colorsV2.surfacePrimary,
 
-	positionForeground: colors.textSecondary,
-	emptyForeground: colors.textSecondary,
+	positionForeground: colorsV2.textSecondary,
+	emptyForeground: colorsV2.textSecondary,
 })
 
 export const focusOverlayCardErrorColors = stylex.defineVars({
-	messageForeground: colors.textSecondary,
+	messageForeground: colorsV2.textSecondary,
 })
 
 export const hideModeButtonColors = stylex.defineVars({
-	selectedBackground: colors.bgSurfaceInfo,
-	selectedBackgroundHover: colors.bgSurfaceInfoHover,
-	selectedForeground: colors.textInfo,
+	selectedBackground: {
+		default: blueLight.s3,
+		'@media (prefers-color-scheme: dark)': blueDark.s3,
+	},
+	selectedBackgroundHover: {
+		default: blueLight.s4,
+		'@media (prefers-color-scheme: dark)': blueDark.s4,
+	},
+	selectedForeground: {
+		default: blueLight.s12,
+		'@media (prefers-color-scheme: dark)': blueDark.s12,
+	},
 })
 
 export const hideableColors = stylex.defineVars({
-	placeholderBackground: colors.bgFillSecondary,
+	placeholderBackground: colorsV2.surfaceInteractiveSecondary,
 })
 
 export const reviewColors = stylex.defineVars({
-	rowBackground: colors.bgSurfaceTransparent,
+	rowBackground: colorsV2.surfaceTransparent,
 
-	ratingBadgeBackground: colors.bgFillBrand,
-	ratingBadgeForeground: colors.textBrandOnBgFill,
+	ratingBadgeBackground: colorsV2.surfaceInteractivePrimary,
+	ratingBadgeForeground: colorsV2.textOnBrand,
 
-	notesButtonBackground: colors.bgSurfaceTransparent,
-	notesButtonForeground: colors.text,
+	notesButtonBackground: colorsV2.surfaceTransparent,
+	notesButtonForeground: colorsV2.textPrimary,
 
-	notesIndicatorForeground: colors.textSecondary,
+	notesIndicatorForeground: colorsV2.textSecondary,
 })
 
 export const reviewCardActionsColors = stylex.defineVars({
-	flashcardSelectedForeground: colors.iconFlashcardActive,
-	flagSelectedForeground: colors.iconFlagActive,
+	flashcardSelectedForeground: {
+		default: amberLight.s9,
+		'@media (prefers-color-scheme: dark)': amberDark.s9,
+	},
+	flagSelectedForeground: {
+		default: orangeLight.s9,
+		'@media (prefers-color-scheme: dark)': orangeDark.s9,
+	},
 })
 
 export const reviewCardItemColors = stylex.defineVars({
-	containerBackgroundHover: colors.bgFillHover,
-	containerForeground: colors.text,
+	containerBackgroundHover: colorsV2.surfaceTransparentHover,
+	containerForeground: colorsV2.textPrimary,
 
-	titleForeground: colors.text,
+	titleForeground: colorsV2.textPrimary,
 })
 
 export const reviewCardMetadataColors = stylex.defineVars({
-	itemForeground: colors.textSecondary,
+	itemForeground: colorsV2.textSecondary,
 })
 
 export const reviewDatePickerColors = stylex.defineVars({
-	triggerForegroundToday: colors.textInfo,
-	triggerForegroundOverdue: colors.textDanger,
-
-	popoverBackground: colors.bg,
+	triggerForegroundToday: {
+		default: blueLight.s12,
+		'@media (prefers-color-scheme: dark)': blueDark.s12,
+	},
+	triggerForegroundOverdue: colorsV2.textDanger,
 })
 
 export const reviewsSidebarColors = stylex.defineVars({
-	containerBackground: colors.bgSurfaceSecondary,
+	containerBackground: colorsV2.surfaceSecondary,
 
-	seeAllForeground: colors.textLink,
-	seeAllForegroundHover: colors.textLinkHover,
-	seeAllForegroundPressed: colors.textLinkActive,
+	seeAllForeground: colorsV2.textInteractive,
+	seeAllForegroundHover: colorsV2.textInteractiveHover,
+	seeAllForegroundPressed: colorsV2.textInteractiveActive,
 })
 
 export const searchDialogColors = stylex.defineVars({
-	popupBorder: colors.borderSecondary,
-	popupBackground: colors.bg,
+	popupBorder: colorsV2.borderSubtle,
+	popupBackground: colorsV2.surfacePrimary,
 
-	headerBorder: colors.borderSecondary,
-	searchIconForeground: colors.textSecondary,
+	headerBorder: colorsV2.borderSubtle,
+	searchIconForeground: colorsV2.textSecondary,
 
-	inputBackground: colors.bgSurfaceTransparent,
-	inputForeground: colors.text,
-	inputPlaceholderForeground: colors.textSecondary,
+	inputBackground: colorsV2.surfaceTransparent,
+	inputForeground: colorsV2.textPrimary,
+	inputPlaceholderForeground: colorsV2.textSecondary,
 
-	statusForeground: colors.textSecondary,
+	statusForeground: colorsV2.textSecondary,
 })
 
 export const searchResultGroupColors = stylex.defineVars({
-	titleForeground: colors.textSecondary,
-	controlForeground: colors.textSecondary,
-	emptyForeground: colors.textSecondary,
+	titleForeground: colorsV2.textSecondary,
+	controlForeground: colorsV2.textSecondary,
+	emptyForeground: colorsV2.textSecondary,
 })
 
 export const searchResultItemColors = stylex.defineVars({
-	background: colors.bgSurfaceTransparent,
-	backgroundHover: colors.bgSurfaceHover,
-	backgroundFocusVisible: colors.bgSurfaceHover,
-	foreground: colors.text,
-	focusRingRest: colors.bgSurfaceTransparent,
-	focusRing: colors.borderFocus,
+	background: colorsV2.surfaceTransparent,
+	backgroundHover: colorsV2.surfaceTransparentHover,
+	backgroundFocusVisible: colorsV2.surfaceTransparentActive,
+	foreground: colorsV2.textPrimary,
+	focusRingRest: colorsV2.surfaceTransparent,
+	focusRing: colorsV2.borderFocus,
 
-	secondaryForeground: colors.textSecondary,
-	pathForeground: colors.textSecondary,
+	secondaryForeground: colorsV2.textSecondary,
+	pathForeground: colorsV2.textSecondary,
 })
 
 export const basicRoutePageColors = stylex.defineVars({
-	descriptionForeground: colors.textSecondary,
-})
-
-export const reviewListPageColors = stylex.defineVars({
-	emptyForeground: colors.textSecondary,
-})
-
-export const reviewCardPageShellColors = stylex.defineVars({
-	headerBorder: colors.border,
-	tabsBackground: colors.bgSurfaceTransparent,
+	descriptionForeground: colorsV2.textSecondary,
 })
