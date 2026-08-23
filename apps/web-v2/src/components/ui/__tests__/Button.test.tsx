@@ -53,14 +53,7 @@ describe('Button', () => {
 		rerender(<Button variant='ghost'>Ghost</Button>)
 		expect(screen.getByRole('button')).toBeInTheDocument()
 
-		rerender(<Button danger>Danger primary</Button>)
-		expect(screen.getByRole('button')).toBeInTheDocument()
-
-		rerender(
-			<Button danger variant='ghost'>
-				Danger ghost
-			</Button>,
-		)
+		rerender(<Button variant='danger'>Danger</Button>)
 		expect(screen.getByRole('button')).toBeInTheDocument()
 	})
 
