@@ -37,7 +37,6 @@ const styles = stylex.create({
 		flexDirection: 'column',
 		rowGap: spacing.lg,
 	},
-	popover: { backgroundColor: reviewDatePickerColors.popoverBackground },
 })
 
 interface ReviewDatePickerProps {
@@ -106,7 +105,7 @@ export function ReviewDatePicker({
 					{absoluteDate ?? 'Add due date'}
 				</TooltipContent>
 			</Tooltip>
-			<PopoverContent align='center' xstyle={styles.popover}>
+			<PopoverContent align='center'>
 				<div {...stylex.props(styles.content)}>
 					<Calendar
 						defaultMonth={selectedDate}

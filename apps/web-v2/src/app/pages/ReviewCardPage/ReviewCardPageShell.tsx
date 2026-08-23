@@ -5,7 +5,7 @@ import { Link, Outlet, useMatchRoute, useParams } from '@tanstack/react-router'
 import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
 import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
 import { ReviewCardActions } from '~/modules/reviews/components/ReviewCardActions'
-import { reviewCardPageShellColors } from '~/styles/componentColors.stylex'
+import { colorsV2 } from '~/styles/colorsV2.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
 import { ReviewCardBreadcrumbs } from './ReviewCardBreadcrumbs'
@@ -27,7 +27,7 @@ const styles = stylex.create({
 		alignItems: 'center',
 		justifyContent: 'space-between',
 
-		borderBottomColor: reviewCardPageShellColors.headerBorder,
+		borderBottomColor: colorsV2.borderPrimary,
 		borderBottomStyle: 'solid',
 		borderBottomWidth: '1px',
 	},
@@ -35,7 +35,7 @@ const styles = stylex.create({
 		padding: spacing.lg,
 	},
 	tabs: {
-		backgroundColor: reviewCardPageShellColors.tabsBackground,
+		backgroundColor: colorsV2.surfaceTransparent,
 	},
 	tabLink: {
 		textDecoration: 'none',

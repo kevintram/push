@@ -1,17 +1,12 @@
 import * as stylex from '@stylexjs/stylex'
 import type { ReactNode } from 'react'
 
-import { appShellColors } from '~/styles/componentColors.stylex'
-
 import { AppSidebar } from './AppSidebar'
 
 const styles = stylex.create({
 	shell: {
 		overflow: 'hidden',
 		overscrollBehavior: 'none',
-
-		backgroundColor: appShellColors.background,
-		color: appShellColors.foreground,
 
 		display: 'flex',
 
