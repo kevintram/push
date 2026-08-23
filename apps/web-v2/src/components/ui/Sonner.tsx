@@ -26,19 +26,19 @@ const styles = stylex.create({
 				toasterColors.errorForeground,
 		},
 		'--info-bg': {
-			default: toasterColors.infoBackground,
+			default: toasterColors.normalBackground,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.infoBackground,
+				toasterColors.normalBackground,
 		},
 		'--info-border': {
-			default: toasterColors.infoBorder,
+			default: toasterColors.normalBorder,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.infoBorder,
+				toasterColors.normalBorder,
 		},
 		'--info-text': {
-			default: toasterColors.infoForeground,
+			default: toasterColors.normalForeground,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.infoForeground,
+				toasterColors.normalForeground,
 		},
 		'--normal-bg': {
 			default: toasterColors.normalBackground,
@@ -56,34 +56,34 @@ const styles = stylex.create({
 				toasterColors.normalForeground,
 		},
 		'--success-bg': {
-			default: toasterColors.successBackground,
+			default: toasterColors.normalBackground,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.successBackground,
+				toasterColors.normalBackground,
 		},
 		'--success-border': {
-			default: toasterColors.successBorder,
+			default: toasterColors.normalBorder,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.successBorder,
+				toasterColors.normalBorder,
 		},
 		'--success-text': {
-			default: toasterColors.successForeground,
+			default: toasterColors.normalForeground,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.successForeground,
+				toasterColors.normalForeground,
 		},
 		'--warning-bg': {
-			default: toasterColors.warningBackground,
+			default: toasterColors.normalBackground,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.warningBackground,
+				toasterColors.normalBackground,
 		},
 		'--warning-border': {
-			default: toasterColors.warningBorder,
+			default: toasterColors.normalBorder,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.warningBorder,
+				toasterColors.normalBorder,
 		},
 		'--warning-text': {
-			default: toasterColors.warningForeground,
+			default: toasterColors.normalForeground,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.warningForeground,
+				toasterColors.normalForeground,
 		},
 		fontFamily: {
 			default: fonts.sans,
