@@ -3,7 +3,7 @@ import { useRender } from '@base-ui/react/use-render'
 import * as stylex from '@stylexjs/stylex'
 import { type LucideIcon } from 'lucide-react'
 
-import { colors } from '~/styles/colors.stylex'
+import { sidebarItemColors } from '~/styles/colors/components.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -46,15 +46,16 @@ const styles = stylex.create({
 		fontFamily: 'inherit',
 
 		backgroundColor: {
-			'[data-status=active]': colors.navBgSurfaceActive,
-			default: colors.bg,
-			':is([data-status=active]:hover)': colors.navBgSurfaceActive,
-			':hover': colors.navBgSurfaceHover,
+			'[data-status=active]': sidebarItemColors.backgroundSelected,
+			default: sidebarItemColors.background,
+			':is([data-status=active]:hover)':
+				sidebarItemColors.backgroundSelectedHover,
+			':hover': sidebarItemColors.backgroundHover,
 		},
 		color: {
-			'[data-status=active]': colors.textLinkActive,
-			default: colors.textLink,
-			':hover': colors.textLinkHover,
+			'[data-status=active]': sidebarItemColors.foregroundSelected,
+			default: sidebarItemColors.foreground,
+			':hover': sidebarItemColors.foregroundHover,
 		},
 	},
 	fat: {

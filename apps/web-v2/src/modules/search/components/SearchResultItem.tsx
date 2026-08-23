@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 
 import { DialogClose } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { searchResultItemColors } from '~/styles/colors/components.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 import type { SearchResultItem as SearchResultItemModel } from '../utils/searchResults'
@@ -21,14 +21,14 @@ const styles = stylex.create({
 		borderRadius: radii.lg,
 		textDecoration: 'none',
 		backgroundColor: {
-			default: colors.bgSurfaceTransparent,
-			':focus-visible': colors.bgSurfaceHover,
-			':hover': colors.bgSurfaceHover,
+			default: searchResultItemColors.background,
+			':focus-visible': searchResultItemColors.backgroundFocusVisible,
+			':hover': searchResultItemColors.backgroundHover,
 		},
-		color: colors.text,
+		color: searchResultItemColors.foreground,
 		outlineColor: {
-			default: 'transparent',
-			':focus-visible': colors.borderFocus,
+			default: searchResultItemColors.focusRingRest,
+			':focus-visible': searchResultItemColors.focusRing,
 		},
 		outlineOffset: '-2px',
 		outlineStyle: 'solid',
@@ -44,7 +44,7 @@ const styles = stylex.create({
 	},
 	secondary: {
 		overflow: 'hidden',
-		color: colors.textSecondary,
+		color: searchResultItemColors.secondaryForeground,
 		fontSize: fontSizes.sm,
 		lineHeight: 1.4,
 		textOverflow: 'ellipsis',
@@ -52,7 +52,7 @@ const styles = stylex.create({
 	},
 	path: {
 		overflow: 'hidden',
-		color: colors.textSecondary,
+		color: searchResultItemColors.pathForeground,
 		fontSize: fontSizes.xs,
 		lineHeight: 1.4,
 		textOverflow: 'ellipsis',

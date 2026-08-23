@@ -17,7 +17,7 @@ import {
 	TreeItemContent,
 	TreeItemLabel,
 } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { libraryTopicItemColors } from '~/styles/colors/components.stylex'
 import { iconSizes } from '~/styles/tokens.stylex'
 
 import { useCreateTopic, useDeleteTopic } from '../../api/topicQueries'
@@ -43,10 +43,10 @@ const topicPointerSensor = PointerSensor.configure({
 const styles = stylex.create({
 	// TODO: fix these damn color tokens
 	containerDragging: {
-		backgroundColor: colors.navBgSurface,
+		backgroundColor: libraryTopicItemColors.containerBackgroundDragging,
 	},
 	containerIsDropTarget: {
-		backgroundColor: colors.navBgSurfaceActive,
+		backgroundColor: libraryTopicItemColors.containerBackgroundDropTarget,
 	},
 })
 

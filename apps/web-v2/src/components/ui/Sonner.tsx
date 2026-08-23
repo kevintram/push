@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Toaster as SonnerToaster, type ToasterProps } from 'sonner'
 
-import { colors } from '~/styles/colors.stylex'
+import { toasterColors } from '~/styles/colors/components.stylex'
 import { fonts, radii } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -11,71 +11,79 @@ const styles = stylex.create({
 			':is([data-sonner-toaster][data-sonner-theme])': radii.lg,
 		},
 		'--error-bg': {
-			default: colors.bgSurfaceDanger,
+			default: toasterColors.errorBackground,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				colors.bgSurfaceDanger,
+				toasterColors.errorBackground,
 		},
 		'--error-border': {
-			default: colors.borderDanger,
+			default: toasterColors.errorBorder,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				colors.borderDanger,
+				toasterColors.errorBorder,
 		},
 		'--error-text': {
-			default: colors.textDanger,
-			':is([data-sonner-toaster][data-sonner-theme])': colors.textDanger,
+			default: toasterColors.errorForeground,
+			':is([data-sonner-toaster][data-sonner-theme])':
+				toasterColors.errorForeground,
 		},
 		'--info-bg': {
-			default: colors.bgSurfaceInfo,
+			default: toasterColors.normalBackground,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				colors.bgSurfaceInfo,
+				toasterColors.normalBackground,
 		},
 		'--info-border': {
-			default: colors.borderInfo,
-			':is([data-sonner-toaster][data-sonner-theme])': colors.borderInfo,
+			default: toasterColors.normalBorder,
+			':is([data-sonner-toaster][data-sonner-theme])':
+				toasterColors.normalBorder,
 		},
 		'--info-text': {
-			default: colors.textInfo,
-			':is([data-sonner-toaster][data-sonner-theme])': colors.textInfo,
+			default: toasterColors.normalForeground,
+			':is([data-sonner-toaster][data-sonner-theme])':
+				toasterColors.normalForeground,
 		},
 		'--normal-bg': {
-			default: colors.bgSurface,
-			':is([data-sonner-toaster][data-sonner-theme])': colors.bgSurface,
+			default: toasterColors.normalBackground,
+			':is([data-sonner-toaster][data-sonner-theme])':
+				toasterColors.normalBackground,
 		},
 		'--normal-border': {
-			default: colors.border,
-			':is([data-sonner-toaster][data-sonner-theme])': colors.border,
+			default: toasterColors.normalBorder,
+			':is([data-sonner-toaster][data-sonner-theme])':
+				toasterColors.normalBorder,
 		},
 		'--normal-text': {
-			default: colors.text,
-			':is([data-sonner-toaster][data-sonner-theme])': colors.text,
+			default: toasterColors.normalForeground,
+			':is([data-sonner-toaster][data-sonner-theme])':
+				toasterColors.normalForeground,
 		},
 		'--success-bg': {
-			default: colors.bgSurfaceSuccess,
+			default: toasterColors.normalBackground,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				colors.bgSurfaceSuccess,
+				toasterColors.normalBackground,
 		},
 		'--success-border': {
-			default: colors.borderSuccess,
+			default: toasterColors.normalBorder,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				colors.borderSuccess,
+				toasterColors.normalBorder,
 		},
 		'--success-text': {
-			default: colors.textSuccess,
-			':is([data-sonner-toaster][data-sonner-theme])': colors.textSuccess,
+			default: toasterColors.normalForeground,
+			':is([data-sonner-toaster][data-sonner-theme])':
+				toasterColors.normalForeground,
 		},
 		'--warning-bg': {
-			default: colors.bgSurfaceWarning,
+			default: toasterColors.normalBackground,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				colors.bgSurfaceWarning,
+				toasterColors.normalBackground,
 		},
 		'--warning-border': {
-			default: colors.borderWarning,
+			default: toasterColors.normalBorder,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				colors.borderWarning,
+				toasterColors.normalBorder,
 		},
 		'--warning-text': {
-			default: colors.textWarning,
-			':is([data-sonner-toaster][data-sonner-theme])': colors.textWarning,
+			default: toasterColors.normalForeground,
+			':is([data-sonner-toaster][data-sonner-theme])':
+				toasterColors.normalForeground,
 		},
 		fontFamily: {
 			default: fonts.sans,

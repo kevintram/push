@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
-import { colors } from '~/styles/colors.stylex'
+import { reviewCardItemColors } from '~/styles/colors/components.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
@@ -25,10 +25,10 @@ const styles = stylex.create({
 		borderRadius: radii.lg,
 
 		backgroundColor: {
-			':hover': colors.bgFillHover,
+			':hover': reviewCardItemColors.containerBackgroundHover,
 		},
 
-		color: colors.text,
+		color: reviewCardItemColors.containerForeground,
 	},
 	inner: {
 		paddingBlock: spacing.lg,
@@ -42,7 +42,7 @@ const styles = stylex.create({
 		fontWeight: fontWeights.semibold,
 
 		textDecoration: 'none',
-		color: colors.text,
+		color: reviewCardItemColors.titleForeground,
 
 		// Stretched-link trick
 		'::after': {

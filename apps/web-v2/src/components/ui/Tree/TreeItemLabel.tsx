@@ -2,7 +2,7 @@ import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/colors.stylex'
+import { treeColors } from '~/styles/colors/components.stylex'
 import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
 import { useTreeItemContext } from './TreeItemContext'
@@ -20,18 +20,18 @@ const styles = stylex.create({
 		borderWidth: 0,
 		textDecoration: 'none',
 		alignItems: 'center',
-		backgroundColor: 'transparent',
+		backgroundColor: treeColors.labelBackground,
 		color: {
-			default: colors.textLink,
-			':hover': colors.textLinkHover,
+			default: treeColors.labelForeground,
+			':hover': treeColors.labelForegroundHover,
 		},
 		cursor: 'pointer',
 		display: 'flex',
 		fontFamily: 'inherit',
 		fontSize: fontSizes.sm,
 		outlineColor: {
-			default: 'transparent',
-			':focus-visible': colors.borderFocus,
+			default: treeColors.labelFocusRingRest,
+			':focus-visible': treeColors.labelFocusRing,
 		},
 		outlineOffset: '-2px',
 		outlineStyle: 'solid',
@@ -39,7 +39,7 @@ const styles = stylex.create({
 		textAlign: 'start',
 	},
 	selected: {
-		color: colors.textLinkActive,
+		color: treeColors.labelForegroundSelected,
 	},
 })
 

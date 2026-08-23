@@ -48,7 +48,11 @@ export function DeleteConfirmationDialog({
 					>
 						Cancel
 					</Button>
-					<Button danger disabled={isPending} onClick={onConfirm}>
+					<Button
+						variant='danger'
+						disabled={isPending}
+						onClick={onConfirm}
+					>
 						Delete
 					</Button>
 				</DialogFooter>

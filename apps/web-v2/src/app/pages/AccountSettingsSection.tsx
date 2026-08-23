@@ -3,7 +3,9 @@ import * as stylex from '@stylexjs/stylex'
 import { UserRound } from 'lucide-react'
 
 import { Button } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { neutral } from '~/styles/colors/primitives.stylex'
+
+const DARK = '@media (prefers-color-scheme: dark)'
 import {
 	fontSizes,
 	fontWeights,
@@ -30,10 +32,10 @@ const styles = stylex.create({
 		paddingBlock: spacing.xl,
 
 		alignItems: 'center',
-		borderBlockEndColor: colors.borderSecondary,
+		borderBlockEndColor: { [DARK]: neutral.s700, default: neutral.s200 },
 		borderBlockEndStyle: 'solid',
 		borderBlockEndWidth: '1px',
-		borderBlockStartColor: colors.borderSecondary,
+		borderBlockStartColor: { [DARK]: neutral.s700, default: neutral.s200 },
 		borderBlockStartStyle: 'solid',
 		borderBlockStartWidth: '1px',
 		display: 'grid',
@@ -44,14 +46,14 @@ const styles = stylex.create({
 		width: '100%',
 	},
 	avatar: {
-		borderColor: colors.borderSecondary,
+		borderColor: { [DARK]: neutral.s700, default: neutral.s200 },
 		borderRadius: radii.full,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 
 		alignItems: 'center',
-		backgroundColor: colors.bgSurface,
-		color: colors.textSecondary,
+		backgroundColor: { [DARK]: neutral.s800, default: neutral.s100 },
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		display: 'flex',
 		justifyContent: 'center',
 		height: '40px',
@@ -75,7 +77,7 @@ const styles = stylex.create({
 	accountDescription: {
 		margin: spacing.none,
 
-		color: colors.textSecondary,
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.sm,
 		lineHeight: 1.45,
 	},

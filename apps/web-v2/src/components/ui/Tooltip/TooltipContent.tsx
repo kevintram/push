@@ -1,7 +1,7 @@
 import { Tooltip } from '@base-ui/react/tooltip'
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/colors.stylex'
+import { tooltipColors } from '~/styles/colors/components.stylex'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 export interface TooltipContentProps extends Omit<
@@ -21,9 +21,9 @@ const styles = stylex.create({
 		paddingInline: spacing.sm,
 
 		borderRadius: radii.xs,
-		backgroundColor: colors.bgSurfaceInverse,
-		boxShadow: `0 4px 12px ${colors.shadowSubtle}`,
-		color: colors.textInverse,
+		backgroundColor: tooltipColors.popupBackground,
+		boxShadow: `0 4px 12px ${tooltipColors.popupShadow}`,
+		color: tooltipColors.popupForeground,
 		fontSize: fontSizes.xs,
 		opacity: {
 			default: 1,

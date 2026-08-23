@@ -14,7 +14,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { reviewCardActionsColors } from '~/styles/colors/components.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { useReviewCardActions } from '../hooks/useReviewCardActions'
@@ -29,12 +29,12 @@ const styles = stylex.create({
 		flexShrink: 0,
 	},
 	flashcardOn: {
-		fill: colors.iconFlashcardActive,
-		color: colors.iconFlashcardActive,
+		fill: reviewCardActionsColors.flashcardSelectedForeground,
+		color: reviewCardActionsColors.flashcardSelectedForeground,
 	},
 	flagOn: {
-		fill: colors.iconFlagActive,
-		color: colors.iconFlagActive,
+		fill: reviewCardActionsColors.flagSelectedForeground,
+		color: reviewCardActionsColors.flagSelectedForeground,
 	},
 })
 

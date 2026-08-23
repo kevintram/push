@@ -2,7 +2,7 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import * as stylex from '@stylexjs/stylex'
 import { X } from 'lucide-react'
 
-import { colors } from '~/styles/colors.stylex'
+import { dialogColors } from '~/styles/colors/components.stylex'
 import { iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { DialogOverlay } from './DialogOverlay'
@@ -42,14 +42,14 @@ const styles = stylex.create({
 		inlineSize: '100%',
 		maxInlineSize: '32rem',
 
-		borderColor: colors.border,
+		borderColor: dialogColors.popupBorder,
 		borderRadius: radii.xl,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		outline: 'none',
-		backgroundColor: colors.bgSurface,
-		boxShadow: `0 16px 48px ${colors.shadowStrong}`,
-		color: colors.text,
+		backgroundColor: dialogColors.popupBackground,
+		boxShadow: `0 16px 48px ${dialogColors.popupShadow}`,
+		color: dialogColors.popupForeground,
 		opacity: {
 			default: 1,
 			':is([data-starting-style], [data-ending-style])': 0,
@@ -77,7 +77,7 @@ const styles = stylex.create({
 
 		borderRadius: 0,
 		borderWidth: '0px',
-		backgroundColor: colors.bg,
+		backgroundColor: dialogColors.fullscreenBackground,
 		boxShadow: 'none',
 		transform: {
 			default: 'none',
@@ -96,20 +96,20 @@ const styles = stylex.create({
 		inlineSize: '32px',
 		justifyContent: 'center',
 
-		borderColor: 'transparent',
+		borderColor: dialogColors.closeButtonBorder,
 		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		backgroundColor: {
-			default: colors.bgSurfaceTransparent,
-			':hover': colors.bgFillTransparentHover,
-			':active': colors.bgFillTransparentActive,
+			default: dialogColors.closeButtonBackground,
+			':hover': dialogColors.closeButtonBackgroundHover,
+			':active': dialogColors.closeButtonBackgroundPressed,
 		},
 		color: 'inherit',
 		cursor: 'pointer',
 		outlineColor: {
-			default: 'transparent',
-			':focus-visible': colors.borderFocus,
+			default: dialogColors.closeButtonFocusRingRest,
+			':focus-visible': dialogColors.closeButtonFocusRing,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',

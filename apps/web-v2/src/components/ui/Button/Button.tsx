@@ -1,7 +1,7 @@
 import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/colors.stylex'
+import { buttonColors } from '~/styles/colors/components.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 import { ButtonIcon } from './ButtonIcon'
@@ -30,8 +30,8 @@ const styles = stylex.create({
 			':active': 'none',
 		},
 		outlineColor: {
-			default: 'transparent',
-			':focus-visible': colors.borderFocus,
+			default: buttonColors.focusRingRest,
+			':focus-visible': buttonColors.focusRing,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
@@ -73,113 +73,70 @@ const styles = stylex.create({
 	},
 })
 
-const normalVariants = stylex.create({
+const variants = stylex.create({
 	primary: {
-		borderColor: 'transparent',
+		borderColor: buttonColors.primaryBorder,
 		backgroundColor: {
-			default: colors.bgFillBrand,
-			':hover': colors.bgFillBrandHover,
-			':active': colors.bgFillBrandActive,
+			default: buttonColors.primaryBackground,
+			':hover': buttonColors.primaryBackgroundHover,
+			':active': buttonColors.primaryBackgroundPressed,
 		},
 		color: {
-			default: colors.textBrandOnBgFill,
-			':hover': colors.textBrandOnBgFillHover,
-			':active': colors.textBrandOnBgFillActive,
+			default: buttonColors.primaryForeground,
+			':hover': buttonColors.primaryForegroundHover,
+			':active': buttonColors.primaryForegroundPressed,
 		},
 	},
 	secondary: {
-		borderColor: 'transparent',
+		borderColor: buttonColors.secondaryBorder,
 		backgroundColor: {
-			default: colors.bgFillSecondary,
-			':hover': colors.bgFillSecondaryHover,
-			':active': colors.bgFillSecondaryActive,
+			default: buttonColors.secondaryBackground,
+			':hover': buttonColors.secondaryBackgroundHover,
+			':active': buttonColors.secondaryBackgroundPressed,
 		},
 		color: {
-			default: colors.textInteractive,
-			':hover': colors.textInteractiveHover,
-			':active': colors.textInteractiveActive,
+			default: buttonColors.secondaryForeground,
+			':hover': buttonColors.secondaryForegroundHover,
+			':active': buttonColors.secondaryForegroundPressed,
 		},
 	},
 	outline: {
-		borderColor: colors.borderTertiary,
+		borderColor: buttonColors.outlineBorder,
 		backgroundColor: {
-			default: colors.bgFillTertiary,
-			':hover': colors.bgFillTertiaryHover,
-			':active': colors.bgFillTertiaryActive,
+			default: buttonColors.outlineBackground,
+			':hover': buttonColors.outlineBackgroundHover,
+			':active': buttonColors.outlineBackgroundPressed,
 		},
 		color: {
-			default: colors.textInteractive,
-			':hover': colors.textInteractiveHover,
-			':active': colors.textInteractiveActive,
+			default: buttonColors.outlineForeground,
+			':hover': buttonColors.outlineForegroundHover,
+			':active': buttonColors.outlineForegroundPressed,
 		},
 	},
 	ghost: {
-		borderColor: 'transparent',
+		borderColor: buttonColors.ghostBorder,
 		backgroundColor: {
-			default: colors.bgSurfaceTransparent,
-			':hover': colors.bgFillTransparentHover,
-			':active': colors.bgFillTransparentActive,
+			default: buttonColors.ghostBackground,
+			':hover': buttonColors.ghostBackgroundHover,
+			':active': buttonColors.ghostBackgroundPressed,
 		},
 		color: {
-			default: colors.textInteractive,
-			':hover': colors.textInteractiveHover,
-			':active': colors.textInteractiveActive,
+			default: buttonColors.ghostForeground,
+			':hover': buttonColors.ghostForegroundHover,
+			':active': buttonColors.ghostForegroundPressed,
 		},
 	},
-})
-
-const dangerVariants = stylex.create({
-	primary: {
-		borderColor: 'transparent',
+	danger: {
+		borderColor: buttonColors.dangerBorder,
 		backgroundColor: {
-			default: colors.bgFillDanger,
-			':hover': colors.bgFillDangerHover,
-			':active': colors.bgFillDangerActive,
-		},
-		boxShadow: `inset 0 0 0 1px ${colors.insetContrast}`,
-		color: colors.textDangerOnBgFill,
-	},
-	secondary: {
-		borderColor: 'transparent',
-		backgroundColor: {
-			default: colors.bgFillDangerSecondary,
-			':hover': colors.bgFillDangerSecondaryHover,
-			':active': colors.bgFillDangerSecondaryActive,
+			default: buttonColors.dangerBackground,
+			':hover': buttonColors.dangerBackgroundHover,
+			':active': buttonColors.dangerBackgroundPressed,
 		},
 		color: {
-			default: colors.textDanger,
-			':hover': colors.textDangerHover,
-			':active': colors.textDangerActive,
-		},
-	},
-	outline: {
-		borderColor: {
-			default: colors.borderDanger,
-			':hover': colors.borderDangerHover,
-			':active': colors.borderDangerActive,
-		},
-		backgroundColor: {
-			default: colors.bgFillDangerTertiary,
-			':hover': colors.bgFillDangerTertiaryHover,
-			':active': colors.bgFillDangerTertiaryActive,
-		},
-		color: {
-			default: colors.textDanger,
-			':hover': colors.textDangerHover,
-			':active': colors.textDangerActive,
-		},
-	},
-	ghost: {
-		borderColor: 'transparent',
-		backgroundColor: {
-			default: colors.bgSurfaceTransparent,
-			':hover': colors.bgFillDangerTransparentHover,
-			':active': colors.bgFillDangerTransparentActive,
-		},
-		color: {
-			default: colors.textDanger,
-			':hover': colors.textDangerHover,
-			':active': colors.textDangerActive,
+			default: buttonColors.dangerForeground,
+			':hover': buttonColors.dangerForegroundHover,
+			':active': buttonColors.dangerForegroundPressed,
 		},
 	},
 })
@@ -187,29 +144,29 @@ const dangerVariants = stylex.create({
 const disabledVariants = stylex.create({
 	brand: {
 		borderColor: {
-			default: 'transparent',
-			':hover': 'transparent',
-			':active': 'transparent',
+			default: buttonColors.primaryDisabledBorder,
+			':hover': buttonColors.primaryDisabledBorder,
+			':active': buttonColors.primaryDisabledBorder,
 		},
 		backgroundColor: {
-			default: colors.bgFillBrandDisabled,
-			':hover': colors.bgFillBrandDisabled,
-			':active': colors.bgFillBrandDisabled,
+			default: buttonColors.primaryDisabledBackground,
+			':hover': buttonColors.primaryDisabledBackground,
+			':active': buttonColors.primaryDisabledBackground,
 		},
-		color: colors.textBrandOnBgFillDisabled,
+		color: buttonColors.primaryDisabledForeground,
 	},
 	generic: {
 		borderColor: {
-			default: colors.borderDisabled,
-			':hover': colors.borderDisabled,
-			':active': colors.borderDisabled,
+			default: buttonColors.disabledBorder,
+			':hover': buttonColors.disabledBorder,
+			':active': buttonColors.disabledBorder,
 		},
 		backgroundColor: {
-			default: colors.bgFillDisabled,
-			':hover': colors.bgFillDisabled,
-			':active': colors.bgFillDisabled,
+			default: buttonColors.disabledBackground,
+			':hover': buttonColors.disabledBackground,
+			':active': buttonColors.disabledBackground,
 		},
-		color: colors.textDisabled,
+		color: buttonColors.disabledForeground,
 	},
 })
 
@@ -247,7 +204,7 @@ const shapeVariants = stylex.create({
 	round: { borderRadius: radii.full },
 })
 
-type ButtonVariant = keyof typeof normalVariants
+type ButtonVariant = keyof typeof variants
 type ButtonSize = keyof typeof sizeVariants
 type ButtonShape = keyof typeof shapeVariants
 
@@ -258,7 +215,6 @@ export interface ButtonProps extends Omit<
 	variant?: ButtonVariant
 	size?: ButtonSize
 	shape?: ButtonShape
-	danger?: boolean
 	iconOnly?: boolean
 	xstyle?: stylex.StyleXStyles
 }
@@ -271,7 +227,6 @@ function renderButton({
 	variant = 'primary',
 	size = 'medium',
 	shape = 'square',
-	danger = false,
 	disabled,
 	children,
 	ref,
@@ -281,13 +236,13 @@ function renderButton({
 }: ButtonRenderProps) {
 	const styleProps = stylex.props(
 		styles.base,
-		danger ? dangerVariants[variant] : normalVariants[variant],
+		variants[variant],
 		sizeVariants[size],
 		iconOnly && styles.iconButton,
 		shapeVariants[shape],
 		disabled && styles.disabled,
 		disabled &&
-			(!danger && variant === 'primary'
+			(variant === 'primary'
 				? disabledVariants.brand
 				: disabledVariants.generic),
 		xstyle,

@@ -14,7 +14,7 @@ import {
 	TooltipTrigger,
 } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
-import { colors } from '~/styles/colors.stylex'
+import { reviewDatePickerColors } from '~/styles/colors/components.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 import {
@@ -30,14 +30,13 @@ const styles = stylex.create({
 
 		paddingInline: spacing.xs,
 	},
-	today: { color: colors.textInfo },
-	overdue: { color: colors.textDanger },
+	today: { color: reviewDatePickerColors.triggerForegroundToday },
+	overdue: { color: reviewDatePickerColors.triggerForegroundOverdue },
 	content: {
 		display: 'flex',
 		flexDirection: 'column',
 		rowGap: spacing.lg,
 	},
-	popover: { backgroundColor: colors.bg },
 })
 
 interface ReviewDatePickerProps {
@@ -106,7 +105,7 @@ export function ReviewDatePicker({
 					{absoluteDate ?? 'Add due date'}
 				</TooltipContent>
 			</Tooltip>
-			<PopoverContent align='center' xstyle={styles.popover}>
+			<PopoverContent align='center'>
 				<div {...stylex.props(styles.content)}>
 					<Calendar
 						defaultMonth={selectedDate}

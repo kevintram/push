@@ -48,12 +48,20 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { neutral } from '~/styles/colors/primitives.stylex'
+
+const DARK = '@media (prefers-color-scheme: dark)'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { SpecimenSection } from './SpecimenSection'
 
-const buttonVariants = ['primary', 'secondary', 'outline', 'ghost'] as const
+const buttonVariants = [
+	'primary',
+	'secondary',
+	'outline',
+	'ghost',
+	'danger',
+] as const
 const buttonSizes = ['micro', 'tiny', 'small', 'medium', 'large'] as const
 
 const styles = stylex.create({
@@ -65,7 +73,7 @@ const styles = stylex.create({
 		},
 	},
 	rowLabel: {
-		color: colors.textSecondary,
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.xs,
 
 		paddingBlock: {
@@ -113,7 +121,7 @@ const styles = stylex.create({
 		minWidth: 0,
 	},
 	fieldLabel: {
-		color: colors.textSecondary,
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.xs,
 	},
 	contextMenuTrigger: {
@@ -121,11 +129,11 @@ const styles = stylex.create({
 		display: 'flex',
 		justifyContent: 'center',
 
-		borderColor: colors.border,
+		borderColor: { [DARK]: neutral.s600, default: neutral.s300 },
 		borderRadius: radii.xs,
 		borderStyle: 'dashed',
 		borderWidth: '1px',
-		color: colors.textSecondary,
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 
 		blockSize: '8rem',
 		inlineSize: '16rem',
@@ -141,39 +149,33 @@ export function ComponentSection() {
 			<SpecimenSection
 				id='components'
 				title='Button'
-				meta={`${buttonVariants.length} variants · ${buttonSizes.length} sizes · normal + danger`}
+				meta={`${buttonVariants.length} variants · ${buttonSizes.length} sizes`}
 			>
 				<div>
-					{(['normal', 'danger'] as const).flatMap(palette =>
-						buttonVariants.map(variant => (
-							<div
-								key={`${palette}-${variant}`}
-								{...stylex.props(styles.rowGrid)}
-							>
-								<span {...stylex.props(styles.rowLabel)}>
-									{palette} · {variant}
-								</span>
-								<div {...stylex.props(styles.rowButtons)}>
-									{buttonSizes.map(size => (
-										<Button
-											danger={palette === 'danger'}
-											key={size}
-											size={size}
-											variant={variant}
-										>
-											{size}
-										</Button>
-									))}
-								</div>
+					{buttonVariants.map(variant => (
+						<div key={variant} {...stylex.props(styles.rowGrid)}>
+							<span {...stylex.props(styles.rowLabel)}>
+								{variant}
+							</span>
+							<div {...stylex.props(styles.rowButtons)}>
+								{buttonSizes.map(size => (
+									<Button
+										key={size}
+										size={size}
+										variant={variant}
+									>
+										{size}
+									</Button>
+								))}
 							</div>
-						)),
-					)}
+						</div>
+					))}
 					<div {...stylex.props(styles.rowGrid)}>
 						<span {...stylex.props(styles.rowLabel)}>shapes</span>
 						<div {...stylex.props(styles.rowButtons)}>
 							<Button shape='square'>Square</Button>
 							<Button shape='round'>Round</Button>
-							<Button danger shape='round' variant='secondary'>
+							<Button variant='danger' shape='round'>
 								Danger round
 							</Button>
 							<Button shape='round' variant='outline'>
@@ -200,17 +202,17 @@ export function ComponentSection() {
 							))}
 						</div>
 					</div>
-					{(['normal', 'danger'] as const).map(palette => (
-						<div key={palette} {...stylex.props(styles.rowGrid)}>
+					{buttonVariants.map(variant => (
+						<div key={variant} {...stylex.props(styles.rowGrid)}>
 							<span {...stylex.props(styles.rowLabel)}>
-								{palette} · disabled
+								{variant} · disabled
 							</span>
 							<div {...stylex.props(styles.rowButtons)}>
-								{buttonVariants.map(variant => (
+								{buttonSizes.map(size => (
 									<Button
-										danger={palette === 'danger'}
 										disabled
-										key={variant}
+										key={size}
+										size={size}
 										variant={variant}
 									>
 										{variant}

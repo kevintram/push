@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/colors.stylex'
+import { treeColors } from '~/styles/colors/components.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
 import { useTreeItemContext } from './TreeItemContext'
@@ -19,15 +19,15 @@ const styles = stylex.create({
 		alignItems: 'center',
 		backgroundColor: {
 			default: 'inherit',
-			':hover': colors.navBgSurfaceHover,
+			':hover': treeColors.itemBackgroundHover,
 		},
 		display: 'grid',
 		gridTemplateColumns: '26px minmax(0, 1fr)',
 	},
 	selected: {
 		backgroundColor: {
-			default: colors.navBgSurfaceActive,
-			':hover': colors.navBgSurfaceActive,
+			default: treeColors.itemBackgroundSelected,
+			':hover': treeColors.itemBackgroundSelectedHover,
 		},
 	},
 })

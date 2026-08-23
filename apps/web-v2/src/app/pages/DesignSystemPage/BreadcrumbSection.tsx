@@ -10,7 +10,9 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { neutral } from '~/styles/colors/primitives.stylex'
+
+const DARK = '@media (prefers-color-scheme: dark)'
 import { fontSizes, iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { SpecimenSection } from './SpecimenSection'
@@ -32,7 +34,7 @@ const styles = stylex.create({
 	label: {
 		marginBottom: spacing.md,
 
-		color: colors.textSecondary,
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.xs,
 	},
 })

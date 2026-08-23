@@ -18,7 +18,7 @@ import {
 	TooltipTrigger,
 } from '~/components/ui'
 import type { ReviewCard } from '~/modules/reviews/types/review.types'
-import { colors } from '~/styles/colors.stylex'
+import { focusOverlayColors } from '~/styles/colors/components.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { FocusOverlayCardError } from './FocusOverlayCardError'
@@ -40,7 +40,7 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 
-		backgroundColor: colors.bgSurface,
+		backgroundColor: focusOverlayColors.containerBackground,
 
 		paddingBlockEnd: spacing.md,
 		paddingBlockStart: 0,
@@ -54,7 +54,7 @@ const styles = stylex.create({
 		flexShrink: 1,
 
 		borderRadius: radii.lg,
-		backgroundColor: colors.bg,
+		backgroundColor: focusOverlayColors.cardBackground,
 
 		padding: spacing.lg,
 	},
@@ -73,7 +73,7 @@ const styles = stylex.create({
 	position: {
 		paddingInline: spacing.xs,
 
-		color: colors.textSecondary,
+		color: focusOverlayColors.positionForeground,
 		fontSize: fontSizes.sm,
 	},
 	empty: {
@@ -84,7 +84,7 @@ const styles = stylex.create({
 		flexShrink: 1,
 		justifyContent: 'center',
 
-		color: colors.textSecondary,
+		color: focusOverlayColors.emptyForeground,
 		fontSize: fontSizes.sm,
 	},
 })

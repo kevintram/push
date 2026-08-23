@@ -14,7 +14,7 @@ import {
 } from '~/components/ui'
 import { topicQueries } from '~/modules/library/api/topicQueries'
 import { treeifyTopics } from '~/modules/library/utils/treeifyTopics'
-import { colors } from '~/styles/colors.stylex'
+import { moveTopicDialogColors } from '~/styles/colors/components.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
 import { MoveTopicTree } from './MoveTopicTree'
@@ -28,7 +28,7 @@ const styles = stylex.create({
 		maxBlockSize: '24rem',
 		overflowY: 'auto',
 
-		borderColor: colors.border,
+		borderColor: moveTopicDialogColors.treeBorder,
 		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
@@ -36,7 +36,7 @@ const styles = stylex.create({
 	status: {
 		margin: 0,
 		padding: spacing.sm,
-		color: colors.textSecondary,
+		color: moveTopicDialogColors.statusForeground,
 	},
 })
 

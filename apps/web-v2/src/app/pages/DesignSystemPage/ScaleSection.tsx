@@ -1,6 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/colors.stylex'
+import { neutral } from '~/styles/colors/primitives.stylex'
+
+const DARK = '@media (prefers-color-scheme: dark)'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { radiiSpecimens, spacingSpecimens } from './specimens.data'
@@ -8,7 +10,7 @@ import { SpecimenSection } from './SpecimenSection'
 
 const styles = stylex.create({
 	subhead: {
-		color: colors.textSecondary,
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.xs,
 		letterSpacing: '0.08em',
 		textTransform: 'uppercase',
@@ -32,7 +34,7 @@ const styles = stylex.create({
 		paddingBlock: spacing.md,
 	},
 	rulerLabel: {
-		color: colors.textSecondary,
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.xs,
 
 		flexShrink: 0,
@@ -42,7 +44,7 @@ const styles = stylex.create({
 	bar: {
 		borderRadius: radii.xl,
 
-		backgroundColor: colors.bgFillTertiary,
+		backgroundColor: { [DARK]: neutral.s800, default: neutral.s100 },
 		height: '10px',
 	},
 	barWidth: (value: string) => ({
@@ -63,11 +65,11 @@ const styles = stylex.create({
 		flexDirection: 'column',
 	},
 	radiusBox: {
-		borderColor: colors.border,
+		borderColor: { [DARK]: neutral.s600, default: neutral.s300 },
 		borderStyle: 'solid',
 		borderWidth: '2px',
 
-		backgroundColor: colors.bgSurface,
+		backgroundColor: { [DARK]: neutral.s800, default: neutral.s100 },
 
 		height: '72px',
 		width: '72px',
@@ -76,7 +78,7 @@ const styles = stylex.create({
 		borderRadius: value,
 	}),
 	radiusLabel: {
-		color: colors.textSecondary,
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.xs,
 	},
 })

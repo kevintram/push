@@ -1,7 +1,9 @@
 import * as stylex from '@stylexjs/stylex'
 
 import { Separator } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { neutral } from '~/styles/colors/primitives.stylex'
+
+const DARK = '@media (prefers-color-scheme: dark)'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { SpecimenSection } from './SpecimenSection'
@@ -22,7 +24,7 @@ const styles = stylex.create({
 		alignItems: 'center',
 		display: 'flex',
 
-		color: colors.textSecondary,
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.sm,
 	},
 	panel: {
@@ -32,11 +34,11 @@ const styles = stylex.create({
 		display: 'flex',
 
 		blockSize: '4rem',
-		color: colors.textSecondary,
+		color: { [DARK]: neutral.s400, default: neutral.s600 },
 		fontSize: fontSizes.sm,
 	},
 	panelItem: {
-		borderColor: colors.borderSecondary,
+		borderColor: { [DARK]: neutral.s700, default: neutral.s200 },
 		borderRadius: radii.sm,
 		borderStyle: 'solid',
 		borderWidth: '1px',
