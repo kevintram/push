@@ -1,6 +1,12 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/colors.stylex'
+import {
+	baseColors,
+	grayDark,
+	grayLight,
+} from '~/styles/colorPrimitives.stylex'
+
+const DARK = '@media (prefers-color-scheme: dark)'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 import { BreadcrumbSection } from './BreadcrumbSection'
@@ -64,7 +70,7 @@ const styles = stylex.create({
 		},
 	},
 	kicker: {
-		color: colors.textSecondary,
+		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
 		fontSize: fontSizes.xs,
 		letterSpacing: '0.08em',
 		textTransform: 'uppercase',
@@ -96,7 +102,7 @@ const styles = stylex.create({
 	description: {
 		margin: 0,
 
-		color: colors.textSecondary,
+		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
 		fontSize: fontSizes.md,
 		lineHeight: 1.55,
 		maxWidth: '54ch',
@@ -117,11 +123,11 @@ const styles = stylex.create({
 		paddingBlock: spacing.xs,
 
 		textDecoration: 'none',
-		color: colors.text,
+		color: { [DARK]: baseColors.white, default: baseColors.black },
 		fontSize: fontSizes.sm,
 	},
 	indexCount: {
-		color: colors.textSecondary,
+		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
 		fontSize: fontSizes.xs,
 	},
 	sections: {

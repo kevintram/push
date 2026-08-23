@@ -48,7 +48,9 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { grayDark, grayLight } from '~/styles/colorPrimitives.stylex'
+
+const DARK = '@media (prefers-color-scheme: dark)'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { SpecimenSection } from './SpecimenSection'
@@ -71,7 +73,7 @@ const styles = stylex.create({
 		},
 	},
 	rowLabel: {
-		color: colors.textSecondary,
+		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
 		fontSize: fontSizes.xs,
 
 		paddingBlock: {
@@ -119,7 +121,7 @@ const styles = stylex.create({
 		minWidth: 0,
 	},
 	fieldLabel: {
-		color: colors.textSecondary,
+		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
 		fontSize: fontSizes.xs,
 	},
 	contextMenuTrigger: {
@@ -127,11 +129,11 @@ const styles = stylex.create({
 		display: 'flex',
 		justifyContent: 'center',
 
-		borderColor: colors.border,
+		borderColor: { [DARK]: grayDark.s7, default: grayLight.s7 },
 		borderRadius: radii.xs,
 		borderStyle: 'dashed',
 		borderWidth: '1px',
-		color: colors.textSecondary,
+		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
 
 		blockSize: '8rem',
 		inlineSize: '16rem',

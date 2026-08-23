@@ -1,6 +1,12 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/colors.stylex'
+import {
+	baseColors,
+	grayDark,
+	grayLight,
+} from '~/styles/colorPrimitives.stylex'
+
+const DARK = '@media (prefers-color-scheme: dark)'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 import {
@@ -12,7 +18,7 @@ import { SpecimenSection } from './SpecimenSection'
 
 const styles = stylex.create({
 	subhead: {
-		color: colors.textSecondary,
+		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
 		fontSize: fontSizes.xs,
 		letterSpacing: '0.08em',
 		textTransform: 'uppercase',
@@ -44,7 +50,7 @@ const styles = stylex.create({
 		marginTop: spacing.md,
 	},
 	faceRole: {
-		color: colors.textSecondary,
+		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
 		fontSize: fontSizes.xs,
 
 		marginTop: spacing.xs,
@@ -65,14 +71,14 @@ const styles = stylex.create({
 		paddingBlock: spacing.md,
 	},
 	rowLabel: {
-		color: colors.textSecondary,
+		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
 		fontSize: fontSizes.xs,
 
 		flexShrink: 0,
 		width: '120px',
 	},
 	sample: {
-		color: colors.text,
+		color: { [DARK]: baseColors.white, default: baseColors.black },
 
 		flexGrow: 1,
 		minWidth: 0,

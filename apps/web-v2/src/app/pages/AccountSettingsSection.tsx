@@ -3,7 +3,9 @@ import * as stylex from '@stylexjs/stylex'
 import { UserRound } from 'lucide-react'
 
 import { Button } from '~/components/ui'
-import { colors } from '~/styles/colors.stylex'
+import { grayDark, grayLight } from '~/styles/colorPrimitives.stylex'
+
+const DARK = '@media (prefers-color-scheme: dark)'
 import {
 	fontSizes,
 	fontWeights,
@@ -30,10 +32,10 @@ const styles = stylex.create({
 		paddingBlock: spacing.xl,
 
 		alignItems: 'center',
-		borderBlockEndColor: colors.borderSecondary,
+		borderBlockEndColor: { [DARK]: grayDark.s6, default: grayLight.s6 },
 		borderBlockEndStyle: 'solid',
 		borderBlockEndWidth: '1px',
-		borderBlockStartColor: colors.borderSecondary,
+		borderBlockStartColor: { [DARK]: grayDark.s6, default: grayLight.s6 },
 		borderBlockStartStyle: 'solid',
 		borderBlockStartWidth: '1px',
 		display: 'grid',
@@ -44,14 +46,14 @@ const styles = stylex.create({
 		width: '100%',
 	},
 	avatar: {
-		borderColor: colors.borderSecondary,
+		borderColor: { [DARK]: grayDark.s6, default: grayLight.s6 },
 		borderRadius: radii.full,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 
 		alignItems: 'center',
-		backgroundColor: colors.bgSurface,
-		color: colors.textSecondary,
+		backgroundColor: { [DARK]: grayDark.s3, default: grayLight.s3 },
+		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
 		display: 'flex',
 		justifyContent: 'center',
 		height: '40px',
@@ -75,7 +77,7 @@ const styles = stylex.create({
 	accountDescription: {
 		margin: spacing.none,
 
-		color: colors.textSecondary,
+		color: { [DARK]: grayDark.s11, default: grayLight.s11 },
 		fontSize: fontSizes.sm,
 		lineHeight: 1.45,
 	},
