@@ -51,7 +51,8 @@ export const iconSizes = stylex.defineVars({
 })
 
 export const breakpoints = stylex.defineConsts({
-	desktop: '@media (min-width: 900px)',
+	tablet: '@media (min-width: 768px)',
+	desktop: '@media (min-width: 1024px)',
 })
 
 export const layout = stylex.defineConsts({

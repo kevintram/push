@@ -2,9 +2,9 @@ import * as stylex from '@stylexjs/stylex'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui'
 import { neutral } from '~/styles/colors/primitives.stylex'
+import { breakpoints, fontSizes, spacing } from '~/styles/tokens.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
-import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
 import { SpecimenSection } from './SpecimenSection'
 
@@ -18,7 +18,7 @@ const styles = stylex.create({
 		display: 'grid',
 		gridTemplateColumns: {
 			default: 'minmax(0, 1fr)',
-			'@media (min-width: 768px)': 'repeat(2, minmax(0, 1fr))',
+			[breakpoints.tablet]: 'repeat(2, minmax(0, 1fr))',
 		},
 	},
 	example: {
