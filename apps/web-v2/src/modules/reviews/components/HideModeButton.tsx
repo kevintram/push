@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Copy } from 'lucide-react'
 
-import { AppRailItem } from '~/components/app-rail-item'
+import { SidebarItem } from '~/components/sidebar-item'
 import { hideModeButtonColors } from '~/styles/colors/components.stylex'
 
 import { useHideMode } from '../hide-mode/useHideMode'
@@ -20,7 +20,7 @@ export function HideModeButton() {
 	const { hideMode, toggleHideMode } = useHideMode()
 
 	return (
-		<AppRailItem
+		<SidebarItem
 			aria-pressed={hideMode === 'on'}
 			icon={Copy}
 			onClick={toggleHideMode}

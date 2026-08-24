@@ -15,7 +15,7 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-export interface AppRailItemProps extends Omit<
+export interface SidebarItemProps extends Omit<
 	useRender.ComponentProps<'button'>,
 	'children' | 'className' | 'style'
 > {
@@ -116,7 +116,7 @@ const styles = stylex.create({
 	},
 })
 
-export function AppRailItem({
+export function SidebarItem({
 	active,
 	ariaLabel,
 	icon: Icon,
@@ -126,7 +126,7 @@ export function AppRailItem({
 	variant = 'ghost',
 	xstyle,
 	...props
-}: AppRailItemProps) {
+}: SidebarItemProps) {
 	return useRender({
 		defaultTagName: 'button',
 		props: mergeProps<'button'>(
@@ -160,6 +160,6 @@ export function AppRailItem({
 		render,
 		// Links get `data-status` from TanStack Router; this mirrors it for
 		// buttons so one set of active styles covers both.
-		state: { slot: 'app-rail-item', status: active ? 'active' : undefined },
+		state: { slot: 'sidebar-item', status: active ? 'active' : undefined },
 	})
 }

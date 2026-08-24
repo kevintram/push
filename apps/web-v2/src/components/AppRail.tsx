@@ -7,7 +7,7 @@ import { SearchDialogTrigger } from '~/modules/search/components/SearchDialogTri
 import { appRailColors } from '~/styles/colors/components.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
-import { AppRailItem } from './app-rail-item'
+import { SidebarItem } from './sidebar-item'
 
 const styles = stylex.create({
 	container: {
@@ -33,34 +33,34 @@ export function AppRail() {
 	return (
 		<nav aria-label='primary' {...stylex.props(styles.container)}>
 			<SearchDialogTrigger />
-			<AppRailItem
+			<SidebarItem
 				icon={BookOpen}
 				render={<Link to='/review' />}
 				text='Review'
 			/>
-			<AppRailItem
+			<SidebarItem
 				icon={Flag}
 				render={<Link to='/flagged' />}
 				text='Flagged'
 			/>
-			<AppRailItem
+			<SidebarItem
 				icon={Clock}
 				render={<Link to='/recent' />}
 				text='Recent'
 			/>
-			<AppRailItem
+			<SidebarItem
 				icon={PinIcon}
 				render={<Link to='/pinned' />}
 				text='Pinned'
 			/>
-			<AppRailItem
+			<SidebarItem
 				icon={Library}
 				render={<Link to='/library' />}
 				text='Library'
 			/>
 			<div {...stylex.props(styles.spacer)} />
 			<HideModeButton />
-			<AppRailItem
+			<SidebarItem
 				icon={Settings}
 				render={<Link to='/settings' />}
 				text='Settings'

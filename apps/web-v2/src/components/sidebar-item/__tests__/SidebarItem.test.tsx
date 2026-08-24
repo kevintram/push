@@ -3,13 +3,13 @@ import userEvent from '@testing-library/user-event'
 import { Library } from 'lucide-react'
 import { describe, expect, it, vi } from 'vitest'
 
-import { AppRailItem } from '../AppRailItem'
+import { SidebarItem } from '../SidebarItem'
 
-describe('AppRailItem', () => {
+describe('SidebarItem', () => {
 	it('renders a button by default and reports clicks', async () => {
 		const user = userEvent.setup()
 		const onClick = vi.fn()
-		render(<AppRailItem icon={Library} onClick={onClick} text='Library' />)
+		render(<SidebarItem icon={Library} onClick={onClick} text='Library' />)
 
 		const item = screen.getByRole('button', { name: 'Library' })
 		expect(item).toHaveAttribute('type', 'button')
@@ -20,7 +20,7 @@ describe('AppRailItem', () => {
 
 	it('renders as the element passed through render', () => {
 		render(
-			<AppRailItem
+			<SidebarItem
 				icon={Library}
 				render={<a href='/library' />}
 				text='Library'
@@ -33,7 +33,7 @@ describe('AppRailItem', () => {
 	})
 
 	it('marks non-link items as active', () => {
-		render(<AppRailItem active icon={Library} text='Library' />)
+		render(<SidebarItem active icon={Library} text='Library' />)
 
 		expect(screen.getByRole('button', { name: 'Library' })).toHaveAttribute(
 			'data-status',
@@ -43,7 +43,7 @@ describe('AppRailItem', () => {
 
 	it('prefers an explicit aria label over the visible text', () => {
 		render(
-			<AppRailItem
+			<SidebarItem
 				ariaLabel='Open library'
 				icon={Library}
 				text='Library'

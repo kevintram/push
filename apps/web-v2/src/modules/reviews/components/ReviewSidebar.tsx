@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 import { BellRing, Calendar, Sparkles } from 'lucide-react'
 
-import { AppRailItem } from '~/components/app-rail-item'
+import { SidebarItem } from '~/components/sidebar-item'
 import { reviewSidebarColors } from '~/styles/colors/components.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
@@ -25,19 +25,19 @@ const styles = stylex.create({
 export function ReviewSidebar() {
 	return (
 		<nav aria-label='review sections' {...stylex.props(styles.container)}>
-			<AppRailItem
+			<SidebarItem
 				icon={Calendar}
 				layout='skinny'
 				render={<Link to='/review/due' />}
 				text='Due'
 			/>
-			<AppRailItem
+			<SidebarItem
 				icon={Sparkles}
 				layout='skinny'
 				render={<Link to='/review/new' />}
 				text='New'
 			/>
-			<AppRailItem
+			<SidebarItem
 				icon={BellRing}
 				layout='skinny'
 				render={<Link to='/review/late' />}
