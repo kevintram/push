@@ -3,7 +3,10 @@ import { useRender } from '@base-ui/react/use-render'
 import * as stylex from '@stylexjs/stylex'
 import { type LucideIcon } from 'lucide-react'
 
-import { appRailItemColors } from '~/styles/colors/components.stylex'
+import {
+	appRailItemColors,
+	buttonColors,
+} from '~/styles/colors/components.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -29,6 +32,11 @@ export interface AppRailItemProps extends Omit<
 	 * Router, so they never need to pass this.
 	 */
 	active?: boolean
+	/**
+	 * `primary` uses the rail item colors, `secondary` mirrors the Button
+	 * secondary variant.
+	 */
+	variant?: 'ghost' | 'secondary' | 'outline'
 	xstyle?: stylex.StyleXStyles
 }
 
@@ -78,6 +86,34 @@ const styles = stylex.create({
 		blockSize: iconSizes.md,
 		inlineSize: iconSizes.md,
 	},
+	secondary: {
+		borderColor: buttonColors.secondaryBorder,
+		backgroundColor: {
+			default: buttonColors.secondaryBackground,
+			':hover': buttonColors.secondaryBackgroundHover,
+			':active': buttonColors.secondaryBackgroundPressed,
+		},
+		color: {
+			default: buttonColors.secondaryForeground,
+			':hover': buttonColors.secondaryForegroundHover,
+			':active': buttonColors.secondaryForegroundPressed,
+		},
+	},
+	outline: {
+		borderColor: buttonColors.outlineBorder,
+		borderStyle: 'solid',
+		borderWidth: '1px',
+		backgroundColor: {
+			default: buttonColors.outlineBackground,
+			':hover': buttonColors.outlineBackgroundHover,
+			':active': buttonColors.outlineBackgroundPressed,
+		},
+		color: {
+			default: buttonColors.outlineForeground,
+			':hover': buttonColors.outlineForegroundHover,
+			':active': buttonColors.outlineForegroundPressed,
+		},
+	},
 })
 
 export function AppRailItem({
@@ -87,6 +123,7 @@ export function AppRailItem({
 	layout = 'fat',
 	render,
 	text,
+	variant = 'ghost',
 	xstyle,
 	...props
 }: AppRailItemProps) {
@@ -100,6 +137,8 @@ export function AppRailItem({
 			stylex.props(
 				styles.item,
 				layout === 'fat' ? styles.fat : styles.skinny,
+				variant === 'secondary' && styles.secondary,
+				variant === 'outline' && styles.outline,
 				xstyle,
 			),
 			props,
