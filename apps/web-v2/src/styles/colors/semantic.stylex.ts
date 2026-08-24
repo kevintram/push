@@ -25,7 +25,7 @@ export const semanticColors = stylex.defineVars({
 	// An elevated surface that should appear above its surrounding surface.
 	surfaceRaised: { default: neutral.s300, [DARK]: neutral.s700 },
 	// A recessed surface that should appear inset beneath its surrounding surface.
-	surfaceSunken: { default: neutral.s200, [DARK]: neutral.s800 },
+	surfaceSunken: { default: neutral.s150, [DARK]: neutral.s850 },
 	// A contrast-reversed surface intended to host inverse foreground colors.
 	surfaceInverse: { default: neutral.s700, [DARK]: neutral.s700 },
 	// A surface that communicates the product's primary brand identity.
