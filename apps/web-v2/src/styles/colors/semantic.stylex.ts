@@ -19,7 +19,7 @@ export const semanticColors = stylex.defineVars({
 	// Surface
 	// Structural surfaces
 	// The default application canvas and content background.
-	surfacePrimary: { default: baseColors.white, [DARK]: neutral.s950 },
+	surfacePrimary: { default: neutral.s50, [DARK]: neutral.s950 },
 	// A quiet background that separates secondary regions from the primary surface.
 	surfaceSecondary: { default: neutral.s100, [DARK]: neutral.s900 },
 	// An elevated surface that should appear above its surrounding surface.
