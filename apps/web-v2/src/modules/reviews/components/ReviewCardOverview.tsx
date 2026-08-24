@@ -17,22 +17,32 @@ import { ReviewsSidebar } from './ReviewsSidebar'
 
 const styles = stylex.create({
 	layout: {
+		gap: spacing.lg,
 		overflow: 'hidden',
 		display: 'flex',
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
+		minHeight: 0,
+		minWidth: 0,
+		width: '100%',
 	},
 	main: {
-		paddingInline: spacing.lg,
 		display: 'flex',
+		flexBasis: 0,
+		flexGrow: 1,
+		flexShrink: 1,
 		justifyContent: 'center',
+		minHeight: 0,
+		minWidth: 0,
+		overflowY: 'auto',
 	},
 	content: {
 		gap: spacing.xl,
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 1,
+		marginBlockStart: spacing.xl,
 		maxWidth: layout.contentMaxWidth,
 		minWidth: 0,
 		width: '100%',
