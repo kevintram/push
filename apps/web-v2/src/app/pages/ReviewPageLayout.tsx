@@ -6,11 +6,11 @@ import {
 	appShellColors,
 	reviewSidebarColors,
 } from '~/styles/colors/components.stylex'
-import { breakpoints, layout, radii } from '~/styles/tokens.stylex'
+import { breakpoints, layout, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	layout: {
-		overflow: 'auto',
+		overflow: 'hidden',
 
 		display: 'flex',
 		flexDirection: 'row',
@@ -20,7 +20,7 @@ const styles = stylex.create({
 		backgroundColor: reviewSidebarColors.background,
 	},
 	main: {
-		overflow: 'hidden',
+		overflow: 'auto',
 		display: 'flex',
 		flexBasis: 0,
 		flexGrow: 1,
@@ -45,10 +45,11 @@ const styles = stylex.create({
 		},
 	},
 	content: {
+		marginInline: spacing.lg,
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 1,
-		maxWidth: layout.contentMaxWidth,
+		maxWidth: layout.contentColumnMaxWidth,
 		minWidth: 0,
 		width: '100%',
 	},

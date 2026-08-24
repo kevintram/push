@@ -79,7 +79,7 @@ const styles = stylex.create({
 		flexDirection: 'column',
 		flexShrink: 1,
 		marginBlockStart: spacing.xl,
-		maxWidth: layout.contentMaxWidth,
+		maxWidth: layout.contentColumnMaxWidth,
 		minWidth: 0,
 		width: '100%',
 	},

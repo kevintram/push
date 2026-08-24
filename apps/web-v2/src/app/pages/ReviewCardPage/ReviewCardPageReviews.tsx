@@ -27,7 +27,7 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 1,
-		maxWidth: layout.contentMaxWidth,
+		maxWidth: layout.contentColumnMaxWidth,
 		minWidth: 0,
 		width: '100%',
 	},

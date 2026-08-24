@@ -56,5 +56,5 @@ export const breakpoints = stylex.defineConsts({
 })
 
 export const layout = stylex.defineConsts({
-	contentMaxWidth: '805px',
+	contentColumnMaxWidth: '768px',
 })

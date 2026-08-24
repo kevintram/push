@@ -24,8 +24,7 @@ type ReviewListPageProps = {
 
 const styles = stylex.create({
 	content: {
-		padding: spacing.xl,
-		overflowY: 'auto',
+		marginBlock: spacing.xl,
 	},
 	heading: {
 		alignItems: 'center',

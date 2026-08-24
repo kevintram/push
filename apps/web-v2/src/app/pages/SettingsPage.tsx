@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { fontWeights, spacing } from '~/styles/tokens.stylex'
+import { fontWeights, layout, spacing } from '~/styles/tokens.stylex'
 
 import { AccountSettingsSection } from './AccountSettingsSection'
 
@@ -13,15 +13,15 @@ const styles = stylex.create({
 	},
 	content: {
 		gap: spacing.lg,
+		marginInline: spacing.lg,
 		paddingBlock: spacing['3xl'],
-		paddingInline: spacing['2xl'],
 
 		alignContent: 'start',
 		alignItems: 'start',
 		display: 'grid',
 		flexShrink: 1,
 		justifyItems: 'start',
-		maxWidth: '720px',
+		maxWidth: layout.contentColumnMaxWidth,
 		minWidth: 0,
 		width: '100%',
 	},
