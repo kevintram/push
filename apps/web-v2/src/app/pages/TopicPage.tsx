@@ -39,25 +39,55 @@ import {
 
 const styles = stylex.create({
 	container: {
+		overflow: 'hidden',
+		blockSize: '100%',
 		display: 'flex',
-		justifyContent: 'center',
-		minHeight: '100%',
+		flexDirection: 'column',
+		minHeight: 0,
 		width: '100%',
-
+	},
+	toolbar: {
+		gap: spacing.md,
+		paddingBlock: spacing.sm,
+		paddingInline: spacing.lg,
+		alignItems: 'center',
+		display: 'flex',
+		flexShrink: 0,
+		justifyContent: 'space-between',
+	},
+	breadcrumbs: {
+		flexBasis: 0,
+		flexGrow: 1,
+		flexShrink: 1,
+		minWidth: 0,
+	},
+	toolbarActions: { flexShrink: 0 },
+	scrollArea: {
 		overflow: 'auto',
+		display: 'flex',
+		flexBasis: 0,
+		flexGrow: 1,
+		flexShrink: 1,
+		justifyContent: 'center',
+		minHeight: 0,
+		width: '100%',
 	},
 	content: {
-		padding: spacing.xl,
 		gap: spacing.md,
+		marginInline: spacing.lg,
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 1,
-		maxWidth: layout.contentMaxWidth,
+		marginBlockStart: spacing.xl,
+		maxWidth: layout.contentColumnMaxWidth,
 		minWidth: 0,
 		width: '100%',
 	},
-	header: { gap: spacing.sm, display: 'flex', flexDirection: 'column' },
-	titleBar: { gap: spacing.sm, alignItems: 'center', display: 'flex' },
+	topicDetails: {
+		gap: spacing.sm,
+		display: 'flex',
+		flexDirection: 'column',
+	},
 	title: {
 		fontSize: fontSizes.xl,
 		fontWeight: fontWeights.bold,
@@ -141,14 +171,62 @@ export function TopicPage() {
 
 	return (
 		<div {...stylex.props(styles.container)}>
-			<div {...stylex.props(styles.content)}>
-				{/* `expandPath: true` above guarantees `path` holds documents, not ids. */}
-				<TopicBreadcrumbs
-					ancestors={topic.path as Array<Topic>}
-					currentTitle={title.value}
+			<header {...stylex.props(styles.toolbar)}>
+				<div {...stylex.props(styles.breadcrumbs)}>
+					<TopicBreadcrumbs
+						ancestors={topic.path as Array<Topic>}
+						currentTitle={title.value}
+					/>
+				</div>
+				<div {...stylex.props(styles.toolbarActions)}>
+					<DropdownMenu>
+						<DropdownMenuTrigger
+							render={
+								<Button.Icon
+									aria-label='Topic actions'
+									shape='round'
+									variant='ghost'
+								/>
+							}
+						>
+							<Ellipsis aria-hidden='true' size={iconSizes.md} />
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='end'>
+							<DropdownMenuItem
+								onClick={() => setIsMoveDialogOpen(true)}
+							>
+								<FolderInput
+									aria-hidden='true'
+									size={iconSizes.md}
+								/>
+								Move
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								disabled={deleteTopic.isPending}
+								onClick={handleDeleteTopic}
+							>
+								<Trash2
+									aria-hidden='true'
+									size={iconSizes.md}
+								/>
+								Delete
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+			</header>
+
+			{isMoveDialogOpen ? (
+				<MoveTopicDialog
+					onOpenChange={setIsMoveDialogOpen}
+					parentId={topic.parentId}
+					topicId={topic._id}
 				/>
-				<header {...stylex.props(styles.header)}>
-					<div {...stylex.props(styles.titleBar)}>
+			) : null}
+
+			<div {...stylex.props(styles.scrollArea)}>
+				<div {...stylex.props(styles.content)}>
+					<section {...stylex.props(styles.topicDetails)}>
 						<Textarea
 							placeholder='Title'
 							aria-label='Topic title'
@@ -157,81 +235,43 @@ export function TopicPage() {
 							value={title.value}
 							xstyle={styles.title}
 						/>
-						<DropdownMenu>
-							<DropdownMenuTrigger
-								render={
-									<Button.Icon
-										aria-label='Topic actions'
-										shape='round'
-										variant='ghost'
-									/>
-								}
-							>
-								<Ellipsis aria-hidden='true' />
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align='end'>
-								<DropdownMenuItem
-									onClick={() => setIsMoveDialogOpen(true)}
-								>
-									<FolderInput
-										aria-hidden='true'
-										size={iconSizes.md}
-									/>
-									Move
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									disabled={deleteTopic.isPending}
-									onClick={handleDeleteTopic}
-								>
-									<Trash2
-										aria-hidden='true'
-										size={iconSizes.md}
-									/>
-									Delete
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
+						<Textarea
+							placeholder='Add description...'
+							aria-label='Topic description'
+							onBlur={description.flush}
+							onChange={description.onChange}
+							value={description.value}
+							xstyle={styles.description}
+						/>
+					</section>
+
+					<div {...stylex.props(styles.reviewCardsHeaderContainer)}>
+						<h2 {...stylex.props(styles.reviewCardsHeaderText)}>
+							Review Cards
+						</h2>
+						<Button.Icon
+							aria-label='Add review card'
+							disabled={createReviewCard.isPending}
+							onClick={handleCreateReviewCard}
+							shape='round'
+						>
+							<Plus aria-hidden='true' />
+						</Button.Icon>
 					</div>
-					{isMoveDialogOpen ? (
-						<MoveTopicDialog
-							onOpenChange={setIsMoveDialogOpen}
-							parentId={topic.parentId}
-							topicId={topic._id}
-						/>
-					) : null}
-					<Textarea
-						placeholder='Add description...'
-						aria-label='Topic description'
-						onBlur={description.flush}
-						onChange={description.onChange}
-						value={description.value}
-						xstyle={styles.description}
-					/>
-				</header>
 
-				<div {...stylex.props(styles.reviewCardsHeaderContainer)}>
-					<h2 {...stylex.props(styles.reviewCardsHeaderText)}>
-						Review Cards
-					</h2>
-					<Button.Icon
-						aria-label='Add review card'
-						disabled={createReviewCard.isPending}
-						onClick={handleCreateReviewCard}
-						shape='round'
-					>
-						<Plus aria-hidden='true' />
-					</Button.Icon>
-				</div>
-
-				<div {...stylex.props(styles.reviewCardsList)}>
-					{reviewCards.map(reviewCard => (
-						<ReviewCardItem
-							key={reviewCard._id}
-							reviewCard={reviewCard}
-							srs={deriveReviewCardSrsState(reviewCard, today)}
-							today={today}
-						/>
-					))}
+					<div {...stylex.props(styles.reviewCardsList)}>
+						{reviewCards.map(reviewCard => (
+							<ReviewCardItem
+								key={reviewCard._id}
+								reviewCard={reviewCard}
+								srs={deriveReviewCardSrsState(
+									reviewCard,
+									today,
+								)}
+								today={today}
+							/>
+						))}
+					</div>
 				</div>
 			</div>
 		</div>

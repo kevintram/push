@@ -13,7 +13,12 @@ import {
 import { neutral } from '~/styles/colors/primitives.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
-import { fontSizes, iconSizes, spacing } from '~/styles/tokens.stylex'
+import {
+	breakpoints,
+	fontSizes,
+	iconSizes,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 import { SpecimenSection } from './SpecimenSection'
 
@@ -25,7 +30,7 @@ const styles = stylex.create({
 		display: 'grid',
 		gridTemplateColumns: {
 			default: 'minmax(0, 1fr)',
-			'@media (min-width: 768px)': 'repeat(3, minmax(0, 1fr))',
+			[breakpoints.tablet]: 'repeat(3, minmax(0, 1fr))',
 		},
 	},
 	example: {

@@ -8,7 +8,13 @@ import { toast } from 'sonner'
 
 import { Button } from '~/components/ui'
 import { reviewsSidebarColors } from '~/styles/colors/components.stylex'
-import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
+import {
+	breakpoints,
+	fontSizes,
+	iconSizes,
+	radii,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 import { reviewQueries, useCreateReview } from '../api/reviewQueries'
 import { Review } from './Review'
@@ -18,7 +24,14 @@ const styles = stylex.create({
 		padding: spacing.lg,
 		borderRadius: radii.xl,
 		backgroundColor: reviewsSidebarColors.containerBackground,
+		display: {
+			default: 'none',
+			[breakpoints.tablet]: 'block',
+		},
+		flexShrink: 0,
 		inlineSize: '320px',
+		maxBlockSize: '100%',
+		overflowY: 'auto',
 	},
 	header: {
 		alignItems: 'center',

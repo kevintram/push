@@ -10,11 +10,12 @@ const styles = stylex.create({
 		width: '100%',
 	},
 	content: {
-		padding: spacing.xl,
+		marginInline: spacing.lg,
+		paddingBlock: spacing.xl,
 
 		display: 'grid',
 		flexShrink: 1,
-		maxWidth: layout.contentMaxWidth,
+		maxWidth: layout.contentColumnMaxWidth,
 		minHeight: '100%',
 		minWidth: 0,
 		width: '100%',

@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { spacing } from '~/styles/tokens.stylex'
+import { breakpoints, spacing } from '~/styles/tokens.stylex'
 
 export interface DialogFooterProps extends Omit<
 	React.ComponentProps<'div'>,
@@ -15,11 +15,11 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: {
 			default: 'column-reverse',
-			'@media (min-width: 640px)': 'row',
+			[breakpoints.tablet]: 'row',
 		},
 		justifyContent: {
 			default: 'normal',
-			'@media (min-width: 640px)': 'flex-end',
+			[breakpoints.tablet]: 'flex-end',
 		},
 	},
 })

@@ -51,7 +51,13 @@ import {
 import { neutral } from '~/styles/colors/primitives.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
-import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
+import {
+	breakpoints,
+	fontSizes,
+	iconSizes,
+	radii,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 import { SpecimenSection } from './SpecimenSection'
 
@@ -69,7 +75,7 @@ const styles = stylex.create({
 		display: 'grid',
 		gridTemplateColumns: {
 			default: '1fr',
-			'@media (min-width: 640px)': 'minmax(112px, max-content) 1fr',
+			[breakpoints.tablet]: 'minmax(112px, max-content) 1fr',
 		},
 	},
 	rowLabel: {
@@ -78,12 +84,12 @@ const styles = stylex.create({
 
 		paddingBlock: {
 			default: spacing.lg,
-			'@media (min-width: 640px)': spacing.none,
+			[breakpoints.tablet]: spacing.none,
 		},
 
 		alignSelf: {
 			default: 'auto',
-			'@media (min-width: 640px)': 'center',
+			[breakpoints.tablet]: 'center',
 		},
 		paddingInlineStart: spacing.xl,
 	},
@@ -96,7 +102,7 @@ const styles = stylex.create({
 
 		paddingBlock: {
 			default: spacing.lg,
-			'@media (min-width: 640px)': spacing.xl,
+			[breakpoints.tablet]: spacing.xl,
 		},
 		paddingInline: spacing.xl,
 	},
@@ -107,7 +113,7 @@ const styles = stylex.create({
 		display: 'grid',
 		gridTemplateColumns: {
 			default: 'minmax(0, 1fr)',
-			'@media (min-width: 720px)': 'repeat(2, minmax(0, 1fr))',
+			[breakpoints.tablet]: 'repeat(2, minmax(0, 1fr))',
 		},
 
 		paddingBlock: spacing.xl,

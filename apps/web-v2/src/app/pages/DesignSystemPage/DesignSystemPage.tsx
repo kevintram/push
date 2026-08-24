@@ -49,11 +49,11 @@ const styles = stylex.create({
 	page: {
 		paddingBlock: {
 			default: spacing['2xl'],
-			'@media (min-width: 768px)': spacing['3xl'],
+			[breakpoints.tablet]: spacing['3xl'],
 		},
 		paddingInline: {
 			default: spacing.xl,
-			'@media (min-width: 768px)': spacing['2xl'],
+			[breakpoints.tablet]: spacing['2xl'],
 		},
 
 		minHeight: '100%',
@@ -67,7 +67,7 @@ const styles = stylex.create({
 	hero: {
 		paddingBottom: {
 			default: spacing['3xl'],
-			'@media (min-width: 768px)': spacing['3xl'],
+			[breakpoints.tablet]: spacing['3xl'],
 		},
 	},
 	kicker: {
@@ -82,7 +82,7 @@ const styles = stylex.create({
 
 		fontSize: {
 			default: '2.25rem',
-			'@media (min-width: 768px)': '2.75rem',
+			[breakpoints.tablet]: '2.75rem',
 		},
 		fontWeight: fontWeights.bold,
 		letterSpacing: '-0.035em',

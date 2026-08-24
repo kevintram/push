@@ -7,6 +7,7 @@ import { neutral } from '~/styles/colors/primitives.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
 import {
+	breakpoints,
 	fontSizes,
 	fontWeights,
 	iconSizes,
@@ -40,8 +41,8 @@ const styles = stylex.create({
 		borderBlockStartWidth: '1px',
 		display: 'grid',
 		gridTemplateColumns: {
-			default: '40px minmax(0, 1fr) auto',
-			'@media (max-width: 560px)': '40px minmax(0, 1fr)',
+			default: '40px minmax(0, 1fr)',
+			[breakpoints.tablet]: '40px minmax(0, 1fr) auto',
 		},
 		width: '100%',
 	},
@@ -83,20 +84,20 @@ const styles = stylex.create({
 	},
 	actionContainer: {
 		gridColumnEnd: {
-			default: 'auto',
-			'@media (max-width: 560px)': '-1',
+			default: '-1',
+			[breakpoints.tablet]: 'auto',
 		},
 		gridColumnStart: {
-			default: 'auto',
-			'@media (max-width: 560px)': '1',
+			default: '1',
+			[breakpoints.tablet]: 'auto',
 		},
 		justifySelf: {
-			default: 'end',
-			'@media (max-width: 560px)': 'start',
+			default: 'start',
+			[breakpoints.tablet]: 'end',
 		},
 		marginBlockStart: {
-			default: spacing.none,
-			'@media (max-width: 560px)': spacing.sm,
+			default: spacing.sm,
+			[breakpoints.tablet]: spacing.none,
 		},
 	},
 })

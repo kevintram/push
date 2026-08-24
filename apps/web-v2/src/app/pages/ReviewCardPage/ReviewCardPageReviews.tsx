@@ -16,15 +16,18 @@ import { layout, spacing } from '~/styles/tokens.stylex'
 const styles = stylex.create({
 	container: {
 		overflow: 'auto',
+		blockSize: '100%',
 		display: 'flex',
 		justifyContent: 'center',
+		minWidth: 0,
+		width: '100%',
 	},
 	content: {
 		gap: spacing.xl,
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 1,
-		maxWidth: layout.contentMaxWidth,
+		maxWidth: layout.contentColumnMaxWidth,
 		minWidth: 0,
 		width: '100%',
 	},

@@ -21,18 +21,23 @@ const styles = stylex.create({
 		overflow: 'hidden',
 	},
 	toolbar: {
-		padding: spacing.lg,
-		display: 'flex',
-
+		gap: spacing.md,
+		paddingBlock: spacing.sm,
+		paddingInline: spacing.lg,
 		alignItems: 'center',
+		display: 'flex',
+		flexShrink: 0,
 		justifyContent: 'space-between',
-
-		borderBottomColor: semanticColors.borderPrimary,
-		borderBottomStyle: 'solid',
-		borderBottomWidth: '1px',
+	},
+	breadcrumbs: {
+		flexBasis: 0,
+		flexGrow: 1,
+		flexShrink: 1,
+		minWidth: 0,
 	},
 	tabsContainer: {
-		padding: spacing.lg,
+		paddingInline: spacing.lg,
+		flexShrink: 0,
 	},
 	tabs: {
 		backgroundColor: semanticColors.surfaceTransparent,
@@ -41,7 +46,15 @@ const styles = stylex.create({
 		textDecoration: 'none',
 	},
 	content: {
-		padding: spacing.lg,
+		overflow: 'hidden',
+		paddingInline: spacing.lg,
+		display: 'flex',
+		flexBasis: 0,
+		flexGrow: 1,
+		flexShrink: 1,
+		paddingBlockEnd: spacing.lg,
+		minHeight: 0,
+		minWidth: 0,
 	},
 })
 
@@ -62,13 +75,15 @@ export function ReviewCardPageShell() {
 
 	return (
 		<div {...stylex.props(styles.container)}>
-			<div {...stylex.props(styles.toolbar)}>
-				<ReviewCardBreadcrumbs
-					primaryText={reviewCard.primaryText}
-					topicId={reviewCard.topicId}
-				/>
+			<header {...stylex.props(styles.toolbar)}>
+				<div {...stylex.props(styles.breadcrumbs)}>
+					<ReviewCardBreadcrumbs
+						primaryText={reviewCard.primaryText}
+						topicId={reviewCard.topicId}
+					/>
+				</div>
 				<ReviewCardActions reviewCard={reviewCard} />
-			</div>
+			</header>
 			<Tabs value={activeTab} xstyle={styles.tabsContainer}>
 				<TabsList
 					aria-label='Review card sections'

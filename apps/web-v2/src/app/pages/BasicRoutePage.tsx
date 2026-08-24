@@ -16,13 +16,14 @@ const styles = stylex.create({
 		width: '100%',
 	},
 	content: {
-		padding: spacing.xl,
 		gap: spacing.md,
+		marginInline: spacing.lg,
+		paddingBlock: spacing.xl,
 
 		alignContent: 'start',
 		display: 'grid',
 		flexShrink: 1,
-		maxWidth: layout.contentMaxWidth,
+		maxWidth: layout.contentColumnMaxWidth,
 		minHeight: '100%',
 		minWidth: 0,
 		width: '100%',
