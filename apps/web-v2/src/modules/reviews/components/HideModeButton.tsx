@@ -9,10 +9,10 @@ import { useHideMode } from '../hide-mode/useHideMode'
 const styles = stylex.create({
 	hideModeOn: {
 		backgroundColor: {
-			default: hideModeButtonColors.selectedBackground,
-			':hover': hideModeButtonColors.selectedBackgroundHover,
+			default: hideModeButtonColors.backgroundActive,
+			':hover': hideModeButtonColors.backgroundActiveHover,
 		},
-		color: hideModeButtonColors.selectedForeground,
+		color: hideModeButtonColors.foregroundActive,
 	},
 })
 
@@ -25,6 +25,7 @@ export function HideModeButton() {
 			icon={Copy}
 			onClick={toggleHideMode}
 			text='Hide Mode'
+			variant='outline'
 			xstyle={hideMode === 'on' && styles.hideModeOn}
 		/>
 	)

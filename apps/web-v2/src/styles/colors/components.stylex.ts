@@ -273,16 +273,16 @@ export const focusOverlayCardErrorColors = stylex.defineVars({
 })
 
 export const hideModeButtonColors = stylex.defineVars({
-	selectedBackground: {
-		default: blue.s50,
+	backgroundActive: {
+		default: blue.s200,
 		'@media (prefers-color-scheme: dark)': blue.s950,
 	},
-	selectedBackgroundHover: {
-		default: blue.s100,
+	backgroundActiveHover: {
+		default: blue.s300,
 		'@media (prefers-color-scheme: dark)': blue.s900,
 	},
-	selectedForeground: {
-		default: blue.s950,
+	foregroundActive: {
+		default: blue.s900,
 		'@media (prefers-color-scheme: dark)': blue.s200,
 	},
 })
