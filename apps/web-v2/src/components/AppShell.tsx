@@ -5,7 +5,7 @@ import {
 	appRailColors,
 	appShellColors,
 } from '~/styles/colors/components.stylex'
-import { radii } from '~/styles/tokens.stylex'
+import { breakpoints, radii } from '~/styles/tokens.stylex'
 
 import { AppRail } from './AppRail'
 
@@ -23,12 +23,12 @@ const styles = stylex.create({
 	children: {
 		marginBlock: {
 			default: 0,
-			'@media (min-width: 900px)': 6,
+			[breakpoints.desktop]: 6,
 		},
 		flexGrow: 1,
 		marginInlineEnd: {
 			default: 0,
-			'@media (min-width: 900px)': 6,
+			[breakpoints.desktop]: 6,
 		},
 		minHeight: 0,
 		minWidth: 0,
@@ -39,12 +39,12 @@ const styles = stylex.create({
 
 		borderRadius: {
 			default: 0,
-			'@media (min-width: 900px)': radii.xl,
+			[breakpoints.desktop]: radii.xl,
 		},
 		backgroundColor: appShellColors.surfaceBackground,
 		boxShadow: {
 			default: 'none',
-			'@media (min-width: 900px)': `0 0 4px ${appShellColors.surfaceShadow}`,
+			[breakpoints.desktop]: `0 0 4px ${appShellColors.surfaceShadow}`,
 		},
 	},
 })

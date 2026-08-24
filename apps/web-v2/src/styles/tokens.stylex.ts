@@ -50,6 +50,10 @@ export const iconSizes = stylex.defineVars({
 	'2xl': '3rem',
 })
 
+export const breakpoints = stylex.defineConsts({
+	desktop: '@media (min-width: 900px)',
+})
+
 export const layout = stylex.defineConsts({
 	contentMaxWidth: '805px',
 })

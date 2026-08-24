@@ -6,7 +6,7 @@ import {
 	appShellColors,
 	librarySidebarColors,
 } from '~/styles/colors/components.stylex'
-import { radii } from '~/styles/tokens.stylex'
+import { breakpoints, radii } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	container: {
@@ -32,15 +32,15 @@ const styles = stylex.create({
 		backgroundColor: appShellColors.surfaceBackground,
 		boxShadow: {
 			default: 'none',
-			'@media (min-width: 900px)': `-1px 0 4px ${appShellColors.surfaceShadow}`,
+			[breakpoints.desktop]: `-1px 0 4px ${appShellColors.surfaceShadow}`,
 		},
 		borderBottomLeftRadius: {
 			default: 0,
-			'@media (min-width: 900px)': radii.xl,
+			[breakpoints.desktop]: radii.xl,
 		},
 		borderTopLeftRadius: {
 			default: 0,
-			'@media (min-width: 900px)': radii.xl,
+			[breakpoints.desktop]: radii.xl,
 		},
 	},
 })
