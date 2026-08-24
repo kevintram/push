@@ -34,9 +34,8 @@ export interface AppRailItemProps extends Omit<
 
 const styles = stylex.create({
 	item: {
-		padding: spacing.sm,
 		borderWidth: 0,
-		gap: spacing.sm,
+		gap: spacing.xs,
 
 		alignItems: 'center',
 		display: 'flex',
@@ -59,6 +58,7 @@ const styles = stylex.create({
 		},
 	},
 	fat: {
+		padding: spacing.md,
 		borderRadius: radii.xl,
 		flexDirection: 'column',
 		fontSize: fontSizes.xs,
@@ -66,6 +66,7 @@ const styles = stylex.create({
 		textAlign: 'center',
 	},
 	skinny: {
+		padding: spacing.sm,
 		borderRadius: radii.lg,
 		fontSize: fontSizes.sm,
 	},

@@ -12,7 +12,7 @@ import { AppRailItem } from './app-rail-item'
 const styles = stylex.create({
 	container: {
 		padding: spacing.sm,
-		gap: spacing.xs,
+		gap: spacing.sm,
 
 		backgroundColor: appRailColors.background,
 
