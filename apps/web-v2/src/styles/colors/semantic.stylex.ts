@@ -18,10 +18,10 @@ const DARK = '@media (prefers-color-scheme: dark)'
 export const semanticColors = stylex.defineVars({
 	// Surface
 	// Structural surfaces
-	surfacePrimary: { default: neutral.s100, [DARK]: neutral.s800 },
+	surfacePrimary: { default: baseColors.white, [DARK]: neutral.s950 },
 	surfaceSecondary: { default: neutral.s50, [DARK]: neutral.s900 },
-	surfaceRaised: { default: neutral.s100, [DARK]: neutral.s800 },
-	surfaceSunken: { default: baseColors.white, [DARK]: neutral.s950 },
+	surfaceRaised: { default: neutral.s200, [DARK]: neutral.s700 },
+	surfaceSunken: { default: neutral.s100, [DARK]: neutral.s800 },
 	surfaceInverse: { default: neutral.s700, [DARK]: neutral.s700 },
 	surfaceBrand: { default: indigo.s600, [DARK]: indigo.s600 },
 	surfaceBackdrop: { default: blackAlpha.s70, [DARK]: blackAlpha.s70 },

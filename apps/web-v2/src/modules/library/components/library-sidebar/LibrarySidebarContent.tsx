@@ -13,7 +13,10 @@ import type { TopicWithChildren } from '../../types/topic.types'
 import { LibraryTopicItem } from './LibraryTopicItem'
 
 const styles = stylex.create({
-	container: { overflowY: 'auto' },
+	container: {
+		backgroundColor: librarySidebarColors.background,
+		overflowY: 'auto',
+	},
 	header: {
 		padding: spacing.xs,
 		marginInline: spacing.xs,

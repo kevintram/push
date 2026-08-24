@@ -218,8 +218,7 @@ export const treeColors = stylex.defineVars({
 })
 
 export const appRailColors = stylex.defineVars({
-	background: semanticColors.surfaceTransparent,
-	border: semanticColors.borderSubtle,
+	background: semanticColors.surfaceSunken,
 })
 
 export const loadingIndicatorColors = stylex.defineVars({
@@ -242,6 +241,7 @@ export const notAuthenticatedPageColors = stylex.defineVars({
 })
 
 export const librarySidebarColors = stylex.defineVars({
+	background: semanticColors.surfaceSecondary,
 	headerBackgroundDropTarget: semanticColors.surfaceTransparentActive,
 })
 
@@ -326,6 +326,10 @@ export const reviewDatePickerColors = stylex.defineVars({
 		'@media (prefers-color-scheme: dark)': blue.s200,
 	},
 	triggerForegroundOverdue: semanticColors.textDanger,
+})
+
+export const reviewSidebarColors = stylex.defineVars({
+	background: semanticColors.surfaceSecondary,
 })
 
 export const reviewsSidebarColors = stylex.defineVars({

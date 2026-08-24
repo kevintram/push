@@ -16,10 +16,6 @@ const styles = stylex.create({
 
 		backgroundColor: appRailColors.background,
 
-		borderInlineEndColor: appRailColors.border,
-		borderInlineEndStyle: 'solid',
-		borderInlineEndWidth: '1px',
-
 		display: 'flex',
 		flexDirection: 'column',
 
