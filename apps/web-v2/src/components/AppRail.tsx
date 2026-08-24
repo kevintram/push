@@ -4,19 +4,19 @@ import { BookOpen, Clock, Flag, Library, PinIcon, Settings } from 'lucide-react'
 
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { SearchDialogTrigger } from '~/modules/search/components/SearchDialogTrigger'
-import { appSidebarColors } from '~/styles/colors/components.stylex'
+import { appRailColors } from '~/styles/colors/components.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
-import { SidebarItem } from './sidebar-item'
+import { AppRailItem } from './app-rail-item'
 
 const styles = stylex.create({
 	container: {
 		padding: spacing.sm,
 		gap: spacing.xs,
 
-		backgroundColor: appSidebarColors.background,
+		backgroundColor: appRailColors.background,
 
-		borderInlineEndColor: appSidebarColors.border,
+		borderInlineEndColor: appRailColors.border,
 		borderInlineEndStyle: 'solid',
 		borderInlineEndWidth: '1px',
 
@@ -32,38 +32,38 @@ const styles = stylex.create({
 	},
 })
 
-export function AppSidebar() {
+export function AppRail() {
 	return (
 		<nav aria-label='primary' {...stylex.props(styles.container)}>
 			<SearchDialogTrigger />
-			<SidebarItem
+			<AppRailItem
 				icon={BookOpen}
 				render={<Link to='/review' />}
 				text='Review'
 			/>
-			<SidebarItem
+			<AppRailItem
 				icon={Flag}
 				render={<Link to='/flagged' />}
 				text='Flagged'
 			/>
-			<SidebarItem
+			<AppRailItem
 				icon={Clock}
 				render={<Link to='/recent' />}
 				text='Recent'
 			/>
-			<SidebarItem
+			<AppRailItem
 				icon={PinIcon}
 				render={<Link to='/pinned' />}
 				text='Pinned'
 			/>
-			<SidebarItem
+			<AppRailItem
 				icon={Library}
 				render={<Link to='/library' />}
 				text='Library'
 			/>
 			<div {...stylex.props(styles.spacer)} />
 			<HideModeButton />
-			<SidebarItem
+			<AppRailItem
 				icon={Settings}
 				render={<Link to='/settings' />}
 				text='Settings'

@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import type { ReactNode } from 'react'
 
-import { AppSidebar } from './AppSidebar'
+import { AppRail } from './AppRail'
 
 const styles = stylex.create({
 	shell: {
@@ -28,7 +28,7 @@ type AppShellProps = {
 export function AppShell({ children }: AppShellProps) {
 	return (
 		<div {...stylex.props(styles.shell)}>
-			<AppSidebar />
+			<AppRail />
 			<main {...stylex.props(styles.children)}>{children}</main>
 		</div>
 	)

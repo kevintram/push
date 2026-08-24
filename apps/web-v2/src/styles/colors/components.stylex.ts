@@ -217,7 +217,7 @@ export const treeColors = stylex.defineVars({
 	labelFocusRing: semanticColors.borderFocus,
 })
 
-export const appSidebarColors = stylex.defineVars({
+export const appRailColors = stylex.defineVars({
 	background: semanticColors.surfaceTransparent,
 	border: semanticColors.borderSubtle,
 })
@@ -226,7 +226,7 @@ export const loadingIndicatorColors = stylex.defineVars({
 	foreground: semanticColors.textSecondary,
 })
 
-export const sidebarItemColors = stylex.defineVars({
+export const appRailItemColors = stylex.defineVars({
 	background: semanticColors.surfaceTransparent,
 	backgroundHover: semanticColors.surfaceTransparentHover,
 	backgroundSelected: semanticColors.surfaceTransparentActive,

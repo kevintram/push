@@ -1,7 +1,7 @@
 import { Search } from 'lucide-react'
 import { useState } from 'react'
 
-import { SidebarItem } from '~/components/sidebar-item'
+import { AppRailItem } from '~/components/app-rail-item'
 import { Dialog, DialogTrigger } from '~/components/ui'
 
 import { SearchDialog } from './SearchDialog'
@@ -13,7 +13,7 @@ export function SearchDialogTrigger() {
 	return (
 		<Dialog onOpenChange={setIsOpen} open={isOpen}>
 			<DialogTrigger
-				render={<SidebarItem icon={Search} text='Search' />}
+				render={<AppRailItem icon={Search} text='Search' />}
 			/>
 			{isOpen ? <SearchDialog /> : null}
 		</Dialog>

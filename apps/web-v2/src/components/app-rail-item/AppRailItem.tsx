@@ -3,7 +3,7 @@ import { useRender } from '@base-ui/react/use-render'
 import * as stylex from '@stylexjs/stylex'
 import { type LucideIcon } from 'lucide-react'
 
-import { sidebarItemColors } from '~/styles/colors/components.stylex'
+import { appRailItemColors } from '~/styles/colors/components.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -12,7 +12,7 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-export interface SidebarItemProps extends Omit<
+export interface AppRailItemProps extends Omit<
 	useRender.ComponentProps<'button'>,
 	'children' | 'className' | 'style'
 > {
@@ -46,16 +46,16 @@ const styles = stylex.create({
 		fontFamily: 'inherit',
 
 		backgroundColor: {
-			'[data-status=active]': sidebarItemColors.backgroundSelected,
-			default: sidebarItemColors.background,
+			'[data-status=active]': appRailItemColors.backgroundSelected,
+			default: appRailItemColors.background,
 			':is([data-status=active]:hover)':
-				sidebarItemColors.backgroundSelectedHover,
-			':hover': sidebarItemColors.backgroundHover,
+				appRailItemColors.backgroundSelectedHover,
+			':hover': appRailItemColors.backgroundHover,
 		},
 		color: {
-			'[data-status=active]': sidebarItemColors.foregroundSelected,
-			default: sidebarItemColors.foreground,
-			':hover': sidebarItemColors.foregroundHover,
+			'[data-status=active]': appRailItemColors.foregroundSelected,
+			default: appRailItemColors.foreground,
+			':hover': appRailItemColors.foregroundHover,
 		},
 	},
 	fat: {
@@ -79,7 +79,7 @@ const styles = stylex.create({
 	},
 })
 
-export function SidebarItem({
+export function AppRailItem({
 	active,
 	ariaLabel,
 	icon: Icon,
@@ -88,7 +88,7 @@ export function SidebarItem({
 	text,
 	xstyle,
 	...props
-}: SidebarItemProps) {
+}: AppRailItemProps) {
 	return useRender({
 		defaultTagName: 'button',
 		props: mergeProps<'button'>(
@@ -120,6 +120,6 @@ export function SidebarItem({
 		render,
 		// Links get `data-status` from TanStack Router; this mirrors it for
 		// buttons so one set of active styles covers both.
-		state: { slot: 'sidebar-item', status: active ? 'active' : undefined },
+		state: { slot: 'app-rail-item', status: active ? 'active' : undefined },
 	})
 }
