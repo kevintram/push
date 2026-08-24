@@ -3,7 +3,10 @@ import { useRender } from '@base-ui/react/use-render'
 import * as stylex from '@stylexjs/stylex'
 import { type LucideIcon } from 'lucide-react'
 
-import { sidebarItemColors } from '~/styles/colors/components.stylex'
+import {
+	appRailItemColors,
+	buttonColors,
+} from '~/styles/colors/components.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -29,14 +32,18 @@ export interface SidebarItemProps extends Omit<
 	 * Router, so they never need to pass this.
 	 */
 	active?: boolean
+	/**
+	 * `primary` uses the rail item colors, `secondary` mirrors the Button
+	 * secondary variant.
+	 */
+	variant?: 'ghost' | 'secondary' | 'outline'
 	xstyle?: stylex.StyleXStyles
 }
 
 const styles = stylex.create({
 	item: {
-		padding: spacing.sm,
 		borderWidth: 0,
-		gap: spacing.sm,
+		gap: spacing.xs,
 
 		alignItems: 'center',
 		display: 'flex',
@@ -46,19 +53,20 @@ const styles = stylex.create({
 		fontFamily: 'inherit',
 
 		backgroundColor: {
-			'[data-status=active]': sidebarItemColors.backgroundSelected,
-			default: sidebarItemColors.background,
+			'[data-status=active]': appRailItemColors.backgroundSelected,
+			default: appRailItemColors.background,
 			':is([data-status=active]:hover)':
-				sidebarItemColors.backgroundSelectedHover,
-			':hover': sidebarItemColors.backgroundHover,
+				appRailItemColors.backgroundSelectedHover,
+			':hover': appRailItemColors.backgroundHover,
 		},
 		color: {
-			'[data-status=active]': sidebarItemColors.foregroundSelected,
-			default: sidebarItemColors.foreground,
-			':hover': sidebarItemColors.foregroundHover,
+			'[data-status=active]': appRailItemColors.foregroundSelected,
+			default: appRailItemColors.foreground,
+			':hover': appRailItemColors.foregroundHover,
 		},
 	},
 	fat: {
+		padding: spacing.md,
 		borderRadius: radii.xl,
 		flexDirection: 'column',
 		fontSize: fontSizes.xs,
@@ -66,6 +74,7 @@ const styles = stylex.create({
 		textAlign: 'center',
 	},
 	skinny: {
+		padding: spacing.sm,
 		borderRadius: radii.lg,
 		fontSize: fontSizes.sm,
 	},
@@ -77,6 +86,34 @@ const styles = stylex.create({
 		blockSize: iconSizes.md,
 		inlineSize: iconSizes.md,
 	},
+	secondary: {
+		borderColor: buttonColors.secondaryBorder,
+		backgroundColor: {
+			default: buttonColors.secondaryBackground,
+			':hover': buttonColors.secondaryBackgroundHover,
+			':active': buttonColors.secondaryBackgroundPressed,
+		},
+		color: {
+			default: buttonColors.secondaryForeground,
+			':hover': buttonColors.secondaryForegroundHover,
+			':active': buttonColors.secondaryForegroundPressed,
+		},
+	},
+	outline: {
+		borderColor: buttonColors.outlineBorder,
+		borderStyle: 'solid',
+		borderWidth: '1px',
+		backgroundColor: {
+			default: buttonColors.outlineBackground,
+			':hover': buttonColors.outlineBackgroundHover,
+			':active': buttonColors.outlineBackgroundPressed,
+		},
+		color: {
+			default: buttonColors.outlineForeground,
+			':hover': buttonColors.outlineForegroundHover,
+			':active': buttonColors.outlineForegroundPressed,
+		},
+	},
 })
 
 export function SidebarItem({
@@ -86,6 +123,7 @@ export function SidebarItem({
 	layout = 'fat',
 	render,
 	text,
+	variant = 'ghost',
 	xstyle,
 	...props
 }: SidebarItemProps) {
@@ -99,6 +137,8 @@ export function SidebarItem({
 			stylex.props(
 				styles.item,
 				layout === 'fat' ? styles.fat : styles.skinny,
+				variant === 'secondary' && styles.secondary,
+				variant === 'outline' && styles.outline,
 				xstyle,
 			),
 			props,

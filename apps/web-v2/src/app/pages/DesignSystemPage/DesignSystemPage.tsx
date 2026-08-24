@@ -3,7 +3,12 @@ import * as stylex from '@stylexjs/stylex'
 import { baseColors, neutral } from '~/styles/colors/primitives.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
-import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+import {
+	breakpoints,
+	fontSizes,
+	fontWeights,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 import { BreadcrumbSection } from './BreadcrumbSection'
 import { ComponentSection } from './ComponentSection'
@@ -90,7 +95,7 @@ const styles = stylex.create({
 		display: 'grid',
 		gridTemplateColumns: {
 			default: '1fr',
-			'@media (min-width: 900px)': 'minmax(0, 1fr) auto',
+			[breakpoints.desktop]: 'minmax(0, 1fr) auto',
 		},
 
 		marginTop: spacing.lg,

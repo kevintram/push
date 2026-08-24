@@ -1,7 +1,13 @@
 import * as stylex from '@stylexjs/stylex'
 import type { ReactNode } from 'react'
 
-import { AppSidebar } from './AppSidebar'
+import {
+	appRailColors,
+	appShellColors,
+} from '~/styles/colors/components.stylex'
+import { breakpoints, radii } from '~/styles/tokens.stylex'
+
+import { AppRail } from './AppRail'
 
 const styles = stylex.create({
 	shell: {
@@ -11,13 +17,35 @@ const styles = stylex.create({
 		display: 'flex',
 
 		height: '100svh',
+
+		backgroundColor: appRailColors.background,
 	},
 	children: {
+		marginBlock: {
+			default: 0,
+			[breakpoints.desktop]: 6,
+		},
 		flexGrow: 1,
+		marginInlineEnd: {
+			default: 0,
+			[breakpoints.desktop]: 6,
+		},
 		minHeight: 0,
 		minWidth: 0,
 
+		position: 'relative',
+		zIndex: 1,
 		overflowY: 'auto',
+
+		borderRadius: {
+			default: 0,
+			[breakpoints.desktop]: radii.xl,
+		},
+		backgroundColor: appShellColors.surfaceBackground,
+		boxShadow: {
+			default: 'none',
+			[breakpoints.desktop]: `0 0 4px ${appShellColors.surfaceShadow}`,
+		},
 	},
 })
 
@@ -28,7 +56,7 @@ type AppShellProps = {
 export function AppShell({ children }: AppShellProps) {
 	return (
 		<div {...stylex.props(styles.shell)}>
-			<AppSidebar />
+			<AppRail />
 			<main {...stylex.props(styles.children)}>{children}</main>
 		</div>
 	)

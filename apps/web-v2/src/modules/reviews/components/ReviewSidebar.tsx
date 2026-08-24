@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { BellRing, Calendar, Sparkles } from 'lucide-react'
 
 import { SidebarItem } from '~/components/sidebar-item'
+import { reviewSidebarColors } from '~/styles/colors/components.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -11,6 +12,9 @@ const styles = stylex.create({
 		top: 0,
 
 		padding: spacing.md,
+		minInlineSize: '180px',
+
+		backgroundColor: reviewSidebarColors.background,
 
 		gap: spacing.xs,
 		display: 'flex',

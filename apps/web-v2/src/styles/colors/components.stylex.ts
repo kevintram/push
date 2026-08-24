@@ -217,16 +217,20 @@ export const treeColors = stylex.defineVars({
 	labelFocusRing: semanticColors.borderFocus,
 })
 
-export const appSidebarColors = stylex.defineVars({
-	background: semanticColors.surfaceTransparent,
-	border: semanticColors.borderSubtle,
+export const appRailColors = stylex.defineVars({
+	background: semanticColors.surfaceSunken,
+})
+
+export const appShellColors = stylex.defineVars({
+	surfaceBackground: semanticColors.surfacePrimary,
+	surfaceShadow: semanticColors.shadowSubtle,
 })
 
 export const loadingIndicatorColors = stylex.defineVars({
 	foreground: semanticColors.textSecondary,
 })
 
-export const sidebarItemColors = stylex.defineVars({
+export const appRailItemColors = stylex.defineVars({
 	background: semanticColors.surfaceTransparent,
 	backgroundHover: semanticColors.surfaceTransparentHover,
 	backgroundSelected: semanticColors.surfaceTransparentActive,
@@ -242,6 +246,7 @@ export const notAuthenticatedPageColors = stylex.defineVars({
 })
 
 export const librarySidebarColors = stylex.defineVars({
+	background: semanticColors.surfaceSecondary,
 	headerBackgroundDropTarget: semanticColors.surfaceTransparentActive,
 })
 
@@ -268,16 +273,16 @@ export const focusOverlayCardErrorColors = stylex.defineVars({
 })
 
 export const hideModeButtonColors = stylex.defineVars({
-	selectedBackground: {
-		default: blue.s50,
+	backgroundActive: {
+		default: blue.s200,
 		'@media (prefers-color-scheme: dark)': blue.s950,
 	},
-	selectedBackgroundHover: {
-		default: blue.s100,
+	backgroundActiveHover: {
+		default: blue.s300,
 		'@media (prefers-color-scheme: dark)': blue.s900,
 	},
-	selectedForeground: {
-		default: blue.s950,
+	foregroundActive: {
+		default: blue.s900,
 		'@media (prefers-color-scheme: dark)': blue.s200,
 	},
 })
@@ -326,6 +331,10 @@ export const reviewDatePickerColors = stylex.defineVars({
 		'@media (prefers-color-scheme: dark)': blue.s200,
 	},
 	triggerForegroundOverdue: semanticColors.textDanger,
+})
+
+export const reviewSidebarColors = stylex.defineVars({
+	background: semanticColors.surfaceSecondary,
 })
 
 export const reviewsSidebarColors = stylex.defineVars({
