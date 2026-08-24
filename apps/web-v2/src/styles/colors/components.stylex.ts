@@ -221,6 +221,11 @@ export const appRailColors = stylex.defineVars({
 	background: semanticColors.surfaceSunken,
 })
 
+export const appShellColors = stylex.defineVars({
+	surfaceBackground: semanticColors.surfacePrimary,
+	surfaceShadow: semanticColors.shadowSubtle,
+})
+
 export const loadingIndicatorColors = stylex.defineVars({
 	foreground: semanticColors.textSecondary,
 })

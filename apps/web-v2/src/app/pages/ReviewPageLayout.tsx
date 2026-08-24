@@ -2,7 +2,11 @@ import * as stylex from '@stylexjs/stylex'
 import { Outlet } from '@tanstack/react-router'
 
 import { ReviewSidebar } from '~/modules/reviews/components/ReviewSidebar'
-import { layout } from '~/styles/tokens.stylex'
+import {
+	appShellColors,
+	reviewSidebarColors,
+} from '~/styles/colors/components.stylex'
+import { layout, radii } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	layout: {
@@ -12,14 +16,33 @@ const styles = stylex.create({
 		flexDirection: 'row',
 
 		height: '100%',
+
+		backgroundColor: reviewSidebarColors.background,
 	},
 	main: {
+		overflow: 'hidden',
 		display: 'flex',
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
 		justifyContent: 'center',
+		position: 'relative',
+		zIndex: 1,
 		minWidth: 0,
+
+		backgroundColor: appShellColors.surfaceBackground,
+		boxShadow: {
+			default: 'none',
+			'@media (min-width: 900px)': `-1px 0 4px ${appShellColors.surfaceShadow}`,
+		},
+		borderBottomLeftRadius: {
+			default: 0,
+			'@media (min-width: 900px)': radii.xl,
+		},
+		borderTopLeftRadius: {
+			default: 0,
+			'@media (min-width: 900px)': radii.xl,
+		},
 	},
 	content: {
 		display: 'flex',

@@ -18,6 +18,7 @@ const styles = stylex.create({
 
 		display: 'flex',
 		flexDirection: 'column',
+		flexShrink: 0,
 
 		inlineSize: '85px',
 	},
