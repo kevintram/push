@@ -21,11 +21,11 @@ export const semanticColors = stylex.defineVars({
 	// The default application canvas and content background.
 	surfacePrimary: { default: baseColors.white, [DARK]: neutral.s950 },
 	// A quiet background that separates secondary regions from the primary surface.
-	surfaceSecondary: { default: neutral.s50, [DARK]: neutral.s900 },
+	surfaceSecondary: { default: neutral.s100, [DARK]: neutral.s900 },
 	// An elevated surface that should appear above its surrounding surface.
-	surfaceRaised: { default: neutral.s200, [DARK]: neutral.s700 },
+	surfaceRaised: { default: neutral.s300, [DARK]: neutral.s700 },
 	// A recessed surface that should appear inset beneath its surrounding surface.
-	surfaceSunken: { default: neutral.s100, [DARK]: neutral.s800 },
+	surfaceSunken: { default: neutral.s200, [DARK]: neutral.s800 },
 	// A contrast-reversed surface intended to host inverse foreground colors.
 	surfaceInverse: { default: neutral.s700, [DARK]: neutral.s700 },
 	// A surface that communicates the product's primary brand identity.
