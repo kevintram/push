@@ -70,7 +70,7 @@ export function ReviewCardPageShell() {
 		to: '/review-cards/$reviewCardId/reviews',
 		params: { reviewCardId },
 	})
-		? 'review'
+		? 'reviews'
 		: 'overview'
 
 	return (
