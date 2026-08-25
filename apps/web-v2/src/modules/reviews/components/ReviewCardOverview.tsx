@@ -13,7 +13,6 @@ import { useReviewCardField } from '../hooks/useReviewCardField'
 import { deriveReviewCardSrsState } from '../utils/reviewCardSrs'
 import { Hideable } from './Hideable'
 import { ReviewCardMetadata } from './ReviewCardMetadata'
-import { ReviewsSidebar } from './ReviewsSidebar'
 
 const styles = stylex.create({
 	layout: {
@@ -102,6 +101,7 @@ export function ReviewCardOverview({ reviewCardId }: ReviewCardOverviewProps) {
 		reviewCardId,
 		value: reviewCard.notes,
 	})
+	const srsState = deriveReviewCardSrsState(reviewCard, today)
 
 	const primaryTextPlaceholder =
 		reviewCard.type === 'practice' ? 'Title' : 'Prompt'
@@ -139,10 +139,7 @@ export function ReviewCardOverview({ reviewCardId }: ReviewCardOverviewProps) {
 					</Hideable>
 					<div {...stylex.props(styles.separatorGroup)}>
 						<div {...stylex.props(styles.footer)}>
-							<ReviewCardMetadata
-								{...deriveReviewCardSrsState(reviewCard, today)}
-								today={today}
-							/>
+							<ReviewCardMetadata {...srsState} today={today} />
 						</div>
 						<Separator />
 					</div>
@@ -162,7 +159,6 @@ export function ReviewCardOverview({ reviewCardId }: ReviewCardOverviewProps) {
 					</Hideable>
 				</div>
 			</main>
-			<ReviewsSidebar reviewCardId={reviewCardId} />
 		</div>
 	)
 }
