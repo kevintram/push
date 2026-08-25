@@ -5,6 +5,7 @@ import { useState } from 'react'
 
 import {
 	Button,
+	type ButtonSize,
 	Calendar,
 	Popover,
 	PopoverContent,
@@ -43,6 +44,7 @@ interface ReviewDatePickerProps {
 	disabled?: boolean
 	isCompleted: boolean
 	onChange?: (value: DateString | null) => void | Promise<void>
+	size?: ButtonSize
 	value: DateString | null
 }
 
@@ -50,6 +52,7 @@ export function ReviewDatePicker({
 	disabled = false,
 	isCompleted,
 	onChange,
+	size = 'medium',
 	value,
 }: ReviewDatePickerProps) {
 	const [isOpen, setIsOpen] = useState(false)
@@ -86,7 +89,7 @@ export function ReviewDatePicker({
 				<Button
 					aria-label={`Change review date, ${relativeDate}`}
 					disabled={disabled}
-					size='micro'
+					size={size}
 					variant='ghost'
 					xstyle={[styles.trigger, dateToneStyle]}
 				>

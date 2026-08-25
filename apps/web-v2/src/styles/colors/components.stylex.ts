@@ -301,6 +301,16 @@ export const reviewColors = stylex.defineVars({
 	notesButtonForeground: semanticColors.textPrimary,
 
 	notesIndicatorForeground: semanticColors.textSecondary,
+
+	durabilityForeground: semanticColors.textSecondary,
+	durabilityPositiveChangeForeground: {
+		default: green.s500,
+		'@media (prefers-color-scheme: dark)': green.s300,
+	},
+	durabilityNegativeChangeForeground: {
+		default: rose.s500,
+		'@media (prefers-color-scheme: dark)': rose.s300,
+	},
 })
 
 export const reviewCardActionsColors = stylex.defineVars({
