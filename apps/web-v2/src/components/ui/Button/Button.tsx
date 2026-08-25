@@ -205,7 +205,7 @@ const shapeVariants = stylex.create({
 })
 
 type ButtonVariant = keyof typeof variants
-type ButtonSize = keyof typeof sizeVariants
+export type ButtonSize = keyof typeof sizeVariants
 type ButtonShape = keyof typeof shapeVariants
 
 export interface ButtonProps extends Omit<
