@@ -8,9 +8,10 @@ import { toast } from 'sonner'
 
 import { Button } from '~/components/ui'
 import { reviewsSidebarColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
-	breakpoints,
 	fontSizes,
+	fontWeights,
 	iconSizes,
 	radii,
 	spacing,
@@ -24,13 +25,9 @@ const styles = stylex.create({
 		padding: spacing.lg,
 		borderRadius: radii.xl,
 		backgroundColor: reviewsSidebarColors.containerBackground,
-		display: {
-			default: 'none',
-			[breakpoints.tablet]: 'block',
-		},
-		flexShrink: 0,
-		inlineSize: '320px',
-		maxBlockSize: '100%',
+		display: 'block',
+		flexShrink: 1,
+		minBlockSize: 0,
 		overflowY: 'auto',
 	},
 	header: {
@@ -39,7 +36,15 @@ const styles = stylex.create({
 		paddingBlockEnd: spacing.sm,
 	},
 	actions: { gap: spacing.sm, alignItems: 'center', display: 'flex' },
-	primaryText: { flexBasis: '0', flexGrow: 1, flexShrink: 1 },
+	primaryText: {
+		margin: 0,
+		color: semanticColors.textSecondary,
+		flexBasis: '0',
+		flexGrow: 1,
+		flexShrink: 1,
+		fontSize: fontSizes.md,
+		fontWeight: fontWeights.medium,
+	},
 	seeAll: {
 		textDecoration: 'none',
 		color: {
@@ -51,11 +56,11 @@ const styles = stylex.create({
 	},
 	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
 })
-type ReviewsSidebarProps = {
+type ReviewsPanelProps = {
 	reviewCardId: Id<'reviewCards'>
 }
 
-export function ReviewsSidebar({ reviewCardId }: ReviewsSidebarProps) {
+export function ReviewsPanel({ reviewCardId }: ReviewsPanelProps) {
 	const { data: reviews } = useSuspenseQuery(
 		reviewQueries.listByReviewCard(reviewCardId),
 	)
@@ -68,7 +73,7 @@ export function ReviewsSidebar({ reviewCardId }: ReviewsSidebarProps) {
 	}, [createReview, reviewCardId])
 
 	return (
-		<aside {...stylex.props(styles.container)}>
+		<section aria-label='Reviews' {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.header)}>
 				<p {...stylex.props(styles.primaryText)}>Reviews</p>
 				<div {...stylex.props(styles.actions)}>
@@ -96,6 +101,6 @@ export function ReviewsSidebar({ reviewCardId }: ReviewsSidebarProps) {
 					<Review key={review._id} review={review} />
 				))}
 			</div>
-		</aside>
+		</section>
 	)
 }

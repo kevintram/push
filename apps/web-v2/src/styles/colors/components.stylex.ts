@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { amber, blue, orange } from './primitives.stylex'
+import { amber, blue, green, orange, rose, sky } from './primitives.stylex'
 import { semanticColors } from './semantic.stylex'
 
 export const breadcrumbColors = stylex.defineVars({
@@ -301,6 +301,21 @@ export const reviewColors = stylex.defineVars({
 	notesButtonForeground: semanticColors.textPrimary,
 
 	notesIndicatorForeground: semanticColors.textSecondary,
+
+	durabilityForeground: semanticColors.textSecondary,
+	durabilityPositiveChangeForeground: {
+		default: green.s500,
+		'@media (prefers-color-scheme: dark)': green.s300,
+	},
+	durabilityNegativeChangeForeground: {
+		default: rose.s500,
+		'@media (prefers-color-scheme: dark)': rose.s300,
+	},
+})
+
+export const reviewComposerColors = stylex.defineVars({
+	containerBackground: semanticColors.surfaceRaised,
+	containerShadow: semanticColors.shadowStrong,
 })
 
 export const reviewCardActionsColors = stylex.defineVars({
@@ -323,6 +338,29 @@ export const reviewCardItemColors = stylex.defineVars({
 
 export const reviewCardMetadataColors = stylex.defineVars({
 	itemForeground: semanticColors.textSecondary,
+})
+
+export const reviewCardPropertiesColors = stylex.defineVars({
+	containerBackground: semanticColors.surfaceSecondary,
+	iconForeground: semanticColors.textSecondary,
+	labelForeground: semanticColors.textSecondary,
+	valueForeground: semanticColors.textPrimary,
+	freshnessFreshForeground: {
+		default: green.s500,
+		'@media (prefers-color-scheme: dark)': green.s300,
+	},
+	freshnessFineForeground: {
+		default: sky.s500,
+		'@media (prefers-color-scheme: dark)': sky.s300,
+	},
+	freshnessHazyForeground: {
+		default: amber.s500,
+		'@media (prefers-color-scheme: dark)': amber.s300,
+	},
+	freshnessForgottenForeground: {
+		default: rose.s500,
+		'@media (prefers-color-scheme: dark)': rose.s300,
+	},
 })
 
 export const reviewDatePickerColors = stylex.defineVars({

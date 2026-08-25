@@ -1,3 +1,4 @@
+import * as stylex from '@stylexjs/stylex'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
@@ -14,6 +15,12 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '..'
+
+const testStyles = stylex.create({
+	viewport: {
+		paddingBlockStart: '2px',
+	},
+})
 
 function TestDialog({ showCloseButton = true }: { showCloseButton?: boolean }) {
 	return (
@@ -131,5 +138,30 @@ describe('Dialog', () => {
 		expect(
 			screen.getByRole('dialog', { name: 'FOCUS MODE' }),
 		).toBeInTheDocument()
+	})
+
+	it('forwards custom viewport styles after the shared viewport styles', async () => {
+		const user = userEvent.setup()
+
+		render(
+			<Dialog>
+				<DialogTrigger>Open custom viewport dialog</DialogTrigger>
+				<DialogContent viewportXstyle={testStyles.viewport}>
+					<DialogTitle>Custom viewport dialog</DialogTitle>
+				</DialogContent>
+			</Dialog>,
+		)
+
+		await user.click(
+			screen.getByRole('button', {
+				name: 'Open custom viewport dialog',
+			}),
+		)
+
+		const viewport = screen.getByRole('dialog').parentElement
+		expect(viewport).not.toBeNull()
+		const customClassName = stylex.props(testStyles.viewport).className
+		expect(customClassName).toBeDefined()
+		expect(viewport).toHaveClass(customClassName!)
 	})
 })

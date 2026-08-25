@@ -3,8 +3,11 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link, Outlet, useMatchRoute, useParams } from '@tanstack/react-router'
 
 import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
+import { useToday } from '~/hooks/useToday'
 import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
 import { ReviewCardActions } from '~/modules/reviews/components/ReviewCardActions'
+import { ReviewCardSidebar } from '~/modules/reviews/components/ReviewCardSidebar'
+import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
@@ -38,6 +41,7 @@ const styles = stylex.create({
 	tabsContainer: {
 		paddingInline: spacing.lg,
 		flexShrink: 0,
+		marginInlineStart: `calc(${spacing.sm} * -1)`,
 	},
 	tabs: {
 		backgroundColor: semanticColors.surfaceTransparent,
@@ -46,6 +50,7 @@ const styles = stylex.create({
 		textDecoration: 'none',
 	},
 	content: {
+		gap: spacing.lg,
 		overflow: 'hidden',
 		paddingInline: spacing.lg,
 		display: 'flex',
@@ -65,12 +70,14 @@ export function ReviewCardPageShell() {
 	const { data: reviewCard } = useSuspenseQuery(
 		reviewCardQueries.detail(reviewCardId),
 	)
+	const today = useToday()
+	const srsState = deriveReviewCardSrsState(reviewCard, today)
 	const matchRoute = useMatchRoute()
 	const activeTab = matchRoute({
 		to: '/review-cards/$reviewCardId/reviews',
 		params: { reviewCardId },
 	})
-		? 'review'
+		? 'reviews'
 		: 'overview'
 
 	return (
@@ -119,6 +126,11 @@ export function ReviewCardPageShell() {
 			</Tabs>
 			<div {...stylex.props(styles.content)}>
 				<Outlet />
+				<ReviewCardSidebar
+					{...srsState}
+					reviewCardId={reviewCardId}
+					today={today}
+				/>
 			</div>
 		</div>
 	)

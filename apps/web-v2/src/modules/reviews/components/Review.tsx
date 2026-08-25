@@ -1,38 +1,28 @@
 import * as stylex from '@stylexjs/stylex'
-import {
-	Check,
-	CheckCheck,
-	Circle,
-	Construction,
-	Ellipsis,
-	File,
-	Trash2,
-	X,
-} from 'lucide-react'
+import { Ellipsis, File, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	Button,
 	Dialog,
-	DialogContent,
 	DialogTrigger,
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuRadioGroup,
-	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
-	Textarea,
 } from '~/components/ui'
 import { reviewColors } from '~/styles/colors/components.stylex'
-import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, iconSizes, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
 import { useReviewActions } from '../hooks/useReviewActions'
 import { useReviewField } from '../hooks/useReviewField'
-import type { Rating, Review as ReviewModel } from '../types/review.types'
+import type { Review as ReviewModel } from '../types/review.types'
+import { RatingPicker } from './RatingPicker'
 import { ReviewDatePicker } from './ReviewDatePicker'
+import { ReviewDialog } from './ReviewDialog'
+import { ReviewDurability } from './ReviewDurability'
 
 const styles = stylex.create({
 	contentContainer: {
@@ -57,17 +47,6 @@ const styles = stylex.create({
 		alignSelf: 'center',
 
 		paddingInline: spacing.xs,
-	},
-	ratingBadge: {
-		borderRadius: radii.full,
-		alignItems: 'center',
-		backgroundColor: reviewColors.ratingBadgeBackground,
-		blockSize: iconSizes.md,
-		color: reviewColors.ratingBadgeForeground,
-		display: 'flex',
-		flexShrink: 0,
-		inlineSize: iconSizes.md,
-		justifyContent: 'center',
 	},
 	description: {
 		gridColumnEnd: 'description',
@@ -140,16 +119,7 @@ const styles = stylex.create({
 		flexShrink: 0,
 		marginInlineStart: 'auto',
 	},
-	descriptionEditor: { minBlockSize: '96px' },
-	notesEditor: { minBlockSize: '96px' },
 })
-
-const ratings = {
-	miss: { label: 'Miss', Icon: X },
-	hard: { label: 'Hard', Icon: Construction },
-	good: { label: 'Good', Icon: Check },
-	easy: { label: 'Easy', Icon: CheckCheck },
-} as const
 
 type ReviewProps = {
 	review: ReviewModel
@@ -179,81 +149,26 @@ export function Review({ review }: ReviewProps) {
 		reviewId: review._id,
 		value: review.notes,
 	})
+	const handleOpenChange = (open: boolean) => {
+		if (!open) {
+			descriptionField.flush()
+			notesField.flush()
+		}
+		setIsOpen(open)
+	}
 
-	const rating = !review.rating ? null : ratings[review.rating]
-	const RatingIcon = rating?.Icon ?? Circle
 	const description = review.description.trim()
 	const hasNotes = review.notes.trim().length > 0
 
 	return (
 		<>
-			<Dialog open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog open={isOpen} onOpenChange={handleOpenChange}>
 				<div {...stylex.props(styles.contentContainer)}>
-					<DropdownMenu>
-						<DropdownMenuTrigger
-							aria-label={rating?.label ?? 'Uncompleted'}
-							render={
-								<Button.Icon
-									shape='round'
-									size='micro'
-									variant='ghost'
-									xstyle={[styles.rating, styles.raised]}
-								/>
-							}
-						>
-							{!review.rating ? (
-								<RatingIcon
-									aria-hidden='true'
-									size={iconSizes.md}
-								/>
-							) : (
-								<span {...stylex.props(styles.ratingBadge)}>
-									<RatingIcon
-										aria-hidden='true'
-										size={iconSizes.sm}
-									/>
-								</span>
-							)}
-						</DropdownMenuTrigger>
-						<DropdownMenuContent>
-							<DropdownMenuRadioGroup
-								value={review.rating ?? ''}
-								onValueChange={value =>
-									setRating(
-										value === '' ? null : (value as Rating),
-									)
-								}
-							>
-								<DropdownMenuRadioItem
-									value=''
-									prefix={
-										<Circle
-											aria-hidden='true'
-											size={iconSizes.md}
-										/>
-									}
-								>
-									Uncompleted
-								</DropdownMenuRadioItem>
-								{Object.entries(ratings).map(
-									([value, { label, Icon }]) => (
-										<DropdownMenuRadioItem
-											key={value}
-											value={value}
-											prefix={
-												<Icon
-													aria-hidden='true'
-													size={iconSizes.md}
-												/>
-											}
-										>
-											{label}
-										</DropdownMenuRadioItem>
-									),
-								)}
-							</DropdownMenuRadioGroup>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<RatingPicker
+						onSetRating={setRating}
+						rating={review.rating}
+						xstyle={[styles.rating, styles.raised]}
+					/>
 					<DialogTrigger {...stylex.props(styles.description)}>
 						<span {...stylex.props(styles.descriptionText)}>
 							{description || 'No description'}
@@ -270,10 +185,14 @@ export function Review({ review }: ReviewProps) {
 							<ReviewDatePicker
 								isCompleted={review.rating !== undefined}
 								onChange={setDate}
+								size='micro'
 								value={
 									(review.date ?? null) as DateString | null
 								}
 							/>
+						</div>
+						<div {...stylex.props(styles.raised)}>
+							<ReviewDurability review={review} size='micro' />
 						</div>
 						<div {...stylex.props(styles.spacer)} />
 						<DropdownMenu>
@@ -308,24 +227,15 @@ export function Review({ review }: ReviewProps) {
 					</div>
 				</div>
 
-				<DialogContent>
-					<Textarea
-						aria-label='Review description'
-						placeholder='Add a description…'
-						value={descriptionField.value}
-						onBlur={descriptionField.flush}
-						onChange={descriptionField.onChange}
-						xstyle={styles.descriptionEditor}
-					/>
-					<Textarea
-						aria-label='Review notes'
-						placeholder='Add notes…'
-						value={notesField.value}
-						onBlur={notesField.flush}
-						onChange={notesField.onChange}
-						xstyle={styles.notesEditor}
-					/>
-				</DialogContent>
+				<ReviewDialog
+					descriptionField={descriptionField}
+					isOpen={isOpen}
+					notesField={notesField}
+					onDelete={() => setIsDeleteDialogOpen(true)}
+					onSetDate={setDate}
+					onSetRating={setRating}
+					review={review}
+				/>
 			</Dialog>
 
 			<DeleteConfirmationDialog

@@ -12,6 +12,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
+	Separator,
 	Textarea,
 } from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -29,6 +30,7 @@ import {
 } from '~/modules/reviews/api/reviewCardQueries'
 import { ReviewCardItem } from '~/modules/reviews/components/ReviewCardItem'
 import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -94,9 +96,20 @@ const styles = stylex.create({
 		minBlockSize: '44px',
 	},
 	description: { fontSize: fontSizes.md },
-	reviewCardsHeaderContainer: { display: 'flex' },
-	reviewCardsHeaderText: { flexBasis: 0, flexGrow: 1, flexShrink: 1 },
-	reviewCardsList: { display: 'flex', flexDirection: 'column' },
+	separator: {
+		marginBlock: spacing.md,
+	},
+	reviewCardsHeaderText: {
+		color: semanticColors.textSecondary,
+		fontSize: fontSizes.md,
+	},
+	reviewCardsList: {
+		display: 'flex',
+		flexDirection: 'column',
+	},
+	addReviewCardButton: {
+		inlineSize: '100%',
+	},
 })
 
 export function TopicPage() {
@@ -245,19 +258,11 @@ export function TopicPage() {
 						/>
 					</section>
 
-					<div {...stylex.props(styles.reviewCardsHeaderContainer)}>
-						<h2 {...stylex.props(styles.reviewCardsHeaderText)}>
-							Review Cards
-						</h2>
-						<Button.Icon
-							aria-label='Add review card'
-							disabled={createReviewCard.isPending}
-							onClick={handleCreateReviewCard}
-							shape='round'
-						>
-							<Plus aria-hidden='true' />
-						</Button.Icon>
-					</div>
+					<Separator xstyle={styles.separator} />
+
+					<h2 {...stylex.props(styles.reviewCardsHeaderText)}>
+						Review Cards
+					</h2>
 
 					<div {...stylex.props(styles.reviewCardsList)}>
 						{reviewCards.map(reviewCard => (
@@ -271,6 +276,17 @@ export function TopicPage() {
 								today={today}
 							/>
 						))}
+						<Button
+							aria-label='Add review card'
+							shape='round'
+							variant='ghost'
+							disabled={createReviewCard.isPending}
+							onClick={handleCreateReviewCard}
+							xstyle={styles.addReviewCardButton}
+						>
+							<Plus size={iconSizes.md} />
+							Add review card
+						</Button>
 					</div>
 				</div>
 			</div>

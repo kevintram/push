@@ -66,8 +66,10 @@ const styles = stylex.create({
 		},
 	},
 	fat: {
-		padding: spacing.md,
-		borderRadius: radii.xl,
+		paddingBlock: spacing.md,
+		paddingInline: spacing.sm,
+
+		borderRadius: radii['2xl'],
 		flexDirection: 'column',
 		fontSize: fontSizes.xs,
 		fontWeight: fontWeights.medium,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { ReviewCard } from '../../types/review.types'
-import { deriveReviewCardSrsState } from '../reviewCardSrs'
+import { deriveReviewCardSrsState, getFreshnessTier } from '../reviewCardSrs'
 
 function reviewCard(overrides: Partial<ReviewCard> = {}): ReviewCard {
 	return {
@@ -44,5 +44,19 @@ describe('deriveReviewCardSrsState', () => {
 		expect(srs.nextDueAt).toBe('2026-02-20')
 		expect(srs.stability).toBe(10)
 		expect(srs.retrievability).toBeCloseTo(0.9403442888929227, 14)
+	})
+})
+
+describe('getFreshnessTier', () => {
+	it.each([
+		[null, null],
+		[0.75, 'Forgotten'],
+		[0.8, 'Hazy'],
+		[0.85, 'Hazy'],
+		[0.9, 'Fine'],
+		[0.95, 'Fine'],
+		[0.96, 'Fresh'],
+	] as const)('maps %s retrievability to %s', (retrievability, tier) => {
+		expect(getFreshnessTier(retrievability)).toBe(tier)
 	})
 })

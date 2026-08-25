@@ -14,13 +14,20 @@ import { LibraryTopicItem } from './LibraryTopicItem'
 
 const styles = stylex.create({
 	container: {
+		overscrollBehavior: 'none',
 		backgroundColor: librarySidebarColors.background,
 		overflowY: 'auto',
+	},
+	stickyWrapper: {
+		backgroundColor: librarySidebarColors.background,
+		insetBlockStart: 0,
+		position: 'sticky',
+		zIndex: 1,
 	},
 	header: {
 		padding: spacing.xs,
 		marginInline: spacing.xs,
-		marginBlockStart: spacing.md,
+		paddingBlockStart: spacing.md,
 
 		display: 'flex',
 
@@ -68,23 +75,25 @@ export function LibrarySidebarContent({ topics }: LibrarySidebarContentProps) {
 
 	return (
 		<div {...stylex.props(styles.container)}>
-			<div
-				ref={droppableHeaderRef}
-				{...stylex.props(
-					styles.header,
-					headerIsDropTarget && styles.headerIsDropTarget,
-				)}
-			>
-				<p {...stylex.props(styles.headerText)}>Library</p>
-				<Button.Icon
-					aria-label='Add topic'
-					shape='round'
-					size='micro'
-					variant='ghost'
-					onClick={handleCreateTopic}
+			<div {...stylex.props(styles.stickyWrapper)}>
+				<div
+					ref={droppableHeaderRef}
+					{...stylex.props(
+						styles.header,
+						headerIsDropTarget && styles.headerIsDropTarget,
+					)}
 				>
-					<Plus aria-hidden='true' size={iconSizes.md} />
-				</Button.Icon>
+					<p {...stylex.props(styles.headerText)}>Library</p>
+					<Button.Icon
+						aria-label='Add topic'
+						shape='round'
+						size='micro'
+						variant='ghost'
+						onClick={handleCreateTopic}
+					>
+						<Plus aria-hidden='true' size={iconSizes.md} />
+					</Button.Icon>
+				</div>
 			</div>
 			<nav aria-label='Library topics' {...stylex.props(styles.nav)}>
 				<Tree>

@@ -95,7 +95,6 @@ function renderRoute(
 		lateEntries = [],
 		missingReviewCard = false,
 		newReviewCards = [],
-		reviewHistoryError = false,
 		reviewCardType = 'flashcard',
 		topics = [],
 	}: {
@@ -104,7 +103,6 @@ function renderRoute(
 		lateEntries?: Array<DueEntry>
 		missingReviewCard?: boolean
 		newReviewCards?: Array<ReviewCard>
-		reviewHistoryError?: boolean
 		reviewCardType?: ReviewCard['type']
 		topics?: Array<Doc<'topics'>>
 	} = {},
@@ -170,12 +168,10 @@ function renderRoute(
 			reviewCardQueries.detail(card._id).queryKey,
 			card,
 		)
-		if (!reviewHistoryError) {
-			queryClient.setQueryData(
-				reviewQueries.listByReviewCard(card._id).queryKey,
-				[],
-			)
-		}
+		queryClient.setQueryData(
+			reviewQueries.listByReviewCard(card._id).queryKey,
+			[],
+		)
 	}
 	if (!missingReviewCard) {
 		queryClient.setQueryData(
@@ -186,12 +182,10 @@ function renderRoute(
 			},
 		)
 	}
-	if (!reviewHistoryError) {
-		queryClient.setQueryData(
-			reviewQueries.listByReviewCard(reviewCardId).queryKey,
-			[review],
-		)
-	}
+	queryClient.setQueryData(
+		reviewQueries.listByReviewCard(reviewCardId).queryKey,
+		[review],
+	)
 	const convexClient = createTestConvexClient()
 
 	const router = createRouter({
@@ -318,12 +312,6 @@ describe('v2 app setup', () => {
 		expect(
 			screen.getByLabelText('Review-card primary text'),
 		).not.toHaveAttribute('readonly')
-		expect(
-			screen.getByText('Correctly described generics.'),
-		).toBeInTheDocument()
-		expect(
-			screen.getByRole('link', { name: 'See all' }),
-		).toBeInTheDocument()
 		// Base UI keeps `role="button"` on the non-native element, but it stays
 		// a real anchor so middle-click and open-in-new-tab still work.
 		const openLink = screen.getByRole('button', {
@@ -331,23 +319,6 @@ describe('v2 app setup', () => {
 		})
 		expect(openLink.tagName).toBe('A')
 		expect(openLink).toHaveAttribute('href', '/review-cards/review-card-1')
-	})
-
-	it('keeps a review-history failure inside focus mode', async () => {
-		const user = userEvent.setup()
-		renderRoute('/review/new', {
-			newReviewCards: [reviewCard],
-			reviewHistoryError: true,
-		})
-
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
-
-		expect(
-			await screen.findByText('Could not load this review card.'),
-		).toBeInTheDocument()
-		expect(
-			screen.getByRole('dialog', { name: 'Focus review cards' }),
-		).toBeInTheDocument()
 	})
 
 	it('resumes on the card being read when focus is reopened', async () => {
@@ -662,8 +633,8 @@ describe('v2 app setup', () => {
 		renderRoute(`/review-cards/${reviewCardId}/reviews`)
 
 		expect(
-			await screen.findByText('Correctly described generics.'),
-		).toBeInTheDocument()
+			await screen.findAllByText('Correctly described generics.'),
+		).not.toHaveLength(0)
 	})
 
 	it('renders the not found route', async () => {

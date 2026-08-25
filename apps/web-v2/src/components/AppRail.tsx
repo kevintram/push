@@ -11,8 +11,8 @@ import { SidebarItem } from './sidebar-item'
 
 const styles = stylex.create({
 	container: {
-		padding: spacing.sm,
-		gap: spacing.sm,
+		padding: spacing.xs,
+		gap: spacing.xs,
 
 		backgroundColor: appRailColors.background,
 
@@ -20,7 +20,7 @@ const styles = stylex.create({
 		flexDirection: 'column',
 		flexShrink: 0,
 
-		inlineSize: '85px',
+		inlineSize: '75px',
 	},
 	spacer: {
 		flexBasis: 0,
