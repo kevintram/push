@@ -38,6 +38,7 @@ const styles = stylex.create({
 	tabsContainer: {
 		paddingInline: spacing.lg,
 		flexShrink: 0,
+		marginInlineStart: `calc(${spacing.sm} * -1)`,
 	},
 	tabs: {
 		backgroundColor: semanticColors.surfaceTransparent,
