@@ -13,6 +13,7 @@ export interface DialogContentProps extends Omit<
 > {
 	showCloseButton?: boolean
 	size?: 'default' | 'fullscreen'
+	viewportXstyle?: stylex.StyleXStyles
 	xstyle?: stylex.StyleXStyles
 }
 
@@ -127,6 +128,7 @@ export function DialogContent({
 	children,
 	showCloseButton = true,
 	size = 'default',
+	viewportXstyle,
 	xstyle,
 	...props
 }: DialogContentProps) {
@@ -139,6 +141,7 @@ export function DialogContent({
 				{...stylex.props(
 					styles.viewport,
 					isFullscreen && styles.viewportFullscreen,
+					viewportXstyle,
 				)}
 			>
 				<DialogPrimitive.Popup
