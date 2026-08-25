@@ -313,6 +313,11 @@ export const reviewColors = stylex.defineVars({
 	},
 })
 
+export const reviewComposerColors = stylex.defineVars({
+	containerBackground: semanticColors.surfaceRaised,
+	containerShadow: semanticColors.shadowStrong,
+})
+
 export const reviewCardActionsColors = stylex.defineVars({
 	flashcardSelectedForeground: {
 		default: amber.s400,

@@ -31,12 +31,14 @@ const styles = stylex.create({
 })
 
 type RatingPickerProps = {
+	disabled?: boolean
 	onSetRating: (rating: Rating | null) => void
 	rating: Rating | undefined
 	xstyle?: StyleXStyles
 }
 
 export function RatingPicker({
+	disabled = false,
 	onSetRating,
 	rating,
 	xstyle,
@@ -52,6 +54,7 @@ export function RatingPicker({
 					<Button.Icon
 						shape='round'
 						size='micro'
+						disabled={disabled}
 						variant='ghost'
 						xstyle={xstyle}
 					/>
