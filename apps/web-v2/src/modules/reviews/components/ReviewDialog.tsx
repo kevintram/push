@@ -42,21 +42,20 @@ const styles = stylex.create({
 		display: 'flex',
 		justifyContent: 'center',
 		paddingBlockEnd: {
-			default: '13dvh',
-			'@media (max-width: 767px)':
-				'max(8px, env(safe-area-inset-bottom))',
+			default: `max(${spacing.sm}, env(safe-area-inset-bottom))`,
+			[breakpoints.tablet]: '13dvh',
 		},
 		paddingBlockStart: {
-			default: '13dvh',
-			'@media (max-width: 767px)': 'max(8px, env(safe-area-inset-top))',
+			default: `max(${spacing.sm}, env(safe-area-inset-top))`,
+			[breakpoints.tablet]: '13dvh',
 		},
 		paddingInlineEnd: {
-			default: '12px',
-			'@media (max-width: 767px)': 'max(8px, env(safe-area-inset-right))',
+			default: `max(${spacing.sm}, env(safe-area-inset-right))`,
+			[breakpoints.tablet]: spacing.md,
 		},
 		paddingInlineStart: {
-			default: '12px',
-			'@media (max-width: 767px)': 'max(8px, env(safe-area-inset-left))',
+			default: `max(${spacing.sm}, env(safe-area-inset-left))`,
+			[breakpoints.tablet]: spacing.md,
 		},
 		overflowX: 'hidden',
 		overflowY: 'hidden',
@@ -70,13 +69,12 @@ const styles = stylex.create({
 	},
 	expandedViewport: {
 		paddingBlockEnd: {
-			default: '6dvh',
-			'@media (max-width: 767px)':
-				'max(8px, env(safe-area-inset-bottom))',
+			default: `max(${spacing.sm}, env(safe-area-inset-bottom))`,
+			[breakpoints.tablet]: '6dvh',
 		},
 		paddingBlockStart: {
-			default: '6dvh',
-			'@media (max-width: 767px)': 'max(8px, env(safe-area-inset-top))',
+			default: `max(${spacing.sm}, env(safe-area-inset-top))`,
+			[breakpoints.tablet]: '6dvh',
 		},
 	},
 	popup: {
@@ -89,19 +87,19 @@ const styles = stylex.create({
 		flexDirection: 'column',
 		inlineSize: '100%',
 		maxBlockSize: {
-			default: '74dvh',
-			'@media (max-width: 767px)': '100%',
+			default: '100%',
+			[breakpoints.tablet]: '74dvh',
 		},
 		maxInlineSize: {
-			default: '750px',
-			'@media (max-width: 767px)': 'none',
+			default: 'none',
+			[breakpoints.tablet]: '750px',
 		},
 		minBlockSize: 0,
 		minInlineSize: 0,
 
 		blockSize: {
-			default: 'auto',
-			'@media (max-width: 767px)': '100%',
+			default: '100%',
+			[breakpoints.tablet]: 'auto',
 		},
 		transitionDuration: {
 			default: '300ms, 220ms, 300ms',
@@ -112,20 +110,20 @@ const styles = stylex.create({
 	},
 	expandedPopup: {
 		blockSize: {
-			default: '88dvh',
-			'@media (max-width: 767px)': '100%',
+			default: '100%',
+			[breakpoints.tablet]: '88dvh',
 		},
 		maxBlockSize: {
-			default: '88dvh',
-			'@media (max-width: 767px)': '100%',
+			default: '100%',
+			[breakpoints.tablet]: '88dvh',
 		},
 		maxInlineSize: {
-			default: '820px',
-			'@media (max-width: 767px)': 'none',
+			default: 'none',
+			[breakpoints.tablet]: '820px',
 		},
 		minBlockSize: {
-			default: '88dvh',
-			'@media (max-width: 767px)': 0,
+			default: 0,
+			[breakpoints.tablet]: '88dvh',
 		},
 	},
 	header: {
@@ -157,19 +155,19 @@ const styles = stylex.create({
 		columnGap: spacing.md,
 		gridTemplateColumns: 'max-content minmax(0, 1fr)',
 		gridTemplateRows: {
-			default: 'minmax(0, auto) auto',
-			'@media (max-width: 767px)': 'minmax(0, 1fr) auto',
+			default: 'minmax(0, 1fr) auto',
+			[breakpoints.tablet]: 'minmax(0, auto) auto',
 		},
 
 		overflow: 'hidden',
 		display: 'grid',
 		flexBasis: {
-			default: 'auto',
-			'@media (max-width: 767px)': 0,
+			default: 0,
+			[breakpoints.tablet]: 'auto',
 		},
 		flexGrow: {
-			default: 0,
-			'@media (max-width: 767px)': 1,
+			default: 1,
+			[breakpoints.tablet]: 0,
 		},
 		flexShrink: 1,
 		minBlockSize: 0,
@@ -201,13 +199,13 @@ const styles = stylex.create({
 		overflow: 'hidden',
 		display: 'flex',
 		flexBasis: {
-			default: 'auto',
-			'@media (max-width: 767px)': 0,
+			default: 0,
+			[breakpoints.tablet]: 'auto',
 		},
 		flexDirection: 'column',
 		flexGrow: {
-			default: 0,
-			'@media (max-width: 767px)': 1,
+			default: 1,
+			[breakpoints.tablet]: 0,
 		},
 		flexShrink: 1,
 		gridColumnEnd: '3',
@@ -239,20 +237,20 @@ const styles = stylex.create({
 		borderStyle: 'none',
 		blockSize: 'auto',
 		flexBasis: {
-			default: 'auto',
-			'@media (max-width: 767px)': 0,
+			default: 0,
+			[breakpoints.tablet]: 'auto',
 		},
 		flexGrow: {
-			default: 0,
-			'@media (max-width: 767px)': 1,
+			default: 1,
+			[breakpoints.tablet]: 0,
 		},
 		flexShrink: 1,
 		fontSize: fontSizes.sm,
 		fontWeight: fontWeights.medium,
 		lineHeight: 1.4,
 		minBlockSize: {
-			default: '5rem',
-			'@media (max-width: 767px)': 0,
+			default: 0,
+			[breakpoints.tablet]: '5rem',
 		},
 		overflowWrap: 'anywhere',
 		overflowX: 'hidden',

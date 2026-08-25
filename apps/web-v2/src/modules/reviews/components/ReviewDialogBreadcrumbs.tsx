@@ -13,20 +13,21 @@ import {
 	BreadcrumbSeparator,
 	DialogClose,
 } from '~/components/ui'
+import { breakpoints } from '~/styles/tokens.stylex'
 
 import type { ReviewCard } from '../types/review.types'
 
 const styles = stylex.create({
 	desktopList: {
 		display: {
-			default: 'flex',
-			'@media (max-width: 767px)': 'none',
+			default: 'none',
+			[breakpoints.tablet]: 'flex',
 		},
 	},
 	mobileList: {
 		display: {
-			default: 'none',
-			'@media (max-width: 767px)': 'flex',
+			default: 'flex',
+			[breakpoints.tablet]: 'none',
 		},
 	},
 })
