@@ -23,12 +23,12 @@ const styles = stylex.create({
 	children: {
 		marginBlock: {
 			default: 0,
-			[breakpoints.desktop]: 6,
+			[breakpoints.tablet]: 6,
 		},
 		flexGrow: 1,
 		marginInlineEnd: {
 			default: 0,
-			[breakpoints.desktop]: 6,
+			[breakpoints.tablet]: 6,
 		},
 		minHeight: 0,
 		minWidth: 0,
@@ -39,7 +39,7 @@ const styles = stylex.create({
 
 		borderRadius: {
 			default: 0,
-			[breakpoints.desktop]: radii.xl,
+			[breakpoints.tablet]: radii.xl,
 		},
 		backgroundColor: appShellColors.surfaceBackground,
 		boxShadow: {

@@ -32,15 +32,15 @@ const styles = stylex.create({
 		backgroundColor: appShellColors.surfaceBackground,
 		boxShadow: {
 			default: 'none',
-			[breakpoints.desktop]: `-1px 0 4px ${appShellColors.surfaceShadow}`,
+			[breakpoints.tablet]: `-1px 0 4px ${appShellColors.surfaceShadow}`,
 		},
 		borderBottomLeftRadius: {
 			default: 0,
-			[breakpoints.desktop]: radii.xl,
+			[breakpoints.tablet]: radii.xl,
 		},
 		borderTopLeftRadius: {
 			default: 0,
-			[breakpoints.desktop]: radii.xl,
+			[breakpoints.tablet]: radii.xl,
 		},
 	},
 })
