@@ -6,8 +6,8 @@ import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 import { formatRelativeDate } from '~/utils/date'
 
-import type { ReviewCardSrsState } from '../types/review.types'
-import { getFreshnessTier } from '../utils/reviewCardSrs'
+import type { ReviewCardSrsState } from '../../types/review.types'
+import { getFreshnessTier } from '../../utils/reviewCardSrs'
 
 const styles = stylex.create({
 	container: {

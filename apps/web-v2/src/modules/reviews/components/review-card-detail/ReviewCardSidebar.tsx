@@ -4,9 +4,9 @@ import * as stylex from '@stylexjs/stylex'
 import { breakpoints, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
-import type { ReviewCardSrsState } from '../types/review.types'
+import type { ReviewCardSrsState } from '../../types/review.types'
 import { ReviewCardPropertiesPanel } from './ReviewCardPropertiesPanel'
-import { ReviewsPanel } from './ReviewsPanel'
+import { ReviewCardReviewsPanel } from './ReviewCardReviewsPanel'
 
 const styles = stylex.create({
 	container: {
@@ -39,7 +39,7 @@ export function ReviewCardSidebar({
 			{...stylex.props(styles.container)}
 		>
 			<ReviewCardPropertiesPanel {...srsState} today={today} />
-			<ReviewsPanel reviewCardId={reviewCardId} />
+			<ReviewCardReviewsPanel reviewCardId={reviewCardId} />
 		</aside>
 	)
 }

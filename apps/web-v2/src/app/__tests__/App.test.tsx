@@ -212,7 +212,7 @@ function renderRoute(
 		</ConvexProvider>,
 	)
 
-	return { ...rendered, queryClient }
+	return { ...rendered, queryClient, router }
 }
 
 describe('v2 app setup', () => {
@@ -319,6 +319,60 @@ describe('v2 app setup', () => {
 		})
 		expect(openLink.tagName).toBe('A')
 		expect(openLink).toHaveAttribute('href', '/review-cards/review-card-1')
+		expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute(
+			'aria-selected',
+			'true',
+		)
+		expect(screen.getByRole('tab', { name: 'Overview' }).tagName).toBe(
+			'BUTTON',
+		)
+		expect(
+			screen.getByRole('complementary', {
+				name: 'Review card details',
+			}),
+		).toBeInTheDocument()
+	})
+
+	it('resets the focus tab when advancing to another card', async () => {
+		const user = userEvent.setup()
+		const secondCard: ReviewCard = {
+			...reviewCard,
+			_id: 'review-card-2' as Id<'reviewCards'>,
+			primaryText: 'What is a discriminated union?',
+		}
+		renderRoute('/review/new', { newReviewCards: [reviewCard, secondCard] })
+
+		await user.click(await screen.findByRole('button', { name: 'Focus' }))
+		await user.click(await screen.findByRole('tab', { name: 'Reviews' }))
+		expect(
+			await screen.findByRole('form', { name: 'Add review' }),
+		).toBeInTheDocument()
+
+		await user.click(
+			screen.getByRole('button', { name: 'Next review card' }),
+		)
+
+		expect(
+			await screen.findByDisplayValue('What is a discriminated union?'),
+		).toBeInTheDocument()
+		expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute(
+			'aria-selected',
+			'true',
+		)
+	})
+
+	it('closes focus mode before following a breadcrumb', async () => {
+		const user = userEvent.setup()
+		renderRoute('/review/new', { newReviewCards: [reviewCard] })
+
+		await user.click(await screen.findByRole('button', { name: 'Focus' }))
+		await user.click(await screen.findByRole('link', { name: 'Library' }))
+
+		await waitFor(() =>
+			expect(
+				screen.queryByRole('dialog', { name: 'Focus review cards' }),
+			).not.toBeInTheDocument(),
+		)
 	})
 
 	it('resumes on the card being read when focus is reopened', async () => {
@@ -630,11 +684,44 @@ describe('v2 app setup', () => {
 	})
 
 	it('renders review history under the standalone review-card route', async () => {
-		renderRoute(`/review-cards/${reviewCardId}/reviews`)
+		const { router } = renderRoute(`/review-cards/${reviewCardId}/reviews`)
 
 		expect(
 			await screen.findAllByText('Correctly described generics.'),
 		).not.toHaveLength(0)
+		expect(screen.getByRole('tab', { name: 'Reviews' })).toHaveAttribute(
+			'aria-selected',
+			'true',
+		)
+		expect(router.state.location.pathname).toBe(
+			`/review-cards/${reviewCardId}/reviews`,
+		)
+	})
+
+	it('updates the standalone URL when changing review-card tabs', async () => {
+		const user = userEvent.setup()
+		const { router } = renderRoute(`/review-cards/${reviewCardId}`)
+		const reviewsTab = await screen.findByRole('tab', { name: 'Reviews' })
+
+		expect(reviewsTab.tagName).toBe('A')
+		expect(reviewsTab).toHaveAttribute(
+			'href',
+			`/review-cards/${reviewCardId}/reviews`,
+		)
+		await user.click(reviewsTab)
+
+		await waitFor(() =>
+			expect(router.state.location.pathname).toBe(
+				`/review-cards/${reviewCardId}/reviews`,
+			),
+		)
+		expect(screen.getByRole('tab', { name: 'Reviews' })).toHaveAttribute(
+			'aria-selected',
+			'true',
+		)
+		expect(
+			await screen.findByRole('form', { name: 'Add review' }),
+		).toBeInTheDocument()
 	})
 
 	it('renders the not found route', async () => {

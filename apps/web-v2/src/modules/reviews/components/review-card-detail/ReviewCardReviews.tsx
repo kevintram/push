@@ -1,11 +1,12 @@
+import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useParams } from '@tanstack/react-router'
 
-import { reviewQueries } from '~/modules/reviews/api/reviewQueries'
-import { Review } from '~/modules/reviews/components/Review'
-import { ReviewComposer } from '~/modules/reviews/components/ReviewComposer'
 import { layout, spacing } from '~/styles/tokens.stylex'
+
+import { reviewQueries } from '../../api/reviewQueries'
+import { Review } from '../Review'
+import { ReviewComposer } from '../ReviewComposer'
 
 const styles = stylex.create({
 	container: {
@@ -29,12 +30,15 @@ const styles = stylex.create({
 	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
 })
 
-export function ReviewCardPageReviews() {
-	const { reviewCardId } = useParams({ from: '/review-cards/$reviewCardId' })
+type ReviewCardReviewsProps = {
+	reviewCardId: Id<'reviewCards'>
+}
 
+export function ReviewCardReviews({ reviewCardId }: ReviewCardReviewsProps) {
 	const { data: reviews } = useSuspenseQuery(
 		reviewQueries.listByReviewCard(reviewCardId),
 	)
+
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.content)}>

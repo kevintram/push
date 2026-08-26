@@ -18,13 +18,17 @@ function displayText(text: string) {
 	return text.trim() || 'Untitled'
 }
 
+type ReviewCardBreadcrumbsProps = {
+	primaryText: string
+	topicId: Id<'topics'>
+	onNavigate?: () => void
+}
+
 export function ReviewCardBreadcrumbs({
 	primaryText,
 	topicId,
-}: {
-	primaryText: string
-	topicId: Id<'topics'>
-}) {
+	onNavigate,
+}: ReviewCardBreadcrumbsProps) {
 	const { data: topic } = useSuspenseQuery(
 		topicQueries.detail(topicId, { expandPath: true }),
 	)
@@ -34,7 +38,9 @@ export function ReviewCardBreadcrumbs({
 		<Breadcrumb>
 			<BreadcrumbList>
 				<BreadcrumbItem>
-					<BreadcrumbLink render={<Link to='/library' />}>
+					<BreadcrumbLink
+						render={<Link to='/library' onClick={onNavigate} />}
+					>
 						Library
 					</BreadcrumbLink>
 				</BreadcrumbItem>
@@ -47,6 +53,7 @@ export function ReviewCardBreadcrumbs({
 									<Link
 										to='/library/$topicId'
 										params={{ topicId: crumb._id }}
+										onClick={onNavigate}
 									/>
 								}
 							>

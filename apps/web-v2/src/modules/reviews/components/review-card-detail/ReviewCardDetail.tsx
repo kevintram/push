@@ -1,17 +1,41 @@
+import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { Link, Outlet, useMatchRoute, useParams } from '@tanstack/react-router'
+import type { ReactElement } from 'react'
 
 import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
 import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
-import { ReviewCardActions } from '~/modules/reviews/components/ReviewCardActions'
-import { ReviewCardSidebar } from '~/modules/reviews/components/ReviewCardSidebar'
 import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
+import { ReviewCardActions } from '../ReviewCardActions'
 import { ReviewCardBreadcrumbs } from './ReviewCardBreadcrumbs'
+import { ReviewCardOverview } from './ReviewCardOverview'
+import { ReviewCardReviews } from './ReviewCardReviews'
+import { ReviewCardSidebar } from './ReviewCardSidebar'
+
+export type ReviewCardTab = 'overview' | 'reviews'
+
+type ReviewCardDetailBaseProps = {
+	reviewCardId: Id<'reviewCards'>
+	activeTab: ReviewCardTab
+	/** Called when an internal breadcrumb link is about to navigate. */
+	onNavigate?: () => void
+}
+
+type ReviewCardDetailProps = ReviewCardDetailBaseProps &
+	(
+		| {
+				onTabChange: (tab: ReviewCardTab) => void
+				tabLinks?: never
+		  }
+		| {
+				onTabChange?: never
+				tabLinks: Record<ReviewCardTab, ReactElement>
+		  }
+	)
 
 const styles = stylex.create({
 	container: {
@@ -46,9 +70,6 @@ const styles = stylex.create({
 	tabs: {
 		backgroundColor: semanticColors.surfaceTransparent,
 	},
-	tabLink: {
-		textDecoration: 'none',
-	},
 	content: {
 		gap: spacing.lg,
 		overflow: 'hidden',
@@ -63,22 +84,18 @@ const styles = stylex.create({
 	},
 })
 
-export function ReviewCardPageShell() {
-	const { reviewCardId } = useParams({
-		from: '/review-cards/$reviewCardId',
-	})
+export function ReviewCardDetail({
+	reviewCardId,
+	activeTab,
+	onTabChange,
+	tabLinks,
+	onNavigate,
+}: ReviewCardDetailProps) {
 	const { data: reviewCard } = useSuspenseQuery(
 		reviewCardQueries.detail(reviewCardId),
 	)
 	const today = useToday()
 	const srsState = deriveReviewCardSrsState(reviewCard, today)
-	const matchRoute = useMatchRoute()
-	const activeTab = matchRoute({
-		to: '/review-cards/$reviewCardId/reviews',
-		params: { reviewCardId },
-	})
-		? 'reviews'
-		: 'overview'
 
 	return (
 		<div {...stylex.props(styles.container)}>
@@ -87,45 +104,49 @@ export function ReviewCardPageShell() {
 					<ReviewCardBreadcrumbs
 						primaryText={reviewCard.primaryText}
 						topicId={reviewCard.topicId}
+						onNavigate={onNavigate}
 					/>
 				</div>
 				<ReviewCardActions reviewCard={reviewCard} />
 			</header>
-			<Tabs value={activeTab} xstyle={styles.tabsContainer}>
+			<Tabs
+				value={activeTab}
+				onValueChange={value => {
+					if (
+						onTabChange &&
+						(value === 'overview' || value === 'reviews')
+					) {
+						onTabChange(value)
+					}
+				}}
+				xstyle={styles.tabsContainer}
+			>
 				<TabsList
 					aria-label='Review card sections'
 					xstyle={styles.tabs}
 				>
 					<TabsTrigger
 						value='overview'
-						nativeButton={false}
-						render={
-							<Link
-								to='/review-cards/$reviewCardId'
-								params={{ reviewCardId }}
-								{...stylex.props(styles.tabLink)}
-							/>
-						}
+						nativeButton={tabLinks ? false : undefined}
+						render={tabLinks?.overview}
 					>
 						Overview
 					</TabsTrigger>
 					<TabsTrigger
 						value='reviews'
-						nativeButton={false}
-						render={
-							<Link
-								to='/review-cards/$reviewCardId/reviews'
-								params={{ reviewCardId }}
-								{...stylex.props(styles.tabLink)}
-							/>
-						}
+						nativeButton={tabLinks ? false : undefined}
+						render={tabLinks?.reviews}
 					>
 						Reviews
 					</TabsTrigger>
 				</TabsList>
 			</Tabs>
 			<div {...stylex.props(styles.content)}>
-				<Outlet />
+				{activeTab === 'overview' ? (
+					<ReviewCardOverview reviewCardId={reviewCardId} />
+				) : (
+					<ReviewCardReviews reviewCardId={reviewCardId} />
+				)}
 				<ReviewCardSidebar
 					{...srsState}
 					reviewCardId={reviewCardId}

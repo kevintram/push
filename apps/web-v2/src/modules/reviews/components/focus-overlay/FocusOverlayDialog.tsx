@@ -22,9 +22,9 @@ import { focusOverlayColors } from '~/styles/colors/components.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { FocusOverlayCardError } from './FocusOverlayCardError'
-import { ReviewCardOverview } from './ReviewCardOverview'
+import { FocusOverlayReviewCard } from './FocusOverlayReviewCard'
 
-type FocusOverlayProps = {
+type FocusOverlayDialogProps = {
 	handle: DialogHandle
 	reviewCards: ReadonlyArray<ReviewCard>
 }
@@ -55,8 +55,6 @@ const styles = stylex.create({
 
 		borderRadius: radii.lg,
 		backgroundColor: focusOverlayColors.cardBackground,
-
-		padding: spacing.lg,
 	},
 	header: {
 		alignItems: 'center',
@@ -115,10 +113,13 @@ function resolveIndex(
 /**
  * The position state deliberately outlives a close: reopening Focus resumes on
  * the card the user was reading rather than jumping back to the top of the
- * queue. Reveal state does not — `ReviewCardOverview` unmounts with the popup,
- * so a reopened card never shows its answer already revealed.
+ * queue. Reveal and tab state do not — the keyed card panel unmounts with the
+ * popup, so a reopened card starts from Overview with its answer unrevealed.
  */
-export function FocusOverlay({ handle, reviewCards }: FocusOverlayProps) {
+export function FocusOverlayDialog({
+	handle,
+	reviewCards,
+}: FocusOverlayDialogProps) {
 	const [selection, setSelection] = useState<IdAndIndex>(() => ({
 		id: reviewCards[0]?._id ?? null,
 		index: 0,
@@ -285,8 +286,9 @@ export function FocusOverlay({ handle, reviewCards }: FocusOverlayProps) {
 										key={currentReviewCard._id}
 										fallback={<LoadingIndicator />}
 									>
-										<ReviewCardOverview
+										<FocusOverlayReviewCard
 											reviewCardId={currentReviewCard._id}
+											onNavigate={() => handle.close()}
 										/>
 									</Suspense>
 								</ErrorBoundary>

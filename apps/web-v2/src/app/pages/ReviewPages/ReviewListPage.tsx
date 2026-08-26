@@ -3,7 +3,7 @@ import { Maximize2 } from 'lucide-react'
 import { useState } from 'react'
 
 import { Button, createDialogHandle, DialogTrigger } from '~/components/ui'
-import { FocusOverlay } from '~/modules/reviews/components/FocusOverlay'
+import { FocusOverlayDialog } from '~/modules/reviews/components/focus-overlay/FocusOverlayDialog'
 import { ReviewCardItem } from '~/modules/reviews/components/ReviewCardItem'
 import type { ReviewCard as ReviewCardModel } from '~/modules/reviews/types/review.types'
 import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
@@ -78,7 +78,7 @@ export function ReviewListPage({
 					)
 				})}
 			</div>
-			<FocusOverlay
+			<FocusOverlayDialog
 				handle={focusDialogHandle}
 				reviewCards={reviewCards}
 			/>
