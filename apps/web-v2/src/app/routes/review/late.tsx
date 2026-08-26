@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ReviewLatePage } from '~/app/pages/ReviewLatePage'
+import { ReviewLatePage } from '~/app/pages/ReviewPages/ReviewLatePage'
 import { dueQueries } from '~/modules/reviews/api/dueQueries'
 import { todayIso } from '~/utils/date'
 
