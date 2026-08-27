@@ -3,7 +3,7 @@ import { type ReactNode, useCallback, useState } from 'react'
 
 import { Button } from '~/components/ui'
 import { hideableColors } from '~/styles/colors/components.stylex'
-import { radii } from '~/styles/tokens.stylex'
+import { radii, spacing } from '~/styles/tokens.stylex'
 
 type HideableProps = {
 	children?: ReactNode
@@ -31,6 +31,9 @@ const styles = stylex.create({
 		justifyContent: 'center',
 
 		backgroundColor: hideableColors.placeholderBackground,
+
+		// negative margin so text doesn't peek behind through rounded corners
+		margin: `calc(${spacing.xs} * -1)`,
 	},
 })
 
