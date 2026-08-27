@@ -23,7 +23,7 @@ import {
 	useUpdateTopic,
 } from '~/modules/library/api/topicQueries'
 import { MoveTopicDialog } from '~/modules/library/components/MoveTopicDialog'
-import { TopicBreadcrumbs } from '~/modules/library/components/TopicBreadcrumbs'
+import { TopicPathBreadcrumbs } from '~/modules/library/components/TopicPathBreadcrumbs'
 import {
 	reviewCardQueries,
 	useCreateReviewCard,
@@ -186,9 +186,9 @@ export function TopicPage() {
 		<div {...stylex.props(styles.container)}>
 			<header {...stylex.props(styles.toolbar)}>
 				<div {...stylex.props(styles.breadcrumbs)}>
-					<TopicBreadcrumbs
-						ancestors={topic.path as Array<Topic>}
-						currentTitle={title.value}
+					<TopicPathBreadcrumbs
+						topics={topic.path as Array<Topic>}
+						currentLabel={title.value}
 					/>
 				</div>
 				<div {...stylex.props(styles.toolbarActions)}>

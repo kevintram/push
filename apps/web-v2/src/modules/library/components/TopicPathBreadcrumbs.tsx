@@ -19,8 +19,10 @@ import {
 } from '~/components/ui'
 import { type Topic } from '~/modules/library/types/topic.types'
 
-function displayTitle(title: string) {
-	return title.trim() || 'Untitled'
+const MAX_VISIBLE_BREADCRUMB_ITEMS = 4
+
+function formatBreadcrumbLabel(value: string) {
+	return value.trim() || 'Untitled'
 }
 
 const styles = stylex.create({
@@ -29,28 +31,35 @@ const styles = stylex.create({
 	},
 })
 
-export function TopicBreadcrumbs({
-	ancestors,
-	currentTitle,
-}: {
-	ancestors: Array<Topic>
-	currentTitle: string
-}) {
-	const shouldCollapse = ancestors.length + 2 > 4
-	const visibleAncestors = shouldCollapse ? ancestors.slice(-1) : ancestors
-	const hiddenAncestors = shouldCollapse ? ancestors.slice(0, -1) : []
+type TopicPathBreadcrumbsProps = {
+	topics: Array<Topic>
+	currentLabel: string
+	onNavigate?: () => void
+}
+
+export function TopicPathBreadcrumbs({
+	topics,
+	currentLabel,
+	onNavigate,
+}: TopicPathBreadcrumbsProps) {
+	const shouldCollapseTopics =
+		topics.length + 2 > MAX_VISIBLE_BREADCRUMB_ITEMS
+	const visibleTopics = shouldCollapseTopics ? topics.slice(-1) : topics
+	const overflowTopics = shouldCollapseTopics ? topics.slice(0, -1) : []
 
 	return (
-		<Breadcrumb>
+		<Breadcrumb aria-label='Topic path'>
 			<BreadcrumbList>
 				<BreadcrumbItem>
-					<BreadcrumbLink render={<Link to='/library' />}>
+					<BreadcrumbLink
+						render={<Link to='/library' onClick={onNavigate} />}
+					>
 						Library
 					</BreadcrumbLink>
 				</BreadcrumbItem>
-				{shouldCollapse && (
+				{shouldCollapseTopics && (
 					<>
-						<BreadcrumbSeparator>/</BreadcrumbSeparator>
+						<BreadcrumbSeparator />
 						<BreadcrumbItem>
 							<DropdownMenu>
 								<DropdownMenuTrigger
@@ -66,23 +75,25 @@ export function TopicBreadcrumbs({
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align='start'>
 									<DropdownMenuGroup>
-										{hiddenAncestors.map(ancestor => (
+										{overflowTopics.map(topic => (
 											<DropdownMenuItem
-												key={ancestor._id}
+												key={topic._id}
 												render={
 													<Link
 														to='/library/$topicId'
 														params={{
-															topicId:
-																ancestor._id,
+															topicId: topic._id,
 														}}
+														onClick={onNavigate}
 														{...stylex.props(
 															styles.link,
 														)}
 													/>
 												}
 											>
-												{displayTitle(ancestor.title)}
+												{formatBreadcrumbLabel(
+													topic.title,
+												)}
 											</DropdownMenuItem>
 										))}
 									</DropdownMenuGroup>
@@ -91,27 +102,28 @@ export function TopicBreadcrumbs({
 						</BreadcrumbItem>
 					</>
 				)}
-				{visibleAncestors.map(ancestor => (
-					<Fragment key={ancestor._id}>
-						<BreadcrumbSeparator>/</BreadcrumbSeparator>
+				{visibleTopics.map(topic => (
+					<Fragment key={topic._id}>
+						<BreadcrumbSeparator />
 						<BreadcrumbItem>
 							<BreadcrumbLink
 								render={
 									<Link
 										to='/library/$topicId'
-										params={{ topicId: ancestor._id }}
+										params={{ topicId: topic._id }}
+										onClick={onNavigate}
 									/>
 								}
 							>
-								{displayTitle(ancestor.title)}
+								{formatBreadcrumbLabel(topic.title)}
 							</BreadcrumbLink>
 						</BreadcrumbItem>
 					</Fragment>
 				))}
-				<BreadcrumbSeparator>/</BreadcrumbSeparator>
+				<BreadcrumbSeparator />
 				<BreadcrumbItem>
 					<BreadcrumbPage>
-						{displayTitle(currentTitle)}
+						{formatBreadcrumbLabel(currentLabel)}
 					</BreadcrumbPage>
 				</BreadcrumbItem>
 			</BreadcrumbList>
