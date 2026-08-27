@@ -19,17 +19,21 @@ const styles = stylex.create({
 	},
 })
 
-function displayText(text: string) {
-	return text.trim() || 'Untitled'
+function formatBreadcrumbLabel(value: string) {
+	return value.trim() || 'Untitled'
 }
 
-export function ReviewDialogTopicMenu({ topics }: { topics: Array<Topic> }) {
+export function ReviewDialogTopicOverflowMenu({
+	topics,
+}: {
+	topics: Array<Topic>
+}) {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger
 				render={
 					<Button.Icon
-						aria-label='Toggle menu'
+						aria-label='Show topic path'
 						size='small'
 						variant='ghost'
 					>
@@ -55,7 +59,7 @@ export function ReviewDialogTopicMenu({ topics }: { topics: Array<Topic> }) {
 								/>
 							}
 						>
-							{displayText(topic.title)}
+							{formatBreadcrumbLabel(topic.title)}
 						</DialogClose>
 					))}
 				</DropdownMenuGroup>

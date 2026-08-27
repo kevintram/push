@@ -15,7 +15,9 @@ import {
 import { breakpoints } from '~/styles/tokens.stylex'
 
 import type { ReviewCard } from '../types/review.types'
-import { ReviewDialogTopicMenu } from './ReviewDialogTopicMenu'
+import { ReviewDialogTopicOverflowMenu } from './ReviewDialogTopicOverflowMenu'
+
+const MAX_VISIBLE_BREADCRUMB_ITEMS = 4
 
 const styles = stylex.create({
 	desktopOnly: {
@@ -32,8 +34,8 @@ type ReviewDialogBreadcrumbsProps = {
 	topic: TopicDetail | undefined
 }
 
-function displayText(text: string) {
-	return text.trim() || 'Untitled'
+function formatBreadcrumbLabel(value: string) {
+	return value.trim() || 'Untitled'
 }
 
 export function ReviewDialogBreadcrumbs({
@@ -41,12 +43,14 @@ export function ReviewDialogBreadcrumbs({
 	reviewCardId,
 	topic,
 }: ReviewDialogBreadcrumbsProps) {
-	const topicPath = topic
+	const topics = topic
 		? [...(topic.path as Array<Topic>), topic as Topic]
 		: []
-	const shouldCollapseTopics = topicPath.length + 3 > 4
-	const visibleTopicPath = shouldCollapseTopics ? [] : topicPath
-	const hiddenTopicPath = shouldCollapseTopics ? topicPath : []
+	const shouldCollapseTopics =
+		// Full breadcrumb count: Library + topics + review card + Reviews.
+		topics.length + 3 > MAX_VISIBLE_BREADCRUMB_ITEMS
+	const visibleTopics = shouldCollapseTopics ? [] : topics
+	const overflowTopics = shouldCollapseTopics ? topics : []
 
 	// TODO(2): Add a mobile breadcrumb presentation.
 	return (
@@ -65,15 +69,17 @@ export function ReviewDialogBreadcrumbs({
 
 				{shouldCollapseTopics && (
 					<>
-						<BreadcrumbSeparator>/</BreadcrumbSeparator>
+						<BreadcrumbSeparator />
 						<BreadcrumbItem>
-							<ReviewDialogTopicMenu topics={hiddenTopicPath} />
+							<ReviewDialogTopicOverflowMenu
+								topics={overflowTopics}
+							/>
 						</BreadcrumbItem>
 					</>
 				)}
-				{visibleTopicPath.map(crumb => (
-					<Fragment key={crumb._id}>
-						<BreadcrumbSeparator>/</BreadcrumbSeparator>
+				{visibleTopics.map(topic => (
+					<Fragment key={topic._id}>
+						<BreadcrumbSeparator />
 						<BreadcrumbItem>
 							<DialogClose
 								nativeButton={false}
@@ -83,20 +89,20 @@ export function ReviewDialogBreadcrumbs({
 											<Link
 												to='/library/$topicId'
 												params={{
-													topicId: crumb._id,
+													topicId: topic._id,
 												}}
 											/>
 										}
 									/>
 								}
 							>
-								{displayText(crumb.title)}
+								{formatBreadcrumbLabel(topic.title)}
 							</DialogClose>
 						</BreadcrumbItem>
 					</Fragment>
 				))}
 
-				<BreadcrumbSeparator>/</BreadcrumbSeparator>
+				<BreadcrumbSeparator />
 				<BreadcrumbItem>
 					<DialogClose
 						nativeButton={false}
@@ -111,10 +117,12 @@ export function ReviewDialogBreadcrumbs({
 							/>
 						}
 					>
-						{displayText(reviewCard?.primaryText ?? 'Review card')}
+						{formatBreadcrumbLabel(
+							reviewCard?.primaryText ?? 'Review card',
+						)}
 					</DialogClose>
 				</BreadcrumbItem>
-				<BreadcrumbSeparator>/</BreadcrumbSeparator>
+				<BreadcrumbSeparator />
 				<BreadcrumbItem>
 					<DialogClose
 						nativeButton={false}
