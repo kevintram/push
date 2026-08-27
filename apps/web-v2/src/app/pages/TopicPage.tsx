@@ -30,6 +30,7 @@ import {
 } from '~/modules/reviews/api/reviewCardQueries'
 import { ReviewCardItem } from '~/modules/reviews/components/ReviewCardItem'
 import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
+import { baseColors } from '~/styles/colors/primitives.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	fontSizes,
@@ -108,6 +109,7 @@ const styles = stylex.create({
 		flexDirection: 'column',
 	},
 	addReviewCardButton: {
+		backgroundColor: baseColors.transparent,
 		inlineSize: '100%',
 	},
 })
