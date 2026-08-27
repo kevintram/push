@@ -44,7 +44,9 @@ export function ReviewDialogBreadcrumbs({
 	const topicPath = topic
 		? [...(topic.path as Array<Topic>), topic as Topic]
 		: []
-	const shouldCollapseTopics = topicPath.length > 1
+	const shouldCollapseTopics = topicPath.length + 3 > 4
+	const visibleTopicPath = shouldCollapseTopics ? [] : topicPath
+	const hiddenTopicPath = shouldCollapseTopics ? topicPath : []
 
 	// TODO(2): Add a mobile breadcrumb presentation.
 	return (
@@ -61,39 +63,38 @@ export function ReviewDialogBreadcrumbs({
 					</DialogClose>
 				</BreadcrumbItem>
 
-				{shouldCollapseTopics ? (
+				{shouldCollapseTopics && (
 					<>
 						<BreadcrumbSeparator>/</BreadcrumbSeparator>
 						<BreadcrumbItem>
-							<ReviewDialogTopicMenu topics={topicPath} />
+							<ReviewDialogTopicMenu topics={hiddenTopicPath} />
 						</BreadcrumbItem>
 					</>
-				) : (
-					topicPath.map(crumb => (
-						<Fragment key={crumb._id}>
-							<BreadcrumbSeparator>/</BreadcrumbSeparator>
-							<BreadcrumbItem>
-								<DialogClose
-									nativeButton={false}
-									render={
-										<BreadcrumbLink
-											render={
-												<Link
-													to='/library/$topicId'
-													params={{
-														topicId: crumb._id,
-													}}
-												/>
-											}
-										/>
-									}
-								>
-									{displayText(crumb.title)}
-								</DialogClose>
-							</BreadcrumbItem>
-						</Fragment>
-					))
 				)}
+				{visibleTopicPath.map(crumb => (
+					<Fragment key={crumb._id}>
+						<BreadcrumbSeparator>/</BreadcrumbSeparator>
+						<BreadcrumbItem>
+							<DialogClose
+								nativeButton={false}
+								render={
+									<BreadcrumbLink
+										render={
+											<Link
+												to='/library/$topicId'
+												params={{
+													topicId: crumb._id,
+												}}
+											/>
+										}
+									/>
+								}
+							>
+								{displayText(crumb.title)}
+							</DialogClose>
+						</BreadcrumbItem>
+					</Fragment>
+				))}
 
 				<BreadcrumbSeparator>/</BreadcrumbSeparator>
 				<BreadcrumbItem>
