@@ -23,6 +23,7 @@ const styles = stylex.create({
 			':disabled': textareaColors.foregroundDisabled,
 		},
 		cursor: { default: 'text', ':disabled': 'not-allowed' },
+		display: 'block',
 		fontFamily: 'inherit',
 		fontSize: 'inherit',
 		fontWeight: 'inherit',
