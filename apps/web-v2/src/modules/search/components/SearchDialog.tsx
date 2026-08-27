@@ -1,26 +1,77 @@
 import * as stylex from '@stylexjs/stylex'
-import { Search } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
-import { DialogContent, DialogDescription, DialogTitle } from '~/components/ui'
+import { LoadingIndicator } from '~/components/LoadingIndicator'
+import {
+	Button,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogTitle,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '~/components/ui'
 import { searchDialogColors } from '~/styles/colors/components.stylex'
-import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
+import {
+	breakpoints,
+	fontSizes,
+	iconSizes,
+	radii,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 import { useSearchResults } from '../hooks/useSearchResults'
 import { buildCardResults, buildTopicResults } from '../utils/searchResults'
 import { SearchResultGroup } from './SearchResultGroup'
 
 const styles = stylex.create({
+	viewport: {
+		padding: {
+			default: spacing.none,
+			[breakpoints.tablet]: spacing.lg,
+		},
+		placeItems: {
+			default: 'stretch',
+			[breakpoints.tablet]: 'center',
+		},
+		overflowY: {
+			default: 'hidden',
+			[breakpoints.tablet]: 'auto',
+		},
+	},
 	content: {
 		padding: 0,
 		gap: 0,
+		blockSize: {
+			default: '100dvh',
+			[breakpoints.tablet]: '460px',
+		},
 		// Search bar sizes to content, results take the rest and scroll.
 		gridTemplateRows: 'auto minmax(0, 1fr)',
-		maxBlockSize: 'min(76dvh, 46rem)',
-		maxInlineSize: '42rem',
+		inlineSize: {
+			default: '100dvw',
+			[breakpoints.tablet]: '720px',
+		},
+		maxBlockSize: {
+			default: 'none',
+			[breakpoints.tablet]: '460px',
+		},
+		maxInlineSize: {
+			default: 'none',
+			[breakpoints.tablet]: '720px',
+		},
 
 		borderColor: searchDialogColors.popupBorder,
-		borderRadius: radii.xl,
+		borderRadius: {
+			default: 0,
+			[breakpoints.tablet]: radii.xl,
+		},
+		borderWidth: {
+			default: 0,
+			[breakpoints.tablet]: '1px',
+		},
 		backgroundColor: searchDialogColors.popupBackground,
 		overflowX: 'hidden',
 		overflowY: 'hidden',
@@ -37,10 +88,10 @@ const styles = stylex.create({
 	},
 	searchBar: {
 		gap: spacing.sm,
-		paddingBlock: spacing.lg,
+		paddingBlock: spacing.sm,
 		alignItems: 'center',
 		display: 'flex',
-		paddingInlineEnd: '52px',
+		paddingInlineEnd: spacing.lg,
 		paddingInlineStart: spacing.lg,
 
 		borderBlockEndColor: searchDialogColors.headerBorder,
@@ -51,7 +102,14 @@ const styles = stylex.create({
 		blockSize: iconSizes.lg,
 		color: searchDialogColors.searchIconForeground,
 		flexShrink: 0,
-		inlineSize: iconSizes.lg,
+		inlineSize: iconSizes.md,
+	},
+	closeButton: {
+		flexShrink: 0,
+	},
+	closeIcon: {
+		blockSize: iconSizes.md,
+		inlineSize: iconSizes.md,
 	},
 	input: {
 		inlineSize: '100%',
@@ -63,7 +121,6 @@ const styles = stylex.create({
 		backgroundColor: searchDialogColors.inputBackground,
 		color: searchDialogColors.inputForeground,
 		fontFamily: 'inherit',
-		fontSize: fontSizes.xl,
 		lineHeight: 1.4,
 		// Suppresses the WebKit search clear button so `type='search'` looks
 		// identical to the text input it replaced. `appearance: none` on the
@@ -84,8 +141,12 @@ const styles = stylex.create({
 	status: {
 		paddingBlock: spacing['2xl'],
 		paddingInline: spacing.xl,
+		alignItems: 'center',
 		color: searchDialogColors.statusForeground,
+		display: 'flex',
 		fontSize: fontSizes.md,
+		justifyContent: 'center',
+		minBlockSize: '100%',
 		textAlign: 'center',
 	},
 })
@@ -117,7 +178,11 @@ export function SearchDialog() {
 				: `${topicResults.length} topics and ${cardResults.length} cards found.`
 
 	return (
-		<DialogContent xstyle={styles.content} showCloseButton={false}>
+		<DialogContent
+			showCloseButton={false}
+			viewportXstyle={styles.viewport}
+			xstyle={styles.content}
+		>
 			<DialogTitle xstyle={styles.visuallyHidden}>Search</DialogTitle>
 			<DialogDescription xstyle={styles.visuallyHidden}>
 				Search your topics and review cards.
@@ -145,16 +210,37 @@ export function SearchDialog() {
 					value={query}
 					{...stylex.props(styles.input)}
 				/>
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<DialogClose
+								render={
+									<Button.Icon
+										aria-label='Close search'
+										size='small'
+										variant='ghost'
+										xstyle={styles.closeButton}
+									/>
+								}
+							>
+								<X
+									aria-hidden='true'
+									{...stylex.props(styles.closeIcon)}
+								/>
+							</DialogClose>
+						}
+					/>
+					<TooltipContent>Close</TooltipContent>
+				</Tooltip>
 			</div>
 
 			<div {...stylex.props(styles.results)}>
 				{!hasQuery ? (
-					// TODO: display recent results when no query
 					<p {...stylex.props(styles.status)}>
-						Type to search your library.
+						Search topics and review cards
 					</p>
 				) : isLoading ? (
-					<p {...stylex.props(styles.status)}>Searching…</p>
+					<LoadingIndicator />
 				) : isError ? (
 					<p {...stylex.props(styles.status)}>
 						Search could not load. Try again.

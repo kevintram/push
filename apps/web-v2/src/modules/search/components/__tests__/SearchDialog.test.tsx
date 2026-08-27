@@ -114,12 +114,10 @@ async function search(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe('SearchDialog', () => {
-	it('prompts before a query is entered', () => {
+	it('shows no results before a query is entered', () => {
 		renderDialog()
 
-		expect(
-			screen.getByText('Type to search your library.'),
-		).toBeInTheDocument()
+		expect(screen.queryByRole('status')).not.toBeInTheDocument()
 	})
 
 	it('renders compact grouped previews and expands one group at a time', async () => {

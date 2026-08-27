@@ -45,15 +45,15 @@ const styles = stylex.create({
 		flexGrow: 1,
 		flexShrink: 1,
 		fontSize: fontSizes.sm,
-		fontWeight: fontWeights.regular,
+		fontWeight: fontWeights.semibold,
 	},
 	control: {
 		color: searchResultGroupColors.controlForeground,
 		fontSize: fontSizes.xs,
 	},
 	icon: {
-		blockSize: iconSizes.sm,
-		inlineSize: iconSizes.sm,
+		blockSize: iconSizes.md,
+		inlineSize: iconSizes.md,
 	},
 	list: {
 		margin: 0,
@@ -102,7 +102,7 @@ export function SearchResultGroup({
 						aria-expanded={expanded}
 						onClick={() => onExpandedChange(!expanded)}
 						shape='round'
-						size='tiny'
+						size='small'
 						variant={expanded ? 'secondary' : 'ghost'}
 						xstyle={styles.control}
 					>
