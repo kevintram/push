@@ -29,7 +29,7 @@ const styles = stylex.create({
 		fontWeight: 'inherit',
 		inlineSize: '100%',
 		lineHeight: 'inherit',
-		outlineColor: textareaColors.focusRingRest,
+		outlineStyle: 'none',
 		resize: 'none',
 		'::placeholder': { color: textareaColors.placeholderForeground },
 	},
