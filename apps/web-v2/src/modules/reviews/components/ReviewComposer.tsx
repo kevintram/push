@@ -1,7 +1,7 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import type { FormEvent, KeyboardEvent } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button, Textarea } from '~/components/ui'
@@ -132,7 +132,6 @@ type ReviewComposerProps = {
 
 export function ReviewComposer({ reviewCardId }: ReviewComposerProps) {
 	const [draft, setDraft] = useState<ReviewDraft>(defaultDraft)
-	const descriptionRef = useRef<HTMLTextAreaElement>(null)
 	const createReview = useCreateReview()
 	const isDirty =
 		draft.description !== '' ||
@@ -157,10 +156,6 @@ export function ReviewComposer({ reviewCardId }: ReviewComposerProps) {
 		}))
 	const setDate = (date: DateString | null) =>
 		setDraft(previous => ({ ...previous, date }))
-
-	useEffect(() => {
-		descriptionRef.current?.focus()
-	}, [])
 
 	const resetDraft = () => {
 		setDraft(defaultDraft)
@@ -217,7 +212,6 @@ export function ReviewComposer({ reviewCardId }: ReviewComposerProps) {
 			</aside>
 			<div {...stylex.props(styles.editor)}>
 				<Textarea
-					ref={descriptionRef}
 					aria-label='Review description'
 					disabled={isPending}
 					onChange={event => setDescription(event.target.value)}
