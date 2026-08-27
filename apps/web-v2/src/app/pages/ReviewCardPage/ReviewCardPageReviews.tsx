@@ -18,6 +18,7 @@ const styles = stylex.create({
 	},
 	content: {
 		gap: spacing.xl,
+		marginInline: spacing.lg,
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 1,

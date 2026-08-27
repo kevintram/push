@@ -293,6 +293,7 @@ export const hideableColors = stylex.defineVars({
 
 export const reviewColors = stylex.defineVars({
 	rowBackground: semanticColors.surfaceTransparent,
+	rowBackgroundHover: semanticColors.surfaceTransparentHover,
 
 	ratingBadgeBackground: semanticColors.surfaceInteractivePrimary,
 	ratingBadgeForeground: semanticColors.textOnBrand,
