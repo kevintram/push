@@ -7,12 +7,12 @@ import { Separator, Textarea } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
 import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
 
-import { reviewCardQueries } from '../api/reviewCardQueries'
-import { useHideMode } from '../hide-mode/useHideMode'
-import { useReviewCardField } from '../hooks/useReviewCardField'
-import { deriveReviewCardSrsState } from '../utils/reviewCardSrs'
-import { Hideable } from './Hideable'
-import { ReviewCardMetadata } from './ReviewCardMetadata'
+import { reviewCardQueries } from '../../api/reviewCardQueries'
+import { useHideMode } from '../../hide-mode/useHideMode'
+import { useReviewCardField } from '../../hooks/useReviewCardField'
+import { deriveReviewCardSrsState } from '../../utils/reviewCardSrs'
+import { Hideable } from '../Hideable'
+import { ReviewCardMetadata } from '../ReviewCardMetadata'
 
 const styles = stylex.create({
 	layout: {

@@ -2,7 +2,7 @@ import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { QueryErrorResetBoundary } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { ArrowUpRight, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { ArrowUpRight, ChevronLeft, ChevronRight, Copy, X } from 'lucide-react'
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
@@ -18,13 +18,17 @@ import {
 	TooltipTrigger,
 } from '~/components/ui'
 import type { ReviewCard } from '~/modules/reviews/types/review.types'
-import { focusOverlayColors } from '~/styles/colors/components.stylex'
+import {
+	focusOverlayColors,
+	hideModeButtonColors,
+} from '~/styles/colors/components.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
+import { useHideMode } from '../../hide-mode/useHideMode'
 import { FocusOverlayCardError } from './FocusOverlayCardError'
-import { ReviewCardOverview } from './ReviewCardOverview'
+import { FocusOverlayReviewCard } from './FocusOverlayReviewCard'
 
-type FocusOverlayProps = {
+type FocusOverlayDialogProps = {
 	handle: DialogHandle
 	reviewCards: ReadonlyArray<ReviewCard>
 }
@@ -55,8 +59,6 @@ const styles = stylex.create({
 
 		borderRadius: radii.lg,
 		backgroundColor: focusOverlayColors.cardBackground,
-
-		padding: spacing.lg,
 	},
 	header: {
 		alignItems: 'center',
@@ -69,6 +71,13 @@ const styles = stylex.create({
 		gap: spacing.xs,
 		alignItems: 'center',
 		display: 'flex',
+	},
+	hideModeOn: {
+		backgroundColor: {
+			default: hideModeButtonColors.backgroundActive,
+			':hover': hideModeButtonColors.backgroundActiveHover,
+		},
+		color: hideModeButtonColors.foregroundActive,
 	},
 	position: {
 		paddingInline: spacing.xs,
@@ -115,10 +124,14 @@ function resolveIndex(
 /**
  * The position state deliberately outlives a close: reopening Focus resumes on
  * the card the user was reading rather than jumping back to the top of the
- * queue. Reveal state does not — `ReviewCardOverview` unmounts with the popup,
- * so a reopened card never shows its answer already revealed.
+ * queue. Reveal and tab state do not — the keyed card panel unmounts with the
+ * popup, so a reopened card starts from Overview with its answer unrevealed.
  */
-export function FocusOverlay({ handle, reviewCards }: FocusOverlayProps) {
+export function FocusOverlayDialog({
+	handle,
+	reviewCards,
+}: FocusOverlayDialogProps) {
+	const { hideMode, toggleHideMode } = useHideMode()
 	const [selection, setSelection] = useState<IdAndIndex>(() => ({
 		id: reviewCards[0]?._id ?? null,
 		index: 0,
@@ -215,6 +228,31 @@ export function FocusOverlay({ handle, reviewCards }: FocusOverlayProps) {
 						)}
 					</div>
 					<div {...stylex.props(styles.headerButtonCluster)}>
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<Button.Icon
+										aria-label='Toggle hide mode'
+										aria-pressed={hideMode === 'on'}
+										shape='round'
+										variant='secondary'
+										size='small'
+										xstyle={
+											hideMode === 'on' &&
+											styles.hideModeOn
+										}
+										onClick={toggleHideMode}
+									>
+										<Copy size={iconSizes.md} />
+									</Button.Icon>
+								}
+							/>
+							<TooltipContent>
+								{hideMode === 'on'
+									? 'Disable hide mode'
+									: 'Enable hide mode'}
+							</TooltipContent>
+						</Tooltip>
 						{/* This close renders an anchor, so both it and the button
 						    primitive it wraps need telling that the final element
 						    is not a native button. */}
@@ -285,8 +323,9 @@ export function FocusOverlay({ handle, reviewCards }: FocusOverlayProps) {
 										key={currentReviewCard._id}
 										fallback={<LoadingIndicator />}
 									>
-										<ReviewCardOverview
+										<FocusOverlayReviewCard
 											reviewCardId={currentReviewCard._id}
+											onNavigate={() => handle.close()}
 										/>
 									</Suspense>
 								</ErrorBoundary>

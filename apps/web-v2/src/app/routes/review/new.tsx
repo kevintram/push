@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ReviewNewPage } from '~/app/pages/ReviewNewPage'
+import { ReviewNewPage } from '~/app/pages/ReviewPages/ReviewNewPage'
 import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
 
 export const Route = createFileRoute('/review/new')({

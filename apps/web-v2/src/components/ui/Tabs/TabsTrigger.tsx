@@ -20,6 +20,7 @@ const styles = stylex.create({
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		gap: spacing.sm,
+		textDecoration: 'none',
 		alignItems: 'center',
 		backgroundColor: tabsColors.triggerBackground,
 		color: {

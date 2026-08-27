@@ -24,7 +24,7 @@ const styles = stylex.create({
 /**
  * Keeps a failed card fetch inside the overlay. Without a local boundary the
  * throw from `useSuspenseQuery` reaches the root boundary and replaces the
- * whole page behind the open dialog.
+ * page behind the open dialog.
  */
 export function FocusOverlayCardError({
 	error,

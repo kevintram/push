@@ -17,8 +17,8 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-import { reviewQueries, useCreateReview } from '../api/reviewQueries'
-import { Review } from './Review'
+import { reviewQueries, useCreateReview } from '../../api/reviewQueries'
+import { Review } from '../Review'
 
 const styles = stylex.create({
 	container: {
@@ -56,11 +56,13 @@ const styles = stylex.create({
 	},
 	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
 })
-type ReviewsPanelProps = {
+type ReviewCardReviewsPanelProps = {
 	reviewCardId: Id<'reviewCards'>
 }
 
-export function ReviewsPanel({ reviewCardId }: ReviewsPanelProps) {
+export function ReviewCardReviewsPanel({
+	reviewCardId,
+}: ReviewCardReviewsPanelProps) {
 	const { data: reviews } = useSuspenseQuery(
 		reviewQueries.listByReviewCard(reviewCardId),
 	)
