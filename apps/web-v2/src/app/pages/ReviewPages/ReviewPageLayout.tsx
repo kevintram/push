@@ -1,7 +1,10 @@
 import * as stylex from '@stylexjs/stylex'
-import { Outlet } from '@tanstack/react-router'
+import { Outlet, useLayoutEffect } from '@tanstack/react-router'
+import { useRef } from 'react'
+import { toast } from 'sonner'
 
 import { ReviewSidebar } from '~/modules/reviews/components/ReviewSidebar'
+import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import {
 	appShellColors,
 	reviewSidebarColors,
@@ -56,6 +59,21 @@ const styles = stylex.create({
 })
 
 export function ReviewPageLayout() {
+	const { hideMode, setHideMode } = useHideMode()
+	const hideModeAutomaticallyActivated = useRef(false)
+
+	useLayoutEffect(() => {
+		// Automatically turn on hideMode when navigating to any of the ReviewPages.
+		// (Because why would you want to see the answers when you're trying to review.)
+		if (!hideModeAutomaticallyActivated.current) {
+			hideModeAutomaticallyActivated.current = true
+			if (hideMode !== 'on') {
+				setHideMode('on')
+				toast.info('Hide mode has been turned on.')
+			}
+		}
+	}, [hideMode, setHideMode])
+
 	return (
 		<div {...stylex.props(styles.layout)}>
 			<ReviewSidebar />

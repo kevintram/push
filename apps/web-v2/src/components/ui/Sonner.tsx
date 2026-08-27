@@ -102,6 +102,7 @@ export function Toaster({
 		<SonnerToaster
 			richColors={richColors}
 			theme={theme}
+			position='top-center'
 			{...stylex.props(styles.toaster)}
 			toastOptions={toastOptions}
 			{...props}
