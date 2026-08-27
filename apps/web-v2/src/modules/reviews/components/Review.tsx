@@ -13,7 +13,13 @@ import {
 	DropdownMenuTrigger,
 } from '~/components/ui'
 import { reviewColors } from '~/styles/colors/components.stylex'
-import { fontSizes, iconSizes, spacing } from '~/styles/tokens.stylex'
+import {
+	fontSizes,
+	iconSizes,
+	layout,
+	radii,
+	spacing,
+} from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
 import { useReviewActions } from '../hooks/useReviewActions'
@@ -35,7 +41,13 @@ const styles = stylex.create({
 		gridTemplateRows: 'auto auto',
 		position: 'relative',
 
-		backgroundColor: reviewColors.rowBackground,
+		borderRadius: radii.lg,
+		marginInline: `calc(${layout.rowBleed} * -1)`,
+		paddingInline: layout.rowBleed,
+		backgroundColor: {
+			default: reviewColors.rowBackground,
+			':hover': reviewColors.rowBackgroundHover,
+		},
 		cursor: 'pointer',
 	},
 	rating: {
@@ -45,8 +57,6 @@ const styles = stylex.create({
 		gridRowStart: 'rating',
 
 		alignSelf: 'center',
-
-		paddingInline: spacing.xs,
 	},
 	description: {
 		gridColumnEnd: 'description',
