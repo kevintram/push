@@ -2,7 +2,6 @@ import * as stylex from '@stylexjs/stylex'
 import { type ReactNode, useCallback, useState } from 'react'
 
 import { Button } from '~/components/ui'
-import { hideableColors } from '~/styles/colors/components.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
 type HideableProps = {
@@ -22,21 +21,21 @@ const styles = stylex.create({
 		gridRow: '1',
 	},
 	overlay: {
-		borderRadius: radii.xl,
+		borderRadius: radii.lg,
 		gridColumn: '1',
 		gridRow: '1',
+		blockSize: 'auto',
 
 		alignItems: 'center',
 		display: 'flex',
 		justifyContent: 'center',
-
-		backgroundColor: hideableColors.placeholderBackground,
 
 		// negative margin so text doesn't peek behind through rounded corners
 		margin: `calc(${spacing.xs} * -1)`,
 	},
 })
 
+// TODO(4): instead of a panel, what if we just used collapsible?
 export function Hideable({
 	children,
 	defaultRevealed,
@@ -65,11 +64,13 @@ export function Hideable({
 				{children}
 			</div>
 			{isRevealed ? null : (
-				<div {...stylex.props(styles.overlay)}>
-					<Button onClick={reveal} shape='round'>
-						Reveal
-					</Button>
-				</div>
+				<Button
+					onClick={reveal}
+					variant='outline'
+					xstyle={styles.overlay}
+				>
+					Reveal
+				</Button>
 			)}
 		</div>
 	)
