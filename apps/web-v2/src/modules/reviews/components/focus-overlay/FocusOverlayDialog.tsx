@@ -39,17 +39,33 @@ type IdAndIndex = {
 }
 
 const styles = stylex.create({
+	viewport: {
+		padding: spacing.none,
+		placeItems: 'stretch',
+		overflowY: 'hidden',
+	},
 	content: {
 		gap: 0,
+		blockSize: '100dvh',
 		display: 'flex',
 		flexDirection: 'column',
-
-		backgroundColor: focusOverlayColors.containerBackground,
+		inlineSize: '100dvw',
+		maxInlineSize: 'none',
 
 		paddingBlockEnd: spacing.md,
 		paddingBlockStart: 0,
 		paddingInlineEnd: spacing.md,
 		paddingInlineStart: spacing.md,
+
+		borderRadius: 0,
+		borderWidth: '0px',
+		backgroundColor: focusOverlayColors.containerBackground,
+		boxShadow: 'none',
+		transform: {
+			default: 'none',
+			':is([data-starting-style], [data-ending-style])': 'none',
+		},
+		overflowY: 'auto',
 	},
 	inner: {
 		display: 'flex',
@@ -172,7 +188,7 @@ export function FocusOverlayDialog({
 		<Dialog handle={handle}>
 			<DialogContent
 				aria-label='Focus review cards'
-				size='fullscreen'
+				viewportXstyle={styles.viewport}
 				xstyle={styles.content}
 				showCloseButton={false}
 			>

@@ -119,27 +119,6 @@ describe('Dialog', () => {
 		).toBeInTheDocument()
 	})
 
-	it('supports full-screen content', async () => {
-		const user = userEvent.setup()
-
-		render(
-			<Dialog>
-				<DialogTrigger>Enter focus mode</DialogTrigger>
-				<DialogContent size='fullscreen'>
-					<DialogTitle>FOCUS MODE</DialogTitle>
-				</DialogContent>
-			</Dialog>,
-		)
-
-		await user.click(
-			screen.getByRole('button', { name: 'Enter focus mode' }),
-		)
-
-		expect(
-			screen.getByRole('dialog', { name: 'FOCUS MODE' }),
-		).toBeInTheDocument()
-	})
-
 	it('forwards custom viewport styles after the shared viewport styles', async () => {
 		const user = userEvent.setup()
 
