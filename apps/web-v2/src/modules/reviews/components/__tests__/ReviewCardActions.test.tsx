@@ -93,7 +93,9 @@ describe('ReviewCardActions', () => {
 		await openMenu()
 		await userEvent
 			.setup()
-			.click(screen.getByRole('menuitem', { name: 'Unflashcardify' }))
+			.click(
+				screen.getByRole('menuitem', { name: 'Remove as flashcard' }),
+			)
 
 		expect(updateMutate).toHaveBeenCalledWith(
 			{ reviewCardId: reviewCard._id, type: 'practice' },
