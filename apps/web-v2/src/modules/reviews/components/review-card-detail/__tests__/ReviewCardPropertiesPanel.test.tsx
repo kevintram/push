@@ -8,6 +8,7 @@ describe('ReviewCardPropertiesPanel', () => {
 		render(
 			<ReviewCardPropertiesPanel
 				lastReviewedAt='2026-08-16'
+				lastRating='good'
 				nextDueAt='2026-08-26'
 				retrievability={0.8}
 				stability={10.4}
@@ -28,6 +29,7 @@ describe('ReviewCardPropertiesPanel', () => {
 		render(
 			<ReviewCardPropertiesPanel
 				lastReviewedAt={null}
+				lastRating={null}
 				nextDueAt={null}
 				retrievability={null}
 				stability={null}

@@ -72,6 +72,7 @@ const reviewCard: ReviewCard = {
 	secondaryText: 'They preserve type safety across reusable code.',
 	notes: '',
 	state: 'LEARNING',
+	lastReview: undefined,
 	searchText:
 		'What problem do generics solve?\nThey preserve type safety across reusable code.',
 }

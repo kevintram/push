@@ -1,5 +1,4 @@
 import * as stylex from '@stylexjs/stylex'
-import { Check } from 'lucide-react'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { reviewCardMetadataColors } from '~/styles/colors/components.stylex'
@@ -18,9 +17,13 @@ import {
 } from '~/utils/date'
 
 import type { ReviewCardSrsState } from '../types/review.types'
+import { getRating } from './reviewRatings'
 
 const styles = stylex.create({
 	container: {
+		position: 'relative',
+		zIndex: 1,
+
 		gap: spacing.xl,
 		alignItems: 'center',
 		display: 'flex',
@@ -47,6 +50,7 @@ const styles = stylex.create({
 /** Scheduling summary for a review card, including its recall estimate. */
 export function ReviewCardMetadata({
 	lastReviewedAt,
+	lastRating,
 	nextDueAt,
 	retrievability,
 	stability,
@@ -61,6 +65,12 @@ export function ReviewCardMetadata({
 	}
 
 	const isDueOverdue = getDateTone(nextDueAt, false, today) === 'overdue'
+	const rating = getRating(lastRating ?? undefined)
+	const RatingIcon = rating?.Icon
+	const absoluteLastReviewedAt = formatAbsoluteDate(lastReviewedAt)
+	const lastReviewedLabel = rating
+		? `${rating.label}, reviewed ${absoluteLastReviewedAt}`
+		: `Reviewed ${absoluteLastReviewedAt}`
 
 	return (
 		<div {...stylex.props(styles.container)}>
@@ -91,14 +101,24 @@ export function ReviewCardMetadata({
 			<Tooltip>
 				<TooltipTrigger
 					render={
-						<span {...stylex.props(styles.item)}>
-							<Check aria-hidden='true' size={iconSizes.md} />
+						<span
+							aria-label={lastReviewedLabel}
+							{...stylex.props(styles.item)}
+						>
+							{RatingIcon ? (
+								<RatingIcon
+									aria-hidden='true'
+									size={iconSizes.md}
+								/>
+							) : null}
 							{formatRelativeDate(lastReviewedAt, today)}
 						</span>
 					}
 				/>
 				<TooltipContent>
-					{formatAbsoluteDate(lastReviewedAt)}
+					{rating
+						? `${rating.label} on ${absoluteLastReviewedAt}`
+						: absoluteLastReviewedAt}
 				</TooltipContent>
 			</Tooltip>
 			{stability !== null ? (

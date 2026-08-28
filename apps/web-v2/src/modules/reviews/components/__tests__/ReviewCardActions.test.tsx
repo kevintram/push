@@ -72,6 +72,7 @@ const reviewCard: ReviewCard = {
 	secondaryText: 'Answer',
 	notes: '',
 	state: 'LEARNING',
+	lastReview: undefined,
 	searchText: 'Question\nAnswer',
 }
 

@@ -9,6 +9,7 @@ export type { ReviewCard }
 export type ReviewCardSrsState = {
 	stability: number | null
 	lastReviewedAt: DateString | null
+	lastRating: Rating | null
 	nextDueAt: DateString | null
 	/** Recall probability today, between zero and one. */
 	retrievability: number | null

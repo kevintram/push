@@ -1,3 +1,4 @@
+import type { Id } from '@convex/_generated/dataModel'
 import { describe, expect, it } from 'vitest'
 
 import type { ReviewCard } from '../../types/review.types'
@@ -7,7 +8,7 @@ function reviewCard(overrides: Partial<ReviewCard> = {}): ReviewCard {
 	return {
 		_creationTime: 0,
 		_id: 'review-card-id' as ReviewCard['_id'],
-		lastReviewedAt: undefined,
+		lastReview: undefined,
 		notes: '',
 		ownerId: 'user-id',
 		primaryText: '',
@@ -24,6 +25,7 @@ describe('deriveReviewCardSrsState', () => {
 	it('represents a card without SRS state as unreviewed', () => {
 		expect(deriveReviewCardSrsState(reviewCard(), '2026-02-16')).toEqual({
 			lastReviewedAt: null,
+			lastRating: null,
 			nextDueAt: null,
 			retrievability: null,
 			stability: null,
@@ -34,13 +36,18 @@ describe('deriveReviewCardSrsState', () => {
 		const srs = deriveReviewCardSrsState(
 			reviewCard({
 				dueDate: '2026-02-20',
-				lastReviewedAt: '2026-02-11',
+				lastReview: {
+					id: 'review-id' as Id<'reviews'>,
+					date: '2026-02-11',
+					rating: 'good',
+				},
 				stability: 10,
 			}),
 			'2026-02-16',
 		)
 
 		expect(srs.lastReviewedAt).toBe('2026-02-11')
+		expect(srs.lastRating).toBe('good')
 		expect(srs.nextDueAt).toBe('2026-02-20')
 		expect(srs.stability).toBe(10)
 		expect(srs.retrievability).toBeCloseTo(0.9403442888929227, 14)
