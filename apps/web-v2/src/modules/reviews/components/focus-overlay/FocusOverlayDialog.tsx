@@ -265,8 +265,8 @@ export function FocusOverlayDialog({
 							/>
 							<TooltipContent>
 								{hideMode === 'on'
-									? 'Disable hide mode'
-									: 'Enable hide mode'}
+									? 'Turn off hide mode'
+									: 'Turn on hide mode'}
 							</TooltipContent>
 						</Tooltip>
 						{/* This close renders an anchor, so both it and the button

@@ -252,7 +252,9 @@ describe('reviews', () => {
 		).resolves.toMatchObject({ date: '2026-08-01', rating: 'good' })
 		await expect(
 			asUserA.query(api.reviewCards.get, { reviewCardId }),
-		).resolves.toMatchObject({ lastReviewedAt: '2026-08-01' })
+		).resolves.toMatchObject({
+			lastReview: { id: reviewId, date: '2026-08-01', rating: 'good' },
+		})
 
 		await asUserA.mutation(api.reviews.update, {
 			date: '2026-08-09',
@@ -265,7 +267,9 @@ describe('reviews', () => {
 		).resolves.toMatchObject({ date: '2026-08-09', rating: 'good' })
 		await expect(
 			asUserA.query(api.reviewCards.get, { reviewCardId }),
-		).resolves.toMatchObject({ lastReviewedAt: '2026-08-09' })
+		).resolves.toMatchObject({
+			lastReview: { id: reviewId, date: '2026-08-09', rating: 'good' },
+		})
 	})
 
 	it('rejects rated creates without dates and contradictory completion patches', async () => {
@@ -500,6 +504,10 @@ describe('reviews', () => {
 		const reopened = await asUserA.query(api.reviews.get, { reviewId })
 		expect(reopened.rating).toBeUndefined()
 		expect(reopened.date).toBe('2024-05-05')
+		expect(
+			(await asUserA.query(api.reviewCards.get, { reviewCardId }))
+				.lastReview,
+		).toBeUndefined()
 	})
 
 	it('rejects updating a missing or foreign review', async () => {
@@ -624,7 +632,7 @@ describe('reviews', () => {
 		expect(card).toMatchObject({
 			difficulty: review.difficultyAfter,
 			dueDate: review.dueDateAfter,
-			lastReviewedAt: '2026-01-10',
+			lastReview: { id: reviewId, date: '2026-01-10', rating: 'good' },
 			stability: review.stabilityAfter,
 			state: review.stateAfter,
 			step: review.stepAfter,
@@ -670,7 +678,11 @@ describe('reviews', () => {
 		expect(secondAfter.stabilityAfter).not.toBe(secondBefore.stabilityAfter)
 		expect(card?.stability).toBe(secondAfter.stabilityAfter)
 		expect(card?.dueDate).toBe(secondAfter.dueDateAfter)
-		expect(card?.lastReviewedAt).toBe('2026-01-10')
+		expect(card?.lastReview).toEqual({
+			id: secondReviewId,
+			date: '2026-01-10',
+			rating: 'good',
+		})
 	})
 
 	it('replays snapshots and card state when a completion moves across another', async () => {
@@ -731,7 +743,11 @@ describe('reviews', () => {
 			state: firstAfterLaterMove.stateAfter,
 			step: firstAfterLaterMove.stepAfter,
 			dueDate: firstAfterLaterMove.dueDateAfter,
-			lastReviewedAt: '2026-01-15',
+			lastReview: {
+				id: firstReviewId,
+				date: '2026-01-15',
+				rating: 'good',
+			},
 		})
 
 		await asUserA.mutation(api.reviews.update, {
@@ -763,7 +779,11 @@ describe('reviews', () => {
 			state: secondAfterEarlierMove.stateAfter,
 			step: secondAfterEarlierMove.stepAfter,
 			dueDate: secondAfterEarlierMove.dueDateAfter,
-			lastReviewedAt: '2026-01-10',
+			lastReview: {
+				id: secondReviewId,
+				date: '2026-01-10',
+				rating: 'hard',
+			},
 		})
 	})
 
@@ -818,7 +838,11 @@ describe('reviews', () => {
 		expect(card).toMatchObject({
 			difficulty: first.difficultyAfter,
 			dueDate: first.dueDateAfter,
-			lastReviewedAt: '2026-01-01',
+			lastReview: {
+				id: firstReviewId,
+				date: '2026-01-01',
+				rating: 'good',
+			},
 			stability: first.stabilityAfter,
 			state: first.stateAfter,
 		})
@@ -845,7 +869,57 @@ describe('reviews', () => {
 		expect(card?.difficulty).toBeUndefined()
 		expect(card?.step).toBe(0)
 		expect(card?.dueDate).toBeUndefined()
-		expect(card?.lastReviewedAt).toBeUndefined()
+		expect(card?.lastReview).toBeUndefined()
+	})
+
+	it('deleting the last completion falls back to the preceding completion', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {})
+		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId,
+		})
+		const firstReviewId = await asUserA.mutation(api.reviews.create, {
+			date: '2026-01-01',
+			rating: 'good',
+			reviewCardId,
+		})
+		const lastReviewId = await asUserA.mutation(api.reviews.create, {
+			date: '2026-01-10',
+			rating: 'easy',
+			reviewCardId,
+		})
+
+		await asUserA.mutation(api.reviews.remove, { reviewId: lastReviewId })
+
+		expect(
+			(await asUserA.query(api.reviewCards.get, { reviewCardId }))
+				.lastReview,
+		).toEqual({ id: firstReviewId, date: '2026-01-01', rating: 'good' })
+	})
+
+	it('uses same-day creation order for the last completed review', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {})
+		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
+			topicId,
+		})
+		await asUserA.mutation(api.reviews.create, {
+			date: '2026-01-01',
+			rating: 'miss',
+			reviewCardId,
+		})
+		const lastReviewId = await asUserA.mutation(api.reviews.create, {
+			date: '2026-01-01',
+			rating: 'good',
+			reviewCardId,
+		})
+
+		expect(
+			(await asUserA.query(api.reviewCards.get, { reviewCardId }))
+				.lastReview,
+		).toEqual({ id: lastReviewId, date: '2026-01-01', rating: 'good' })
 	})
 
 	it('creates future dated reviews as schedules without changing SRS state', async () => {
@@ -868,6 +942,6 @@ describe('reviews', () => {
 
 		// A scheduled review contributes nothing to the card's SRS state.
 		const card = await asUserA.query(api.reviewCards.get, { reviewCardId })
-		expect(card?.lastReviewedAt).toBeUndefined()
+		expect(card?.lastReview).toBeUndefined()
 	})
 })

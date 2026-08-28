@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import { Route as FlaggedRoute } from '~/app/routes/flagged'
 import { Route as DueRoute } from '~/app/routes/review/due'
 import { Route as LateRoute } from '~/app/routes/review/late'
 import { Route as NewRoute } from '~/app/routes/review/new'
@@ -28,6 +29,7 @@ function context(isAuthenticated: boolean): LoaderContext {
 
 const loaders = {
 	due: DueRoute.options.loader as unknown as Loader,
+	flagged: FlaggedRoute.options.loader as unknown as Loader,
 	late: LateRoute.options.loader as unknown as Loader,
 	new: NewRoute.options.loader as unknown as Loader,
 }
@@ -73,6 +75,16 @@ describe('review queue loaders', () => {
 
 		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledWith(
 			reviewCardQueries.listNew(),
+		)
+	})
+
+	it('preloads flagged cards', async () => {
+		const loaderContext = context(true)
+
+		await loaders.flagged({ context: loaderContext })
+
+		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledWith(
+			reviewCardQueries.listFlagged(),
 		)
 	})
 })

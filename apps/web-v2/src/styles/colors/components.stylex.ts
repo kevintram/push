@@ -55,9 +55,9 @@ export const buttonColors = stylex.defineVars({
 	dangerBackground: semanticColors.surfaceInteractiveDanger,
 	dangerBackgroundHover: semanticColors.surfaceInteractiveDangerHover,
 	dangerBackgroundPressed: semanticColors.surfaceInteractiveDangerActive,
-	dangerForeground: semanticColors.textDanger,
-	dangerForegroundHover: semanticColors.textDangerHover,
-	dangerForegroundPressed: semanticColors.textDangerActive,
+	dangerForeground: semanticColors.textOnDanger,
+	dangerForegroundHover: semanticColors.textOnDanger,
+	dangerForegroundPressed: semanticColors.textOnDanger,
 
 	primaryDisabledBorder: semanticColors.surfaceTransparent,
 	primaryDisabledBackground: semanticColors.surfaceInteractivePrimaryDisabled,
@@ -157,7 +157,7 @@ export const toasterColors = stylex.defineVars({
 	normalBorder: semanticColors.borderPrimary,
 	normalForeground: semanticColors.textPrimary,
 
-	errorBackground: semanticColors.surfaceInteractiveDanger,
+	errorBackground: semanticColors.surfaceDanger,
 	errorBorder: semanticColors.borderDanger,
 	errorForeground: semanticColors.textDanger,
 })
@@ -304,14 +304,8 @@ export const reviewColors = stylex.defineVars({
 	notesIndicatorForeground: semanticColors.textSecondary,
 
 	durabilityForeground: semanticColors.textSecondary,
-	durabilityPositiveChangeForeground: {
-		default: green.s500,
-		'@media (prefers-color-scheme: dark)': green.s300,
-	},
-	durabilityNegativeChangeForeground: {
-		default: rose.s500,
-		'@media (prefers-color-scheme: dark)': rose.s300,
-	},
+	durabilityPositiveChangeForeground: semanticColors.textSuccess,
+	durabilityNegativeChangeForeground: semanticColors.textDanger,
 })
 
 export const reviewComposerColors = stylex.defineVars({

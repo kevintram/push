@@ -20,6 +20,7 @@ export default defineSchema({
 		.index('by_ownerId_dueDate', ['ownerId', 'dueDate'])
 		.index('by_ownerId', ['ownerId'])
 		.index('by_ownerId_stability', ['ownerId', 'stability'])
+		.index('by_ownerId_flaggedAt', ['ownerId', 'flaggedAt'])
 		.searchIndex('by_searchText', {
 			searchField: 'searchText',
 			filterFields: ['ownerId'],

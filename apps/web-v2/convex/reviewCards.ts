@@ -32,6 +32,16 @@ export const listNew = query({
 	},
 })
 
+export const listFlagged = query({
+	args: {},
+	returns: v.array(reviewCardRead),
+	handler: async ctx => {
+		const { subject: userId } = await requireIdentity(ctx)
+
+		return await ReviewCards.listFlagged(ctx, userId)
+	},
+})
+
 export const get = query({
 	args: {
 		reviewCardId: v.id('reviewCards'),

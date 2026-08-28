@@ -67,7 +67,7 @@ export function ReviewCardActions({
 					<TooltipTrigger
 						render={
 							<Button.Icon
-								aria-label='Unflashcard'
+								aria-label='Remove as flashcard'
 								shape='round'
 								variant='ghost'
 								size='small'
@@ -81,7 +81,7 @@ export function ReviewCardActions({
 							</Button.Icon>
 						}
 					/>
-					<TooltipContent>Unflashcardify</TooltipContent>
+					<TooltipContent>Remove as flashcard</TooltipContent>
 				</Tooltip>
 			) : null}
 			{isFlagged ? (
@@ -129,7 +129,9 @@ export function ReviewCardActions({
 								? stylex.props(styles.flashcardOn)
 								: {})}
 						/>
-						{isFlashcard ? 'Unflashcardify' : 'Flashcardify'}
+						{isFlashcard
+							? 'Remove as flashcard'
+							: 'Mark as flashcard'}
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={toggleFlag}>
 						<Flag

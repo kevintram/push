@@ -24,10 +24,12 @@ export function deriveReviewCardSrsState(
 ): ReviewCardSrsState {
 	const stability = reviewCard.stability ?? null
 	const lastReviewedAt =
-		(reviewCard.lastReviewedAt as DateString | undefined) ?? null
+		(reviewCard.lastReview?.date as DateString | undefined) ?? null
+	const lastRating = reviewCard.lastReview?.rating ?? null
 	const nextDueAt = (reviewCard.dueDate as DateString | undefined) ?? null
 	return {
 		lastReviewedAt,
+		lastRating,
 		nextDueAt,
 		retrievability: calculateRetrievability(
 			stability,

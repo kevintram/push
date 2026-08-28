@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
-import { BookOpen, Clock, Flag, Library, PinIcon, Settings } from 'lucide-react'
+import { BookOpen, Flag, Library, Settings } from 'lucide-react'
 
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { SearchDialogTrigger } from '~/modules/search/components/SearchDialogTrigger'
@@ -42,16 +42,6 @@ export function AppRail() {
 				icon={Flag}
 				render={<Link to='/flagged' />}
 				text='Flagged'
-			/>
-			<SidebarItem
-				icon={Clock}
-				render={<Link to='/recent' />}
-				text='Recent'
-			/>
-			<SidebarItem
-				icon={PinIcon}
-				render={<Link to='/pinned' />}
-				text='Pinned'
 			/>
 			<SidebarItem
 				icon={Library}

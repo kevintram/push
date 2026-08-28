@@ -72,6 +72,7 @@ const reviewCard: ReviewCard = {
 	secondaryText: 'They preserve type safety across reusable code.',
 	notes: '',
 	state: 'LEARNING',
+	lastReview: undefined,
 	searchText:
 		'What problem do generics solve?\nThey preserve type safety across reusable code.',
 }
@@ -93,6 +94,7 @@ function renderRoute(
 		ancestors = [],
 		dueEntries = [],
 		lateEntries = [],
+		flaggedReviewCards = [],
 		missingReviewCard = false,
 		newReviewCards = [],
 		reviewCardType = 'flashcard',
@@ -101,6 +103,7 @@ function renderRoute(
 		ancestors?: Array<Doc<'topics'>>
 		dueEntries?: Array<DueEntry>
 		lateEntries?: Array<DueEntry>
+		flaggedReviewCards?: Array<ReviewCard>
 		missingReviewCard?: boolean
 		newReviewCards?: Array<ReviewCard>
 		reviewCardType?: ReviewCard['type']
@@ -145,6 +148,10 @@ function renderRoute(
 		reviewCardQueries.listNew().queryKey,
 		newReviewCards,
 	)
+	queryClient.setQueryData(
+		reviewCardQueries.listFlagged().queryKey,
+		flaggedReviewCards,
+	)
 	// Every reader of `detail` expands, and `expandPath` keys its own cache
 	// entry, so only the expanded shape is seeded. Its ancestors resolve
 	// through the same map, so a topic overridden via `topics` is the one the
@@ -164,6 +171,16 @@ function renderRoute(
 	)
 	// The focus overlay fetches each card it lands on by id.
 	for (const card of newReviewCards) {
+		queryClient.setQueryData(
+			reviewCardQueries.detail(card._id).queryKey,
+			card,
+		)
+		queryClient.setQueryData(
+			reviewQueries.listByReviewCard(card._id).queryKey,
+			[],
+		)
+	}
+	for (const card of flaggedReviewCards) {
 		queryClient.setQueryData(
 			reviewCardQueries.detail(card._id).queryKey,
 			card,
@@ -216,23 +233,23 @@ function renderRoute(
 }
 
 describe('v2 app setup', () => {
-	it('renders the index route', async () => {
+	it('renders a blank index route inside the app shell', async () => {
 		renderRoute('/')
 
-		expect(
-			await screen.findByRole('heading', {
-				name: 'A clean foundation for the rewrite.',
-			}),
-		).toBeInTheDocument()
-		expect(screen.getByText('3gulp v2')).toBeInTheDocument()
+		expect(await screen.findByRole('main')).toBeEmptyDOMElement()
 	})
 
 	it('renders the review route at its default due state', async () => {
 		renderRoute('/review')
 
 		expect(
-			await screen.findByRole('heading', { name: 'Due' }),
+			await screen.findByRole(
+				'heading',
+				{ level: 1, name: 'Due' },
+				{ timeout: 3000 },
+			),
 		).toBeInTheDocument()
+		expect(screen.getByText('No due review cards.')).toBeInTheDocument()
 	})
 
 	it('renders today’s due entry', async () => {
@@ -288,6 +305,73 @@ describe('v2 app setup', () => {
 				name: 'What problem do generics solve?',
 			}),
 		).toBeInTheDocument()
+	})
+
+	it('renders all flagged cards', async () => {
+		const practiceCard: ReviewCard = {
+			...reviewCard,
+			_id: 'practice-card' as Id<'reviewCards'>,
+			flaggedAt: 1,
+			primaryText: 'Practice prompt',
+			type: 'practice',
+		}
+		const flashcard: ReviewCard = {
+			...reviewCard,
+			_id: 'flashcard-card' as Id<'reviewCards'>,
+			flaggedAt: 2,
+			primaryText: 'Flashcard prompt',
+		}
+		renderRoute('/flagged', {
+			flaggedReviewCards: [flashcard, practiceCard],
+		})
+
+		expect(
+			await screen.findByRole('heading', {
+				level: 1,
+				name: 'Flagged',
+			}),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('link', { name: 'Flashcard prompt' }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('link', { name: 'Practice prompt' }),
+		).toBeInTheDocument()
+	})
+
+	it('shows the flagged empty state and disables focus', async () => {
+		renderRoute('/flagged')
+
+		expect(
+			await screen.findByText('No flagged review cards.'),
+		).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'Focus' })).toBeDisabled()
+	})
+
+	it('passes all flagged cards into focus mode', async () => {
+		const user = userEvent.setup()
+		const practiceCard: ReviewCard = {
+			...reviewCard,
+			_id: 'practice-card' as Id<'reviewCards'>,
+			flaggedAt: 1,
+			primaryText: 'Practice prompt',
+			type: 'practice',
+		}
+		const flashcard: ReviewCard = {
+			...reviewCard,
+			_id: 'flashcard-card' as Id<'reviewCards'>,
+			flaggedAt: 2,
+			primaryText: 'Flashcard prompt',
+		}
+		renderRoute('/flagged', {
+			flaggedReviewCards: [flashcard, practiceCard],
+		})
+
+		await user.click(await screen.findByRole('button', { name: 'Focus' }))
+		expect(
+			await screen.findByDisplayValue('Flashcard prompt'),
+		).toBeInTheDocument()
+		expect(screen.getByText('1 of 2')).toBeInTheDocument()
 	})
 
 	it('renders the selected review card in focus mode', async () => {
@@ -471,8 +555,6 @@ describe('v2 app setup', () => {
 
 	it.each([
 		['/flagged', 'Flagged'],
-		['/recent', 'Recent'],
-		['/pinned', 'Pinned'],
 		['/settings', 'Settings'],
 	])('renders the %s route', async (path, heading) => {
 		renderRoute(path)
@@ -667,7 +749,7 @@ describe('v2 app setup', () => {
 		).toHaveAttribute('placeholder', 'Title')
 		expect(
 			screen.getByLabelText('Review-card secondary text'),
-		).toHaveAttribute('placeholder', 'Description')
+		).toHaveAttribute('placeholder', 'Add description...')
 	})
 
 	it('renders the shared error page when a review card does not exist', async () => {
