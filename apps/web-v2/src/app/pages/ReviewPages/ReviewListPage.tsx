@@ -49,34 +49,35 @@ export function ReviewListPage({
 	today,
 }: ReviewListPageProps) {
 	const [focusDialogHandle] = useState(createDialogHandle)
+	const cardCount = reviewCards.length
 
 	return (
 		<>
 			<div {...stylex.props(styles.content)}>
 				<div {...stylex.props(styles.heading)}>
-					<h2 {...stylex.props(styles.title)}>{title}</h2>
+					<h1 {...stylex.props(styles.title)}>{title}</h1>
 					<DialogTrigger
 						handle={focusDialogHandle}
-						disabled={reviewCards.length === 0}
+						disabled={cardCount === 0}
 						render={<Button variant='secondary' shape='round' />}
 					>
 						<Maximize2 size={iconSizes.md} />
 						Focus
 					</DialogTrigger>
 				</div>
-				{reviewCards.length === 0 ? (
-					<p {...stylex.props(styles.empty)}>No cards here.</p>
+				{cardCount === 0 ? (
+					<p {...stylex.props(styles.empty)}>
+						No {title.toLowerCase()} review cards.
+					</p>
 				) : null}
-				{reviewCards.map(reviewCard => {
-					return (
-						<ReviewCardItem
-							key={reviewCard._id}
-							reviewCard={reviewCard}
-							srs={deriveReviewCardSrsState(reviewCard, today)}
-							today={today}
-						/>
-					)
-				})}
+				{reviewCards.map(reviewCard => (
+					<ReviewCardItem
+						key={reviewCard._id}
+						reviewCard={reviewCard}
+						srs={deriveReviewCardSrsState(reviewCard, today)}
+						today={today}
+					/>
+				))}
 			</div>
 			<FocusOverlayDialog
 				handle={focusDialogHandle}

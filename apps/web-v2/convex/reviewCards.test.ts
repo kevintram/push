@@ -7,6 +7,7 @@ import { modules } from './test.setup'
 
 const userAIdentity = { subject: 'user-a' }
 const userBIdentity = { subject: 'user-b' }
+const userCIdentity = { subject: 'user-c' }
 
 describe('reviewCards', () => {
 	it('requires authentication for every public function', async () => {
@@ -37,6 +38,9 @@ describe('reviewCards', () => {
 			t.query(api.reviewCards.listByTopic, { topicId }),
 		).rejects.toThrow('Unauthenticated')
 		await expect(t.query(api.reviewCards.listNew, {})).rejects.toThrow(
+			'Unauthenticated',
+		)
+		await expect(t.query(api.reviewCards.listFlagged, {})).rejects.toThrow(
 			'Unauthenticated',
 		)
 		await expect(
@@ -220,6 +224,43 @@ describe('reviewCards', () => {
 			missingStabilityId,
 			lastReviewedOnlyId,
 		])
+	})
+
+	it("lists only the current user's flagged cards newest first", async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const asUserB = t.withIdentity(userBIdentity)
+		const asUserC = t.withIdentity(userCIdentity)
+		const topicId = await asUserA.mutation(api.topics.create, {})
+		const foreignTopicId = await asUserB.mutation(api.topics.create, {})
+
+		const oldestId = await asUserA.mutation(api.reviewCards.create, {
+			flaggedAt: 1_700_000_000_000,
+			primaryText: 'Oldest',
+			topicId,
+		})
+		const newestId = await asUserA.mutation(api.reviewCards.create, {
+			flaggedAt: 1_800_000_000_000,
+			primaryText: 'Newest',
+			topicId,
+		})
+		await asUserA.mutation(api.reviewCards.create, { topicId })
+		await asUserB.mutation(api.reviewCards.create, {
+			flaggedAt: 1_900_000_000_000,
+			primaryText: 'Foreign',
+			topicId: foreignTopicId,
+		})
+
+		const flagged = await asUserA.query(api.reviewCards.listFlagged, {})
+
+		expect(flagged.map(card => card._id)).toEqual([newestId, oldestId])
+		expect(flagged.map(card => card.primaryText)).toEqual([
+			'Newest',
+			'Oldest',
+		])
+		await expect(
+			asUserC.query(api.reviewCards.listFlagged, {}),
+		).resolves.toEqual([])
 	})
 
 	it('rejects creating a card under a missing or foreign-owned topic', async () => {

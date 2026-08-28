@@ -54,6 +54,19 @@ export async function listNew(
 		.collect()
 }
 
+export async function listFlagged(
+	ctx: QueryCtx,
+	userId: string,
+): Promise<Array<ReviewCard>> {
+	return await ctx.db
+		.query('reviewCards')
+		.withIndex('by_ownerId_flaggedAt', q =>
+			q.eq('ownerId', userId).gt('flaggedAt', undefined),
+		)
+		.order('desc')
+		.collect()
+}
+
 export async function get(
 	ctx: QueryCtx,
 	userId: string,

@@ -6,6 +6,7 @@ import { useMatchRoute, useNavigate } from '@tanstack/react-router'
 
 export const reviewCardQueries = {
 	listNew: () => convexQuery(api.reviewCards.listNew, {}),
+	listFlagged: () => convexQuery(api.reviewCards.listFlagged, {}),
 	search: (query: string) => convexQuery(api.reviewCards.search, { query }),
 	listByTopic: (topicId: Id<'topics'>) =>
 		convexQuery(api.reviewCards.listByTopic, { topicId }),
