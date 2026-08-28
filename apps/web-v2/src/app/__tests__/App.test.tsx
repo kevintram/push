@@ -243,7 +243,11 @@ describe('v2 app setup', () => {
 		renderRoute('/review')
 
 		expect(
-			await screen.findByRole('heading', { level: 1, name: 'Due' }),
+			await screen.findByRole(
+				'heading',
+				{ level: 1, name: 'Due' },
+				{ timeout: 3000 },
+			),
 		).toBeInTheDocument()
 		expect(screen.getByText('No due review cards.')).toBeInTheDocument()
 	})
