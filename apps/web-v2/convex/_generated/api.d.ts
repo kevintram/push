@@ -22,6 +22,7 @@ import type * as topics from "../topics.js";
 import type * as utils_assertNonNull from "../utils/assertNonNull.js";
 import type * as validators_due from "../validators/due.js";
 import type * as validators_reviewCards from "../validators/reviewCards.js";
+import type * as validators_reviewRatings from "../validators/reviewRatings.js";
 import type * as validators_reviews from "../validators/reviews.js";
 import type * as validators_topics from "../validators/topics.js";
 
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   "utils/assertNonNull": typeof utils_assertNonNull;
   "validators/due": typeof validators_due;
   "validators/reviewCards": typeof validators_reviewCards;
+  "validators/reviewRatings": typeof validators_reviewRatings;
   "validators/reviews": typeof validators_reviews;
   "validators/topics": typeof validators_topics;
 }>;

@@ -1,13 +1,9 @@
 import { type Infer, v } from 'convex/values'
 
 import { learningState } from './reviewCards'
+import { rating } from './reviewRatings'
 
-export const rating = v.union(
-	v.literal('miss'),
-	v.literal('hard'),
-	v.literal('good'),
-	v.literal('easy'),
-)
+export { rating }
 
 export const reviewBase = v.object({
 	ownerId: v.string(),

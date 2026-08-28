@@ -93,6 +93,13 @@ describe('reviewCards', () => {
 			topicId,
 			type: 'flashcard',
 		})
+		expect(
+			(
+				await asUserA.query(api.reviewCards.get, {
+					reviewCardId: defaultCardId,
+				})
+			).lastReview,
+		).toBeUndefined()
 		await expect(
 			asUserA.query(api.reviewCards.get, { reviewCardId: filledCardId }),
 		).resolves.toMatchObject({
@@ -182,7 +189,7 @@ describe('reviewCards', () => {
 			{ topicId },
 		)
 
-		const lastReviewedOnlyId = await t.run(async ctx => {
+		const noStabilityId = await t.run(async ctx => {
 			const baseCard = {
 				notes: '',
 				ownerId: userAIdentity.subject,
@@ -197,15 +204,8 @@ describe('reviewCards', () => {
 				...baseCard,
 				stability: 0,
 			})
-			const lastReviewedOnlyId = await ctx.db.insert('reviewCards', {
-				...baseCard,
-				lastReviewedAt: '2026-08-10',
-			})
-			await ctx.db.insert('reviewCards', {
-				...baseCard,
-				lastReviewedAt: '2026-08-10',
-				stability: 0,
-			})
+			const noStabilityId = await ctx.db.insert('reviewCards', baseCard)
+			await ctx.db.insert('reviewCards', { ...baseCard, stability: 0 })
 			await ctx.db.insert('reviewCards', {
 				...baseCard,
 				stability: 1,
@@ -215,14 +215,14 @@ describe('reviewCards', () => {
 				ownerId: userBIdentity.subject,
 			})
 
-			return lastReviewedOnlyId
+			return noStabilityId
 		})
 
 		const newCards = await asUserA.query(api.reviewCards.listNew, {})
 
 		expect(newCards.map(card => card._id)).toEqual([
 			missingStabilityId,
-			lastReviewedOnlyId,
+			noStabilityId,
 		])
 	})
 

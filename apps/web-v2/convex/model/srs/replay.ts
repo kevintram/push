@@ -17,8 +17,8 @@ import type { Review } from '../../validators/reviews'
 
 export type ReviewCardSrsState = Pick<
 	ReviewCard,
-	'stability' | 'difficulty' | 'state' | 'step' | 'lastReviewedAt'
-> & { dueDate: string }
+	'stability' | 'difficulty' | 'state' | 'step'
+> & { dueDate: string; lastReviewDate: string | undefined }
 
 export type ReviewSrsPatch = Pick<
 	Review,
@@ -90,6 +90,7 @@ export async function updateCardSrs(
 	}
 
 	const { reviewPatches, cardState } = replay({ previousReview, reviews })
+	const lastCompletedReview = reviews.at(-1) ?? previousReview
 
 	for (const { review, patch } of reviewPatches) {
 		await ctx.db.patch('reviews', review._id, patch)
@@ -103,11 +104,23 @@ export async function updateCardSrs(
 		// An empty replay uses an epoch-backed ts-fsrs card internally. It is not
 		// a real schedule, so clearing the final completed review must clear dueDate.
 		dueDate:
-			cardState.lastReviewedAt === undefined
+			cardState.lastReviewDate === undefined
 				? undefined
 				: cardState.dueDate,
-		// Preserve the date of a legacy seed whose SRS snapshot was incomplete.
-		lastReviewedAt: cardState.lastReviewedAt ?? previousReview?.date,
+		lastReview:
+			lastCompletedReview === undefined
+				? undefined
+				: {
+						id: lastCompletedReview._id,
+						date: assertNonNull(
+							lastCompletedReview.date,
+							'Completed review is missing date',
+						),
+						rating: assertNonNull(
+							lastCompletedReview.rating,
+							'Completed review is missing rating',
+						),
+					},
 	})
 }
 
@@ -164,7 +177,7 @@ export function replay({
 						previousReview.dueDateAfter,
 						'Review is missing dueDateAfter',
 					),
-					lastReviewedAt: assertNonNull(
+					lastReviewDate: assertNonNull(
 						previousReview.date,
 						'Review is missing date',
 					),
@@ -212,9 +225,9 @@ export function replay({
 export function reviewCardSrsStateToFsrsCard(
 	srsState: ReviewCardSrsState,
 ): fsrs.Card {
-	const lastReviewedAt = assertNonNull(
-		srsState.lastReviewedAt,
-		'SRS state is missing lastReviewedAt',
+	const lastReviewDate = assertNonNull(
+		srsState.lastReviewDate,
+		'SRS state is missing lastReviewDate',
 	)
 	const stability = assertNonNull(
 		srsState.stability,
@@ -226,7 +239,7 @@ export function reviewCardSrsStateToFsrsCard(
 	)
 
 	const state = reviewCardStateToFsrsState(srsState.state)
-	const jsReviewDate = isoToJsDate(lastReviewedAt)
+	const jsReviewDate = isoToJsDate(lastReviewDate)
 
 	return {
 		...fsrs.createEmptyCard(jsReviewDate),
@@ -277,7 +290,7 @@ function fsrsCardToReviewCardSrsState(card: fsrs.Card): ReviewCardSrsState {
 		step:
 			card.state === fsrs.State.Review ? undefined : card.learning_steps,
 		dueDate: jsDateToIso(card.due),
-		lastReviewedAt:
+		lastReviewDate:
 			card.last_review === undefined
 				? undefined
 				: jsDateToIso(card.last_review),

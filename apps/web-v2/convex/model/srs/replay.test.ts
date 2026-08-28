@@ -141,7 +141,7 @@ describe('SRS card construction', () => {
 		const card = reviewCardSrsStateToFsrsCard({
 			difficulty: 4.5,
 			dueDate: '2024-04-20',
-			lastReviewedAt: '2024-03-04',
+			lastReviewDate: '2024-03-04',
 			stability: 12.5,
 			state: 'REVIEW',
 			step: 8,
@@ -174,7 +174,7 @@ describe('SRS replay', () => {
 			expect(result.cardState.dueDate).toBe(
 				fixture.expected.at(-1)!.dueDateAfter,
 			)
-			expect(result.cardState.lastReviewedAt).toBe(
+			expect(result.cardState.lastReviewDate).toBe(
 				fixture.reviews.at(-1)!.date,
 			)
 		},
@@ -184,7 +184,7 @@ describe('SRS replay', () => {
 		expect(replay({ reviews: [] }).cardState).toEqual({
 			difficulty: undefined,
 			dueDate: '1970-01-01',
-			lastReviewedAt: undefined,
+			lastReviewDate: undefined,
 			stability: undefined,
 			state: 'LEARNING',
 			step: 0,

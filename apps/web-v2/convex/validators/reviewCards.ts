@@ -1,5 +1,7 @@
 import { type Infer, v } from 'convex/values'
 
+import { rating } from './reviewRatings'
+
 export const learningState = v.union(
 	v.literal('LEARNING'),
 	v.literal('REVIEW'),
@@ -19,7 +21,14 @@ export const reviewCardBase = v.object({
 	state: learningState,
 	step: v.optional(v.number()),
 	dueDate: v.optional(v.string()),
-	lastReviewedAt: v.optional(v.string()),
+	// Only the last completed review is stored here, so rating is non-null.
+	lastReview: v.optional(
+		v.object({
+			date: v.string(),
+			rating,
+			id: v.id('reviews'),
+		}),
+	),
 	// Derived from `primaryText`, `secondaryText`, and `notes`. Server-owned:
 	// never settable by a client, always recomputed alongside its sources.
 	searchText: v.string(),
@@ -43,7 +52,7 @@ export const reviewCardCreate = v.object({
 			'state',
 			'step',
 			'dueDate',
-			'lastReviewedAt',
+			'lastReview',
 			'searchText', // omit because derived by server
 		)
 		.partial().fields,
@@ -63,7 +72,7 @@ export const reviewCardPatch = reviewCardBase
 		'state',
 		'step',
 		'dueDate',
-		'lastReviewedAt',
+		'lastReview',
 		'searchText', // omit because derived by server
 	)
 	.extend({
