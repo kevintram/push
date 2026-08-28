@@ -744,7 +744,7 @@ describe('v2 app setup', () => {
 		).toHaveAttribute('placeholder', 'Title')
 		expect(
 			screen.getByLabelText('Review-card secondary text'),
-		).toHaveAttribute('placeholder', 'Description')
+		).toHaveAttribute('placeholder', 'Add description...')
 	})
 
 	it('renders the shared error page when a review card does not exist', async () => {

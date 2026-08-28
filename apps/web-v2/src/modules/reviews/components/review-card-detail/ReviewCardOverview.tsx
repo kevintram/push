@@ -106,7 +106,7 @@ export function ReviewCardOverview({ reviewCardId }: ReviewCardOverviewProps) {
 	const primaryTextPlaceholder =
 		reviewCard.type === 'practice' ? 'Title' : 'Prompt'
 	const secondaryTextPlaceholder =
-		reviewCard.type === 'practice' ? 'Description' : 'Answer'
+		reviewCard.type === 'practice' ? 'Add description...' : 'Answer'
 
 	return (
 		<div {...stylex.props(styles.layout)}>
