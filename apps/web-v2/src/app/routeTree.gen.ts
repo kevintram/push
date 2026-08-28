@@ -10,8 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as RecentRouteImport } from './routes/recent'
-import { Route as PinnedRouteImport } from './routes/pinned'
 import { Route as FlaggedRouteImport } from './routes/flagged'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as ReviewRouteRouteImport } from './routes/review/route'
@@ -30,16 +28,6 @@ import { Route as ReviewCardsReviewCardIdReviewsRouteImport } from './routes/rev
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RecentRoute = RecentRouteImport.update({
-  id: '/recent',
-  path: '/recent',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PinnedRoute = PinnedRouteImport.update({
-  id: '/pinned',
-  path: '/pinned',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FlaggedRoute = FlaggedRouteImport.update({
@@ -122,8 +110,6 @@ export interface FileRoutesByFullPath {
   '/review': typeof ReviewRouteRouteWithChildren
   '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
-  '/pinned': typeof PinnedRoute
-  '/recent': typeof RecentRoute
   '/settings': typeof SettingsRoute
   '/review-cards/$reviewCardId': typeof ReviewCardsReviewCardIdRouteRouteWithChildren
   '/library/$topicId': typeof LibraryTopicIdRoute
@@ -139,8 +125,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
-  '/pinned': typeof PinnedRoute
-  '/recent': typeof RecentRoute
   '/settings': typeof SettingsRoute
   '/library/$topicId': typeof LibraryTopicIdRoute
   '/review/due': typeof ReviewDueRoute
@@ -158,8 +142,6 @@ export interface FileRoutesById {
   '/review': typeof ReviewRouteRouteWithChildren
   '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
-  '/pinned': typeof PinnedRoute
-  '/recent': typeof RecentRoute
   '/settings': typeof SettingsRoute
   '/review-cards/$reviewCardId': typeof ReviewCardsReviewCardIdRouteRouteWithChildren
   '/library/$topicId': typeof LibraryTopicIdRoute
@@ -179,8 +161,6 @@ export interface FileRouteTypes {
     | '/review'
     | '/design-system'
     | '/flagged'
-    | '/pinned'
-    | '/recent'
     | '/settings'
     | '/review-cards/$reviewCardId'
     | '/library/$topicId'
@@ -196,8 +176,6 @@ export interface FileRouteTypes {
     | '/'
     | '/design-system'
     | '/flagged'
-    | '/pinned'
-    | '/recent'
     | '/settings'
     | '/library/$topicId'
     | '/review/due'
@@ -214,8 +192,6 @@ export interface FileRouteTypes {
     | '/review'
     | '/design-system'
     | '/flagged'
-    | '/pinned'
-    | '/recent'
     | '/settings'
     | '/review-cards/$reviewCardId'
     | '/library/$topicId'
@@ -234,8 +210,6 @@ export interface RootRouteChildren {
   ReviewRouteRoute: typeof ReviewRouteRouteWithChildren
   DesignSystemRoute: typeof DesignSystemRoute
   FlaggedRoute: typeof FlaggedRoute
-  PinnedRoute: typeof PinnedRoute
-  RecentRoute: typeof RecentRoute
   SettingsRoute: typeof SettingsRoute
   ReviewCardsReviewCardIdRouteRoute: typeof ReviewCardsReviewCardIdRouteRouteWithChildren
 }
@@ -247,20 +221,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/recent': {
-      id: '/recent'
-      path: '/recent'
-      fullPath: '/recent'
-      preLoaderRoute: typeof RecentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pinned': {
-      id: '/pinned'
-      path: '/pinned'
-      fullPath: '/pinned'
-      preLoaderRoute: typeof PinnedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/flagged': {
@@ -418,8 +378,6 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewRouteRoute: ReviewRouteRouteWithChildren,
   DesignSystemRoute: DesignSystemRoute,
   FlaggedRoute: FlaggedRoute,
-  PinnedRoute: PinnedRoute,
-  RecentRoute: RecentRoute,
   SettingsRoute: SettingsRoute,
   ReviewCardsReviewCardIdRouteRoute:
     ReviewCardsReviewCardIdRouteRouteWithChildren,

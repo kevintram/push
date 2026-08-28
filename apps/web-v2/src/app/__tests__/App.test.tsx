@@ -471,8 +471,6 @@ describe('v2 app setup', () => {
 
 	it.each([
 		['/flagged', 'Flagged'],
-		['/recent', 'Recent'],
-		['/pinned', 'Pinned'],
 		['/settings', 'Settings'],
 	])('renders the %s route', async (path, heading) => {
 		renderRoute(path)
