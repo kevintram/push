@@ -216,15 +216,10 @@ function renderRoute(
 }
 
 describe('v2 app setup', () => {
-	it('renders the index route', async () => {
+	it('renders a blank index route inside the app shell', async () => {
 		renderRoute('/')
 
-		expect(
-			await screen.findByRole('heading', {
-				name: 'A clean foundation for the rewrite.',
-			}),
-		).toBeInTheDocument()
-		expect(screen.getByText('3gulp v2')).toBeInTheDocument()
+		expect(await screen.findByRole('main')).toBeEmptyDOMElement()
 	})
 
 	it('renders the review route at its default due state', async () => {
