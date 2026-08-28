@@ -6,7 +6,6 @@ import { Fragment } from 'react'
 
 import {
 	Breadcrumb,
-	BreadcrumbEllipsis,
 	BreadcrumbItem,
 	BreadcrumbLink,
 	BreadcrumbList,
@@ -16,18 +15,15 @@ import {
 import { breakpoints } from '~/styles/tokens.stylex'
 
 import type { ReviewCard } from '../types/review.types'
+import { ReviewDialogTopicOverflowMenu } from './ReviewDialogTopicOverflowMenu'
+
+const MAX_VISIBLE_BREADCRUMB_ITEMS = 4
 
 const styles = stylex.create({
-	desktopList: {
+	desktopOnly: {
 		display: {
 			default: 'none',
-			[breakpoints.tablet]: 'flex',
-		},
-	},
-	mobileList: {
-		display: {
-			default: 'flex',
-			[breakpoints.tablet]: 'none',
+			[breakpoints.tablet]: 'block',
 		},
 	},
 })
@@ -38,8 +34,8 @@ type ReviewDialogBreadcrumbsProps = {
 	topic: TopicDetail | undefined
 }
 
-function displayText(text: string) {
-	return text.trim() || 'Untitled'
+function formatBreadcrumbLabel(value: string) {
+	return value.trim() || 'Untitled'
 }
 
 export function ReviewDialogBreadcrumbs({
@@ -47,13 +43,19 @@ export function ReviewDialogBreadcrumbs({
 	reviewCardId,
 	topic,
 }: ReviewDialogBreadcrumbsProps) {
-	const topicPath = topic
+	const topics = topic
 		? [...(topic.path as Array<Topic>), topic as Topic]
 		: []
+	const shouldCollapseTopics =
+		// Full breadcrumb count: Library + topics + review card + Reviews.
+		topics.length + 3 > MAX_VISIBLE_BREADCRUMB_ITEMS
+	const visibleTopics = shouldCollapseTopics ? [] : topics
+	const overflowTopics = shouldCollapseTopics ? topics : []
 
+	// TODO(2): Add a mobile breadcrumb presentation.
 	return (
-		<Breadcrumb aria-label='Review location'>
-			<BreadcrumbList xstyle={styles.desktopList}>
+		<Breadcrumb aria-label='Review location' xstyle={styles.desktopOnly}>
+			<BreadcrumbList>
 				<BreadcrumbItem>
 					<DialogClose
 						nativeButton={false}
@@ -64,9 +66,20 @@ export function ReviewDialogBreadcrumbs({
 						Library
 					</DialogClose>
 				</BreadcrumbItem>
-				{topicPath.map(crumb => (
-					<Fragment key={crumb._id}>
-						<BreadcrumbSeparator>/</BreadcrumbSeparator>
+
+				{shouldCollapseTopics && (
+					<>
+						<BreadcrumbSeparator />
+						<BreadcrumbItem>
+							<ReviewDialogTopicOverflowMenu
+								topics={overflowTopics}
+							/>
+						</BreadcrumbItem>
+					</>
+				)}
+				{visibleTopics.map(topic => (
+					<Fragment key={topic._id}>
+						<BreadcrumbSeparator />
 						<BreadcrumbItem>
 							<DialogClose
 								nativeButton={false}
@@ -75,18 +88,21 @@ export function ReviewDialogBreadcrumbs({
 										render={
 											<Link
 												to='/library/$topicId'
-												params={{ topicId: crumb._id }}
+												params={{
+													topicId: topic._id,
+												}}
 											/>
 										}
 									/>
 								}
 							>
-								{displayText(crumb.title)}
+								{formatBreadcrumbLabel(topic.title)}
 							</DialogClose>
 						</BreadcrumbItem>
 					</Fragment>
 				))}
-				<BreadcrumbSeparator>/</BreadcrumbSeparator>
+
+				<BreadcrumbSeparator />
 				<BreadcrumbItem>
 					<DialogClose
 						nativeButton={false}
@@ -101,62 +117,12 @@ export function ReviewDialogBreadcrumbs({
 							/>
 						}
 					>
-						{displayText(reviewCard?.primaryText ?? 'Review card')}
+						{formatBreadcrumbLabel(
+							reviewCard?.primaryText ?? 'Review card',
+						)}
 					</DialogClose>
 				</BreadcrumbItem>
-				<BreadcrumbSeparator>/</BreadcrumbSeparator>
-				<BreadcrumbItem>
-					<DialogClose
-						nativeButton={false}
-						render={
-							<BreadcrumbLink
-								render={
-									<Link
-										to='/review-cards/$reviewCardId/reviews'
-										params={{ reviewCardId }}
-									/>
-								}
-							/>
-						}
-					>
-						Reviews
-					</DialogClose>
-				</BreadcrumbItem>
-			</BreadcrumbList>
-			<BreadcrumbList xstyle={styles.mobileList}>
-				<BreadcrumbItem>
-					<DialogClose
-						nativeButton={false}
-						render={
-							<BreadcrumbLink render={<Link to='/library' />} />
-						}
-					>
-						Library
-					</DialogClose>
-				</BreadcrumbItem>
-				<BreadcrumbSeparator>/</BreadcrumbSeparator>
-				<BreadcrumbItem>
-					<BreadcrumbEllipsis />
-				</BreadcrumbItem>
-				<BreadcrumbSeparator>/</BreadcrumbSeparator>
-				<BreadcrumbItem>
-					<DialogClose
-						nativeButton={false}
-						render={
-							<BreadcrumbLink
-								render={
-									<Link
-										to='/review-cards/$reviewCardId'
-										params={{ reviewCardId }}
-									/>
-								}
-							/>
-						}
-					>
-						{displayText(reviewCard?.primaryText ?? 'Review card')}
-					</DialogClose>
-				</BreadcrumbItem>
-				<BreadcrumbSeparator>/</BreadcrumbSeparator>
+				<BreadcrumbSeparator />
 				<BreadcrumbItem>
 					<DialogClose
 						nativeButton={false}

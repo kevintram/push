@@ -2,7 +2,10 @@ import * as stylex from '@stylexjs/stylex'
 import { ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
 
 import { Button } from '~/components/ui/Button'
-import { searchResultGroupColors } from '~/styles/colors/components.stylex'
+import {
+	searchDialogColors,
+	searchResultGroupColors,
+} from '~/styles/colors/components.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -30,21 +33,27 @@ const styles = stylex.create({
 		display: 'flex',
 		minBlockSize: '32px',
 	},
+	headerExpanded: {
+		backgroundColor: searchDialogColors.popupBackground,
+		insetBlockStart: 0,
+		position: 'sticky',
+		zIndex: 1,
+	},
 	title: {
 		color: searchResultGroupColors.titleForeground,
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
 		fontSize: fontSizes.sm,
-		fontWeight: fontWeights.regular,
+		fontWeight: fontWeights.semibold,
 	},
 	control: {
 		color: searchResultGroupColors.controlForeground,
 		fontSize: fontSizes.xs,
 	},
 	icon: {
-		blockSize: iconSizes.sm,
-		inlineSize: iconSizes.sm,
+		blockSize: iconSizes.md,
+		inlineSize: iconSizes.md,
 	},
 	list: {
 		margin: 0,
@@ -79,7 +88,12 @@ export function SearchResultGroup({
 
 	return (
 		<section aria-labelledby={headingId} {...stylex.props(styles.section)}>
-			<div {...stylex.props(styles.header)}>
+			<div
+				{...stylex.props(
+					styles.header,
+					expanded && styles.headerExpanded,
+				)}
+			>
 				<h2 id={headingId} {...stylex.props(styles.title)}>
 					{`${label} (${results.length})`}
 				</h2>
@@ -88,7 +102,7 @@ export function SearchResultGroup({
 						aria-expanded={expanded}
 						onClick={() => onExpandedChange(!expanded)}
 						shape='round'
-						size='tiny'
+						size='small'
 						variant={expanded ? 'secondary' : 'ghost'}
 						xstyle={styles.control}
 					>

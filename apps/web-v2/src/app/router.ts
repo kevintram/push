@@ -1,8 +1,8 @@
 import { createRouter } from '@tanstack/react-router'
 
+import { LoadingIndicator } from '~/components/LoadingIndicator'
 import { queryClient } from '~/lib/convex'
 
-import { LoadingPage } from './pages/LoadingPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { routeTree } from './routeTree.gen'
 
@@ -19,7 +19,7 @@ export const router = createRouter({
 
 	defaultNotFoundComponent: NotFoundPage,
 
-	defaultPendingComponent: LoadingPage,
+	defaultPendingComponent: LoadingIndicator,
 	defaultPendingMs: 200,
 	defaultPendingMinMs: 200,
 

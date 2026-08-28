@@ -11,7 +11,7 @@ const styles = stylex.create({
 		position: 'sticky',
 		top: 0,
 
-		padding: spacing.md,
+		padding: spacing.sm,
 		minInlineSize: '180px',
 
 		backgroundColor: reviewSidebarColors.background,

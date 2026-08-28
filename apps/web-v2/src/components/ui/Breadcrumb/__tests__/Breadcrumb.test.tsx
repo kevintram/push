@@ -65,6 +65,7 @@ describe('Breadcrumb', () => {
 
 		expect(separator).toHaveAttribute('aria-hidden', 'true')
 		expect(separator).toHaveAttribute('role', 'presentation')
+		expect(separator).toHaveTextContent('/')
 	})
 
 	it('supports custom separators and a presentational ellipsis', () => {
@@ -80,6 +81,9 @@ describe('Breadcrumb', () => {
 		)
 
 		expect(screen.getByTestId('custom-separator')).toBeInTheDocument()
+		expect(
+			container.querySelector('[data-slot="breadcrumb-separator"]'),
+		).toHaveAttribute('aria-hidden', 'true')
 		expect(
 			container.querySelector('[data-slot="breadcrumb-ellipsis"]'),
 		).toHaveAttribute('aria-hidden', 'true')

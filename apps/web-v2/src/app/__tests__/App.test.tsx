@@ -604,7 +604,7 @@ describe('v2 app setup', () => {
 		renderRoute(`/library/${topicId}`, { ancestors: [root, parent] })
 
 		const breadcrumb = await screen.findByRole('navigation', {
-			name: 'Breadcrumb',
+			name: 'Topic path',
 		})
 		const links = within(breadcrumb).getAllByRole('link')
 		expect(links.map(link => link.textContent)).toEqual([
@@ -638,7 +638,7 @@ describe('v2 app setup', () => {
 			screen.getByLabelText('Review-card secondary text'),
 		).toHaveAttribute('placeholder', 'Answer')
 		const breadcrumb = screen.getByRole('navigation', {
-			name: 'Breadcrumb',
+			name: 'Topic path',
 		})
 		const links = within(breadcrumb).getAllByRole('link')
 		expect(links.map(link => link.textContent)).toEqual([

@@ -31,7 +31,7 @@ const styles = stylex.create({
 		justifyContent: 'center',
 
 		// negative margin so text doesn't peek behind through rounded corners
-		margin: `calc(${spacing.xs} * -1)`,
+		marginInline: `calc(${spacing.xs} * -1)`,
 	},
 })
 

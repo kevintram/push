@@ -1,7 +1,4 @@
 import * as stylex from '@stylexjs/stylex'
-import { ChevronRight } from 'lucide-react'
-
-import { iconSizes } from '~/styles/tokens.stylex'
 
 export interface BreadcrumbSeparatorProps extends Omit<
 	React.ComponentProps<'li'>,
@@ -14,14 +11,6 @@ export interface BreadcrumbSeparatorProps extends Omit<
 const styles = stylex.create({
 	separator: {
 		flexShrink: 0,
-	},
-	icon: {
-		blockSize: iconSizes.sm,
-		inlineSize: iconSizes.sm,
-		transform: {
-			default: 'none',
-			':dir(rtl)': 'rotate(180deg)',
-		},
 	},
 })
 
@@ -38,12 +27,7 @@ export function BreadcrumbSeparator({
 			{...stylex.props(styles.separator, xstyle)}
 			{...props}
 		>
-			{children ?? (
-				<ChevronRight
-					aria-hidden='true'
-					{...stylex.props(styles.icon)}
-				/>
-			)}
+			{children ?? '/'}
 		</li>
 	)
 }

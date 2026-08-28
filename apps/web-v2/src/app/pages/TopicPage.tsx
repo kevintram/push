@@ -23,13 +23,14 @@ import {
 	useUpdateTopic,
 } from '~/modules/library/api/topicQueries'
 import { MoveTopicDialog } from '~/modules/library/components/MoveTopicDialog'
-import { TopicBreadcrumbs } from '~/modules/library/components/TopicBreadcrumbs'
+import { TopicPathBreadcrumbs } from '~/modules/library/components/TopicPathBreadcrumbs'
 import {
 	reviewCardQueries,
 	useCreateReviewCard,
 } from '~/modules/reviews/api/reviewCardQueries'
 import { ReviewCardItem } from '~/modules/reviews/components/ReviewCardItem'
 import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
+import { baseColors } from '~/styles/colors/primitives.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	fontSizes,
@@ -108,6 +109,7 @@ const styles = stylex.create({
 		flexDirection: 'column',
 	},
 	addReviewCardButton: {
+		backgroundColor: baseColors.transparent,
 		inlineSize: '100%',
 	},
 })
@@ -186,9 +188,9 @@ export function TopicPage() {
 		<div {...stylex.props(styles.container)}>
 			<header {...stylex.props(styles.toolbar)}>
 				<div {...stylex.props(styles.breadcrumbs)}>
-					<TopicBreadcrumbs
-						ancestors={topic.path as Array<Topic>}
-						currentTitle={title.value}
+					<TopicPathBreadcrumbs
+						topics={topic.path as Array<Topic>}
+						currentLabel={title.value}
 					/>
 				</div>
 				<div {...stylex.props(styles.toolbarActions)}>
