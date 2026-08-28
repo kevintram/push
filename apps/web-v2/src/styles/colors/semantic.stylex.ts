@@ -4,9 +4,11 @@ import {
 	baseColors,
 	blackAlpha,
 	blue,
+	green,
 	indigo,
 	neutral,
 	red,
+	rose,
 	whiteAlpha,
 } from './primitives.stylex'
 
@@ -30,6 +32,8 @@ export const semanticColors = stylex.defineVars({
 	surfaceInverse: { default: neutral.s700, [DARK]: neutral.s700 },
 	// A surface that communicates the product's primary brand identity.
 	surfaceBrand: { default: indigo.s600, [DARK]: indigo.s600 },
+	// A surface that communicates an error, danger, or destructive consequence.
+	surfaceDanger: { default: red.s200, [DARK]: red.s950 },
 	// A translucent scrim behind overlays that visually suppresses underlying content.
 	surfaceBackdrop: { default: blackAlpha.s70, [DARK]: blackAlpha.s70 },
 
@@ -73,11 +77,11 @@ export const semanticColors = stylex.defineVars({
 
 	// Danger interactive surfaces
 	// The resting surface for an action with destructive or hazardous consequences.
-	surfaceInteractiveDanger: { default: red.s50, [DARK]: red.s950 },
-	surfaceInteractiveDangerHover: { default: red.s100, [DARK]: red.s900 },
+	surfaceInteractiveDanger: { default: red.s500, [DARK]: red.s800 },
+	surfaceInteractiveDangerHover: { default: red.s600, [DARK]: red.s600 },
 	surfaceInteractiveDangerActive: {
-		default: red.s200,
-		[DARK]: red.s800,
+		default: red.s600,
+		[DARK]: red.s600,
 	},
 	surfaceInteractiveDangerDisabled: {
 		default: blackAlpha.s5,
@@ -152,11 +156,14 @@ export const semanticColors = stylex.defineVars({
 	// Disabled text or iconography placed on a brand surface.
 	textOnBrandDisabled: { default: neutral.s500, [DARK]: neutral.s500 },
 
+	// Status text
+	// Text that communicates a successful or positive outcome.
+	textSuccess: { default: green.s600, [DARK]: green.s300 },
 	// Danger text
 	// Text that communicates an error, danger, or destructive consequence.
-	textDanger: { default: red.s950, [DARK]: red.s200 },
-	textDangerHover: { default: red.s950, [DARK]: red.s200 },
-	textDangerActive: { default: red.s950, [DARK]: red.s200 },
+	textDanger: { default: rose.s600, [DARK]: rose.s300 },
+	// High-emphasis text or iconography placed on a danger surface.
+	textOnDanger: { default: baseColors.white, [DARK]: baseColors.white },
 
 	// Border
 	// The default boundary used to clearly separate adjacent elements or surfaces.
