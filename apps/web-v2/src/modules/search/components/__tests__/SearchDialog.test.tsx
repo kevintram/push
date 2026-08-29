@@ -1,19 +1,27 @@
 import type { Id } from '@convex/_generated/dataModel'
 import type { CardSearchResult } from '@convex/validators/cards'
 import type { CollectionSearchResult } from '@convex/validators/collections'
+import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import {
+	fireEvent,
+	render,
+	screen,
+	waitFor,
+	within,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ConvexProvider } from 'convex/react'
 import type { ComponentProps } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
-import { Dialog } from '~/components/ui'
+import { TooltipProvider } from '~/components/ui'
 import { collectionQueries } from '~/modules/library/api/collectionQueries'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { createTestConvexClient } from '~/testing/createTestConvexClient'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
+import { SEARCH_HOTKEY } from '../../searchHotkey'
 import { SearchDialog } from '../SearchDialog'
 
 vi.mock('@tanstack/react-router', async importOriginal => {
@@ -67,10 +75,12 @@ function renderDialog({
 	searchError = false,
 	collectionResults = collections,
 	cardResults = cards,
+	open = true,
 }: {
 	searchError?: boolean
 	collectionResults?: Array<CollectionSearchResult>
 	cardResults?: Array<CardSearchResult>
+	open?: boolean
 } = {}) {
 	const queryClient = createTestQueryClient()
 	// `searchError` seeds nothing, so every search falls through to the test
@@ -87,18 +97,19 @@ function renderDialog({
 			)
 		}
 	}
-	const onOpenChange = vi.fn()
-
 	render(
 		<ConvexProvider client={createTestConvexClient()}>
 			<QueryClientProvider client={queryClient}>
-				<Dialog defaultOpen onOpenChange={onOpenChange}>
+				<TooltipProvider delay={0}>
 					<SearchDialog />
-				</Dialog>
+				</TooltipProvider>
 			</QueryClientProvider>
 		</ConvexProvider>,
 	)
-	return { onOpenChange }
+
+	if (open) {
+		fireEvent.click(screen.getByRole('button', { name: 'Search' }))
+	}
 }
 
 function getSearchbox() {
@@ -206,20 +217,44 @@ describe('SearchDialog', () => {
 
 	it('closes on escape', async () => {
 		const user = userEvent.setup()
-		const { onOpenChange } = renderDialog()
+		renderDialog()
 
 		await user.keyboard('{Escape}')
-		expect(onOpenChange.mock.calls[0]?.[0]).toBe(false)
+		expect(
+			screen.queryByRole('searchbox', {
+				name: 'Search collections and cards',
+			}),
+		).not.toBeInTheDocument()
 	})
 
 	it('closes when a result is opened', async () => {
 		const user = userEvent.setup()
-		const { onOpenChange } = renderDialog()
+		renderDialog()
 		await search(user)
 
 		await user.click(screen.getAllByRole('link')[0]!)
 
-		expect(onOpenChange.mock.calls[0]?.[0]).toBe(false)
+		expect(
+			screen.queryByRole('searchbox', {
+				name: 'Search collections and cards',
+			}),
+		).not.toBeInTheDocument()
+	})
+
+	it('resets the query when reopened', async () => {
+		const user = userEvent.setup()
+		renderDialog()
+		await user.type(getSearchbox(), 'collection')
+
+		await user.click(screen.getByRole('button', { name: 'Close search' }))
+		expect(
+			screen.queryByRole('searchbox', {
+				name: 'Search collections and cards',
+			}),
+		).not.toBeInTheDocument()
+
+		await user.click(screen.getByRole('button', { name: 'Search' }))
+		expect(getSearchbox()).toHaveValue('')
 	})
 
 	it('surfaces a failed search', async () => {
@@ -233,6 +268,20 @@ describe('SearchDialog', () => {
 			expect(
 				screen.getAllByText('Search could not load. Try again.'),
 			).toHaveLength(2),
+		)
+	})
+
+	it('shows the search shortcut in its tooltip', async () => {
+		const user = userEvent.setup()
+
+		// Keep the dialog closed so the trigger's tooltip can be inspected.
+		renderDialog({ open: false })
+		await user.hover(screen.getByRole('button', { name: 'Search' }))
+
+		const tooltip = await screen.findByRole('tooltip')
+		expect(tooltip).toHaveTextContent('Search')
+		expect(tooltip.querySelector('kbd')).toHaveTextContent(
+			formatForDisplay(SEARCH_HOTKEY),
 		)
 	})
 })
