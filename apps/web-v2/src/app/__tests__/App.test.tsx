@@ -414,6 +414,29 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
+	it('toggles focus mode with the F shortcut', async () => {
+		const user = userEvent.setup()
+		renderRoute('/review/new', { newCards: [card] })
+
+		await screen.findByRole('button', { name: 'Focus' })
+		await user.keyboard('f')
+
+		expect(
+			screen.getByRole('dialog', { name: 'Focus cards' }),
+		).toBeInTheDocument()
+		expect(
+			await screen.findByDisplayValue('What problem do generics solve?'),
+		).toBeInTheDocument()
+
+		await user.keyboard('f')
+
+		await waitFor(() => {
+			expect(
+				screen.queryByRole('dialog', { name: 'Focus cards' }),
+			).not.toBeInTheDocument()
+		})
+	})
+
 	it('resets the focus tab when advancing to another card', async () => {
 		const user = userEvent.setup()
 		const secondCard: Card = {
@@ -541,11 +564,17 @@ describe('v2 app setup', () => {
 	})
 
 	it('disables focus mode when the list is empty', async () => {
+		const user = userEvent.setup()
 		renderRoute('/review/new')
 
 		expect(
 			await screen.findByRole('button', { name: 'Focus' }),
 		).toBeDisabled()
+
+		await user.keyboard('f')
+		expect(
+			screen.queryByRole('dialog', { name: 'Focus cards' }),
+		).not.toBeInTheDocument()
 	})
 
 	it.each([
