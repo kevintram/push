@@ -117,12 +117,6 @@ export function CardPropertiesPanel({
 					)}
 				</div>
 				<div {...stylex.props(styles.row)}>
-					<span {...stylex.props(styles.label)}>Recall</span>
-					<span {...stylex.props(styles.value)}>
-						{formatRecall(retrievability) ?? '—'}
-					</span>
-				</div>
-				<div {...stylex.props(styles.row)}>
 					<span {...stylex.props(styles.label)}>Reviewed</span>
 					{lastReviewedAt === null || lastReviewed === null ? (
 						<span {...stylex.props(styles.value)}>—</span>
@@ -155,6 +149,12 @@ export function CardPropertiesPanel({
 							</TooltipContent>
 						</Tooltip>
 					)}
+				</div>
+				<div {...stylex.props(styles.row)}>
+					<span {...stylex.props(styles.label)}>Recall</span>
+					<span {...stylex.props(styles.value)}>
+						{formatRecall(retrievability) ?? '—'}
+					</span>
 				</div>
 				<div {...stylex.props(styles.row)}>
 					<span {...stylex.props(styles.label)}>Durability</span>

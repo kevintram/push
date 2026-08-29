@@ -95,9 +95,6 @@ export function CardMetadata({
 					</TooltipContent>
 				</Tooltip>
 			) : null}
-			{recall !== null ? (
-				<span {...stylex.props(styles.item)}>{`${recall} recall`}</span>
-			) : null}
 			<Tooltip>
 				<TooltipTrigger
 					render={
@@ -117,6 +114,9 @@ export function CardMetadata({
 				/>
 				<TooltipContent>{lastReviewedTooltip}</TooltipContent>
 			</Tooltip>
+			{recall !== null ? (
+				<span {...stylex.props(styles.item)}>{`${recall} recall`}</span>
+			) : null}
 			{durability !== null ? (
 				<span {...stylex.props(styles.item)}>
 					Durable for {durability}
