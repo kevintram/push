@@ -27,7 +27,7 @@ const styles = stylex.create({
 		color: tooltipColors.popupForeground,
 		columnGap: spacing.sm,
 		display: 'flex',
-		fontSize: fontSizes.xs,
+		fontSize: fontSizes.sm,
 		opacity: {
 			default: 1,
 			':is([data-starting-style], [data-ending-style])': 0,

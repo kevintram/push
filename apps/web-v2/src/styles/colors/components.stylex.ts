@@ -204,8 +204,8 @@ export const kbdColors = stylex.defineVars({
 })
 
 export const tooltipColors = stylex.defineVars({
-	popupBackground: semanticColors.surfaceInverse,
-	popupForeground: semanticColors.textOnInverse,
+	popupBackground: semanticColors.surfaceRaised,
+	popupForeground: semanticColors.textPrimary,
 	popupShadow: semanticColors.shadowSubtle,
 })
 
