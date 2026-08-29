@@ -395,7 +395,3 @@ export const searchResultItemColors = stylex.defineVars({
 	secondaryForeground: semanticColors.textSecondary,
 	pathForeground: semanticColors.textSecondary,
 })
-
-export const basicRoutePageColors = stylex.defineVars({
-	descriptionForeground: semanticColors.textSecondary,
-})
