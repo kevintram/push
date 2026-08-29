@@ -260,6 +260,16 @@ export const libraryCollectionItemColors = stylex.defineVars({
 	containerBackgroundDropTarget: semanticColors.surfaceTransparentHover,
 })
 
+export const subcollectionsPanelColors = stylex.defineVars({
+	containerBackground: semanticColors.surfaceSecondary,
+
+	titleForeground: semanticColors.textSecondary,
+
+	itemForeground: semanticColors.textPrimary,
+	itemBackgroundHover: semanticColors.surfaceTransparentHover,
+	itemBackgroundActive: semanticColors.surfaceTransparentActive,
+})
+
 export const moveCollectionDialogColors = stylex.defineVars({
 	treeBorder: semanticColors.borderPrimary,
 	statusForeground: semanticColors.textSecondary,
