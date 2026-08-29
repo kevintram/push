@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { formatForDisplay, useHotkey } from '@tanstack/react-hotkeys'
 import { Search, X } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
 import { SidebarItem } from '~/components/sidebar-item'
@@ -102,8 +102,11 @@ const styles = stylex.create({
 		flexShrink: 0,
 		inlineSize: iconSizes.md,
 	},
-	closeButton: {
+	actionButton: {
 		flexShrink: 0,
+	},
+	clearButtonHidden: {
+		visibility: 'hidden',
 	},
 	closeIcon: {
 		blockSize: iconSizes.md,
@@ -155,6 +158,7 @@ export function SearchDialog() {
 	const [isOpen, setIsOpen] = useState(false)
 	const { isError, isLoading, query, cards, setQuery, collections } =
 		useSearchResults()
+	const inputRef = useRef<HTMLInputElement>(null)
 
 	const [expandedGroup, setExpandedGroup] = useState<ExpandedGroup>(null)
 
@@ -164,12 +168,10 @@ export function SearchDialog() {
 		requireReset: true,
 	})
 
-	const handleOpenChange = (open: boolean) => {
-		setIsOpen(open)
-		if (!open) {
-			setExpandedGroup(null)
-			setQuery('')
-		}
+	const handleClear = () => {
+		setExpandedGroup(null)
+		setQuery('')
+		inputRef.current?.focus()
 	}
 
 	const collectionResults = useMemo(
@@ -182,6 +184,7 @@ export function SearchDialog() {
 	)
 
 	const hasQuery = query.trim() !== ''
+	const hasInput = query !== ''
 	const hasResults = collectionResults.length > 0 || cardResults.length > 0
 	const queryStatus = !hasQuery
 		? 'Search is ready.'
@@ -192,7 +195,7 @@ export function SearchDialog() {
 				: `${collectionResults.length} collections and ${cardResults.length} cards found.`
 
 	return (
-		<Dialog onOpenChange={handleOpenChange} open={isOpen}>
+		<Dialog onOpenChange={setIsOpen} open={isOpen}>
 			<Tooltip>
 				<TooltipTrigger
 					render={
@@ -232,12 +235,27 @@ export function SearchDialog() {
 							setExpandedGroup(null)
 							setQuery(event.target.value)
 						}}
+						ref={inputRef}
 						placeholder='Search…'
 						// `type='search'` carries the `searchbox` role implicitly.
 						type='search'
 						value={query}
 						{...stylex.props(styles.input)}
 					/>
+					<Button
+						aria-hidden={!hasInput}
+						aria-label='Clear search'
+						disabled={!hasInput}
+						onClick={handleClear}
+						size='small'
+						variant='ghost'
+						xstyle={[
+							styles.actionButton,
+							!hasInput && styles.clearButtonHidden,
+						]}
+					>
+						Clear
+					</Button>
 					<Tooltip>
 						<TooltipTrigger
 							render={
@@ -247,7 +265,7 @@ export function SearchDialog() {
 											aria-label='Close search'
 											size='small'
 											variant='ghost'
-											xstyle={styles.closeButton}
+											xstyle={styles.actionButton}
 										/>
 									}
 								>

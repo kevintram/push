@@ -241,10 +241,13 @@ describe('SearchDialog', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('resets the query when reopened', async () => {
+	it('preserves the query and expanded group when reopened', async () => {
 		const user = userEvent.setup()
 		renderDialog()
-		await user.type(getSearchbox(), 'collection')
+		await search(user)
+		await user.click(
+			screen.getAllByRole('button', { name: 'View all' })[0]!,
+		)
 
 		await user.click(screen.getByRole('button', { name: 'Close search' }))
 		expect(
@@ -254,7 +257,33 @@ describe('SearchDialog', () => {
 		).not.toBeInTheDocument()
 
 		await user.click(screen.getByRole('button', { name: 'Search' }))
+		expect(getSearchbox()).toHaveValue('collection')
+		expect(screen.getByText('Collection 3')).toBeInTheDocument()
+		expect(
+			screen.queryByRole('heading', { name: 'Cards (4)' }),
+		).not.toBeInTheDocument()
+	})
+
+	it('clears the query, collapses results, and restores input focus', async () => {
+		const user = userEvent.setup()
+		renderDialog()
+		await search(user)
+		await user.click(
+			screen.getAllByRole('button', { name: 'View all' })[0]!,
+		)
+
+		const clearButton = screen.getByRole('button', { name: 'Clear search' })
+		expect(clearButton).toHaveTextContent('Clear')
+		await user.click(clearButton)
+
 		expect(getSearchbox()).toHaveValue('')
+		expect(getSearchbox()).toHaveFocus()
+		expect(
+			screen.queryByRole('button', { name: 'Clear search' }),
+		).not.toBeInTheDocument()
+		expect(
+			screen.getByText('Search collections and cards'),
+		).toBeInTheDocument()
 	})
 
 	it('surfaces a failed search', async () => {
