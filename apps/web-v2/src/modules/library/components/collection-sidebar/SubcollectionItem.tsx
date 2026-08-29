@@ -3,6 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { FolderInput, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
+import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -54,6 +55,7 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 	const { _id, parentId, title } = collection
 	const collectionTitle = title.trim() || 'Untitled'
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const createCollection = useCreateCollection()
 	const deleteCollection = useDeleteCollection()
 	const navigate = useNavigate()
@@ -72,7 +74,10 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 	}, [createCollection, navigate, _id])
 
 	const handleDeleteCollection = useCallback(() => {
-		deleteCollection.mutate({ collectionId: _id })
+		deleteCollection.mutate(
+			{ collectionId: _id },
+			{ onSuccess: () => setIsDeleteDialogOpen(false) },
+		)
 	}, [deleteCollection, _id])
 
 	return (
@@ -100,7 +105,9 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 						Move
 					</ContextMenuItem>
 					<ContextMenuSeparator />
-					<ContextMenuItem onClick={handleDeleteCollection}>
+					<ContextMenuItem
+						onClick={() => setIsDeleteDialogOpen(true)}
+					>
 						<Trash2 aria-hidden='true' size={iconSizes.md} />
 						Delete
 					</ContextMenuItem>
@@ -114,6 +121,15 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 					collectionId={_id}
 				/>
 			) : null}
+
+			<DeleteConfirmationDialog
+				description='This collection and everything inside it will be permanently deleted.'
+				isPending={deleteCollection.isPending}
+				onConfirm={handleDeleteCollection}
+				onOpenChange={setIsDeleteDialogOpen}
+				open={isDeleteDialogOpen}
+				title='Delete collection?'
+			/>
 		</>
 	)
 }
