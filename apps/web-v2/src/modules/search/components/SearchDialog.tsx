@@ -1,14 +1,19 @@
 import * as stylex from '@stylexjs/stylex'
+import { formatForDisplay, useHotkey } from '@tanstack/react-hotkeys'
 import { Search, X } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
+import { SidebarItem } from '~/components/sidebar-item'
 import {
 	Button,
+	Dialog,
 	DialogClose,
 	DialogContent,
 	DialogDescription,
 	DialogTitle,
+	DialogTrigger,
+	Kbd,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
@@ -22,6 +27,7 @@ import {
 } from '~/styles/tokens.stylex'
 
 import { useSearchResults } from '../hooks/useSearchResults'
+import { SEARCH_HOTKEY } from '../searchHotkey'
 import {
 	buildCardResults,
 	buildCollectionResults,
@@ -96,8 +102,11 @@ const styles = stylex.create({
 		flexShrink: 0,
 		inlineSize: iconSizes.md,
 	},
-	closeButton: {
+	actionButton: {
 		flexShrink: 0,
+	},
+	clearButtonHidden: {
+		visibility: 'hidden',
 	},
 	closeIcon: {
 		blockSize: iconSizes.md,
@@ -145,14 +154,26 @@ const styles = stylex.create({
 
 type ExpandedGroup = 'cards' | 'collections' | null
 
-/**
- * Mounted only while the dialog is open, so the query state resets on close.
- */
 export function SearchDialog() {
+	const [isOpen, setIsOpen] = useState(false)
 	const { isError, isLoading, query, cards, setQuery, collections } =
 		useSearchResults()
+	const inputRef = useRef<HTMLInputElement>(null)
 
 	const [expandedGroup, setExpandedGroup] = useState<ExpandedGroup>(null)
+
+	useHotkey(SEARCH_HOTKEY, () => setIsOpen(true), {
+		ignoreInputs: false,
+		preventDefault: true,
+		requireReset: true,
+	})
+
+	const handleClear = () => {
+		setExpandedGroup(null)
+		setQuery('')
+		inputRef.current?.focus()
+	}
+
 	const collectionResults = useMemo(
 		() => buildCollectionResults(collections),
 		[collections],
@@ -163,6 +184,7 @@ export function SearchDialog() {
 	)
 
 	const hasQuery = query.trim() !== ''
+	const hasInput = query !== ''
 	const hasResults = collectionResults.length > 0 || cardResults.length > 0
 	const queryStatus = !hasQuery
 		? 'Search is ready.'
@@ -173,110 +195,142 @@ export function SearchDialog() {
 				: `${collectionResults.length} collections and ${cardResults.length} cards found.`
 
 	return (
-		<DialogContent
-			showCloseButton={false}
-			viewportXstyle={styles.viewport}
-			xstyle={styles.content}
-		>
-			<DialogTitle xstyle={styles.visuallyHidden}>Search</DialogTitle>
-			<DialogDescription xstyle={styles.visuallyHidden}>
-				Search your collections and cards.
-			</DialogDescription>
-			<p aria-live='polite' {...stylex.props(styles.visuallyHidden)}>
-				{queryStatus}
-			</p>
+		<Dialog onOpenChange={setIsOpen} open={isOpen}>
+			<Tooltip>
+				<TooltipTrigger
+					render={
+						<DialogTrigger
+							render={<SidebarItem icon={Search} text='Search' />}
+						/>
+					}
+				/>
+				<TooltipContent side='right'>
+					Search
+					<Kbd>{formatForDisplay(SEARCH_HOTKEY)}</Kbd>
+				</TooltipContent>
+			</Tooltip>
+			<DialogContent
+				showCloseButton={false}
+				viewportXstyle={styles.viewport}
+				xstyle={styles.content}
+			>
+				<DialogTitle xstyle={styles.visuallyHidden}>Search</DialogTitle>
+				<DialogDescription xstyle={styles.visuallyHidden}>
+					Search your collections and cards.
+				</DialogDescription>
+				<p aria-live='polite' {...stylex.props(styles.visuallyHidden)}>
+					{queryStatus}
+				</p>
 
-			<div {...stylex.props(styles.searchBar)}>
-				<Search
-					aria-hidden='true'
-					{...stylex.props(styles.searchIcon)}
-				/>
-				<input
-					aria-label='Search collections and cards'
-					autoComplete='off'
-					enterKeyHint='search'
-					onChange={event => {
-						setExpandedGroup(null)
-						setQuery(event.target.value)
-					}}
-					placeholder='Search…'
-					// `type='search'` carries the `searchbox` role implicitly.
-					type='search'
-					value={query}
-					{...stylex.props(styles.input)}
-				/>
-				<Tooltip>
-					<TooltipTrigger
-						render={
-							<DialogClose
-								render={
-									<Button.Icon
-										aria-label='Close search'
-										size='small'
-										variant='ghost'
-										xstyle={styles.closeButton}
-									/>
-								}
-							>
-								<X
-									aria-hidden='true'
-									{...stylex.props(styles.closeIcon)}
-								/>
-							</DialogClose>
-						}
+				<div {...stylex.props(styles.searchBar)}>
+					<Search
+						aria-hidden='true'
+						{...stylex.props(styles.searchIcon)}
 					/>
-					<TooltipContent>Close</TooltipContent>
-				</Tooltip>
-			</div>
+					<input
+						aria-label='Search collections and cards'
+						autoComplete='off'
+						enterKeyHint='search'
+						onChange={event => {
+							setExpandedGroup(null)
+							setQuery(event.target.value)
+						}}
+						ref={inputRef}
+						placeholder='Search…'
+						// `type='search'` carries the `searchbox` role implicitly.
+						type='search'
+						value={query}
+						{...stylex.props(styles.input)}
+					/>
+					<Button
+						aria-hidden={!hasInput}
+						aria-label='Clear search'
+						disabled={!hasInput}
+						onClick={handleClear}
+						size='small'
+						variant='ghost'
+						xstyle={[
+							styles.actionButton,
+							!hasInput && styles.clearButtonHidden,
+						]}
+					>
+						Clear
+					</Button>
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<DialogClose
+									render={
+										<Button.Icon
+											aria-label='Close search'
+											size='small'
+											variant='ghost'
+											xstyle={styles.actionButton}
+										/>
+									}
+								>
+									<X
+										aria-hidden='true'
+										{...stylex.props(styles.closeIcon)}
+									/>
+								</DialogClose>
+							}
+						/>
+						<TooltipContent>Close</TooltipContent>
+					</Tooltip>
+				</div>
 
-			<div {...stylex.props(styles.results)}>
-				{!hasQuery ? (
-					<p {...stylex.props(styles.status)}>
-						Search collections and cards
-					</p>
-				) : isLoading ? (
-					<LoadingIndicator />
-				) : isError ? (
-					<p {...stylex.props(styles.status)}>
-						Search could not load. Try again.
-					</p>
-				) : !hasResults ? (
-					<p {...stylex.props(styles.status)}>
-						No results for “{query.trim()}”.
-					</p>
-				) : (
-					<>
-						{/*
+				<div {...stylex.props(styles.results)}>
+					{!hasQuery ? (
+						<p {...stylex.props(styles.status)}>
+							Search collections and cards
+						</p>
+					) : isLoading ? (
+						<LoadingIndicator />
+					) : isError ? (
+						<p {...stylex.props(styles.status)}>
+							Search could not load. Try again.
+						</p>
+					) : !hasResults ? (
+						<p {...stylex.props(styles.status)}>
+							No results for “{query.trim()}”.
+						</p>
+					) : (
+						<>
+							{/*
 						Only one group can be expanded at a time, and
 						expanding one hides the other so the expanded
 						group gets the full scroll area. With nothing
 						expanded, both render a truncated preview.
 						*/}
-						{expandedGroup !== 'cards' ? (
-							<SearchResultGroup
-								expanded={expandedGroup === 'collections'}
-								label='Collections'
-								onExpandedChange={expanded =>
-									setExpandedGroup(
-										expanded ? 'collections' : null,
-									)
-								}
-								results={collectionResults}
-							/>
-						) : null}
-						{expandedGroup !== 'collections' ? (
-							<SearchResultGroup
-								expanded={expandedGroup === 'cards'}
-								label='Cards'
-								onExpandedChange={expanded =>
-									setExpandedGroup(expanded ? 'cards' : null)
-								}
-								results={cardResults}
-							/>
-						) : null}
-					</>
-				)}
-			</div>
-		</DialogContent>
+							{expandedGroup !== 'cards' ? (
+								<SearchResultGroup
+									expanded={expandedGroup === 'collections'}
+									label='Collections'
+									onExpandedChange={expanded =>
+										setExpandedGroup(
+											expanded ? 'collections' : null,
+										)
+									}
+									results={collectionResults}
+								/>
+							) : null}
+							{expandedGroup !== 'collections' ? (
+								<SearchResultGroup
+									expanded={expandedGroup === 'cards'}
+									label='Cards'
+									onExpandedChange={expanded =>
+										setExpandedGroup(
+											expanded ? 'cards' : null,
+										)
+									}
+									results={cardResults}
+								/>
+							) : null}
+						</>
+					)}
+				</div>
+			</DialogContent>
+		</Dialog>
 	)
 }

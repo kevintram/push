@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { BookOpen, Flag, Library, Settings } from 'lucide-react'
 
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
-import { SearchDialogTrigger } from '~/modules/search/components/SearchDialogTrigger'
+import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import { appRailColors } from '~/styles/colors/components.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
@@ -32,7 +32,7 @@ const styles = stylex.create({
 export function AppRail() {
 	return (
 		<nav aria-label='primary' {...stylex.props(styles.container)}>
-			<SearchDialogTrigger />
+			<SearchDialog />
 			<SidebarItem
 				icon={BookOpen}
 				render={<Link to='/review' />}
