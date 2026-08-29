@@ -1,5 +1,8 @@
 import type { Id } from '@convex/_generated/dataModel'
-import type { Topic, TopicDetail } from '@convex/validators/topics'
+import type {
+	Collection,
+	CollectionDetail,
+} from '@convex/validators/collections'
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 import { Fragment } from 'react'
@@ -14,8 +17,8 @@ import {
 } from '~/components/ui'
 import { breakpoints } from '~/styles/tokens.stylex'
 
-import type { ReviewCard } from '../types/review.types'
-import { ReviewDialogTopicOverflowMenu } from './ReviewDialogTopicOverflowMenu'
+import type { Card } from '../types/review.types'
+import { ReviewDialogCollectionOverflowMenu } from './ReviewDialogCollectionOverflowMenu'
 
 const MAX_VISIBLE_BREADCRUMB_ITEMS = 4
 
@@ -29,9 +32,9 @@ const styles = stylex.create({
 })
 
 type ReviewDialogBreadcrumbsProps = {
-	reviewCard: ReviewCard | undefined
-	reviewCardId: Id<'reviewCards'>
-	topic: TopicDetail | undefined
+	card: Card | undefined
+	cardId: Id<'cards'>
+	collection: CollectionDetail | undefined
 }
 
 function formatBreadcrumbLabel(value: string) {
@@ -39,18 +42,18 @@ function formatBreadcrumbLabel(value: string) {
 }
 
 export function ReviewDialogBreadcrumbs({
-	reviewCard,
-	reviewCardId,
-	topic,
+	card,
+	cardId,
+	collection,
 }: ReviewDialogBreadcrumbsProps) {
-	const topics = topic
-		? [...(topic.path as Array<Topic>), topic as Topic]
+	const collections = collection
+		? [...(collection.path as Array<Collection>), collection as Collection]
 		: []
-	const shouldCollapseTopics =
-		// Full breadcrumb count: Library + topics + review card + Reviews.
-		topics.length + 3 > MAX_VISIBLE_BREADCRUMB_ITEMS
-	const visibleTopics = shouldCollapseTopics ? [] : topics
-	const overflowTopics = shouldCollapseTopics ? topics : []
+	const shouldCollapseCollections =
+		// Full breadcrumb count: Library + collections + card + Reviews.
+		collections.length + 3 > MAX_VISIBLE_BREADCRUMB_ITEMS
+	const visibleCollections = shouldCollapseCollections ? [] : collections
+	const overflowCollections = shouldCollapseCollections ? collections : []
 
 	// TODO(2): Add a mobile breadcrumb presentation.
 	return (
@@ -67,18 +70,18 @@ export function ReviewDialogBreadcrumbs({
 					</DialogClose>
 				</BreadcrumbItem>
 
-				{shouldCollapseTopics && (
+				{shouldCollapseCollections && (
 					<>
 						<BreadcrumbSeparator />
 						<BreadcrumbItem>
-							<ReviewDialogTopicOverflowMenu
-								topics={overflowTopics}
+							<ReviewDialogCollectionOverflowMenu
+								collections={overflowCollections}
 							/>
 						</BreadcrumbItem>
 					</>
 				)}
-				{visibleTopics.map(topic => (
-					<Fragment key={topic._id}>
+				{visibleCollections.map(collection => (
+					<Fragment key={collection._id}>
 						<BreadcrumbSeparator />
 						<BreadcrumbItem>
 							<DialogClose
@@ -87,16 +90,17 @@ export function ReviewDialogBreadcrumbs({
 									<BreadcrumbLink
 										render={
 											<Link
-												to='/library/$topicId'
+												to='/library/$collectionId'
 												params={{
-													topicId: topic._id,
+													collectionId:
+														collection._id,
 												}}
 											/>
 										}
 									/>
 								}
 							>
-								{formatBreadcrumbLabel(topic.title)}
+								{formatBreadcrumbLabel(collection.title)}
 							</DialogClose>
 						</BreadcrumbItem>
 					</Fragment>
@@ -110,16 +114,14 @@ export function ReviewDialogBreadcrumbs({
 							<BreadcrumbLink
 								render={
 									<Link
-										to='/review-cards/$reviewCardId'
-										params={{ reviewCardId }}
+										to='/cards/$cardId'
+										params={{ cardId }}
 									/>
 								}
 							/>
 						}
 					>
-						{formatBreadcrumbLabel(
-							reviewCard?.primaryText ?? 'Review card',
-						)}
+						{formatBreadcrumbLabel(card?.primaryText ?? 'Card')}
 					</DialogClose>
 				</BreadcrumbItem>
 				<BreadcrumbSeparator />
@@ -130,8 +132,8 @@ export function ReviewDialogBreadcrumbs({
 							<BreadcrumbLink
 								render={
 									<Link
-										to='/review-cards/$reviewCardId/reviews'
-										params={{ reviewCardId }}
+										to='/cards/$cardId/reviews'
+										params={{ cardId }}
 									/>
 								}
 							/>

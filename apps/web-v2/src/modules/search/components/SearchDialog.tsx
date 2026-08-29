@@ -23,7 +23,10 @@ import {
 } from '~/styles/tokens.stylex'
 
 import { useSearchResults } from '../hooks/useSearchResults'
-import { buildCardResults, buildTopicResults } from '../utils/searchResults'
+import {
+	buildCardResults,
+	buildCollectionResults,
+} from '../utils/searchResults'
 import { SearchResultGroup } from './SearchResultGroup'
 
 const styles = stylex.create({
@@ -151,31 +154,34 @@ const styles = stylex.create({
 	},
 })
 
-type ExpandedGroup = 'cards' | 'topics' | null
+type ExpandedGroup = 'cards' | 'collections' | null
 
 /**
  * Mounted only while the dialog is open, so the query state resets on close.
  */
 export function SearchDialog() {
-	const { isError, isLoading, query, reviewCards, setQuery, topics } =
+	const { isError, isLoading, query, cards, setQuery, collections } =
 		useSearchResults()
 
 	const [expandedGroup, setExpandedGroup] = useState<ExpandedGroup>(null)
-	const topicResults = useMemo(() => buildTopicResults(topics), [topics])
+	const collectionResults = useMemo(
+		() => buildCollectionResults(collections),
+		[collections],
+	)
 	const cardResults = useMemo(
-		() => buildCardResults(reviewCards, query),
-		[query, reviewCards],
+		() => buildCardResults(cards, query),
+		[query, cards],
 	)
 
 	const hasQuery = query.trim() !== ''
-	const hasResults = topicResults.length > 0 || cardResults.length > 0
+	const hasResults = collectionResults.length > 0 || cardResults.length > 0
 	const queryStatus = !hasQuery
 		? 'Search is ready.'
 		: isLoading
 			? 'Searching.'
 			: isError
 				? 'Search could not load. Try again.'
-				: `${topicResults.length} topics and ${cardResults.length} cards found.`
+				: `${collectionResults.length} collections and ${cardResults.length} cards found.`
 
 	return (
 		<DialogContent
@@ -185,7 +191,7 @@ export function SearchDialog() {
 		>
 			<DialogTitle xstyle={styles.visuallyHidden}>Search</DialogTitle>
 			<DialogDescription xstyle={styles.visuallyHidden}>
-				Search your topics and review cards.
+				Search your collections and cards.
 			</DialogDescription>
 			<p aria-live='polite' {...stylex.props(styles.visuallyHidden)}>
 				{queryStatus}
@@ -197,7 +203,7 @@ export function SearchDialog() {
 					{...stylex.props(styles.searchIcon)}
 				/>
 				<input
-					aria-label='Search topics and review cards'
+					aria-label='Search collections and cards'
 					autoComplete='off'
 					enterKeyHint='search'
 					onChange={event => {
@@ -237,7 +243,7 @@ export function SearchDialog() {
 			<div {...stylex.props(styles.results)}>
 				{!hasQuery ? (
 					<p {...stylex.props(styles.status)}>
-						Search topics and review cards
+						Search collections and cards
 					</p>
 				) : isLoading ? (
 					<LoadingIndicator />
@@ -259,15 +265,17 @@ export function SearchDialog() {
 						*/}
 						{expandedGroup !== 'cards' ? (
 							<SearchResultGroup
-								expanded={expandedGroup === 'topics'}
-								label='Topics'
+								expanded={expandedGroup === 'collections'}
+								label='Collections'
 								onExpandedChange={expanded =>
-									setExpandedGroup(expanded ? 'topics' : null)
+									setExpandedGroup(
+										expanded ? 'collections' : null,
+									)
 								}
-								results={topicResults}
+								results={collectionResults}
 							/>
 						) : null}
-						{expandedGroup !== 'topics' ? (
+						{expandedGroup !== 'collections' ? (
 							<SearchResultGroup
 								expanded={expandedGroup === 'cards'}
 								label='Cards'

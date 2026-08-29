@@ -14,7 +14,7 @@ type TestDragEndEvent = {
 
 const mocks = vi.hoisted(() => ({
 	onDragEnd: undefined as ((event: TestDragEndEvent) => void) | undefined,
-	updateTopic: vi.fn(),
+	updateCollection: vi.fn(),
 }))
 
 vi.mock('@dnd-kit/react', () => ({
@@ -34,9 +34,9 @@ vi.mock('@tanstack/react-query', () => ({
 	useSuspenseQuery: () => ({ data: [] }),
 }))
 
-vi.mock('../../../api/topicQueries', () => ({
-	topicQueries: { list: () => ({}) },
-	useUpdateTopic: () => ({ mutate: mocks.updateTopic }),
+vi.mock('../../../api/collectionQueries', () => ({
+	collectionQueries: { list: () => ({}) },
+	useUpdateCollection: () => ({ mutate: mocks.updateCollection }),
 }))
 
 vi.mock('../LibrarySidebarContent', () => ({
@@ -50,39 +50,39 @@ function finishDrag(event: TestDragEndEvent) {
 describe('LibrarySidebar drag and drop', () => {
 	beforeEach(() => {
 		mocks.onDragEnd = undefined
-		mocks.updateTopic.mockClear()
+		mocks.updateCollection.mockClear()
 	})
 
-	it('reparents a topic when dropped onto another topic', () => {
+	it('reparents a collection when dropped onto another collection', () => {
 		render(<LibrarySidebar />)
 
 		finishDrag({
 			canceled: false,
 			operation: {
-				source: { id: 'source-topic' },
-				target: { id: 'parent-topic' },
+				source: { id: 'source-collection' },
+				target: { id: 'parent-collection' },
 			},
 		})
 
-		expect(mocks.updateTopic).toHaveBeenCalledWith({
-			topicId: 'source-topic',
-			parentId: 'parent-topic',
+		expect(mocks.updateCollection).toHaveBeenCalledWith({
+			collectionId: 'source-collection',
+			parentId: 'parent-collection',
 		})
 	})
 
-	it('moves a topic to the root when dropped onto the library header', () => {
+	it('moves a collection to the root when dropped onto the library header', () => {
 		render(<LibrarySidebar />)
 
 		finishDrag({
 			canceled: false,
 			operation: {
-				source: { id: 'source-topic' },
+				source: { id: 'source-collection' },
 				target: { id: 'library-root' },
 			},
 		})
 
-		expect(mocks.updateTopic).toHaveBeenCalledWith({
-			topicId: 'source-topic',
+		expect(mocks.updateCollection).toHaveBeenCalledWith({
+			collectionId: 'source-collection',
 			parentId: null,
 		})
 	})
@@ -93,8 +93,8 @@ describe('LibrarySidebar drag and drop', () => {
 			event: {
 				canceled: true,
 				operation: {
-					source: { id: 'source-topic' },
-					target: { id: 'parent-topic' },
+					source: { id: 'source-collection' },
+					target: { id: 'parent-collection' },
 				},
 			},
 		},
@@ -102,31 +102,31 @@ describe('LibrarySidebar drag and drop', () => {
 			name: 'the source is missing',
 			event: {
 				canceled: false,
-				operation: { target: { id: 'parent-topic' } },
+				operation: { target: { id: 'parent-collection' } },
 			},
 		},
 		{
 			name: 'the target is missing',
 			event: {
 				canceled: false,
-				operation: { source: { id: 'source-topic' } },
+				operation: { source: { id: 'source-collection' } },
 			},
 		},
 		{
-			name: 'the source and target are the same topic',
+			name: 'the source and target are the same collection',
 			event: {
 				canceled: false,
 				operation: {
-					source: { id: 'same-topic' },
-					target: { id: 'same-topic' },
+					source: { id: 'same-collection' },
+					target: { id: 'same-collection' },
 				},
 			},
 		},
-	])('does not update a topic when $name', ({ event }) => {
+	])('does not update a collection when $name', ({ event }) => {
 		render(<LibrarySidebar />)
 
 		finishDrag(event)
 
-		expect(mocks.updateTopic).not.toHaveBeenCalled()
+		expect(mocks.updateCollection).not.toHaveBeenCalled()
 	})
 })

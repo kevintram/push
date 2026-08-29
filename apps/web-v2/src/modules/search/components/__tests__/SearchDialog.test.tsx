@@ -1,6 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
-import type { ReviewCardSearchResult } from '@convex/validators/reviewCards'
-import type { TopicSearchResult } from '@convex/validators/topics'
+import type { CardSearchResult } from '@convex/validators/cards'
+import type { CollectionSearchResult } from '@convex/validators/collections'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -9,8 +9,8 @@ import type { ComponentProps } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { Dialog } from '~/components/ui'
-import { topicQueries } from '~/modules/library/api/topicQueries'
-import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
+import { collectionQueries } from '~/modules/library/api/collectionQueries'
+import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { createTestConvexClient } from '~/testing/createTestConvexClient'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
@@ -35,22 +35,22 @@ vi.mock('@tanstack/react-router', async importOriginal => {
 	}
 })
 
-const topics: Array<TopicSearchResult> = Array.from(
+const collections: Array<CollectionSearchResult> = Array.from(
 	{ length: 4 },
 	(_, index) => ({
-		_id: `topic-${index}` as Id<'topics'>,
-		description: `Topic description ${index}`,
+		_id: `collection-${index}` as Id<'collections'>,
+		description: `Collection description ${index}`,
 		pathTitles: [],
-		title: `Topic ${index}`,
+		title: `Collection ${index}`,
 	}),
 )
 
-const cards: Array<ReviewCardSearchResult> = Array.from(
+const cards: Array<CardSearchResult> = Array.from(
 	{ length: 4 },
 	(_, index) => ({
-		_id: `card-${index}` as Id<'reviewCards'>,
+		_id: `card-${index}` as Id<'cards'>,
 		notes: '',
-		pathTitles: ['Topic 0'],
+		pathTitles: ['Collection 0'],
 		primaryText: `Card ${index}`,
 		secondaryText: `Answer ${index}`,
 	}),
@@ -65,25 +65,25 @@ function prefixesOf(term: string) {
 
 function renderDialog({
 	searchError = false,
-	topicResults = topics,
-	reviewCardResults = cards,
+	collectionResults = collections,
+	cardResults = cards,
 }: {
 	searchError?: boolean
-	topicResults?: Array<TopicSearchResult>
-	reviewCardResults?: Array<ReviewCardSearchResult>
+	collectionResults?: Array<CollectionSearchResult>
+	cardResults?: Array<CardSearchResult>
 } = {}) {
 	const queryClient = createTestQueryClient()
 	// `searchError` seeds nothing, so every search falls through to the test
 	// client's default `queryFn`, which throws on an unseeded key.
 	if (!searchError) {
-		for (const prefix of prefixesOf('topicx')) {
+		for (const prefix of prefixesOf('collectionx')) {
 			queryClient.setQueryData(
-				topicQueries.search(prefix).queryKey,
-				topicResults,
+				collectionQueries.search(prefix).queryKey,
+				collectionResults,
 			)
 			queryClient.setQueryData(
-				reviewCardQueries.search(prefix).queryKey,
-				reviewCardResults,
+				cardQueries.search(prefix).queryKey,
+				cardResults,
 			)
 		}
 	}
@@ -103,13 +103,13 @@ function renderDialog({
 
 function getSearchbox() {
 	return screen.getByRole('searchbox', {
-		name: 'Search topics and review cards',
+		name: 'Search collections and cards',
 	})
 }
 
-/** Types `topic` and waits out the debounce so results are on screen. */
+/** Types `collection` and waits out the debounce so results are on screen. */
 async function search(user: ReturnType<typeof userEvent.setup>) {
-	await user.type(getSearchbox(), 'topic')
+	await user.type(getSearchbox(), 'collection')
 	await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(6))
 }
 
@@ -125,14 +125,14 @@ describe('SearchDialog', () => {
 		renderDialog()
 		await search(user)
 
-		expect(screen.queryByText('Topic 3')).not.toBeInTheDocument()
+		expect(screen.queryByText('Collection 3')).not.toBeInTheDocument()
 
 		await user.click(
 			screen.getAllByRole('button', { name: 'View all' })[0]!,
 		)
 
 		expect(screen.getAllByRole('link')).toHaveLength(4)
-		expect(screen.getByText('Topic 3')).toBeInTheDocument()
+		expect(screen.getByText('Collection 3')).toBeInTheDocument()
 		expect(
 			screen.queryByRole('heading', { name: 'Cards (4)' }),
 		).not.toBeInTheDocument()
@@ -145,28 +145,28 @@ describe('SearchDialog', () => {
 		expect(screen.getAllByRole('link')).toHaveLength(6)
 	})
 
-	it('renders distinct paths separately from same-titled topic descriptions', async () => {
+	it('renders distinct paths separately from same-titled collection descriptions', async () => {
 		const user = userEvent.setup()
-		const duplicateTopics: Array<TopicSearchResult> = [
+		const duplicateCollections: Array<CollectionSearchResult> = [
 			{
-				_id: 'topic-duplicate-a' as Id<'topics'>,
+				_id: 'collection-duplicate-a' as Id<'collections'>,
 				description: 'First description',
 				pathTitles: ['Science'],
 				title: 'Shared title',
 			},
 			{
-				_id: 'topic-duplicate-b' as Id<'topics'>,
+				_id: 'collection-duplicate-b' as Id<'collections'>,
 				description: 'Second description',
 				pathTitles: ['Humanities'],
 				title: 'Shared title',
 			},
 		]
 		renderDialog({
-			reviewCardResults: [],
-			topicResults: duplicateTopics,
+			cardResults: [],
+			collectionResults: duplicateCollections,
 		})
 
-		await user.type(getSearchbox(), 'topic')
+		await user.type(getSearchbox(), 'collection')
 		await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(2))
 
 		const sciencePath = screen.getByText('Library / Science / Shared title')
@@ -200,7 +200,7 @@ describe('SearchDialog', () => {
 		await user.type(input, 'x')
 
 		expect(input).toHaveFocus()
-		expect(input).toHaveValue('topicx')
+		expect(input).toHaveValue('collectionx')
 		await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(6))
 	})
 
@@ -226,7 +226,7 @@ describe('SearchDialog', () => {
 		const user = userEvent.setup()
 		renderDialog({ searchError: true })
 
-		await user.type(getSearchbox(), 'topic')
+		await user.type(getSearchbox(), 'collection')
 
 		// The message renders twice: once in the live region, once inline.
 		await waitFor(() =>

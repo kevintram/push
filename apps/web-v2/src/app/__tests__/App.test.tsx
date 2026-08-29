@@ -1,6 +1,6 @@
 import type { Doc, Id } from '@convex/_generated/dataModel'
+import type { Card } from '@convex/validators/cards'
 import type { DueEntry } from '@convex/validators/due'
-import type { ReviewCard } from '@convex/validators/reviewCards'
 import { QueryClientProvider } from '@tanstack/react-query'
 import {
 	createMemoryHistory,
@@ -14,11 +14,12 @@ import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
-import { topicQueries } from '~/modules/library/api/topicQueries'
+import { collectionQueries } from '~/modules/library/api/collectionQueries'
+import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { dueQueries } from '~/modules/reviews/api/dueQueries'
-import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
 import { reviewQueries } from '~/modules/reviews/api/reviewQueries'
 import { HideModeProvider } from '~/modules/reviews/hide-mode/HideModeProvider'
+import type { Review } from '~/modules/reviews/types/review.types'
 import { createTestConvexClient } from '~/testing/createTestConvexClient'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
 import { todayIso } from '~/utils/date'
@@ -49,11 +50,11 @@ vi.mock('convex/react', async importOriginal => ({
 	}),
 }))
 
-const topicId = 'topic-1' as Id<'topics'>
-const reviewCardId = 'review-card-1' as Id<'reviewCards'>
+const collectionId = 'collection-1' as Id<'collections'>
+const cardId = 'card-1' as Id<'cards'>
 
-const topic: Doc<'topics'> = {
-	_id: topicId,
+const collection: Doc<'collections'> = {
+	_id: collectionId,
 	_creationTime: 0,
 	title: 'Learning TypeScript',
 	description: '',
@@ -62,10 +63,10 @@ const topic: Doc<'topics'> = {
 	searchText: 'Learning TypeScript',
 }
 
-const reviewCard: ReviewCard = {
-	_id: reviewCardId,
+const card: Card = {
+	_id: cardId,
 	_creationTime: 0,
-	topicId,
+	collectionId,
 	ownerId: 'user-1',
 	type: 'flashcard',
 	primaryText: 'What problem do generics solve?',
@@ -77,10 +78,10 @@ const reviewCard: ReviewCard = {
 		'What problem do generics solve?\nThey preserve type safety across reusable code.',
 }
 
-const review: Doc<'reviews'> = {
+const review: Review = {
 	_id: 'review-1' as Id<'reviews'>,
 	_creationTime: 0,
-	reviewCardId,
+	cardId,
 	ownerId: 'user-1',
 	rating: 'good',
 	description: 'Correctly described generics.',
@@ -94,29 +95,35 @@ function renderRoute(
 		ancestors = [],
 		dueEntries = [],
 		lateEntries = [],
-		flaggedReviewCards = [],
-		missingReviewCard = false,
-		newReviewCards = [],
-		reviewCardType = 'flashcard',
-		topics = [],
+		flaggedCards = [],
+		missingCard = false,
+		missingCollection = false,
+		newCards = [],
+		cardType = 'flashcard',
+		collections = [],
 	}: {
-		ancestors?: Array<Doc<'topics'>>
+		ancestors?: Array<Doc<'collections'>>
 		dueEntries?: Array<DueEntry>
 		lateEntries?: Array<DueEntry>
-		flaggedReviewCards?: Array<ReviewCard>
-		missingReviewCard?: boolean
-		newReviewCards?: Array<ReviewCard>
-		reviewCardType?: ReviewCard['type']
-		topics?: Array<Doc<'topics'>>
+		flaggedCards?: Array<Card>
+		missingCard?: boolean
+		missingCollection?: boolean
+		newCards?: Array<Card>
+		cardType?: Card['type']
+		collections?: Array<Doc<'collections'>>
 	} = {},
 ) {
 	const queryClient = createTestQueryClient()
 	const today = todayIso()
-	if (missingReviewCard) {
+	if (missingCard || missingCollection) {
 		queryClient.setDefaultOptions({
 			queries: {
 				queryFn: () => {
-					throw new Error('Review card not found')
+					throw new Error(
+						missingCollection
+							? 'Collection not found'
+							: 'Card not found',
+					)
 				},
 				retry: false,
 				staleTime: Infinity,
@@ -125,84 +132,71 @@ function renderRoute(
 	}
 	// Breadcrumbs read `detailWithPath()`, while the sidebar and move dialog
 	// read `list()`, so the `ancestors` fixture has to seed both. Deduped by id
-	// so a topic passed in both `topics` and `ancestors` cannot appear twice,
+	// so a collection passed in both `collections` and `ancestors` cannot appear twice,
 	// and the detail seeds are resolved from the same map `list()` holds so the
-	// caches can never disagree about the current topic.
-	const topicsById = new Map(
-		[...topics, ...ancestors].map(entry => [entry._id, entry]),
+	// caches can never disagree about the current collection.
+	const collectionsById = new Map(
+		[...collections, ...ancestors].map(entry => [entry._id, entry]),
 	)
-	const currentTopic = {
-		...(topicsById.get(topicId) ?? topic),
+	const currentCollection = {
+		...(collectionsById.get(collectionId) ?? collection),
 		path: ancestors.map(({ _id }) => _id),
 	}
-	topicsById.set(topicId, currentTopic)
-	queryClient.setQueryData(topicQueries.list().queryKey, [
-		...topicsById.values(),
+	collectionsById.set(collectionId, currentCollection)
+	queryClient.setQueryData(collectionQueries.list().queryKey, [
+		...collectionsById.values(),
 	])
 	queryClient.setQueryData(dueQueries.list(today).queryKey, dueEntries)
 	queryClient.setQueryData(
 		dueQueries.list({ to: today }).queryKey,
 		lateEntries,
 	)
-	queryClient.setQueryData(
-		reviewCardQueries.listNew().queryKey,
-		newReviewCards,
-	)
-	queryClient.setQueryData(
-		reviewCardQueries.listFlagged().queryKey,
-		flaggedReviewCards,
-	)
+	queryClient.setQueryData(cardQueries.listNew().queryKey, newCards)
+	queryClient.setQueryData(cardQueries.listFlagged().queryKey, flaggedCards)
 	// Every reader of `detail` expands, and `expandPath` keys its own cache
 	// entry, so only the expanded shape is seeded. Its ancestors resolve
-	// through the same map, so a topic overridden via `topics` is the one the
+	// through the same map, so a collection overridden via `collections` is the one the
 	// trail renders.
-	queryClient.setQueryData(
-		topicQueries.detail(topicId, { expandPath: true }).queryKey,
-		{
-			...currentTopic,
-			path: currentTopic.path.map(ancestorId =>
-				topicsById.get(ancestorId),
-			),
-		},
-	)
-	queryClient.setQueryData(
-		reviewCardQueries.listByTopic(topicId).queryKey,
-		[],
-	)
-	// The focus overlay fetches each card it lands on by id.
-	for (const card of newReviewCards) {
+	if (!missingCollection) {
 		queryClient.setQueryData(
-			reviewCardQueries.detail(card._id).queryKey,
-			card,
-		)
-		queryClient.setQueryData(
-			reviewQueries.listByReviewCard(card._id).queryKey,
-			[],
-		)
-	}
-	for (const card of flaggedReviewCards) {
-		queryClient.setQueryData(
-			reviewCardQueries.detail(card._id).queryKey,
-			card,
-		)
-		queryClient.setQueryData(
-			reviewQueries.listByReviewCard(card._id).queryKey,
-			[],
-		)
-	}
-	if (!missingReviewCard) {
-		queryClient.setQueryData(
-			reviewCardQueries.detail(reviewCardId).queryKey,
+			collectionQueries.detail(collectionId, { expandPath: true })
+				.queryKey,
 			{
-				...reviewCard,
-				type: reviewCardType,
+				...currentCollection,
+				path: currentCollection.path.map(ancestorId =>
+					collectionsById.get(ancestorId),
+				),
 			},
 		)
 	}
 	queryClient.setQueryData(
-		reviewQueries.listByReviewCard(reviewCardId).queryKey,
-		[review],
+		cardQueries.listByCollection(collectionId).queryKey,
+		[],
 	)
+	// The focus overlay fetches each card it lands on by id.
+	for (const card of newCards) {
+		queryClient.setQueryData(cardQueries.detail(card._id).queryKey, card)
+		queryClient.setQueryData(
+			reviewQueries.listByCard(card._id).queryKey,
+			[],
+		)
+	}
+	for (const card of flaggedCards) {
+		queryClient.setQueryData(cardQueries.detail(card._id).queryKey, card)
+		queryClient.setQueryData(
+			reviewQueries.listByCard(card._id).queryKey,
+			[],
+		)
+	}
+	if (!missingCard) {
+		queryClient.setQueryData(cardQueries.detail(cardId).queryKey, {
+			...card,
+			type: cardType,
+		})
+	}
+	queryClient.setQueryData(reviewQueries.listByCard(cardId).queryKey, [
+		review,
+	])
 	const convexClient = createTestConvexClient()
 
 	const router = createRouter({
@@ -249,7 +243,7 @@ describe('v2 app setup', () => {
 				{ timeout: 3000 },
 			),
 		).toBeInTheDocument()
-		expect(screen.getByText('No due review cards.')).toBeInTheDocument()
+		expect(screen.getByText('No due cards.')).toBeInTheDocument()
 	})
 
 	it('renders today’s due entry', async () => {
@@ -257,7 +251,7 @@ describe('v2 app setup', () => {
 		renderRoute('/review/due', {
 			dueEntries: [
 				{
-					card: reviewCard,
+					card: card,
 					date: today,
 					scheduledReviews: [{ ...review, rating: undefined }],
 					srsScheduled: true,
@@ -276,13 +270,13 @@ describe('v2 app setup', () => {
 		renderRoute('/review/late', {
 			lateEntries: [
 				{
-					card: reviewCard,
+					card: card,
 					date: '2020-01-02',
 					scheduledReviews: [],
 					srsScheduled: true,
 				},
 				{
-					card: reviewCard,
+					card: card,
 					date: '2020-01-01',
 					scheduledReviews: [{ ...review, rating: undefined }],
 					srsScheduled: false,
@@ -298,7 +292,7 @@ describe('v2 app setup', () => {
 	})
 
 	it('renders new cards without due-entry context', async () => {
-		renderRoute('/review/new', { newReviewCards: [reviewCard] })
+		renderRoute('/review/new', { newCards: [card] })
 
 		expect(
 			await screen.findByRole('link', {
@@ -308,21 +302,21 @@ describe('v2 app setup', () => {
 	})
 
 	it('renders all flagged cards', async () => {
-		const practiceCard: ReviewCard = {
-			...reviewCard,
-			_id: 'practice-card' as Id<'reviewCards'>,
+		const practiceCard: Card = {
+			...card,
+			_id: 'practice-card' as Id<'cards'>,
 			flaggedAt: 1,
 			primaryText: 'Practice prompt',
 			type: 'practice',
 		}
-		const flashcard: ReviewCard = {
-			...reviewCard,
-			_id: 'flashcard-card' as Id<'reviewCards'>,
+		const flashcard: Card = {
+			...card,
+			_id: 'flashcard-card' as Id<'cards'>,
 			flaggedAt: 2,
 			primaryText: 'Flashcard prompt',
 		}
 		renderRoute('/flagged', {
-			flaggedReviewCards: [flashcard, practiceCard],
+			flaggedCards: [flashcard, practiceCard],
 		})
 
 		expect(
@@ -342,29 +336,27 @@ describe('v2 app setup', () => {
 	it('shows the flagged empty state and disables focus', async () => {
 		renderRoute('/flagged')
 
-		expect(
-			await screen.findByText('No flagged review cards.'),
-		).toBeInTheDocument()
+		expect(await screen.findByText('No flagged cards.')).toBeInTheDocument()
 		expect(screen.getByRole('button', { name: 'Focus' })).toBeDisabled()
 	})
 
 	it('passes all flagged cards into focus mode', async () => {
 		const user = userEvent.setup()
-		const practiceCard: ReviewCard = {
-			...reviewCard,
-			_id: 'practice-card' as Id<'reviewCards'>,
+		const practiceCard: Card = {
+			...card,
+			_id: 'practice-card' as Id<'cards'>,
 			flaggedAt: 1,
 			primaryText: 'Practice prompt',
 			type: 'practice',
 		}
-		const flashcard: ReviewCard = {
-			...reviewCard,
-			_id: 'flashcard-card' as Id<'reviewCards'>,
+		const flashcard: Card = {
+			...card,
+			_id: 'flashcard-card' as Id<'cards'>,
 			flaggedAt: 2,
 			primaryText: 'Flashcard prompt',
 		}
 		renderRoute('/flagged', {
-			flaggedReviewCards: [flashcard, practiceCard],
+			flaggedCards: [flashcard, practiceCard],
 		})
 
 		await user.click(await screen.findByRole('button', { name: 'Focus' }))
@@ -374,35 +366,33 @@ describe('v2 app setup', () => {
 		expect(screen.getByText('1 of 2')).toBeInTheDocument()
 	})
 
-	it('renders the selected review card in focus mode', async () => {
+	it('renders the selected card in focus mode', async () => {
 		const user = userEvent.setup()
-		renderRoute('/review/new', { newReviewCards: [reviewCard] })
+		renderRoute('/review/new', { newCards: [card] })
 
 		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 
 		expect(
-			screen.getByRole('dialog', { name: 'Focus review cards' }),
+			screen.getByRole('dialog', { name: 'Focus cards' }),
 		).toBeInTheDocument()
 		expect(
 			await screen.findByDisplayValue('What problem do generics solve?'),
 		).toBeInTheDocument()
 		expect(screen.getByText('1 of 1')).toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Previous review card' }),
+			screen.getByRole('button', { name: 'Previous card' }),
 		).toBeDisabled()
-		expect(
-			screen.getByRole('button', { name: 'Next review card' }),
-		).toBeDisabled()
-		expect(
-			screen.getByLabelText('Review-card primary text'),
-		).not.toHaveAttribute('readonly')
+		expect(screen.getByRole('button', { name: 'Next card' })).toBeDisabled()
+		expect(screen.getByLabelText('Card primary text')).not.toHaveAttribute(
+			'readonly',
+		)
 		// Base UI keeps `role="button"` on the non-native element, but it stays
 		// a real anchor so middle-click and open-in-new-tab still work.
 		const openLink = screen.getByRole('button', {
-			name: 'Open review card',
+			name: 'Open card',
 		})
 		expect(openLink.tagName).toBe('A')
-		expect(openLink).toHaveAttribute('href', '/review-cards/review-card-1')
+		expect(openLink).toHaveAttribute('href', '/cards/card-1')
 		expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute(
 			'aria-selected',
 			'true',
@@ -412,19 +402,19 @@ describe('v2 app setup', () => {
 		)
 		expect(
 			screen.getByRole('complementary', {
-				name: 'Review card details',
+				name: 'Card details',
 			}),
 		).toBeInTheDocument()
 	})
 
 	it('resets the focus tab when advancing to another card', async () => {
 		const user = userEvent.setup()
-		const secondCard: ReviewCard = {
-			...reviewCard,
-			_id: 'review-card-2' as Id<'reviewCards'>,
+		const secondCard: Card = {
+			...card,
+			_id: 'card-2' as Id<'cards'>,
 			primaryText: 'What is a discriminated union?',
 		}
-		renderRoute('/review/new', { newReviewCards: [reviewCard, secondCard] })
+		renderRoute('/review/new', { newCards: [card, secondCard] })
 
 		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 		await user.click(await screen.findByRole('tab', { name: 'Reviews' }))
@@ -432,9 +422,7 @@ describe('v2 app setup', () => {
 			await screen.findByRole('form', { name: 'Add review' }),
 		).toBeInTheDocument()
 
-		await user.click(
-			screen.getByRole('button', { name: 'Next review card' }),
-		)
+		await user.click(screen.getByRole('button', { name: 'Next card' }))
 
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
@@ -447,30 +435,30 @@ describe('v2 app setup', () => {
 
 	it('closes focus mode before following a breadcrumb', async () => {
 		const user = userEvent.setup()
-		renderRoute('/review/new', { newReviewCards: [reviewCard] })
+		renderRoute('/review/new', { newCards: [card] })
 
 		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 		await user.click(await screen.findByRole('link', { name: 'Library' }))
 
 		await waitFor(() =>
 			expect(
-				screen.queryByRole('dialog', { name: 'Focus review cards' }),
+				screen.queryByRole('dialog', { name: 'Focus cards' }),
 			).not.toBeInTheDocument(),
 		)
 	})
 
 	it('resumes on the card being read when focus is reopened', async () => {
 		const user = userEvent.setup()
-		const secondCard: ReviewCard = {
-			...reviewCard,
-			_id: 'review-card-2' as Id<'reviewCards'>,
+		const secondCard: Card = {
+			...card,
+			_id: 'card-2' as Id<'cards'>,
 			primaryText: 'What is a discriminated union?',
 		}
-		renderRoute('/review/new', { newReviewCards: [reviewCard, secondCard] })
+		renderRoute('/review/new', { newCards: [card, secondCard] })
 
 		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 		await user.click(
-			await screen.findByRole('button', { name: 'Next review card' }),
+			await screen.findByRole('button', { name: 'Next card' }),
 		)
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
@@ -493,27 +481,27 @@ describe('v2 app setup', () => {
 
 	it('keeps the selected card stable as the focus queue changes', async () => {
 		const user = userEvent.setup()
-		const secondCard: ReviewCard = {
-			...reviewCard,
-			_id: 'review-card-2' as Id<'reviewCards'>,
+		const secondCard: Card = {
+			...card,
+			_id: 'card-2' as Id<'cards'>,
 			primaryText: 'What is a discriminated union?',
 		}
-		const thirdCard: ReviewCard = {
-			...reviewCard,
-			_id: 'review-card-3' as Id<'reviewCards'>,
+		const thirdCard: Card = {
+			...card,
+			_id: 'card-3' as Id<'cards'>,
 			primaryText: 'What is type narrowing?',
 		}
 		const { queryClient } = renderRoute('/review/new', {
-			newReviewCards: [reviewCard, secondCard, thirdCard],
+			newCards: [card, secondCard, thirdCard],
 		})
 
 		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 		await user.click(
-			await screen.findByRole('button', { name: 'Next review card' }),
+			await screen.findByRole('button', { name: 'Next card' }),
 		)
 
 		act(() => {
-			queryClient.setQueryData(reviewCardQueries.listNew().queryKey, [
+			queryClient.setQueryData(cardQueries.listNew().queryKey, [
 				secondCard,
 				thirdCard,
 			])
@@ -524,7 +512,7 @@ describe('v2 app setup', () => {
 		expect(screen.getByText('1 of 2')).toBeInTheDocument()
 
 		act(() => {
-			queryClient.setQueryData(reviewCardQueries.listNew().queryKey, [
+			queryClient.setQueryData(cardQueries.listNew().queryKey, [
 				thirdCard,
 			])
 		})
@@ -534,8 +522,8 @@ describe('v2 app setup', () => {
 		expect(screen.getByText('1 of 1')).toBeInTheDocument()
 
 		act(() => {
-			queryClient.setQueryData(reviewCardQueries.listNew().queryKey, [
-				reviewCard,
+			queryClient.setQueryData(cardQueries.listNew().queryKey, [
+				card,
 				thirdCard,
 			])
 		})
@@ -584,7 +572,7 @@ describe('v2 app setup', () => {
 
 		expect(
 			await screen.findByRole('searchbox', {
-				name: 'Search topics and review cards',
+				name: 'Search collections and cards',
 			}),
 		).toBeInTheDocument()
 		// The settings page stays mounted behind the modal, so it is only
@@ -598,31 +586,33 @@ describe('v2 app setup', () => {
 		renderRoute('/library')
 
 		expect(
-			await screen.findByRole('navigation', { name: 'Library topics' }),
+			await screen.findByRole('navigation', {
+				name: 'Library collections',
+			}),
 		).toBeInTheDocument()
 		expect(
 			screen.queryByRole('heading', { name: 'Library' }),
 		).not.toBeInTheDocument()
 	})
 
-	it('collapses and expands nested library topics', async () => {
+	it('collapses and expands nested library collections', async () => {
 		const user = userEvent.setup()
-		const childTopicId = 'topic-2' as Id<'topics'>
-		const grandchildTopicId = 'topic-3' as Id<'topics'>
+		const childCollectionId = 'collection-2' as Id<'collections'>
+		const grandchildCollectionId = 'collection-3' as Id<'collections'>
 
 		renderRoute('/library', {
-			topics: [
-				{ ...topic, title: 'Languages' },
+			collections: [
+				{ ...collection, title: 'Languages' },
 				{
-					...topic,
-					_id: childTopicId,
-					parentId: topicId,
+					...collection,
+					_id: childCollectionId,
+					parentId: collectionId,
 					title: 'TypeScript',
 				},
 				{
-					...topic,
-					_id: grandchildTopicId,
-					parentId: childTopicId,
+					...collection,
+					_id: grandchildCollectionId,
+					parentId: childCollectionId,
 					title: 'Generics',
 				},
 			],
@@ -657,8 +647,8 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
-	it('does not render a collapse control for leaf topics', async () => {
-		renderRoute('/library', { topics: [topic] })
+	it('does not render a collapse control for leaf collections', async () => {
+		renderRoute('/library', { collections: [collection] })
 
 		expect(
 			await screen.findByRole('link', { name: 'Learning TypeScript' }),
@@ -670,23 +660,23 @@ describe('v2 app setup', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('renders a topic breadcrumb from the library through its ancestors', async () => {
-		const root: Doc<'topics'> = {
-			...topic,
-			_id: 'topic-root' as Id<'topics'>,
+	it('renders a collection breadcrumb from the library through its ancestors', async () => {
+		const root: Doc<'collections'> = {
+			...collection,
+			_id: 'collection-root' as Id<'collections'>,
 			title: 'Programming',
 		}
-		const parent: Doc<'topics'> = {
-			...topic,
-			_id: 'topic-parent' as Id<'topics'>,
+		const parent: Doc<'collections'> = {
+			...collection,
+			_id: 'collection-parent' as Id<'collections'>,
 			parentId: root._id,
 			title: 'Languages',
 		}
 
-		renderRoute(`/library/${topicId}`, { ancestors: [root, parent] })
+		renderRoute(`/library/${collectionId}`, { ancestors: [root, parent] })
 
 		const breadcrumb = await screen.findByRole('navigation', {
-			name: 'Topic path',
+			name: 'Collection path',
 		})
 		const links = within(breadcrumb).getAllByRole('link')
 		expect(links.map(link => link.textContent)).toEqual([
@@ -702,25 +692,37 @@ describe('v2 app setup', () => {
 		).toHaveAttribute('aria-current', 'page')
 	})
 
-	it('renders a review card at its standalone route', async () => {
-		const root: Doc<'topics'> = {
-			...topic,
-			_id: 'topic-root' as Id<'topics'>,
+	it('renders the shared error page when a collection does not exist', async () => {
+		renderRoute(`/library/${collectionId}`, {
+			missingCollection: true,
+		})
+
+		expect(
+			await screen.findByRole('heading', {
+				name: 'Something went wrong',
+			}),
+		).toBeInTheDocument()
+		expect(screen.getByText('Collection not found')).toBeInTheDocument()
+	})
+
+	it('renders a card at its standalone route', async () => {
+		const root: Doc<'collections'> = {
+			...collection,
+			_id: 'collection-root' as Id<'collections'>,
 			title: 'Programming',
 		}
 
-		renderRoute(`/review-cards/${reviewCardId}`, { ancestors: [root] })
+		renderRoute(`/cards/${cardId}`, { ancestors: [root] })
 
-		const primaryText = await screen.findByLabelText(
-			'Review-card primary text',
-		)
+		const primaryText = await screen.findByLabelText('Card primary text')
 		expect(primaryText).toHaveValue('What problem do generics solve?')
 		expect(primaryText).toHaveAttribute('placeholder', 'Prompt')
-		expect(
-			screen.getByLabelText('Review-card secondary text'),
-		).toHaveAttribute('placeholder', 'Answer')
+		expect(screen.getByLabelText('Card secondary text')).toHaveAttribute(
+			'placeholder',
+			'Answer',
+		)
 		const breadcrumb = screen.getByRole('navigation', {
-			name: 'Topic path',
+			name: 'Collection path',
 		})
 		const links = within(breadcrumb).getAllByRole('link')
 		expect(links.map(link => link.textContent)).toEqual([
@@ -730,31 +732,32 @@ describe('v2 app setup', () => {
 		])
 		expect(links[0]).toHaveAttribute('href', '/library')
 		expect(links[1]).toHaveAttribute('href', `/library/${root._id}`)
-		expect(links[2]).toHaveAttribute('href', `/library/${topicId}`)
+		expect(links[2]).toHaveAttribute('href', `/library/${collectionId}`)
 		expect(
 			within(breadcrumb).getByText('What problem do generics solve?'),
 		).toHaveAttribute('aria-current', 'page')
 		expect(
-			screen.queryByRole('navigation', { name: 'Library topics' }),
+			screen.queryByRole('navigation', { name: 'Library collections' }),
 		).not.toBeInTheDocument()
 	})
 
-	it('uses practice-specific review-card placeholders', async () => {
-		renderRoute(`/review-cards/${reviewCardId}`, {
-			reviewCardType: 'practice',
+	it('uses practice-specific card placeholders', async () => {
+		renderRoute(`/cards/${cardId}`, {
+			cardType: 'practice',
 		})
 
 		expect(
-			await screen.findByLabelText('Review-card primary text'),
+			await screen.findByLabelText('Card primary text'),
 		).toHaveAttribute('placeholder', 'Title')
-		expect(
-			screen.getByLabelText('Review-card secondary text'),
-		).toHaveAttribute('placeholder', 'Add description...')
+		expect(screen.getByLabelText('Card secondary text')).toHaveAttribute(
+			'placeholder',
+			'Add description...',
+		)
 	})
 
-	it('renders the shared error page when a review card does not exist', async () => {
-		renderRoute(`/review-cards/${reviewCardId}`, {
-			missingReviewCard: true,
+	it('renders the shared error page when a card does not exist', async () => {
+		renderRoute(`/cards/${cardId}`, {
+			missingCard: true,
 		})
 
 		expect(
@@ -762,11 +765,11 @@ describe('v2 app setup', () => {
 				name: 'Something went wrong',
 			}),
 		).toBeInTheDocument()
-		expect(screen.getByText('Review card not found')).toBeInTheDocument()
+		expect(screen.getByText('Card not found')).toBeInTheDocument()
 	})
 
-	it('renders review history under the standalone review-card route', async () => {
-		const { router } = renderRoute(`/review-cards/${reviewCardId}/reviews`)
+	it('renders review history under the standalone card route', async () => {
+		const { router } = renderRoute(`/cards/${cardId}/reviews`)
 
 		expect(
 			await screen.findAllByText('Correctly described generics.'),
@@ -775,26 +778,21 @@ describe('v2 app setup', () => {
 			'aria-selected',
 			'true',
 		)
-		expect(router.state.location.pathname).toBe(
-			`/review-cards/${reviewCardId}/reviews`,
-		)
+		expect(router.state.location.pathname).toBe(`/cards/${cardId}/reviews`)
 	})
 
-	it('updates the standalone URL when changing review-card tabs', async () => {
+	it('updates the standalone URL when changing card tabs', async () => {
 		const user = userEvent.setup()
-		const { router } = renderRoute(`/review-cards/${reviewCardId}`)
+		const { router } = renderRoute(`/cards/${cardId}`)
 		const reviewsTab = await screen.findByRole('tab', { name: 'Reviews' })
 
 		expect(reviewsTab.tagName).toBe('A')
-		expect(reviewsTab).toHaveAttribute(
-			'href',
-			`/review-cards/${reviewCardId}/reviews`,
-		)
+		expect(reviewsTab).toHaveAttribute('href', `/cards/${cardId}/reviews`)
 		await user.click(reviewsTab)
 
 		await waitFor(() =>
 			expect(router.state.location.pathname).toBe(
-				`/review-cards/${reviewCardId}/reviews`,
+				`/cards/${cardId}/reviews`,
 			),
 		)
 		expect(screen.getByRole('tab', { name: 'Reviews' })).toHaveAttribute(

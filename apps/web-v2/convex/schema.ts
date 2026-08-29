@@ -1,11 +1,11 @@
 import { defineSchema, defineTable } from 'convex/server'
 
-import { reviewCardBase } from './validators/reviewCards'
+import { cardBase } from './validators/cards'
+import { collectionBase } from './validators/collections'
 import { reviewBase } from './validators/reviews'
-import { topicBase } from './validators/topics'
 
 export default defineSchema({
-	topics: defineTable(topicBase)
+	collections: defineTable(collectionBase)
 		.index('by_parentId', ['parentId'])
 		.index('by_ownerId', ['ownerId'])
 		.searchIndex('by_searchText', {
@@ -13,10 +13,8 @@ export default defineSchema({
 			filterFields: ['ownerId'],
 		}),
 
-	// `by_topicId_ownerId` also serves lookups by `topicId` alone, since an
-	// index can be queried on any prefix of its fields.
-	reviewCards: defineTable(reviewCardBase)
-		.index('by_topicId_ownerId', ['topicId', 'ownerId'])
+	cards: defineTable(cardBase)
+		.index('by_collectionId_ownerId', ['collectionId', 'ownerId'])
 		.index('by_ownerId_dueDate', ['ownerId', 'dueDate'])
 		.index('by_ownerId', ['ownerId'])
 		.index('by_ownerId_stability', ['ownerId', 'stability'])
@@ -26,11 +24,8 @@ export default defineSchema({
 			filterFields: ['ownerId'],
 		}),
 
-	// `by_reviewCardId_date` backs SRS replay, which needs a card's reviews in
-	// date order. Rated and unrated reviews share the index; replay filters the
-	// unrated ones out in memory, which is bounded by a single card's history.
 	reviews: defineTable(reviewBase)
-		.index('by_reviewCardId_ownerId', ['reviewCardId', 'ownerId'])
-		.index('by_reviewCardId_date', ['reviewCardId', 'date'])
+		.index('by_cardId_ownerId', ['cardId', 'ownerId'])
+		.index('by_cardId_date', ['cardId', 'date'])
 		.index('by_ownerId_rating_date', ['ownerId', 'rating', 'date']),
 })

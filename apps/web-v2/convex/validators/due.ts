@@ -1,6 +1,6 @@
 import { type Infer, v } from 'convex/values'
 
-import { reviewCardRead } from './reviewCards'
+import { cardRead } from './cards'
 import { reviewRead } from './reviews'
 
 /** A half-open date range. Omitted bounds extend indefinitely. */
@@ -9,10 +9,10 @@ export const dateRange = v.object({
 	to: v.optional(v.string()),
 })
 
-/** A single day's worth of scheduled work for one review card. */
+/** A single day's worth of scheduled work for one card. */
 export const dueEntry = v.object({
 	date: v.string(),
-	card: reviewCardRead,
+	card: cardRead,
 	srsScheduled: v.boolean(),
 	scheduledReviews: v.array(reviewRead),
 })

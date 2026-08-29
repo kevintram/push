@@ -16,7 +16,7 @@ describe('Tree', () => {
 		const user = userEvent.setup()
 
 		const { container } = render(
-			<Tree aria-label='Topics'>
+			<Tree aria-label='Collections'>
 				<TreeItem expandable label='Parent'>
 					<TreeItemContent>
 						<TreeItemCollapsibleTrigger />

@@ -32,7 +32,7 @@ export function FocusOverlayCardError({
 }: FallbackProps) {
 	return (
 		<div {...stylex.props(styles.container)} role='alert'>
-			<p>Could not load this review card.</p>
+			<p>Could not load this card.</p>
 			<p {...stylex.props(styles.message)}>
 				{error instanceof Error ? error.message : String(error)}
 			</p>

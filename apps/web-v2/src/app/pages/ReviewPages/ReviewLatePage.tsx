@@ -9,12 +9,10 @@ export function ReviewLatePage() {
 	const today = useToday()
 	const { data: entries } = useSuspenseQuery(dueQueries.list({ to: today }))
 
-	const reviewCards = [
+	const cards = [
 		// dedupe by card._id
 		...new Map(entries.map(entry => [entry.card._id, entry.card])).values(),
 	]
 
-	return (
-		<ReviewListPage reviewCards={reviewCards} title='Late' today={today} />
-	)
+	return <ReviewListPage cards={cards} title='Late' today={today} />
 }

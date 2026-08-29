@@ -17,38 +17,38 @@ describe('reviews', () => {
 	it('lists only the caller’s reviews for an owned card, newest first', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
-		const otherCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const otherCardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 
 		const { firstReviewId, latestReviewId } = await t.run(async ctx => {
 			const firstReviewId = await ctx.db.insert('reviews', {
-				reviewCardId,
+				cardId,
 				ownerId: userAIdentity.subject,
 				rating: 'hard',
 				description: 'First',
 				notes: '',
 			})
 			await ctx.db.insert('reviews', {
-				reviewCardId,
+				cardId,
 				ownerId: userBIdentity.subject,
 				rating: 'easy',
 				description: 'Foreign',
 				notes: '',
 			})
 			await ctx.db.insert('reviews', {
-				reviewCardId: otherCardId,
+				cardId: otherCardId,
 				ownerId: userAIdentity.subject,
 				rating: 'miss',
 				description: 'Other card',
 				notes: '',
 			})
 			const latestReviewId = await ctx.db.insert('reviews', {
-				reviewCardId,
+				cardId,
 				ownerId: userAIdentity.subject,
 				rating: 'good',
 				description: 'Latest',
@@ -58,8 +58,8 @@ describe('reviews', () => {
 			return { firstReviewId, latestReviewId }
 		})
 
-		const reviews = await asUserA.query(api.reviews.listByReviewCard, {
-			reviewCardId,
+		const reviews = await asUserA.query(api.reviews.listByCard, {
+			cardId,
 		})
 
 		expect(reviews.map(review => review._id)).toEqual([
@@ -72,23 +72,26 @@ describe('reviews', () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const asUserB = t.withIdentity(userBIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const missingCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const missingCardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
-		const foreignTopicId = await asUserB.mutation(api.topics.create, {})
-		const foreignCardId = await asUserB.mutation(api.reviewCards.create, {
-			topicId: foreignTopicId,
+		const foreignCollectionId = await asUserB.mutation(
+			api.collections.create,
+			{},
+		)
+		const foreignCardId = await asUserB.mutation(api.cards.create, {
+			collectionId: foreignCollectionId,
 		})
 
-		await asUserA.mutation(api.reviewCards.remove, {
-			reviewCardId: missingCardId,
+		await asUserA.mutation(api.cards.remove, {
+			cardId: missingCardId,
 		})
 
-		for (const reviewCardId of [foreignCardId, missingCardId]) {
+		for (const cardId of [foreignCardId, missingCardId]) {
 			await expect(
-				asUserA.query(api.reviews.listByReviewCard, { reviewCardId }),
-			).rejects.toThrow('Review card not found')
+				asUserA.query(api.reviews.listByCard, { cardId }),
+			).rejects.toThrow('Card not found')
 		}
 	})
 
@@ -96,33 +99,36 @@ describe('reviews', () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const asUserB = t.withIdentity(userBIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
-		const foreignTopicId = await asUserB.mutation(api.topics.create, {})
-		const foreignCardId = await asUserB.mutation(api.reviewCards.create, {
-			topicId: foreignTopicId,
+		const foreignCollectionId = await asUserB.mutation(
+			api.collections.create,
+			{},
+		)
+		const foreignCardId = await asUserB.mutation(api.cards.create, {
+			collectionId: foreignCollectionId,
 		})
 
 		const { ownedReviewId, foreignReviewId, missingReviewId } = await t.run(
 			async ctx => {
 				const ownedReviewId = await ctx.db.insert('reviews', {
-					reviewCardId,
+					cardId,
 					ownerId: userAIdentity.subject,
 					rating: 'good',
 					description: 'Owned',
 					notes: '',
 				})
 				const foreignReviewId = await ctx.db.insert('reviews', {
-					reviewCardId: foreignCardId,
+					cardId: foreignCardId,
 					ownerId: userBIdentity.subject,
 					rating: 'easy',
 					description: 'Foreign',
 					notes: '',
 				})
 				const missingReviewId = await ctx.db.insert('reviews', {
-					reviewCardId,
+					cardId,
 					ownerId: userAIdentity.subject,
 					rating: 'miss',
 					description: 'Missing',
@@ -151,15 +157,15 @@ describe('reviews', () => {
 	it('patches supplied fields and can clear a rating or date', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const reviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2024-01-01',
 			description: 'Original',
 			rating: 'hard',
-			reviewCardId,
+			cardId,
 		})
 
 		await asUserA.mutation(api.reviews.update, {
@@ -190,12 +196,12 @@ describe('reviews', () => {
 	it('preserves the completion day when omitted and applies it when passed', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const reviewId = await asUserA.mutation(api.reviews.create, {
-			reviewCardId,
+			cardId,
 		})
 
 		await asUserA.mutation(api.reviews.update, {
@@ -233,13 +239,13 @@ describe('reviews', () => {
 	it('completes on the scheduled day when none is submitted', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const reviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2026-08-01',
-			reviewCardId,
+			cardId,
 		})
 
 		await asUserA.mutation(api.reviews.update, {
@@ -251,7 +257,7 @@ describe('reviews', () => {
 			asUserA.query(api.reviews.get, { reviewId }),
 		).resolves.toMatchObject({ date: '2026-08-01', rating: 'good' })
 		await expect(
-			asUserA.query(api.reviewCards.get, { reviewCardId }),
+			asUserA.query(api.cards.get, { cardId }),
 		).resolves.toMatchObject({
 			lastReview: { id: reviewId, date: '2026-08-01', rating: 'good' },
 		})
@@ -266,7 +272,7 @@ describe('reviews', () => {
 			asUserA.query(api.reviews.get, { reviewId }),
 		).resolves.toMatchObject({ date: '2026-08-09', rating: 'good' })
 		await expect(
-			asUserA.query(api.reviewCards.get, { reviewCardId }),
+			asUserA.query(api.cards.get, { cardId }),
 		).resolves.toMatchObject({
 			lastReview: { id: reviewId, date: '2026-08-09', rating: 'good' },
 		})
@@ -275,20 +281,20 @@ describe('reviews', () => {
 	it('rejects rated creates without dates and contradictory completion patches', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 
 		await expect(
 			asUserA.mutation(api.reviews.create, {
 				rating: 'hard',
-				reviewCardId,
+				cardId,
 			}),
 		).rejects.toThrow('requires an explicit date')
 
 		const reviewId = await asUserA.mutation(api.reviews.create, {
-			reviewCardId,
+			cardId,
 		})
 		await expect(
 			asUserA.mutation(api.reviews.update, {
@@ -306,8 +312,8 @@ describe('reviews', () => {
 			}),
 		).rejects.toThrow('requires an explicit date')
 
-		const reviews = await asUserA.query(api.reviews.listByReviewCard, {
-			reviewCardId,
+		const reviews = await asUserA.query(api.reviews.listByCard, {
+			cardId,
 		})
 		expect(reviews).toHaveLength(1)
 		expect(reviews[0]?.rating).toBeUndefined()
@@ -317,14 +323,14 @@ describe('reviews', () => {
 	it('refuses to clear the date of a completed review on its own', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const reviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2026-08-09',
 			rating: 'good',
-			reviewCardId,
+			cardId,
 		})
 
 		await expect(
@@ -350,27 +356,27 @@ describe('reviews', () => {
 	it('rejects malformed dates without changing persisted or derived state', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 
 		await expect(
 			asUserA.mutation(api.reviews.create, {
 				date: '+012345-01-01',
 				rating: 'good',
-				reviewCardId,
+				cardId,
 			}),
 		).rejects.toThrow('Invalid date-only value')
 
 		const reviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2026-08-01',
 			rating: 'good',
-			reviewCardId,
+			cardId,
 		})
 		const reviewBefore = await asUserA.query(api.reviews.get, { reviewId })
-		const cardBefore = await asUserA.query(api.reviewCards.get, {
-			reviewCardId,
+		const cardBefore = await asUserA.query(api.cards.get, {
+			cardId,
 		})
 
 		await expect(
@@ -383,9 +389,9 @@ describe('reviews', () => {
 		expect(await asUserA.query(api.reviews.get, { reviewId })).toEqual(
 			reviewBefore,
 		)
-		expect(
-			await asUserA.query(api.reviewCards.get, { reviewCardId }),
-		).toEqual(cardBefore)
+		expect(await asUserA.query(api.cards.get, { cardId })).toEqual(
+			cardBefore,
+		)
 	})
 
 	it('bounds completed dates while allowing future schedules', async () => {
@@ -396,9 +402,9 @@ describe('reviews', () => {
 
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const tomorrow = DateTime.utc().plus({ days: 1 }).toISODate()!
 		const dayAfterTomorrow = DateTime.utc().plus({ days: 2 }).toISODate()!
@@ -406,13 +412,13 @@ describe('reviews', () => {
 		const completedReviewId = await asUserA.mutation(api.reviews.create, {
 			date: tomorrow,
 			rating: 'good',
-			reviewCardId,
+			cardId,
 		})
 		const completedBefore = await asUserA.query(api.reviews.get, {
 			reviewId: completedReviewId,
 		})
-		const cardBefore = await asUserA.query(api.reviewCards.get, {
-			reviewCardId,
+		const cardBefore = await asUserA.query(api.cards.get, {
+			cardId,
 		})
 		await expect(
 			asUserA.mutation(api.reviews.update, {
@@ -425,13 +431,13 @@ describe('reviews', () => {
 				reviewId: completedReviewId,
 			}),
 		).toEqual(completedBefore)
-		expect(
-			await asUserA.query(api.reviewCards.get, { reviewCardId }),
-		).toEqual(cardBefore)
+		expect(await asUserA.query(api.cards.get, { cardId })).toEqual(
+			cardBefore,
+		)
 		await expect(
 			asUserA.mutation(api.reviews.create, {
 				date: '2099-12-31',
-				reviewCardId,
+				cardId,
 			}),
 		).resolves.toBeDefined()
 	})
@@ -445,9 +451,9 @@ describe('reviews', () => {
 	])('edits notes on a completed review stored with %s', async (_, date) => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const reviewId = await t.run(async ctx =>
 			ctx.db.insert('reviews', {
@@ -456,7 +462,7 @@ describe('reviews', () => {
 				notes: '',
 				ownerId: 'user-a',
 				rating: 'good' as const,
-				reviewCardId,
+				cardId,
 			}),
 		)
 
@@ -477,12 +483,12 @@ describe('reviews', () => {
 	it('reopens a review onto its existing day when only the rating is cleared', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const reviewId = await asUserA.mutation(api.reviews.create, {
-			reviewCardId,
+			cardId,
 		})
 
 		await asUserA.mutation(api.reviews.update, {
@@ -505,8 +511,7 @@ describe('reviews', () => {
 		expect(reopened.rating).toBeUndefined()
 		expect(reopened.date).toBe('2024-05-05')
 		expect(
-			(await asUserA.query(api.reviewCards.get, { reviewCardId }))
-				.lastReview,
+			(await asUserA.query(api.cards.get, { cardId })).lastReview,
 		).toBeUndefined()
 	})
 
@@ -514,19 +519,19 @@ describe('reviews', () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const asUserB = t.withIdentity(userBIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const reviewId = await asUserA.mutation(api.reviews.create, {
-			reviewCardId,
+			cardId,
 		})
 		const missingReviewId = await t.run(async ctx => {
 			const id = await ctx.db.insert('reviews', {
 				description: '',
 				notes: '',
 				ownerId: userAIdentity.subject,
-				reviewCardId,
+				cardId,
 			})
 			await ctx.db.delete('reviews', id)
 			return id
@@ -545,27 +550,27 @@ describe('reviews', () => {
 	it('returns the removed review and leaves its siblings alone', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const removedId = await asUserA.mutation(api.reviews.create, {
 			description: 'Removed',
-			reviewCardId,
+			cardId,
 		})
 		const siblingId = await asUserA.mutation(api.reviews.create, {
 			description: 'Kept',
-			reviewCardId,
+			cardId,
 		})
 
 		const removed = await asUserA.mutation(api.reviews.remove, {
 			reviewId: removedId,
 		})
-		const remaining = await asUserA.query(api.reviews.listByReviewCard, {
-			reviewCardId,
+		const remaining = await asUserA.query(api.reviews.listByCard, {
+			cardId,
 		})
 
-		expect(removed).toMatchObject({ _id: removedId, reviewCardId })
+		expect(removed).toMatchObject({ _id: removedId, cardId })
 		expect(remaining.map(review => review._id)).toEqual([siblingId])
 	})
 
@@ -573,19 +578,19 @@ describe('reviews', () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const asUserB = t.withIdentity(userBIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const reviewId = await asUserA.mutation(api.reviews.create, {
-			reviewCardId,
+			cardId,
 		})
 		const missingReviewId = await t.run(async ctx => {
 			const id = await ctx.db.insert('reviews', {
 				description: '',
 				notes: '',
 				ownerId: userAIdentity.subject,
-				reviewCardId,
+				cardId,
 			})
 			await ctx.db.delete('reviews', id)
 			return id
@@ -604,12 +609,12 @@ describe('reviews', () => {
 	it('completing a review advances the card and records SRS snapshots', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const reviewId = await asUserA.mutation(api.reviews.create, {
-			reviewCardId,
+			cardId,
 		})
 
 		await asUserA.mutation(api.reviews.update, {
@@ -619,7 +624,7 @@ describe('reviews', () => {
 		})
 
 		const review = await asUserA.query(api.reviews.get, { reviewId })
-		const card = await asUserA.query(api.reviewCards.get, { reviewCardId })
+		const card = await asUserA.query(api.cards.get, { cardId })
 
 		expect(review).toMatchObject({
 			difficultyAfter: expect.any(Number),
@@ -642,19 +647,19 @@ describe('reviews', () => {
 	it('re-rating an older review rewrites the downstream replay chain', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const firstReviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
 			rating: 'good',
-			reviewCardId,
+			cardId,
 		})
 		const secondReviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-10',
 			rating: 'good',
-			reviewCardId,
+			cardId,
 		})
 		const secondBefore = await asUserA.query(api.reviews.get, {
 			reviewId: secondReviewId,
@@ -671,7 +676,7 @@ describe('reviews', () => {
 		const secondAfter = await asUserA.query(api.reviews.get, {
 			reviewId: secondReviewId,
 		})
-		const card = await asUserA.query(api.reviewCards.get, { reviewCardId })
+		const card = await asUserA.query(api.cards.get, { cardId })
 
 		expect(secondAfter.stabilityBefore).toBe(firstAfter.stabilityAfter)
 		expect(secondAfter.difficultyBefore).toBe(firstAfter.difficultyAfter)
@@ -688,19 +693,19 @@ describe('reviews', () => {
 	it('replays snapshots and card state when a completion moves across another', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const firstReviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
 			rating: 'good',
-			reviewCardId,
+			cardId,
 		})
 		const secondReviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-10',
 			rating: 'hard',
-			reviewCardId,
+			cardId,
 		})
 		const secondBeforeMove = await asUserA.query(api.reviews.get, {
 			reviewId: secondReviewId,
@@ -717,8 +722,8 @@ describe('reviews', () => {
 		const firstAfterLaterMove = await asUserA.query(api.reviews.get, {
 			reviewId: firstReviewId,
 		})
-		const cardAfterLaterMove = await asUserA.query(api.reviewCards.get, {
-			reviewCardId,
+		const cardAfterLaterMove = await asUserA.query(api.cards.get, {
+			cardId,
 		})
 
 		expect(secondAfterLaterMove).toMatchObject({
@@ -761,8 +766,8 @@ describe('reviews', () => {
 		const secondAfterEarlierMove = await asUserA.query(api.reviews.get, {
 			reviewId: secondReviewId,
 		})
-		const cardAfterEarlierMove = await asUserA.query(api.reviewCards.get, {
-			reviewCardId,
+		const cardAfterEarlierMove = await asUserA.query(api.cards.get, {
+			cardId,
 		})
 
 		expect(secondAfterEarlierMove).toMatchObject({
@@ -790,19 +795,19 @@ describe('reviews', () => {
 	it('un-rating a review clears its snapshots and rewinds the card', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const firstReviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
 			rating: 'good',
-			reviewCardId,
+			cardId,
 		})
 		const secondReviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-10',
 			rating: 'hard',
-			reviewCardId,
+			cardId,
 		})
 
 		await asUserA.mutation(api.reviews.update, {
@@ -816,7 +821,7 @@ describe('reviews', () => {
 		const second = await asUserA.query(api.reviews.get, {
 			reviewId: secondReviewId,
 		})
-		const card = await asUserA.query(api.reviewCards.get, { reviewCardId })
+		const card = await asUserA.query(api.cards.get, { cardId })
 
 		expect(second.rating).toBeUndefined()
 		// Un-rating reopens the review rather than unscheduling it.
@@ -851,19 +856,19 @@ describe('reviews', () => {
 	it('deleting the only completed review resets the card to fresh state', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const reviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
 			rating: 'good',
-			reviewCardId,
+			cardId,
 		})
 
 		await asUserA.mutation(api.reviews.remove, { reviewId })
 
-		const card = await asUserA.query(api.reviewCards.get, { reviewCardId })
+		const card = await asUserA.query(api.cards.get, { cardId })
 		expect(card?.state).toBe('LEARNING')
 		expect(card?.stability).toBeUndefined()
 		expect(card?.difficulty).toBeUndefined()
@@ -875,64 +880,62 @@ describe('reviews', () => {
 	it('deleting the last completion falls back to the preceding completion', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		const firstReviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
 			rating: 'good',
-			reviewCardId,
+			cardId,
 		})
 		const lastReviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-10',
 			rating: 'easy',
-			reviewCardId,
+			cardId,
 		})
 
 		await asUserA.mutation(api.reviews.remove, { reviewId: lastReviewId })
 
 		expect(
-			(await asUserA.query(api.reviewCards.get, { reviewCardId }))
-				.lastReview,
+			(await asUserA.query(api.cards.get, { cardId })).lastReview,
 		).toEqual({ id: firstReviewId, date: '2026-01-01', rating: 'good' })
 	})
 
 	it('uses same-day creation order for the last completed review', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 		await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
 			rating: 'miss',
-			reviewCardId,
+			cardId,
 		})
 		const lastReviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
 			rating: 'good',
-			reviewCardId,
+			cardId,
 		})
 
 		expect(
-			(await asUserA.query(api.reviewCards.get, { reviewCardId }))
-				.lastReview,
+			(await asUserA.query(api.cards.get, { cardId })).lastReview,
 		).toEqual({ id: lastReviewId, date: '2026-01-01', rating: 'good' })
 	})
 
 	it('creates future dated reviews as schedules without changing SRS state', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
-		const topicId = await asUserA.mutation(api.topics.create, {})
-		const reviewCardId = await asUserA.mutation(api.reviewCards.create, {
-			topicId,
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
 		})
 
 		const scheduledReviewId = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
-			reviewCardId,
+			cardId,
 		})
 		const scheduled = await asUserA.query(api.reviews.get, {
 			reviewId: scheduledReviewId,
@@ -941,7 +944,7 @@ describe('reviews', () => {
 		expect(scheduled.rating).toBeUndefined()
 
 		// A scheduled review contributes nothing to the card's SRS state.
-		const card = await asUserA.query(api.reviewCards.get, { reviewCardId })
+		const card = await asUserA.query(api.cards.get, { cardId })
 		expect(card?.lastReview).toBeUndefined()
 	})
 })

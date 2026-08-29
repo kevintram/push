@@ -11,7 +11,7 @@ export function ReviewDuePage() {
 
 	return (
 		<ReviewListPage
-			reviewCards={entries.map(entry => entry.card)}
+			cards={entries.map(entry => entry.card)}
 			title='Due'
 			today={today}
 		/>

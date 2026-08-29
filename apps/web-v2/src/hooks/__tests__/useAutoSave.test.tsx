@@ -29,7 +29,7 @@ describe('useAutoSave', () => {
 				initialValue: '',
 				onSave,
 				debounceMs: 1000,
-				key: 'topic-1',
+				key: 'collection-1',
 			}),
 		)
 
@@ -55,12 +55,12 @@ describe('useAutoSave', () => {
 					key,
 				}),
 			{
-				initialProps: { initialValue: 'one', key: 'topic-1' },
+				initialProps: { initialValue: 'one', key: 'collection-1' },
 			},
 		)
 
 		act(() => result.current.onChange(changeEvent('one edited')))
-		act(() => rerender({ initialValue: 'two', key: 'topic-2' }))
+		act(() => rerender({ initialValue: 'two', key: 'collection-2' }))
 
 		expect(onSave).toHaveBeenCalledWith('one edited')
 		expect(result.current.value).toBe('two')
@@ -73,7 +73,7 @@ describe('useAutoSave', () => {
 				initialValue: '',
 				onSave,
 				debounceMs: 1000,
-				key: 'topic-1',
+				key: 'collection-1',
 			}),
 		)
 
@@ -87,7 +87,7 @@ describe('useAutoSave', () => {
 		const onSave = vi.fn()
 		const { rerender, result } = renderHook(
 			({ initialValue }: { initialValue: string }) =>
-				useAutoSave({ initialValue, onSave, key: 'topic-1' }),
+				useAutoSave({ initialValue, onSave, key: 'collection-1' }),
 			{ initialProps: { initialValue: 'stale' } },
 		)
 
@@ -104,7 +104,7 @@ describe('useAutoSave', () => {
 				initialValue: '',
 				onSave,
 				debounceMs: 1000,
-				key: 'topic-1',
+				key: 'collection-1',
 			}),
 		)
 

@@ -17,7 +17,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import type { ReviewCard } from '~/modules/reviews/types/review.types'
+import type { Card } from '~/modules/reviews/types/review.types'
 import {
 	focusOverlayColors,
 	hideModeButtonColors,
@@ -25,16 +25,16 @@ import {
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { useHideMode } from '../../hide-mode/useHideMode'
+import { FocusOverlayCard } from './FocusOverlayCard'
 import { FocusOverlayCardError } from './FocusOverlayCardError'
-import { FocusOverlayReviewCard } from './FocusOverlayReviewCard'
 
 type FocusOverlayDialogProps = {
 	handle: DialogHandle
-	reviewCards: ReadonlyArray<ReviewCard>
+	cards: ReadonlyArray<Card>
 }
 
 type IdAndIndex = {
-	id: Id<'reviewCards'> | null
+	id: Id<'cards'> | null
 	index: number
 }
 
@@ -123,18 +123,18 @@ const styles = stylex.create({
  * the queue is empty.
  */
 function resolveIndex(
-	reviewCards: ReadonlyArray<ReviewCard>,
+	cards: ReadonlyArray<Card>,
 	selection: IdAndIndex,
 ): number {
-	if (reviewCards.length === 0) return -1
+	if (cards.length === 0) return -1
 	if (selection.id === null) {
-		return Math.min(selection.index, reviewCards.length - 1)
+		return Math.min(selection.index, cards.length - 1)
 	}
 
-	const index = reviewCards.findIndex(({ _id }) => _id === selection.id)
+	const index = cards.findIndex(({ _id }) => _id === selection.id)
 	if (index !== -1) return index
 
-	return Math.min(selection.index, reviewCards.length - 1)
+	return Math.min(selection.index, cards.length - 1)
 }
 
 /**
@@ -143,19 +143,16 @@ function resolveIndex(
  * queue. Reveal and tab state do not — the keyed card panel unmounts with the
  * popup, so a reopened card starts from Overview with its answer unrevealed.
  */
-export function FocusOverlayDialog({
-	handle,
-	reviewCards,
-}: FocusOverlayDialogProps) {
+export function FocusOverlayDialog({ handle, cards }: FocusOverlayDialogProps) {
 	const { hideMode, toggleHideMode } = useHideMode()
 	const [selection, setSelection] = useState<IdAndIndex>(() => ({
-		id: reviewCards[0]?._id ?? null,
+		id: cards[0]?._id ?? null,
 		index: 0,
 	}))
 
-	const index = resolveIndex(reviewCards, selection)
-	const currentReviewCard = reviewCards[index] ?? null
-	const resolvedId = currentReviewCard?._id ?? null
+	const index = resolveIndex(cards, selection)
+	const currentCard = cards[index] ?? null
+	const resolvedId = currentCard?._id ?? null
 
 	// Keep the fallback position current when the selected card moves. If that
 	// card leaves the queue, adopt the card at its former position so subsequent
@@ -174,33 +171,33 @@ export function FocusOverlayDialog({
 	// unanswerable.
 	const goPrevious = useCallback(() => {
 		const previousIndex = index - 1
-		const previous = reviewCards[previousIndex]
+		const previous = cards[previousIndex]
 		if (previous) setSelection({ id: previous._id, index: previousIndex })
-	}, [index, reviewCards])
+	}, [index, cards])
 
 	const goNext = useCallback(() => {
 		const nextIndex = index + 1
-		const next = index === -1 ? undefined : reviewCards[nextIndex]
+		const next = index === -1 ? undefined : cards[nextIndex]
 		if (next) setSelection({ id: next._id, index: nextIndex })
-	}, [index, reviewCards])
+	}, [index, cards])
 
 	return (
 		<Dialog handle={handle}>
 			<DialogContent
-				aria-label='Focus review cards'
+				aria-label='Focus cards'
 				viewportXstyle={styles.viewport}
 				xstyle={styles.content}
 				showCloseButton={false}
 			>
 				<div {...stylex.props(styles.header)}>
 					<div {...stylex.props(styles.headerButtonCluster)}>
-						{currentReviewCard === null ? null : (
+						{currentCard === null ? null : (
 							<>
 								<Tooltip>
 									<TooltipTrigger
 										render={
 											<Button.Icon
-												aria-label='Previous review card'
+												aria-label='Previous card'
 												shape='round'
 												variant='secondary'
 												size='small'
@@ -219,13 +216,12 @@ export function FocusOverlayDialog({
 									<TooltipTrigger
 										render={
 											<Button.Icon
-												aria-label='Next review card'
+												aria-label='Next card'
 												shape='round'
 												variant='secondary'
 												size='small'
 												disabled={
-													index ===
-													reviewCards.length - 1
+													index === cards.length - 1
 												}
 												onClick={goNext}
 											>
@@ -238,7 +234,7 @@ export function FocusOverlayDialog({
 									<TooltipContent>Next</TooltipContent>
 								</Tooltip>
 								<span {...stylex.props(styles.position)}>
-									{index + 1} of {reviewCards.length}
+									{index + 1} of {cards.length}
 								</span>
 							</>
 						)}
@@ -272,7 +268,7 @@ export function FocusOverlayDialog({
 						{/* This close renders an anchor, so both it and the button
 						    primitive it wraps need telling that the final element
 						    is not a native button. */}
-						{currentReviewCard === null ? null : (
+						{currentCard === null ? null : (
 							<Tooltip>
 								<TooltipTrigger
 									render={
@@ -280,17 +276,16 @@ export function FocusOverlayDialog({
 											nativeButton={false}
 											render={
 												<Button.Icon
-													aria-label='Open review card'
+													aria-label='Open card'
 													shape='round'
 													variant='secondary'
 													size='small'
 													nativeButton={false}
 													render={
 														<Link
-															to='/review-cards/$reviewCardId'
+															to='/cards/$cardId'
 															params={{
-																reviewCardId:
-																	currentReviewCard._id,
+																cardId: currentCard._id,
 															}}
 														/>
 													}
@@ -301,9 +296,7 @@ export function FocusOverlayDialog({
 										</DialogClose>
 									}
 								/>
-								<TooltipContent>
-									Open review card
-								</TooltipContent>
+								<TooltipContent>Open card</TooltipContent>
 							</Tooltip>
 						)}
 						<DialogClose
@@ -321,7 +314,7 @@ export function FocusOverlayDialog({
 					</div>
 				</div>
 				<div {...stylex.props(styles.inner)}>
-					{currentReviewCard === null ? (
+					{currentCard === null ? (
 						<div {...stylex.props(styles.empty)}>
 							No cards to review.
 						</div>
@@ -330,17 +323,17 @@ export function FocusOverlayDialog({
 							{({ reset }) => (
 								<ErrorBoundary
 									onReset={reset}
-									resetKeys={[currentReviewCard._id]}
+									resetKeys={[currentCard._id]}
 									FallbackComponent={FocusOverlayCardError}
 								>
 									{/* Remount per card so the fallback shows
 									    cleanly and reveal state starts fresh. */}
 									<Suspense
-										key={currentReviewCard._id}
+										key={currentCard._id}
 										fallback={<LoadingIndicator />}
 									>
-										<FocusOverlayReviewCard
-											reviewCardId={currentReviewCard._id}
+										<FocusOverlayCard
+											cardId={currentCard._id}
 											onNavigate={() => handle.close()}
 										/>
 									</Suspense>

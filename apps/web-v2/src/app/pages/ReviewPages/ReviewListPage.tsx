@@ -3,10 +3,10 @@ import { Maximize2 } from 'lucide-react'
 import { useState } from 'react'
 
 import { Button, createDialogHandle, DialogTrigger } from '~/components/ui'
+import { CardItem } from '~/modules/reviews/components/CardItem'
 import { FocusOverlayDialog } from '~/modules/reviews/components/focus-overlay/FocusOverlayDialog'
-import { ReviewCardItem } from '~/modules/reviews/components/ReviewCardItem'
-import type { ReviewCard as ReviewCardModel } from '~/modules/reviews/types/review.types'
-import { deriveReviewCardSrsState } from '~/modules/reviews/utils/reviewCardSrs'
+import type { Card as CardModel } from '~/modules/reviews/types/review.types'
+import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	fontSizes,
@@ -17,7 +17,7 @@ import {
 import type { DateString } from '~/types/date'
 
 type ReviewListPageProps = {
-	reviewCards: Array<ReviewCardModel>
+	cards: Array<CardModel>
 	today: DateString
 	title: string
 }
@@ -43,13 +43,9 @@ const styles = stylex.create({
 	},
 })
 
-export function ReviewListPage({
-	reviewCards,
-	title,
-	today,
-}: ReviewListPageProps) {
+export function ReviewListPage({ cards, title, today }: ReviewListPageProps) {
 	const [focusDialogHandle] = useState(createDialogHandle)
-	const cardCount = reviewCards.length
+	const cardCount = cards.length
 
 	return (
 		<>
@@ -67,22 +63,19 @@ export function ReviewListPage({
 				</div>
 				{cardCount === 0 ? (
 					<p {...stylex.props(styles.empty)}>
-						No {title.toLowerCase()} review cards.
+						No {title.toLowerCase()} cards.
 					</p>
 				) : null}
-				{reviewCards.map(reviewCard => (
-					<ReviewCardItem
-						key={reviewCard._id}
-						reviewCard={reviewCard}
-						srs={deriveReviewCardSrsState(reviewCard, today)}
+				{cards.map(card => (
+					<CardItem
+						key={card._id}
+						card={card}
+						srs={deriveCardSrsState(card, today)}
 						today={today}
 					/>
 				))}
 			</div>
-			<FocusOverlayDialog
-				handle={focusDialogHandle}
-				reviewCards={reviewCards}
-			/>
+			<FocusOverlayDialog handle={focusDialogHandle} cards={cards} />
 		</>
 	)
 }

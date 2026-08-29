@@ -1,5 +1,8 @@
 import type { Id } from '@convex/_generated/dataModel'
-import type { Topic, TopicDetail } from '@convex/validators/topics'
+import type {
+	Collection,
+	CollectionDetail,
+} from '@convex/validators/collections'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -25,9 +28,9 @@ vi.mock('@tanstack/react-router', () => ({
 	),
 }))
 
-function topic(id: string, title = id): Topic {
+function collection(id: string, title = id): Collection {
 	return {
-		_id: id as Id<'topics'>,
+		_id: id as Id<'collections'>,
 		_creationTime: 0,
 		title,
 		description: '',
@@ -37,46 +40,56 @@ function topic(id: string, title = id): Topic {
 	}
 }
 
-function topicDetail(topics: Array<Topic>): TopicDetail {
-	const current = topic(topics.at(-1)?._id ?? 'current')
-	return { ...current, path: topics.slice(0, -1) }
+function collectionDetail(collections: Array<Collection>): CollectionDetail {
+	const current = collection(collections.at(-1)?._id ?? 'current')
+	return { ...current, path: collections.slice(0, -1) }
 }
 
-function renderBreadcrumbs(topic: TopicDetail, onOpenChange = vi.fn()) {
+function renderBreadcrumbs(
+	collection: CollectionDetail,
+	onOpenChange = vi.fn(),
+) {
 	return render(
 		<Dialog open onOpenChange={onOpenChange}>
 			<ReviewDialogBreadcrumbs
-				reviewCard={undefined}
-				reviewCardId={'review-card' as Id<'reviewCards'>}
-				topic={topic}
+				card={undefined}
+				cardId={'card' as Id<'cards'>}
+				collection={collection}
 			/>
 		</Dialog>,
 	)
 }
 
 describe('ReviewDialogBreadcrumbs', () => {
-	it('keeps one topic visible when the complete trail fits', () => {
-		const breadcrumb = renderBreadcrumbs(topicDetail([topic('topic')]))
+	it('keeps one collection visible when the complete trail fits', () => {
+		const breadcrumb = renderBreadcrumbs(
+			collectionDetail([collection('collection')]),
+		)
 
 		expect(
-			screen.getByRole('button', { name: 'topic' }),
+			screen.getByRole('button', { name: 'collection' }),
 		).toBeInTheDocument()
 		expect(
 			within(
 				screen.getByRole('navigation', { name: 'Review location' }),
-			).queryByRole('button', { name: 'Show topic path' }),
+			).queryByRole('button', { name: 'Show collection path' }),
 		).not.toBeInTheDocument()
 		breadcrumb.unmount()
 	})
 
-	it('moves all topics into a purpose-specific overflow menu', () => {
-		renderBreadcrumbs(topicDetail([topic('ancestor'), topic('topic')]))
+	it('moves all collections into a purpose-specific overflow menu', () => {
+		renderBreadcrumbs(
+			collectionDetail([
+				collection('ancestor'),
+				collection('collection'),
+			]),
+		)
 
 		const navigation = screen.getByRole('navigation', {
 			name: 'Review location',
 		})
 		expect(
-			within(navigation).getByRole('button', { name: 'Review card' }),
+			within(navigation).getByRole('button', { name: 'Card' }),
 		).toBeInTheDocument()
 		expect(
 			within(navigation).getByRole('button', { name: 'Reviews' }),
@@ -85,24 +98,29 @@ describe('ReviewDialogBreadcrumbs', () => {
 			within(navigation).queryByRole('button', { name: 'ancestor' }),
 		).not.toBeInTheDocument()
 		expect(
-			within(navigation).queryByRole('button', { name: 'topic' }),
+			within(navigation).queryByRole('button', { name: 'collection' }),
 		).not.toBeInTheDocument()
-		fireEvent.click(screen.getByRole('button', { name: 'Show topic path' }))
+		fireEvent.click(
+			screen.getByRole('button', { name: 'Show collection path' }),
+		)
 
 		const menu = screen.getByRole('menu')
 		expect(
 			within(menu).getByRole('button', { name: 'ancestor' }),
 		).toBeInTheDocument()
 		expect(
-			within(menu).getByRole('button', { name: 'topic' }),
+			within(menu).getByRole('button', { name: 'collection' }),
 		).toBeInTheDocument()
 	})
 
 	it('closes the dialog when selecting any breadcrumb link', () => {
 		const onOpenChange = vi.fn()
-		renderBreadcrumbs(topicDetail([topic('topic')]), onOpenChange)
+		renderBreadcrumbs(
+			collectionDetail([collection('collection')]),
+			onOpenChange,
+		)
 
-		for (const label of ['Library', 'topic', 'Review card', 'Reviews']) {
+		for (const label of ['Library', 'collection', 'Card', 'Reviews']) {
 			fireEvent.click(screen.getByRole('button', { name: label }))
 		}
 
@@ -111,10 +129,15 @@ describe('ReviewDialogBreadcrumbs', () => {
 
 		const collapsedOnOpenChange = vi.fn()
 		renderBreadcrumbs(
-			topicDetail([topic('ancestor'), topic('topic')]),
+			collectionDetail([
+				collection('ancestor'),
+				collection('collection'),
+			]),
 			collapsedOnOpenChange,
 		)
-		fireEvent.click(screen.getByRole('button', { name: 'Show topic path' }))
+		fireEvent.click(
+			screen.getByRole('button', { name: 'Show collection path' }),
+		)
 		fireEvent.click(screen.getByRole('button', { name: 'ancestor' }))
 
 		expect(collapsedOnOpenChange).toHaveBeenCalledWith(

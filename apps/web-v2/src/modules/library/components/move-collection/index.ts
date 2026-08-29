@@ -1,0 +1,1 @@
+export { MoveCollectionDialogBase } from './MoveCollectionDialogBase'

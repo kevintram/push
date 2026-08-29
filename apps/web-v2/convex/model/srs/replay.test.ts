@@ -4,16 +4,16 @@ import { Rating, State } from 'ts-fsrs'
 import { describe, expect, it } from 'vitest'
 
 import type { Id } from '../../_generated/dataModel'
-import type { ReviewCard } from '../../validators/reviewCards'
+import type { Card } from '../../validators/cards'
 import type { Review } from '../../validators/reviews'
 import {
-	fsrsStateToReviewCardState,
+	type CardSrsState,
+	cardSrsStateToFsrsCard,
+	cardStateToFsrsState,
+	fsrsStateToCardState,
 	isoToJsDate,
 	jsDateToIso,
 	replay,
-	type ReviewCardSrsState,
-	reviewCardSrsStateToFsrsCard,
-	reviewCardStateToFsrsState,
 	reviewRatingToFsrsGrade,
 	type ReviewSrsPatch,
 } from './replay'
@@ -21,14 +21,14 @@ import {
 interface ExpectedState {
 	stability: number
 	difficulty: number
-	state: ReviewCard['state']
+	state: Card['state']
 	step: number | null
 }
 
 interface ExpectedPatch {
 	stabilityAfter: number
 	difficultyAfter: number
-	stateAfter: ReviewCard['state']
+	stateAfter: Card['state']
 	stepAfter: number | null
 	dueDateAfter: string
 }
@@ -55,7 +55,7 @@ function makeReview(overrides: Partial<Review> = {}): Review {
 		_id: 'review-id' as Id<'reviews'>,
 		_creationTime: 0,
 		ownerId: 'user-id',
-		reviewCardId: 'review-card-id' as Id<'reviewCards'>,
+		cardId: 'card-id' as Id<'cards'>,
 		description: '',
 		notes: '',
 		...overrides,
@@ -84,10 +84,7 @@ function expectPatchParity(
 	expect(actual.dueDateAfter).toBe(expected.dueDateAfter)
 }
 
-function expectCardParity(
-	actual: ReviewCardSrsState,
-	expected: ExpectedState,
-): void {
+function expectCardParity(actual: CardSrsState, expected: ExpectedState): void {
 	expectNumberParity(actual.stability, expected.stability)
 	expectNumberParity(actual.difficulty, expected.difficulty)
 	expect(actual.state).toBe(expected.state)
@@ -110,13 +107,13 @@ describe('SRS mappings', () => {
 		] as const
 
 		for (const [persisted, schedulerState] of pairs) {
-			expect(reviewCardStateToFsrsState(persisted)).toBe(schedulerState)
-			expect(fsrsStateToReviewCardState(schedulerState)).toBe(persisted)
+			expect(cardStateToFsrsState(persisted)).toBe(schedulerState)
+			expect(fsrsStateToCardState(schedulerState)).toBe(persisted)
 		}
 	})
 
 	it('never permits the ts-fsrs New state to be persisted', () => {
-		expect(() => fsrsStateToReviewCardState(State.New)).toThrow(
+		expect(() => fsrsStateToCardState(State.New)).toThrow(
 			'A new scheduler state cannot be persisted',
 		)
 	})
@@ -138,7 +135,7 @@ describe('SRS mappings', () => {
 
 describe('SRS card construction', () => {
 	it('reconstructs a seed from its after snapshot without persisted bookkeeping', () => {
-		const card = reviewCardSrsStateToFsrsCard({
+		const card = cardSrsStateToFsrsCard({
 			difficulty: 4.5,
 			dueDate: '2024-04-20',
 			lastReviewDate: '2024-03-04',

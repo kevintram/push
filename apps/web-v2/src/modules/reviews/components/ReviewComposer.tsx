@@ -127,10 +127,10 @@ const defaultDraft: ReviewDraft = {
 }
 
 type ReviewComposerProps = {
-	reviewCardId: Id<'reviewCards'>
+	cardId: Id<'cards'>
 }
 
-export function ReviewComposer({ reviewCardId }: ReviewComposerProps) {
+export function ReviewComposer({ cardId }: ReviewComposerProps) {
 	const [draft, setDraft] = useState<ReviewDraft>(defaultDraft)
 	const createReview = useCreateReview()
 	const isDirty =
@@ -167,7 +167,7 @@ export function ReviewComposer({ reviewCardId }: ReviewComposerProps) {
 
 		createReview.mutate(
 			{
-				reviewCardId,
+				cardId,
 				description: draft.description,
 				notes: draft.notes,
 				...(draft.rating === null ? {} : { rating: draft.rating }),

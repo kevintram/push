@@ -4,8 +4,8 @@ import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { useMutation } from '@tanstack/react-query'
 
 export const reviewQueries = {
-	listByReviewCard: (reviewCardId: Id<'reviewCards'>) =>
-		convexQuery(api.reviews.listByReviewCard, { reviewCardId }),
+	listByCard: (cardId: Id<'cards'>) =>
+		convexQuery(api.reviews.listByCard, { cardId }),
 	detail: (reviewId: Id<'reviews'>) =>
 		convexQuery(api.reviews.get, { reviewId }),
 }

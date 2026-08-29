@@ -3,9 +3,37 @@ import { DateTime } from 'luxon'
 import { assertIsoDate } from '../../shared/date'
 import { type Doc, type Id } from '../_generated/dataModel'
 import { type MutationCtx, type QueryCtx } from '../_generated/server'
-import type { ReviewCreate, ReviewPatch } from '../validators/reviews'
-import * as ReviewCards from './reviewCards'
+import type { Review, ReviewCreate, ReviewPatch } from '../validators/reviews'
+import * as Cards from './cards'
 import { updateCardSrs } from './srs/replay'
+
+/** Project widened storage rows into the target Review API shape. */
+export function toReview(review: Doc<'reviews'>): Review {
+	if (review.cardId === undefined) {
+		throw new Error('Review is missing card')
+	}
+
+	return {
+		_id: review._id,
+		_creationTime: review._creationTime,
+		ownerId: review.ownerId,
+		cardId: review.cardId,
+		rating: review.rating,
+		date: review.date,
+		description: review.description,
+		notes: review.notes,
+		stabilityBefore: review.stabilityBefore,
+		difficultyBefore: review.difficultyBefore,
+		stateBefore: review.stateBefore,
+		stepBefore: review.stepBefore,
+		dueDateBefore: review.dueDateBefore,
+		stabilityAfter: review.stabilityAfter,
+		difficultyAfter: review.difficultyAfter,
+		stateAfter: review.stateAfter,
+		stepAfter: review.stepAfter,
+		dueDateAfter: review.dueDateAfter,
+	}
+}
 
 export async function requireUserOwns(
 	ctx: QueryCtx,
@@ -21,37 +49,39 @@ export async function requireUserOwns(
 	return review
 }
 
-export async function listByReviewCard(
+export async function listByCard(
 	ctx: QueryCtx,
 	userId: string,
-	reviewCardId: Id<'reviewCards'>,
-): Promise<Array<Doc<'reviews'>>> {
-	await ReviewCards.requireUserOwns(ctx, userId, reviewCardId)
+	cardId: Id<'cards'>,
+): Promise<Array<Review>> {
+	await Cards.requireUserOwns(ctx, userId, cardId)
 
 	const reviews = await ctx.db
 		.query('reviews')
-		.withIndex('by_reviewCardId_ownerId', q =>
-			q.eq('reviewCardId', reviewCardId).eq('ownerId', userId),
+		.withIndex('by_cardId_ownerId', q =>
+			q.eq('cardId', cardId).eq('ownerId', userId),
 		)
 		.order('desc')
 		.collect()
 
-	return reviews.sort((a, b) => {
-		// nulls first
-		if (a.date == undefined && b.date == undefined) return 0
-		if (a.date == undefined) return -1
-		if (b.date == undefined) return 1
-		// date descending
-		return b.date.localeCompare(a.date)
-	})
+	return reviews
+		.sort((a, b) => {
+			// nulls first
+			if (a.date == undefined && b.date == undefined) return 0
+			if (a.date == undefined) return -1
+			if (b.date == undefined) return 1
+			// date descending
+			return b.date.localeCompare(a.date)
+		})
+		.map(toReview)
 }
 
 export async function get(
 	ctx: QueryCtx,
 	userId: string,
 	reviewId: Id<'reviews'>,
-): Promise<Doc<'reviews'>> {
-	return await requireUserOwns(ctx, userId, reviewId)
+): Promise<Review> {
+	return toReview(await requireUserOwns(ctx, userId, reviewId))
 }
 
 export async function create(
@@ -59,11 +89,7 @@ export async function create(
 	userId: string,
 	fields: ReviewCreate,
 ): Promise<Id<'reviews'>> {
-	const reviewCard = await ReviewCards.requireUserOwns(
-		ctx,
-		userId,
-		fields.reviewCardId,
-	)
+	const card = await Cards.requireUserOwns(ctx, userId, fields.cardId)
 
 	// A rating is the completion marker for a review, and every completion must
 	// identify the calendar day on which it happened. The client supplies that
@@ -75,7 +101,7 @@ export async function create(
 
 	const reviewId = await ctx.db.insert('reviews', {
 		ownerId: userId,
-		reviewCardId: fields.reviewCardId,
+		cardId: fields.cardId,
 		rating,
 		date,
 		description: fields.description ?? '',
@@ -84,8 +110,8 @@ export async function create(
 
 	// if this review is completed
 	if (rating !== undefined && date !== undefined) {
-		// run SRS on the corresponding review card
-		await updateCardSrs(ctx, reviewCard, date)
+		// run SRS on the corresponding card
+		await updateCardSrs(ctx, card, date)
 	}
 
 	return reviewId
@@ -98,11 +124,10 @@ export async function update(
 	patch: ReviewPatch,
 ): Promise<void> {
 	const review = await requireUserOwns(ctx, userId, reviewId)
-	const reviewCard = await ReviewCards.requireUserOwns(
-		ctx,
-		userId,
-		review.reviewCardId,
-	)
+	if (review.cardId === undefined) {
+		throw new Error('Review is missing card')
+	}
+	const card = await Cards.requireUserOwns(ctx, userId, review.cardId)
 	const wasCompleted = review.rating !== undefined
 	const oldDate = review.date
 
@@ -160,7 +185,7 @@ export async function update(
 		.sort()[0]
 
 	if (replayFrom !== undefined) {
-		await updateCardSrs(ctx, reviewCard, replayFrom)
+		await updateCardSrs(ctx, card, replayFrom)
 	}
 }
 
@@ -168,20 +193,23 @@ export async function remove(
 	ctx: MutationCtx,
 	userId: string,
 	reviewId: Id<'reviews'>,
-): Promise<Doc<'reviews'>> {
+): Promise<Review> {
 	const review = await requireUserOwns(ctx, userId, reviewId)
-	const reviewCard = await ctx.db.get('reviewCards', review.reviewCardId)
+	const card =
+		review.cardId === undefined
+			? null
+			: await ctx.db.get('cards', review.cardId)
 	await ctx.db.delete('reviews', reviewId)
 
 	if (
 		review.rating !== undefined &&
 		review.date !== undefined &&
-		reviewCard?.ownerId === userId
+		card?.ownerId === userId
 	) {
-		await updateCardSrs(ctx, reviewCard, review.date)
+		await updateCardSrs(ctx, card, review.date)
 	}
 
-	return review
+	return toReview(review)
 }
 
 const emptySrsSnapshot = {

@@ -107,7 +107,7 @@ wrappers, and the logic lives in `convex/model/`.
 convex/
 ├── schema.ts              # defineSchema: tables and indexes only
 ├── auth.config.ts         # Clerk JWT provider configuration
-├── <domain>.ts            # public API — eg: `api.topics.*`
+├── <domain>.ts            # public API — eg: `api.collections.*`
 ├── model/                 # all business logic, imported as namespaces
 ├── validators/            # resource validators, the single source of truth
 └── *.test.ts              # exercise the public API, not model/ directly

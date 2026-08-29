@@ -4,8 +4,8 @@ import { Route as FlaggedRoute } from '~/app/routes/flagged'
 import { Route as DueRoute } from '~/app/routes/review/due'
 import { Route as LateRoute } from '~/app/routes/review/late'
 import { Route as NewRoute } from '~/app/routes/review/new'
+import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { dueQueries } from '~/modules/reviews/api/dueQueries'
-import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
 import { todayIso } from '~/utils/date'
 
 type LoaderContext = {
@@ -74,7 +74,7 @@ describe('review queue loaders', () => {
 		await loaders.new({ context: loaderContext })
 
 		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledWith(
-			reviewCardQueries.listNew(),
+			cardQueries.listNew(),
 		)
 	})
 
@@ -84,7 +84,7 @@ describe('review queue loaders', () => {
 		await loaders.flagged({ context: loaderContext })
 
 		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledWith(
-			reviewCardQueries.listFlagged(),
+			cardQueries.listFlagged(),
 		)
 	})
 })

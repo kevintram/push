@@ -250,12 +250,12 @@ export const librarySidebarColors = stylex.defineVars({
 	headerBackgroundDropTarget: semanticColors.surfaceTransparentActive,
 })
 
-export const libraryTopicItemColors = stylex.defineVars({
+export const libraryCollectionItemColors = stylex.defineVars({
 	containerBackgroundDragging: semanticColors.surfaceSecondary,
 	containerBackgroundDropTarget: semanticColors.surfaceTransparentHover,
 })
 
-export const moveTopicDialogColors = stylex.defineVars({
+export const moveCollectionDialogColors = stylex.defineVars({
 	treeBorder: semanticColors.borderPrimary,
 	statusForeground: semanticColors.textSecondary,
 })
@@ -313,7 +313,7 @@ export const reviewComposerColors = stylex.defineVars({
 	containerShadow: semanticColors.shadowStrong,
 })
 
-export const reviewCardActionsColors = stylex.defineVars({
+export const cardActionsColors = stylex.defineVars({
 	flashcardSelectedForeground: {
 		default: amber.s400,
 		'@media (prefers-color-scheme: dark)': amber.s400,
@@ -324,18 +324,18 @@ export const reviewCardActionsColors = stylex.defineVars({
 	},
 })
 
-export const reviewCardItemColors = stylex.defineVars({
+export const cardItemColors = stylex.defineVars({
 	containerBackgroundHover: semanticColors.surfaceTransparentHover,
 	containerForeground: semanticColors.textPrimary,
 
 	titleForeground: semanticColors.textPrimary,
 })
 
-export const reviewCardMetadataColors = stylex.defineVars({
+export const cardMetadataColors = stylex.defineVars({
 	itemForeground: semanticColors.textSecondary,
 })
 
-export const reviewCardPropertiesColors = stylex.defineVars({
+export const cardPropertiesColors = stylex.defineVars({
 	containerBackground: semanticColors.surfaceSecondary,
 	iconForeground: semanticColors.textSecondary,
 	labelForeground: semanticColors.textSecondary,

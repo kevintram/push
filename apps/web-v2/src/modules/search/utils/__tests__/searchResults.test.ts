@@ -1,30 +1,30 @@
 import type { Id } from '@convex/_generated/dataModel'
-import type { ReviewCardSearchResult } from '@convex/validators/reviewCards'
-import type { TopicSearchResult } from '@convex/validators/topics'
+import type { CardSearchResult } from '@convex/validators/cards'
+import type { CollectionSearchResult } from '@convex/validators/collections'
 import { describe, expect, it } from 'vitest'
 
-import { buildCardResults, buildTopicResults } from '../searchResults'
+import { buildCardResults, buildCollectionResults } from '../searchResults'
 
-const topicId = 'topic-1' as Id<'topics'>
+const collectionId = 'collection-1' as Id<'collections'>
 
-const topic: TopicSearchResult = {
-	_id: topicId,
+const collection: CollectionSearchResult = {
+	_id: collectionId,
 	description: 'Foundations',
 	pathTitles: ['Science'],
 	title: 'Biology',
 }
 
 describe('searchResults', () => {
-	it('builds topic and card labels', () => {
-		const card: ReviewCardSearchResult = {
-			_id: 'card-1' as Id<'reviewCards'>,
+	it('builds collection and card labels', () => {
+		const card: CardSearchResult = {
+			_id: 'card-1' as Id<'cards'>,
 			notes: '',
 			pathTitles: ['Science', 'Biology'],
 			primaryText: 'What is mitosis?',
 			secondaryText: 'Cell division',
 		}
 
-		expect(buildTopicResults([topic])).toMatchObject([
+		expect(buildCollectionResults([collection])).toMatchObject([
 			{
 				pathText: 'Library / Science / Biology',
 				secondaryText: 'Foundations',
@@ -41,8 +41,8 @@ describe('searchResults', () => {
 	})
 
 	it('shows notes when they explain why a card matched', () => {
-		const card: ReviewCardSearchResult = {
-			_id: 'card-notes' as Id<'reviewCards'>,
+		const card: CardSearchResult = {
+			_id: 'card-notes' as Id<'cards'>,
 			notes: 'Compare cytokinesis after mitosis.',
 			pathTitles: [],
 			primaryText: 'Cell division detail',
@@ -54,22 +54,22 @@ describe('searchResults', () => {
 		])
 	})
 
-	it('renders Library / title for a root topic and Library / Root / Card for a root-topic card', () => {
-		const rootTopic: TopicSearchResult = {
-			_id: topicId,
+	it('renders Library / title for a root collection and Library / Root / Card for a root-collection card', () => {
+		const rootCollection: CollectionSearchResult = {
+			_id: collectionId,
 			description: '',
 			pathTitles: [],
 			title: 'Root',
 		}
-		const rootCard: ReviewCardSearchResult = {
-			_id: 'card-root' as Id<'reviewCards'>,
+		const rootCard: CardSearchResult = {
+			_id: 'card-root' as Id<'cards'>,
 			notes: '',
 			pathTitles: ['Root'],
 			primaryText: 'Card',
 			secondaryText: '',
 		}
 
-		expect(buildTopicResults([rootTopic])).toMatchObject([
+		expect(buildCollectionResults([rootCollection])).toMatchObject([
 			{ pathText: 'Library / Root' },
 		])
 		expect(buildCardResults([rootCard], '')).toMatchObject([
@@ -78,8 +78,8 @@ describe('searchResults', () => {
 	})
 
 	it('falls back to Untitled for blank ancestor titles', () => {
-		const card: ReviewCardSearchResult = {
-			_id: 'card-blank' as Id<'reviewCards'>,
+		const card: CardSearchResult = {
+			_id: 'card-blank' as Id<'cards'>,
 			notes: '',
 			pathTitles: ['  ', 'Biology'],
 			primaryText: 'Card',

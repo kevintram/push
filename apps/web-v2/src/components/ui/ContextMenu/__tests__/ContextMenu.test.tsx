@@ -16,7 +16,7 @@ describe('ContextMenu', () => {
 
 		render(
 			<ContextMenu>
-				<ContextMenuTrigger>Review card</ContextMenuTrigger>
+				<ContextMenuTrigger>Card</ContextMenuTrigger>
 				<ContextMenuContent>
 					<ContextMenuItem onClick={handleClick}>
 						Edit
@@ -26,7 +26,7 @@ describe('ContextMenu', () => {
 		)
 
 		expect(screen.queryByRole('menu')).not.toBeInTheDocument()
-		fireEvent.contextMenu(screen.getByText('Review card'))
+		fireEvent.contextMenu(screen.getByText('Card'))
 		await user.click(screen.getByRole('menuitem', { name: 'Edit' }))
 
 		expect(handleClick).toHaveBeenCalledOnce()
@@ -39,7 +39,7 @@ describe('ContextMenu', () => {
 
 		render(
 			<ContextMenu>
-				<ContextMenuTrigger>Review card</ContextMenuTrigger>
+				<ContextMenuTrigger>Card</ContextMenuTrigger>
 				<ContextMenuContent>
 					<ContextMenuItem disabled onClick={handleDisabledClick}>
 						Unavailable
@@ -49,7 +49,7 @@ describe('ContextMenu', () => {
 			</ContextMenu>,
 		)
 
-		fireEvent.contextMenu(screen.getByText('Review card'))
+		fireEvent.contextMenu(screen.getByText('Card'))
 		const disabledItem = screen.getByRole('menuitem', {
 			name: 'Unavailable',
 		})
