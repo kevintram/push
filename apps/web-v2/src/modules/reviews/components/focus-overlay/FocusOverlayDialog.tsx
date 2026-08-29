@@ -4,7 +4,7 @@ import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { QueryErrorResetBoundary } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { ArrowUpRight, ChevronLeft, ChevronRight, Copy, X } from 'lucide-react'
-import { Suspense, useCallback, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
@@ -30,6 +30,11 @@ import { HIDE_MODE_HOTKEY } from '../../hide-mode/hideModeHotkey'
 import { useHideMode } from '../../hide-mode/useHideMode'
 import { FocusOverlayCard } from './FocusOverlayCard'
 import { FocusOverlayCardError } from './FocusOverlayCardError'
+import {
+	FOCUS_OVERLAY_NEXT_HOTKEY,
+	FOCUS_OVERLAY_PREVIOUS_HOTKEY,
+} from './focusOverlayHotkey'
+import { FocusOverlayNavigationHotkeys } from './FocusOverlayNavigationHotkeys'
 
 type FocusOverlayDialogProps = {
 	handle: DialogHandle
@@ -148,6 +153,7 @@ function resolveIndex(
  */
 export function FocusOverlayDialog({ handle, cards }: FocusOverlayDialogProps) {
 	const { hideMode, toggleHideMode } = useHideMode()
+	const contentRef = useRef<HTMLDivElement>(null)
 	const [selection, setSelection] = useState<IdAndIndex>(() => ({
 		id: cards[0]?._id ?? null,
 		index: 0,
@@ -187,11 +193,19 @@ export function FocusOverlayDialog({ handle, cards }: FocusOverlayDialogProps) {
 	return (
 		<Dialog handle={handle}>
 			<DialogContent
+				ref={contentRef}
 				aria-label='Focus cards'
 				viewportXstyle={styles.viewport}
 				xstyle={styles.content}
 				showCloseButton={false}
 			>
+				<FocusOverlayNavigationHotkeys
+					canGoPrevious={index > 0}
+					canGoNext={index !== -1 && index < cards.length - 1}
+					onPrevious={goPrevious}
+					onNext={goNext}
+					target={contentRef}
+				/>
 				<div {...stylex.props(styles.header)}>
 					<div {...stylex.props(styles.headerButtonCluster)}>
 						{currentCard === null ? null : (
@@ -213,7 +227,14 @@ export function FocusOverlayDialog({ handle, cards }: FocusOverlayDialogProps) {
 											</Button.Icon>
 										}
 									/>
-									<TooltipContent>Previous</TooltipContent>
+									<TooltipContent>
+										Previous
+										<Kbd>
+											{formatForDisplay(
+												FOCUS_OVERLAY_PREVIOUS_HOTKEY,
+											)}
+										</Kbd>
+									</TooltipContent>
 								</Tooltip>
 								<Tooltip>
 									<TooltipTrigger
@@ -234,7 +255,14 @@ export function FocusOverlayDialog({ handle, cards }: FocusOverlayDialogProps) {
 											</Button.Icon>
 										}
 									/>
-									<TooltipContent>Next</TooltipContent>
+									<TooltipContent>
+										Next
+										<Kbd>
+											{formatForDisplay(
+												FOCUS_OVERLAY_NEXT_HOTKEY,
+											)}
+										</Kbd>
+									</TooltipContent>
 								</Tooltip>
 								<span {...stylex.props(styles.position)}>
 									{index + 1} of {cards.length}

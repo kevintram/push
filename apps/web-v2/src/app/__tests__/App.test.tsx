@@ -7,7 +7,14 @@ import {
 	createRouter,
 	RouterProvider,
 } from '@tanstack/react-router'
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import {
+	act,
+	fireEvent,
+	render,
+	screen,
+	waitFor,
+	within,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ConvexProvider } from 'convex/react'
 import type { ReactNode } from 'react'
@@ -468,6 +475,81 @@ describe('v2 app setup', () => {
 		)
 	})
 
+	it('navigates focus cards once per arrow key press', async () => {
+		const user = userEvent.setup()
+		const secondCard: Card = {
+			...card,
+			_id: 'card-2' as Id<'cards'>,
+			primaryText: 'What is a discriminated union?',
+		}
+		const thirdCard: Card = {
+			...card,
+			_id: 'card-3' as Id<'cards'>,
+			primaryText: 'What is type narrowing?',
+		}
+		renderRoute('/review/new', {
+			newCards: [card, secondCard, thirdCard],
+		})
+
+		await user.click(await screen.findByRole('button', { name: 'Focus' }))
+		const navigationOrigin = screen.getByRole('button', {
+			name: 'Toggle hide mode',
+		})
+		navigationOrigin.focus()
+
+		fireEvent.keyDown(navigationOrigin, { key: 'ArrowRight' })
+		expect(
+			await screen.findByDisplayValue('What is a discriminated union?'),
+		).toBeInTheDocument()
+
+		fireEvent.keyDown(navigationOrigin, {
+			key: 'ArrowRight',
+			repeat: true,
+		})
+		expect(
+			screen.getByDisplayValue('What is a discriminated union?'),
+		).toBeInTheDocument()
+
+		fireEvent.keyUp(navigationOrigin, { key: 'ArrowRight' })
+		await user.keyboard('{ArrowLeft}')
+		expect(
+			await screen.findByDisplayValue('What problem do generics solve?'),
+		).toBeInTheDocument()
+
+		await user.keyboard('{ArrowRight}')
+		await user.keyboard('{ArrowRight}')
+		expect(
+			await screen.findByDisplayValue('What is type narrowing?'),
+		).toBeInTheDocument()
+	})
+
+	it('preserves arrow key behavior in focus card controls', async () => {
+		const user = userEvent.setup()
+		const secondCard: Card = {
+			...card,
+			_id: 'card-2' as Id<'cards'>,
+			primaryText: 'What is a discriminated union?',
+		}
+		renderRoute('/review/new', { newCards: [card, secondCard] })
+
+		await user.click(await screen.findByRole('button', { name: 'Focus' }))
+		const reviewsTab = await screen.findByRole('tab', { name: 'Reviews' })
+		await user.click(reviewsTab)
+		await user.keyboard('{ArrowLeft}')
+
+		const overviewTab = screen.getByRole('tab', { name: 'Overview' })
+		expect(overviewTab).toHaveFocus()
+		expect(screen.getByText('1 of 2')).toBeInTheDocument()
+
+		await user.click(overviewTab)
+		const primaryText = screen.getByLabelText('Card primary text')
+		await user.click(primaryText)
+		await user.keyboard('{ArrowRight}')
+		expect(
+			screen.getByDisplayValue('What problem do generics solve?'),
+		).toBeInTheDocument()
+	})
+
 	it('closes focus mode before following a breadcrumb', async () => {
 		const user = userEvent.setup()
 		renderRoute('/review/new', { newCards: [card] })
@@ -506,6 +588,7 @@ describe('v2 app setup', () => {
 				screen.queryByDisplayValue('What is a discriminated union?'),
 			).not.toBeInTheDocument(),
 		)
+		await user.keyboard('{ArrowLeft}')
 
 		await user.click(screen.getByRole('button', { name: 'Focus' }))
 		expect(
