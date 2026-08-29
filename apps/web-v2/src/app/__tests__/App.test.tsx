@@ -227,10 +227,17 @@ function renderRoute(
 }
 
 describe('v2 app setup', () => {
-	it('renders a blank index route inside the app shell', async () => {
-		renderRoute('/')
+	it('redirects the index route to the due review page', async () => {
+		const { router } = renderRoute('/')
 
-		expect(await screen.findByRole('main')).toBeEmptyDOMElement()
+		expect(
+			await screen.findByRole(
+				'heading',
+				{ level: 1, name: 'Due' },
+				{ timeout: 3000 },
+			),
+		).toBeInTheDocument()
+		expect(router.state.location.pathname).toBe('/review/due')
 	})
 
 	it('renders the review route at its default due state', async () => {
