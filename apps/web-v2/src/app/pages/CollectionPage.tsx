@@ -22,6 +22,7 @@ import {
 	useDeleteCollection,
 	useUpdateCollection,
 } from '~/modules/library/api/collectionQueries'
+import { CollectionSidebar } from '~/modules/library/components/collection-sidebar/CollectionSidebar'
 import { CollectionPathBreadcrumbs } from '~/modules/library/components/CollectionPathBreadcrumbs'
 import { MoveCollectionDialog } from '~/modules/library/components/MoveCollectionDialog'
 import { cardQueries, useCreateCard } from '~/modules/reviews/api/cardQueries'
@@ -62,6 +63,18 @@ const styles = stylex.create({
 		minWidth: 0,
 	},
 	toolbarActions: { flexShrink: 0 },
+	body: {
+		gap: spacing.lg,
+		overflow: 'hidden',
+		paddingInline: spacing.lg,
+		display: 'flex',
+		flexBasis: 0,
+		flexGrow: 1,
+		flexShrink: 1,
+		paddingBlockEnd: spacing.lg,
+		minHeight: 0,
+		minWidth: 0,
+	},
 	scrollArea: {
 		overflow: 'auto',
 		display: 'flex',
@@ -70,11 +83,10 @@ const styles = stylex.create({
 		flexShrink: 1,
 		justifyContent: 'center',
 		minHeight: 0,
-		width: '100%',
+		minWidth: 0,
 	},
 	content: {
 		gap: spacing.md,
-		marginInline: spacing.lg,
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 1,
@@ -241,53 +253,57 @@ export function CollectionPage() {
 				/>
 			) : null}
 
-			<div {...stylex.props(styles.scrollArea)}>
-				<div {...stylex.props(styles.content)}>
-					<section {...stylex.props(styles.collectionDetails)}>
-						<Textarea
-							placeholder='Title'
-							aria-label='Collection title'
-							onBlur={title.flush}
-							onChange={title.onChange}
-							value={title.value}
-							xstyle={styles.title}
-						/>
-						<Textarea
-							placeholder='Add description...'
-							aria-label='Collection description'
-							onBlur={description.flush}
-							onChange={description.onChange}
-							value={description.value}
-							xstyle={styles.description}
-						/>
-					</section>
-
-					<Separator xstyle={styles.separator} />
-
-					<h2 {...stylex.props(styles.cardsHeaderText)}>Cards</h2>
-
-					<div {...stylex.props(styles.cardsList)}>
-						{cards.map(card => (
-							<CardItem
-								key={card._id}
-								card={card}
-								srs={deriveCardSrsState(card, today)}
-								today={today}
+			<div {...stylex.props(styles.body)}>
+				<div {...stylex.props(styles.scrollArea)}>
+					<div {...stylex.props(styles.content)}>
+						<section {...stylex.props(styles.collectionDetails)}>
+							<Textarea
+								placeholder='Title'
+								aria-label='Collection title'
+								onBlur={title.flush}
+								onChange={title.onChange}
+								value={title.value}
+								xstyle={styles.title}
 							/>
-						))}
-						<Button
-							aria-label='Add card'
-							shape='round'
-							variant='ghost'
-							disabled={createCard.isPending}
-							onClick={handleCreateCard}
-							xstyle={styles.addCardButton}
-						>
-							<Plus size={iconSizes.md} />
-							Add card
-						</Button>
+							<Textarea
+								placeholder='Add description...'
+								aria-label='Collection description'
+								onBlur={description.flush}
+								onChange={description.onChange}
+								value={description.value}
+								xstyle={styles.description}
+							/>
+						</section>
+
+						<Separator xstyle={styles.separator} />
+
+						<h2 {...stylex.props(styles.cardsHeaderText)}>Cards</h2>
+
+						<div {...stylex.props(styles.cardsList)}>
+							{cards.map(card => (
+								<CardItem
+									key={card._id}
+									card={card}
+									srs={deriveCardSrsState(card, today)}
+									today={today}
+								/>
+							))}
+							<Button
+								aria-label='Add card'
+								shape='round'
+								variant='ghost'
+								disabled={createCard.isPending}
+								onClick={handleCreateCard}
+								xstyle={styles.addCardButton}
+							>
+								<Plus size={iconSizes.md} />
+								Add card
+							</Button>
+						</div>
 					</div>
 				</div>
+
+				<CollectionSidebar collectionId={collectionId} />
 			</div>
 		</div>
 	)

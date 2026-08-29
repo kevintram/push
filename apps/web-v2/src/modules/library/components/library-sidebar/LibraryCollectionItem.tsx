@@ -5,6 +5,7 @@ import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router'
 import { FolderInput, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
+import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -71,6 +72,7 @@ export function LibraryCollectionItem({
 	disableDrop = false,
 }: LibraryCollectionItemProps) {
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const collectionTitle = title.trim() || 'Untitled'
 	const navigate = useNavigate()
 	const matchRoute = useMatchRoute()
@@ -131,7 +133,10 @@ export function LibraryCollectionItem({
 	}, [navigate, createCollection, _id])
 
 	const handleDeleteCollection = useCallback(() => {
-		deleteCollection.mutate({ collectionId: _id })
+		deleteCollection.mutate(
+			{ collectionId: _id },
+			{ onSuccess: () => setIsDeleteDialogOpen(false) },
+		)
 	}, [_id, deleteCollection])
 
 	return (
@@ -179,7 +184,9 @@ export function LibraryCollectionItem({
 							Move
 						</ContextMenuItem>
 						<ContextMenuSeparator />
-						<ContextMenuItem onClick={handleDeleteCollection}>
+						<ContextMenuItem
+							onClick={() => setIsDeleteDialogOpen(true)}
+						>
 							<Trash2 aria-hidden='true' size={iconSizes.md} />
 							Delete
 						</ContextMenuItem>
@@ -204,6 +211,15 @@ export function LibraryCollectionItem({
 					collectionId={_id}
 				/>
 			) : null}
+
+			<DeleteConfirmationDialog
+				description='This collection and everything inside it will be permanently deleted.'
+				isPending={deleteCollection.isPending}
+				onConfirm={handleDeleteCollection}
+				onOpenChange={setIsDeleteDialogOpen}
+				open={isDeleteDialogOpen}
+				title='Delete collection?'
+			/>
 		</TreeItem>
 	)
 }
