@@ -589,6 +589,23 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
+	it('opens search with the primary-modifier K shortcut', async () => {
+		const user = userEvent.setup()
+		renderRoute('/settings')
+
+		await screen.findByRole('heading', { name: 'Account' })
+		await user.keyboard('{Control>}k{/Control}')
+
+		expect(
+			await screen.findByRole('searchbox', {
+				name: 'Search collections and cards',
+			}),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('heading', { hidden: true, name: 'Account' }),
+		).toBeInTheDocument()
+	})
+
 	it('renders the blank library index route', async () => {
 		renderRoute('/library')
 
