@@ -1,10 +1,22 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
-import type { FormEvent, KeyboardEvent } from 'react'
-import { useState } from 'react'
+import {
+	formatForDisplay,
+	type Hotkey,
+	useHotkey,
+} from '@tanstack/react-hotkeys'
+import type { FormEvent } from 'react'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import { Button, Textarea } from '~/components/ui'
+import {
+	Button,
+	Kbd,
+	Textarea,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '~/components/ui'
 import { reviewComposerColors } from '~/styles/colors/components.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
@@ -14,6 +26,8 @@ import { useCreateReview } from '../api/reviewQueries'
 import type { Rating } from '../types/review.types'
 import { RatingPicker } from './RatingPicker'
 import { ReviewDatePicker } from './ReviewDatePicker'
+
+const ADD_REVIEW_HOTKEY = 'Mod+Enter' satisfies Hotkey
 
 const styles = stylex.create({
 	composer: {
@@ -131,6 +145,7 @@ type ReviewComposerProps = {
 }
 
 export function ReviewComposer({ cardId }: ReviewComposerProps) {
+	const formRef = useRef<HTMLFormElement>(null)
 	const [draft, setDraft] = useState<ReviewDraft>(defaultDraft)
 	const createReview = useCreateReview()
 	const isDirty =
@@ -180,25 +195,17 @@ export function ReviewComposer({ cardId }: ReviewComposerProps) {
 		)
 	}
 
-	const handleTextareaKeyDown = (
-		event: KeyboardEvent<HTMLTextAreaElement>,
-	) => {
-		if (
-			event.key !== 'Enter' ||
-			(!event.metaKey && !event.ctrlKey) ||
-			isSubmitDisabled
-		) {
-			return
-		}
-
-		event.preventDefault()
-		event.currentTarget.form?.requestSubmit()
-	}
+	const submitWithHotkey = () => formRef.current?.requestSubmit()
+	useHotkey(ADD_REVIEW_HOTKEY, submitWithHotkey, {
+		enabled: !isSubmitDisabled,
+		target: formRef,
+	})
 
 	return (
 		<form
 			aria-label='Add review'
 			onSubmit={handleSubmit}
+			ref={formRef}
 			{...stylex.props(styles.composer)}
 		>
 			<aside {...stylex.props(styles.rail)}>
@@ -215,7 +222,6 @@ export function ReviewComposer({ cardId }: ReviewComposerProps) {
 					aria-label='Review description'
 					disabled={isPending}
 					onChange={event => setDescription(event.target.value)}
-					onKeyDown={handleTextareaKeyDown}
 					placeholder='Add a review...'
 					value={draft.description}
 					xstyle={styles.description}
@@ -224,7 +230,6 @@ export function ReviewComposer({ cardId }: ReviewComposerProps) {
 					aria-label='Review notes'
 					disabled={isPending}
 					onChange={event => setNotes(event.target.value)}
-					onKeyDown={handleTextareaKeyDown}
 					placeholder='Notes'
 					value={draft.notes}
 					xstyle={styles.notes}
@@ -252,13 +257,23 @@ export function ReviewComposer({ cardId }: ReviewComposerProps) {
 							Cancel
 						</Button>
 					)}
-					<Button
-						shape='round'
-						disabled={isSubmitDisabled}
-						type='submit'
-					>
-						Add
-					</Button>
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<Button
+									shape='round'
+									disabled={isSubmitDisabled}
+									type='submit'
+								>
+									Add
+								</Button>
+							}
+						/>
+						<TooltipContent>
+							Add review
+							<Kbd>{formatForDisplay(ADD_REVIEW_HOTKEY)}</Kbd>
+						</TooltipContent>
+					</Tooltip>
 				</div>
 			</footer>
 		</form>
