@@ -21,9 +21,12 @@ const styles = stylex.create({
 		paddingInline: spacing.sm,
 
 		borderRadius: radii.xs,
+		alignItems: 'center',
 		backgroundColor: tooltipColors.popupBackground,
 		boxShadow: `0 4px 12px ${tooltipColors.popupShadow}`,
 		color: tooltipColors.popupForeground,
+		columnGap: spacing.sm,
+		display: 'flex',
 		fontSize: fontSizes.xs,
 		opacity: {
 			default: 1,

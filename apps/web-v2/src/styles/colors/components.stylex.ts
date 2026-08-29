@@ -198,6 +198,11 @@ export const textareaColors = stylex.defineVars({
 	placeholderForeground: semanticColors.textSecondary,
 })
 
+export const kbdColors = stylex.defineVars({
+	background: semanticColors.surfaceRaised,
+	foreground: semanticColors.textSecondary,
+})
+
 export const tooltipColors = stylex.defineVars({
 	popupBackground: semanticColors.surfaceInverse,
 	popupForeground: semanticColors.textOnInverse,
