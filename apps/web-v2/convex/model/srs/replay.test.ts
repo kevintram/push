@@ -202,7 +202,68 @@ describe('SRS replay', () => {
 		})
 	})
 
-	it('replays same-day learning steps deterministically in input order', () => {
+	it('graduates a new card directly to review with day-scale due dates', () => {
+		const result = replay({
+			reviews: [
+				makeReview({ date: '2026-05-21', rating: 'good' }),
+				makeReview({ date: '2026-05-26', rating: 'hard' }),
+				makeReview({ date: '2026-06-18', rating: 'hard' }),
+			],
+		})
+
+		expect(
+			result.reviewPatches.map(({ patch }) => ({
+				dueDateAfter: patch.dueDateAfter,
+				stateAfter: patch.stateAfter,
+				stepAfter: patch.stepAfter,
+			})),
+		).toEqual([
+			{
+				dueDateAfter: '2026-05-25',
+				stateAfter: 'REVIEW',
+				stepAfter: undefined,
+			},
+			{
+				dueDateAfter: '2026-06-18',
+				stateAfter: 'REVIEW',
+				stepAfter: undefined,
+			},
+			{
+				dueDateAfter: '2026-08-26',
+				stateAfter: 'REVIEW',
+				stepAfter: undefined,
+			},
+		])
+		expect(result.cardState).toMatchObject({
+			dueDate: '2026-08-26',
+			state: 'REVIEW',
+			step: undefined,
+		})
+	})
+
+	it('graduates a lapsed card directly back to review', () => {
+		const result = replay({
+			reviews: [
+				makeReview({ date: '2024-01-01', rating: 'easy' }),
+				makeReview({ date: '2024-01-11', rating: 'good' }),
+				makeReview({ date: '2024-01-21', rating: 'miss' }),
+			],
+		})
+		const lapse = result.reviewPatches.at(-1)!.patch
+
+		expect(lapse).toMatchObject({
+			dueDateAfter: '2024-01-26',
+			stateAfter: 'REVIEW',
+			stepAfter: undefined,
+		})
+		expect(result.cardState).toMatchObject({
+			dueDate: '2024-01-26',
+			state: 'REVIEW',
+			step: undefined,
+		})
+	})
+
+	it('replays same-day reviews deterministically in input order', () => {
 		// py-fsrs 6.3 and ts-fsrs 5.4.1 differ in their same-timestamp
 		// short-term stability update. The product decision is to use ts-fsrs,
 		// so keep this edge case deterministic without calling it cross-library

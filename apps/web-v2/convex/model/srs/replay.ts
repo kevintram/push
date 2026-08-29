@@ -43,7 +43,14 @@ export interface ReplayResult {
 }
 
 const REQUEST_RETENTION = 0.85
-const fsrsScheduler = fsrs.fsrs({ request_retention: REQUEST_RETENTION })
+const fsrsScheduler = fsrs.fsrs({
+	request_retention: REQUEST_RETENTION,
+	// The app stores completion and due dates as calendar dates, without an
+	// intraday time. Skip learning and relearning steps measured in minutes so
+	// every rating produces a representable due date.
+	learning_steps: [],
+	relearning_steps: [],
+})
 
 function toReplayReview(review: Doc<'reviews'>): Review {
 	if (review.cardId === undefined) {

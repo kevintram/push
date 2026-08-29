@@ -85,6 +85,9 @@ class TestReviewsEndpoints:
         created = create_response.json()
         assert created["review_card_id"] == review_card["id"]
         assert created["stability_after"] is not None
+        assert created["state_after"] == "REVIEW"
+        assert created["step_after"] is None
+        assert created["due_after"] > created["completed_at"]
         assert created["notes"] == "Created with notes payload"
         assert created["review_card"]["primary_text"] == "Completed card"
 

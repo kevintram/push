@@ -6,16 +6,16 @@
 			{
 				"stabilityAfter": 0.212,
 				"difficultyAfter": 6.4133,
-				"stateAfter": "LEARNING",
-				"stepAfter": 0,
-				"dueDateAfter": "2024-01-01"
+				"stateAfter": "REVIEW",
+				"stepAfter": null,
+				"dueDateAfter": "2024-01-02"
 			}
 		],
 		"cardState": {
 			"stability": 0.212,
 			"difficulty": 6.4133,
-			"state": "LEARNING",
-			"step": 0
+			"state": "REVIEW",
+			"step": null
 		}
 	},
 	{
@@ -25,16 +25,16 @@
 			{
 				"stabilityAfter": 1.2931,
 				"difficultyAfter": 5.112170705601056,
-				"stateAfter": "LEARNING",
-				"stepAfter": 0,
-				"dueDateAfter": "2024-01-01"
+				"stateAfter": "REVIEW",
+				"stepAfter": null,
+				"dueDateAfter": "2024-01-03"
 			}
 		],
 		"cardState": {
 			"stability": 1.2931,
 			"difficulty": 5.112170705601056,
-			"state": "LEARNING",
-			"step": 0
+			"state": "REVIEW",
+			"step": null
 		}
 	},
 	{
@@ -44,16 +44,16 @@
 			{
 				"stabilityAfter": 2.3065,
 				"difficultyAfter": 2.118103970459016,
-				"stateAfter": "LEARNING",
-				"stepAfter": 1,
-				"dueDateAfter": "2024-01-01"
+				"stateAfter": "REVIEW",
+				"stepAfter": null,
+				"dueDateAfter": "2024-01-05"
 			}
 		],
 		"cardState": {
 			"stability": 2.3065,
 			"difficulty": 2.118103970459016,
-			"state": "LEARNING",
-			"step": 1
+			"state": "REVIEW",
+			"step": null
 		}
 	},
 	{
@@ -76,7 +76,7 @@
 		}
 	},
 	{
-		"name": "learning_to_review",
+		"name": "review_history",
 		"reviews": [
 			{ "date": "2024-01-01", "rating": "good" },
 			{ "date": "2024-01-02", "rating": "good" },
@@ -86,9 +86,9 @@
 			{
 				"stabilityAfter": 2.3065,
 				"difficultyAfter": 2.118103970459016,
-				"stateAfter": "LEARNING",
-				"stepAfter": 1,
-				"dueDateAfter": "2024-01-01"
+				"stateAfter": "REVIEW",
+				"stepAfter": null,
+				"dueDateAfter": "2024-01-05"
 			},
 			{
 				"stabilityAfter": 7.31530074407728,
@@ -139,9 +139,9 @@
 			{
 				"stabilityAfter": 2.6860876943188265,
 				"difficultyAfter": 7.0269895692968385,
-				"stateAfter": "RELEARNING",
-				"stepAfter": 0,
-				"dueDateAfter": "2024-01-21"
+				"stateAfter": "REVIEW",
+				"stepAfter": null,
+				"dueDateAfter": "2024-01-26"
 			},
 			{
 				"stabilityAfter": 4.922361739979824,

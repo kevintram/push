@@ -110,7 +110,17 @@ def update_fsrs(
         _apply_card_to_review_card(review_card, starting_card)
         return
 
-    scheduler = Scheduler(desired_retention=FINE_THRESHOLD)
+    scheduler = Scheduler(
+        desired_retention=FINE_THRESHOLD,
+        # The app stores completion and due dates as calendar dates, without an
+        # intraday time. Skip learning and relearning steps measured in minutes
+        # so every rating produces a representable due date.
+        learning_steps=(),
+        relearning_steps=(),
+        # Historical replay must produce the same schedule every time and match
+        # the Convex scheduler, whose fuzzing default is disabled.
+        enable_fuzzing=False,
+    )
     current_card = starting_card
 
     for review in reviews:

@@ -628,20 +628,21 @@ describe('reviews', () => {
 
 		expect(review).toMatchObject({
 			difficultyAfter: expect.any(Number),
-			dueDateAfter: expect.any(String),
+			dueDateAfter: '2026-01-14',
 			dueDateBefore: '2026-01-10',
-			stateAfter: 'LEARNING',
+			stateAfter: 'REVIEW',
 			stateBefore: 'LEARNING',
 			stabilityAfter: expect.any(Number),
 		})
+		expect(review).not.toHaveProperty('stepAfter')
 		expect(card).toMatchObject({
 			difficulty: review.difficultyAfter,
 			dueDate: review.dueDateAfter,
 			lastReview: { id: reviewId, date: '2026-01-10', rating: 'good' },
 			stability: review.stabilityAfter,
 			state: review.stateAfter,
-			step: review.stepAfter,
 		})
+		expect(card).not.toHaveProperty('step')
 	})
 
 	it('re-rating an older review rewrites the downstream replay chain', async () => {
@@ -739,14 +740,13 @@ describe('reviews', () => {
 			stabilityBefore: secondAfterLaterMove.stabilityAfter,
 			difficultyBefore: secondAfterLaterMove.difficultyAfter,
 			stateBefore: secondAfterLaterMove.stateAfter,
-			stepBefore: secondAfterLaterMove.stepAfter,
 			dueDateBefore: secondAfterLaterMove.dueDateAfter,
 		})
+		expect(firstAfterLaterMove).not.toHaveProperty('stepBefore')
 		expect(cardAfterLaterMove).toMatchObject({
 			stability: firstAfterLaterMove.stabilityAfter,
 			difficulty: firstAfterLaterMove.difficultyAfter,
 			state: firstAfterLaterMove.stateAfter,
-			step: firstAfterLaterMove.stepAfter,
 			dueDate: firstAfterLaterMove.dueDateAfter,
 			lastReview: {
 				id: firstReviewId,
@@ -754,6 +754,7 @@ describe('reviews', () => {
 				rating: 'good',
 			},
 		})
+		expect(cardAfterLaterMove).not.toHaveProperty('step')
 
 		await asUserA.mutation(api.reviews.update, {
 			date: '2026-01-01',
@@ -775,14 +776,13 @@ describe('reviews', () => {
 			stabilityBefore: firstAfterEarlierMove.stabilityAfter,
 			difficultyBefore: firstAfterEarlierMove.difficultyAfter,
 			stateBefore: firstAfterEarlierMove.stateAfter,
-			stepBefore: firstAfterEarlierMove.stepAfter,
 			dueDateBefore: firstAfterEarlierMove.dueDateAfter,
 		})
+		expect(secondAfterEarlierMove).not.toHaveProperty('stepBefore')
 		expect(cardAfterEarlierMove).toMatchObject({
 			stability: secondAfterEarlierMove.stabilityAfter,
 			difficulty: secondAfterEarlierMove.difficultyAfter,
 			state: secondAfterEarlierMove.stateAfter,
-			step: secondAfterEarlierMove.stepAfter,
 			dueDate: secondAfterEarlierMove.dueDateAfter,
 			lastReview: {
 				id: secondReviewId,
@@ -790,6 +790,7 @@ describe('reviews', () => {
 				rating: 'hard',
 			},
 		})
+		expect(cardAfterEarlierMove).not.toHaveProperty('step')
 	})
 
 	it('un-rating a review clears its snapshots and rewinds the card', async () => {
