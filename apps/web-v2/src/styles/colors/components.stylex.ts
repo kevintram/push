@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { amber, blue, orange } from './primitives.stylex'
+import { amber, blue, orange, violet } from './primitives.stylex'
 import { semanticColors } from './semantic.stylex'
 
 export const breadcrumbColors = stylex.defineVars({
@@ -326,6 +326,10 @@ export const cardActionsColors = stylex.defineVars({
 	flagSelectedForeground: {
 		default: orange.s500,
 		'@media (prefers-color-scheme: dark)': orange.s500,
+	},
+	retiredSelectedForeground: {
+		default: violet.s400,
+		'@media (prefers-color-scheme: dark)': violet.s400,
 	},
 })
 
