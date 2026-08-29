@@ -1,7 +1,10 @@
+import type { Id } from '@convex/_generated/dataModel'
 import { describe, expect, it, vi } from 'vitest'
 
-import { Route as TopicRoute } from '~/app/routes/library/$topicId'
+import { Route as CollectionRoute } from '~/app/routes/library/$collectionId'
 import { Route as LibraryRoute } from '~/app/routes/library/route'
+import { collectionQueries } from '~/modules/library/api/collectionQueries'
+import { cardQueries } from '~/modules/reviews/api/cardQueries'
 
 type LoaderContext = {
 	auth: {
@@ -26,7 +29,7 @@ function createLoaderContext(isAuthenticated: boolean): LoaderContext {
 }
 
 describe('authenticated library loaders', () => {
-	it('does not load the topic list before Convex authenticates', async () => {
+	it('does not load the collection list before Convex authenticates', async () => {
 		const context = createLoaderContext(false)
 		const loader = LibraryRoute.options.loader as unknown as (args: {
 			context: LoaderContext
@@ -37,19 +40,19 @@ describe('authenticated library loaders', () => {
 		expect(context.queryClient.ensureQueryData).not.toHaveBeenCalled()
 	})
 
-	it('does not load a topic before Convex authenticates', async () => {
+	it('does not load a collection before Convex authenticates', async () => {
 		const context = createLoaderContext(false)
-		const loader = TopicRoute.options.loader as unknown as (args: {
+		const loader = CollectionRoute.options.loader as unknown as (args: {
 			context: LoaderContext
-			params: { topicId: string }
+			params: { collectionId: string }
 		}) => Promise<unknown>
 
-		await loader({ context, params: { topicId: 'topic-1' } })
+		await loader({ context, params: { collectionId: 'collection-1' } })
 
 		expect(context.queryClient.ensureQueryData).not.toHaveBeenCalled()
 	})
 
-	it('warms the topic list after Convex authenticates', async () => {
+	it('warms the collection list after Convex authenticates', async () => {
 		const context = createLoaderContext(true)
 		context.queryClient.ensureQueryData.mockResolvedValue([])
 		const loader = LibraryRoute.options.loader as unknown as (args: {
@@ -59,5 +62,25 @@ describe('authenticated library loaders', () => {
 		await loader({ context })
 
 		expect(context.queryClient.ensureQueryData).toHaveBeenCalledOnce()
+	})
+
+	it('warms collection detail and cards after Convex authenticates', async () => {
+		const context = createLoaderContext(true)
+		context.queryClient.ensureQueryData.mockResolvedValue([])
+		const loader = CollectionRoute.options.loader as unknown as (args: {
+			context: LoaderContext
+			params: { collectionId: Id<'collections'> }
+		}) => Promise<unknown>
+		const collectionId = 'collection-1' as Id<'collections'>
+
+		await loader({ context, params: { collectionId } })
+
+		expect(context.queryClient.ensureQueryData).toHaveBeenCalledTimes(2)
+		expect(context.queryClient.ensureQueryData).toHaveBeenCalledWith(
+			collectionQueries.detail(collectionId, { expandPath: true }),
+		)
+		expect(context.queryClient.ensureQueryData).toHaveBeenCalledWith(
+			cardQueries.listByCollection(collectionId),
+		)
 	})
 })

@@ -1,12 +1,12 @@
 import type { Doc } from '@convex/_generated/dataModel'
-import type { ReviewCard } from '@convex/validators/reviewCards'
+import type { Card } from '@convex/validators/cards'
 
 import type { DateString } from '~/types/date'
 
-export type { ReviewCard }
+export type { Card }
 
-/** Client-derived scheduling metadata displayed alongside a review card. */
-export type ReviewCardSrsState = {
+/** Client-derived scheduling metadata displayed alongside a card. */
+export type CardSrsState = {
 	stability: number | null
 	lastReviewedAt: DateString | null
 	lastRating: Rating | null
@@ -20,6 +20,6 @@ export type Review = Doc<'reviews'>
 export type Rating = NonNullable<Review['rating']>
 
 export type ReviewFilters = {
-	reviewCardId: string
+	cardId: string
 	order?: 'asc' | 'desc'
 }

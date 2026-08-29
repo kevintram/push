@@ -5,15 +5,15 @@ import { requireIdentity } from './model/auth'
 import * as Reviews from './model/reviews'
 import { reviewCreate, reviewPatch, reviewRead } from './validators/reviews'
 
-export const listByReviewCard = query({
+export const listByCard = query({
 	args: {
-		reviewCardId: v.id('reviewCards'),
+		cardId: v.id('cards'),
 	},
 	returns: v.array(reviewRead),
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
 
-		return await Reviews.listByReviewCard(ctx, userId, args.reviewCardId)
+		return await Reviews.listByCard(ctx, userId, args.cardId)
 	},
 })
 

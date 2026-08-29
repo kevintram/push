@@ -2,8 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
-import { topicQueries } from '~/modules/library/api/topicQueries'
-import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
+import { collectionQueries } from '~/modules/library/api/collectionQueries'
+import { cardQueries } from '~/modules/reviews/api/cardQueries'
 
 const SEARCH_DEBOUNCE_MS = 250
 
@@ -13,27 +13,27 @@ export function useSearchResults() {
 	const debouncedQuery = useDebouncedValue(trimmedQuery, SEARCH_DEBOUNCE_MS)
 	const enabled = debouncedQuery !== ''
 
-	const topicsQuery = useQuery({
-		...topicQueries.search(debouncedQuery),
+	const collectionsQuery = useQuery({
+		...collectionQueries.search(debouncedQuery),
 		enabled,
 	})
-	const reviewCardsQuery = useQuery({
-		...reviewCardQueries.search(debouncedQuery),
+	const cardsQuery = useQuery({
+		...cardQueries.search(debouncedQuery),
 		enabled,
 	})
 
 	const isWaitingForDebounce = trimmedQuery !== debouncedQuery
 
 	return {
-		isError: topicsQuery.isError || reviewCardsQuery.isError,
+		isError: collectionsQuery.isError || cardsQuery.isError,
 		isLoading:
 			trimmedQuery !== '' &&
 			(isWaitingForDebounce ||
-				topicsQuery.isPending ||
-				reviewCardsQuery.isPending),
+				collectionsQuery.isPending ||
+				cardsQuery.isPending),
 		query,
-		reviewCards: reviewCardsQuery.data ?? [],
+		cards: cardsQuery.data ?? [],
 		setQuery,
-		topics: topicsQuery.data ?? [],
+		collections: collectionsQuery.data ?? [],
 	}
 }

@@ -10,13 +10,14 @@ import { DateTime } from 'luxon'
 import * as fsrs from 'ts-fsrs'
 
 import { assertIsoDate } from '../../../shared/date'
+import type { Doc } from '../../_generated/dataModel'
 import type { MutationCtx } from '../../_generated/server'
 import { assertNonNull } from '../../utils/assertNonNull'
-import type { ReviewCard } from '../../validators/reviewCards'
+import type { Card } from '../../validators/cards'
 import type { Review } from '../../validators/reviews'
 
-export type ReviewCardSrsState = Pick<
-	ReviewCard,
+export type CardSrsState = Pick<
+	Card,
 	'stability' | 'difficulty' | 'state' | 'step'
 > & { dueDate: string; lastReviewDate: string | undefined }
 
@@ -38,11 +39,38 @@ export type ReviewSrsPatch = Pick<
 
 export interface ReplayResult {
 	reviewPatches: Array<{ review: Review; patch: ReviewSrsPatch }>
-	cardState: ReviewCardSrsState
+	cardState: CardSrsState
 }
 
 const REQUEST_RETENTION = 0.85
 const fsrsScheduler = fsrs.fsrs({ request_retention: REQUEST_RETENTION })
+
+function toReplayReview(review: Doc<'reviews'>): Review {
+	if (review.cardId === undefined) {
+		throw new Error('Review is missing card')
+	}
+
+	return {
+		_id: review._id,
+		_creationTime: review._creationTime,
+		ownerId: review.ownerId,
+		cardId: review.cardId,
+		rating: review.rating,
+		date: review.date,
+		description: review.description,
+		notes: review.notes,
+		stabilityBefore: review.stabilityBefore,
+		difficultyBefore: review.difficultyBefore,
+		stateBefore: review.stateBefore,
+		stepBefore: review.stepBefore,
+		dueDateBefore: review.dueDateBefore,
+		stabilityAfter: review.stabilityAfter,
+		difficultyAfter: review.difficultyAfter,
+		stateAfter: review.stateAfter,
+		stepAfter: review.stepAfter,
+		dueDateAfter: review.dueDateAfter,
+	}
+}
 
 /**
  * Recompute and persist a card's SRS state from the first affected day.
@@ -53,7 +81,7 @@ const fsrsScheduler = fsrs.fsrs({ request_retention: REQUEST_RETENTION })
  */
 export async function updateCardSrs(
 	ctx: MutationCtx,
-	card: ReviewCard,
+	card: Card,
 	startingFrom: string, // an isoDate
 ): Promise<void> {
 	// Only the suffix at or after the changed date needs to be replayed. The
@@ -62,12 +90,14 @@ export async function updateCardSrs(
 	const reviews = (
 		await ctx.db
 			.query('reviews')
-			.withIndex('by_reviewCardId_date', query =>
-				query.eq('reviewCardId', card._id).gte('date', startingFrom),
+			.withIndex('by_cardId_date', query =>
+				query.eq('cardId', card._id).gte('date', startingFrom),
 			)
 			.order('asc')
 			.collect()
-	).filter(review => review.rating !== undefined)
+	)
+		.filter(review => review.rating !== undefined)
+		.map(toReplayReview)
 
 	// Convex sorts `undefined` before strings. The empty-string lower bound
 	// excludes undated reviews while preserving every valid date-only value.
@@ -76,15 +106,15 @@ export async function updateCardSrs(
 	let previousReview: Review | undefined
 	for await (const candidate of ctx.db
 		.query('reviews')
-		.withIndex('by_reviewCardId_date', query =>
+		.withIndex('by_cardId_date', query =>
 			query
-				.eq('reviewCardId', card._id)
+				.eq('cardId', card._id)
 				.gte('date', '')
 				.lt('date', startingFrom),
 		)
 		.order('desc')) {
 		if (candidate.rating !== undefined) {
-			previousReview = candidate
+			previousReview = toReplayReview(candidate)
 			break
 		}
 	}
@@ -96,7 +126,7 @@ export async function updateCardSrs(
 		await ctx.db.patch('reviews', review._id, patch)
 	}
 
-	await ctx.db.patch('reviewCards', card._id, {
+	await ctx.db.patch('cards', card._id, {
 		stability: cardState.stability,
 		difficulty: cardState.difficulty,
 		state: cardState.state,
@@ -162,7 +192,7 @@ export function replay({
 					// schedule instead of immediately repeating the card.
 					state: fsrs.State.Learning,
 				}
-			: reviewCardSrsStateToFsrsCard({
+			: cardSrsStateToFsrsCard({
 					stability: assertNonNull(
 						previousReview.stabilityAfter,
 						'Review is missing stabilityAfter',
@@ -184,13 +214,13 @@ export function replay({
 				})
 
 	for (const { review, date, rating } of completedReviews) {
-		const beforeState = fsrsCardToReviewCardSrsState(card)
+		const beforeState = fsrsCardToCardSrsState(card)
 		const { card: nextCard } = fsrsScheduler.next(
 			card,
 			isoToJsDate(date),
 			reviewRatingToFsrsGrade(rating),
 		)
-		const afterState = fsrsCardToReviewCardSrsState(nextCard)
+		const afterState = fsrsCardToCardSrsState(nextCard)
 
 		reviewPatches.push({
 			review,
@@ -216,15 +246,13 @@ export function replay({
 		card = nextCard
 	}
 
-	return { reviewPatches, cardState: fsrsCardToReviewCardSrsState(card) }
+	return { reviewPatches, cardState: fsrsCardToCardSrsState(card) }
 }
 
 // TODO(4): Consider extracting these ts-fsrs boundary conversions into a
 // dedicated adapter module.
 /** Reconstruct a ts-fsrs card from the application's normalized SRS state. */
-export function reviewCardSrsStateToFsrsCard(
-	srsState: ReviewCardSrsState,
-): fsrs.Card {
+export function cardSrsStateToFsrsCard(srsState: CardSrsState): fsrs.Card {
 	const lastReviewDate = assertNonNull(
 		srsState.lastReviewDate,
 		'SRS state is missing lastReviewDate',
@@ -238,7 +266,7 @@ export function reviewCardSrsStateToFsrsCard(
 		'SRS state is missing difficulty',
 	)
 
-	const state = reviewCardStateToFsrsState(srsState.state)
+	const state = cardStateToFsrsState(srsState.state)
 	const jsReviewDate = isoToJsDate(lastReviewDate)
 
 	return {
@@ -252,9 +280,7 @@ export function reviewCardSrsStateToFsrsCard(
 	}
 }
 
-export function reviewCardStateToFsrsState(
-	state: ReviewCard['state'],
-): fsrs.State {
+export function cardStateToFsrsState(state: Card['state']): fsrs.State {
 	switch (state) {
 		case 'LEARNING':
 			return fsrs.State.Learning
@@ -280,13 +306,13 @@ export function reviewRatingToFsrsGrade(
 	}
 }
 
-function fsrsCardToReviewCardSrsState(card: fsrs.Card): ReviewCardSrsState {
+function fsrsCardToCardSrsState(card: fsrs.Card): CardSrsState {
 	const hasBeenReviewed = card.last_review !== undefined
 
 	return {
 		stability: hasBeenReviewed ? card.stability : undefined,
 		difficulty: hasBeenReviewed ? card.difficulty : undefined,
-		state: fsrsStateToReviewCardState(card.state),
+		state: fsrsStateToCardState(card.state),
 		step:
 			card.state === fsrs.State.Review ? undefined : card.learning_steps,
 		dueDate: jsDateToIso(card.due),
@@ -297,9 +323,7 @@ function fsrsCardToReviewCardSrsState(card: fsrs.Card): ReviewCardSrsState {
 	}
 }
 
-export function fsrsStateToReviewCardState(
-	state: fsrs.State,
-): ReviewCard['state'] {
+export function fsrsStateToCardState(state: fsrs.State): Card['state'] {
 	switch (state) {
 		case fsrs.State.Learning:
 			return 'LEARNING'

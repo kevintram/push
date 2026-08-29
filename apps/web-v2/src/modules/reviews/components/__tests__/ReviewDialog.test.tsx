@@ -14,16 +14,19 @@ vi.mock('@tanstack/react-query', () => ({
 	useQuery: () => ({ data: undefined }),
 }))
 
-vi.mock('~/modules/library/api/topicQueries', () => ({
-	topicQueries: {
-		detail: () => ({ queryKey: ['topic'], queryFn: async () => undefined }),
+vi.mock('~/modules/library/api/collectionQueries', () => ({
+	collectionQueries: {
+		detail: () => ({
+			queryKey: ['collection'],
+			queryFn: async () => undefined,
+		}),
 	},
 }))
 
-vi.mock('~/modules/reviews/api/reviewCardQueries', () => ({
-	reviewCardQueries: {
+vi.mock('~/modules/reviews/api/cardQueries', () => ({
+	cardQueries: {
 		detail: () => ({
-			queryKey: ['review-card'],
+			queryKey: ['card'],
 			queryFn: async () => undefined,
 		}),
 	},
@@ -57,7 +60,7 @@ const review = {
 	notes: 'Some notes',
 	ownerId: 'user-1',
 	rating: 'good',
-	reviewCardId: 'card-1' as Id<'reviewCards'>,
+	cardId: 'card-1' as Id<'cards'>,
 	stabilityAfter: 15,
 } as Review
 

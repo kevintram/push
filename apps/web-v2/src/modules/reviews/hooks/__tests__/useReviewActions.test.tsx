@@ -19,7 +19,7 @@ const baseReview: Review = {
 	description: '',
 	notes: '',
 	ownerId: 'user-1',
-	reviewCardId: 'review-card-1' as Review['reviewCardId'],
+	cardId: 'card-1' as Review['cardId'],
 }
 
 describe('useReviewActions', () => {

@@ -3,14 +3,20 @@ import { DragDropProvider } from '@dnd-kit/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
-import { topicQueries, useUpdateTopic } from '../../api/topicQueries'
-import { treeifyTopics } from '../../utils/treeifyTopics'
+import {
+	collectionQueries,
+	useUpdateCollection,
+} from '../../api/collectionQueries'
+import { treeifyCollections } from '../../utils/treeifyCollections'
 import { LibrarySidebarContent } from './LibrarySidebarContent'
 
 export function LibrarySidebar() {
-	const { data: topics } = useSuspenseQuery(topicQueries.list())
-	const topicTree = useMemo(() => treeifyTopics(topics), [topics])
-	const updateTopic = useUpdateTopic()
+	const { data: collections } = useSuspenseQuery(collectionQueries.list())
+	const collectionTree = useMemo(
+		() => treeifyCollections(collections),
+		[collections],
+	)
+	const updateCollection = useUpdateCollection()
 
 	return (
 		<DragDropProvider
@@ -28,19 +34,19 @@ export function LibrarySidebar() {
 				}
 
 				if (target.id === 'library-root') {
-					updateTopic.mutate({
-						topicId: source.id as Id<'topics'>,
+					updateCollection.mutate({
+						collectionId: source.id as Id<'collections'>,
 						parentId: null,
 					})
 				} else {
-					updateTopic.mutate({
-						topicId: source.id as Id<'topics'>,
-						parentId: target.id as Id<'topics'>,
+					updateCollection.mutate({
+						collectionId: source.id as Id<'collections'>,
+						parentId: target.id as Id<'collections'>,
 					})
 				}
 			}}
 		>
-			<LibrarySidebarContent topics={topicTree} />
+			<LibrarySidebarContent collections={collectionTree} />
 		</DragDropProvider>
 	)
 }

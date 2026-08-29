@@ -8,23 +8,23 @@
  * @module
  */
 
+import type * as cards from "../cards.js";
+import type * as collections from "../collections.js";
 import type * as due from "../due.js";
 import type * as model_auth from "../model/auth.js";
+import type * as model_cards from "../model/cards.js";
+import type * as model_collectionRemoval from "../model/collectionRemoval.js";
+import type * as model_collections from "../model/collections.js";
 import type * as model_due from "../model/due.js";
-import type * as model_reviewCards from "../model/reviewCards.js";
 import type * as model_reviews from "../model/reviews.js";
 import type * as model_srs_replay from "../model/srs/replay.js";
-import type * as model_topicRemoval from "../model/topicRemoval.js";
-import type * as model_topics from "../model/topics.js";
-import type * as reviewCards from "../reviewCards.js";
 import type * as reviews from "../reviews.js";
-import type * as topics from "../topics.js";
 import type * as utils_assertNonNull from "../utils/assertNonNull.js";
+import type * as validators_cards from "../validators/cards.js";
+import type * as validators_collections from "../validators/collections.js";
 import type * as validators_due from "../validators/due.js";
-import type * as validators_reviewCards from "../validators/reviewCards.js";
 import type * as validators_reviewRatings from "../validators/reviewRatings.js";
 import type * as validators_reviews from "../validators/reviews.js";
-import type * as validators_topics from "../validators/topics.js";
 
 import type {
   ApiFromModules,
@@ -33,23 +33,23 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  cards: typeof cards;
+  collections: typeof collections;
   due: typeof due;
   "model/auth": typeof model_auth;
+  "model/cards": typeof model_cards;
+  "model/collectionRemoval": typeof model_collectionRemoval;
+  "model/collections": typeof model_collections;
   "model/due": typeof model_due;
-  "model/reviewCards": typeof model_reviewCards;
   "model/reviews": typeof model_reviews;
   "model/srs/replay": typeof model_srs_replay;
-  "model/topicRemoval": typeof model_topicRemoval;
-  "model/topics": typeof model_topics;
-  reviewCards: typeof reviewCards;
   reviews: typeof reviews;
-  topics: typeof topics;
   "utils/assertNonNull": typeof utils_assertNonNull;
+  "validators/cards": typeof validators_cards;
+  "validators/collections": typeof validators_collections;
   "validators/due": typeof validators_due;
-  "validators/reviewCards": typeof validators_reviewCards;
   "validators/reviewRatings": typeof validators_reviewRatings;
   "validators/reviews": typeof validators_reviews;
-  "validators/topics": typeof validators_topics;
 }>;
 
 /**

@@ -79,12 +79,14 @@ export function SearchResultItem({ result }: SearchResultItemProps) {
 
 	return (
 		<li {...stylex.props(styles.item)}>
-			{result.kind === 'topic' ? (
+			{result.kind === 'collection' ? (
 				<DialogClose
+					nativeButton={false}
 					render={
 						<Link
-							params={{ topicId: result.id }}
-							to='/library/$topicId'
+							params={{ collectionId: result.id }}
+							role='link'
+							to='/library/$collectionId'
 						/>
 					}
 					{...stylex.props(styles.link)}
@@ -93,10 +95,12 @@ export function SearchResultItem({ result }: SearchResultItemProps) {
 				</DialogClose>
 			) : (
 				<DialogClose
+					nativeButton={false}
 					render={
 						<Link
-							params={{ reviewCardId: result.id }}
-							to='/review-cards/$reviewCardId'
+							params={{ cardId: result.id }}
+							role='link'
+							to='/cards/$cardId'
 						/>
 					}
 					{...stylex.props(styles.link)}

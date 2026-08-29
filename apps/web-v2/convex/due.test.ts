@@ -12,34 +12,37 @@ const userBIdentity = { subject: 'user-b' }
 
 type Harness = ReturnType<typeof convexTest>
 
-async function seedTopic(t: Harness, ownerId: string): Promise<Id<'topics'>> {
+async function seedCollection(
+	t: Harness,
+	ownerId: string,
+): Promise<Id<'collections'>> {
 	return await t.run(
 		async ctx =>
-			await ctx.db.insert('topics', {
+			await ctx.db.insert('collections', {
 				description: '',
 				ownerId,
 				path: [],
-				searchText: 'Topic',
-				title: 'Topic',
+				searchText: 'Collection',
+				title: 'Collection',
 			}),
 	)
 }
 
 async function seedCard(
 	t: Harness,
-	topicId: Id<'topics'>,
+	collectionId: Id<'collections'>,
 	ownerId: string,
 	fields: { dueDate?: string; primaryText: string },
-): Promise<Id<'reviewCards'>> {
+): Promise<Id<'cards'>> {
 	return await t.run(
 		async ctx =>
-			await ctx.db.insert('reviewCards', {
+			await ctx.db.insert('cards', {
 				notes: '',
 				ownerId,
 				secondaryText: '',
 				searchText: fields.primaryText,
 				state: 'LEARNING',
-				topicId,
+				collectionId,
 				type: 'flashcard',
 				...fields,
 			}),
@@ -48,7 +51,7 @@ async function seedCard(
 
 async function seedReview(
 	t: Harness,
-	reviewCardId: Id<'reviewCards'>,
+	cardId: Id<'cards'>,
 	ownerId: string,
 	fields: { date?: string; rating?: 'good' },
 ): Promise<void> {
@@ -57,7 +60,7 @@ async function seedReview(
 			description: '',
 			notes: '',
 			ownerId,
-			reviewCardId,
+			cardId,
 			...fields,
 		})
 	})
@@ -95,18 +98,18 @@ describe('due.list', () => {
 
 	it('returns cards due on the date and cards with a review scheduled that day', async () => {
 		const t = convexTest(schema, modules)
-		const topicId = await seedTopic(t, userAIdentity.subject)
-		await seedCard(t, topicId, userAIdentity.subject, {
+		const collectionId = await seedCollection(t, userAIdentity.subject)
+		await seedCard(t, collectionId, userAIdentity.subject, {
 			dueDate: '2026-08-10',
 			primaryText: 'Due today',
 		})
 		const scheduledCardId = await seedCard(
 			t,
-			topicId,
+			collectionId,
 			userAIdentity.subject,
 			{ primaryText: 'Scheduled today' },
 		)
-		await seedCard(t, topicId, userAIdentity.subject, {
+		await seedCard(t, collectionId, userAIdentity.subject, {
 			dueDate: '2026-08-11',
 			primaryText: 'Due tomorrow',
 		})
@@ -124,18 +127,18 @@ describe('due.list', () => {
 
 	it('excludes overdue cards and reviews from before the due date', async () => {
 		const t = convexTest(schema, modules)
-		const topicId = await seedTopic(t, userAIdentity.subject)
-		await seedCard(t, topicId, userAIdentity.subject, {
+		const collectionId = await seedCollection(t, userAIdentity.subject)
+		await seedCard(t, collectionId, userAIdentity.subject, {
 			dueDate: '2026-08-08',
 			primaryText: 'Overdue card',
 		})
-		const overdueReviewCardId = await seedCard(
+		const overdueCardId = await seedCard(
 			t,
-			topicId,
+			collectionId,
 			userAIdentity.subject,
 			{ primaryText: 'Overdue review' },
 		)
-		await seedReview(t, overdueReviewCardId, userAIdentity.subject, {
+		await seedReview(t, overdueCardId, userAIdentity.subject, {
 			date: '2026-08-08',
 		})
 
@@ -146,10 +149,10 @@ describe('due.list', () => {
 
 	it('returns a card once when it has several scheduled reviews that day', async () => {
 		const t = convexTest(schema, modules)
-		const topicId = await seedTopic(t, userAIdentity.subject)
+		const collectionId = await seedCollection(t, userAIdentity.subject)
 		// No `dueDate`, so the card is only reachable through its reviews — the
 		// path where an async dedupe check would push it twice.
-		const cardId = await seedCard(t, topicId, userAIdentity.subject, {
+		const cardId = await seedCard(t, collectionId, userAIdentity.subject, {
 			primaryText: 'Busy card',
 		})
 		await seedReview(t, cardId, userAIdentity.subject, {
@@ -166,14 +169,19 @@ describe('due.list', () => {
 
 	it('ignores completed reviews', async () => {
 		const t = convexTest(schema, modules)
-		const topicId = await seedTopic(t, userAIdentity.subject)
-		await seedCard(t, topicId, userAIdentity.subject, {
+		const collectionId = await seedCollection(t, userAIdentity.subject)
+		await seedCard(t, collectionId, userAIdentity.subject, {
 			dueDate: '2026-08-10',
 			primaryText: 'Due today',
 		})
-		const ratedCardId = await seedCard(t, topicId, userAIdentity.subject, {
-			primaryText: 'Already reviewed',
-		})
+		const ratedCardId = await seedCard(
+			t,
+			collectionId,
+			userAIdentity.subject,
+			{
+				primaryText: 'Already reviewed',
+			},
+		)
 		await seedReview(t, ratedCardId, userAIdentity.subject, {
 			date: '2026-08-10',
 			rating: 'good',
@@ -186,8 +194,8 @@ describe('due.list', () => {
 
 	it("never returns another user's cards", async () => {
 		const t = convexTest(schema, modules)
-		const topicId = await seedTopic(t, userBIdentity.subject)
-		const cardId = await seedCard(t, topicId, userBIdentity.subject, {
+		const collectionId = await seedCollection(t, userBIdentity.subject)
+		const cardId = await seedCard(t, collectionId, userBIdentity.subject, {
 			dueDate: '2026-08-10',
 			primaryText: "User B's card",
 		})
@@ -229,11 +237,16 @@ describe('due.list', () => {
 	describe('entry fields', () => {
 		it('flags SRS-due cards and carries their uncompleted reviews', async () => {
 			const t = convexTest(schema, modules)
-			const topicId = await seedTopic(t, userAIdentity.subject)
-			const cardId = await seedCard(t, topicId, userAIdentity.subject, {
-				dueDate: '2026-08-10',
-				primaryText: 'Due today',
-			})
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			const cardId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{
+					dueDate: '2026-08-10',
+					primaryText: 'Due today',
+				},
+			)
 			await seedReview(t, cardId, userAIdentity.subject, {
 				date: '2026-08-10',
 			})
@@ -248,13 +261,13 @@ describe('due.list', () => {
 			expect(entry?.date).toBe('2026-08-10')
 			expect(entry?.srsScheduled).toBe(true)
 			expect(entry?.scheduledReviews).toHaveLength(1)
-			expect(entry?.scheduledReviews[0]?.reviewCardId).toBe(cardId)
+			expect(entry?.scheduledReviews[0]?.cardId).toBe(cardId)
 		})
 
 		it('gives an SRS-due card with no review row an empty review list', async () => {
 			const t = convexTest(schema, modules)
-			const topicId = await seedTopic(t, userAIdentity.subject)
-			await seedCard(t, topicId, userAIdentity.subject, {
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-10',
 				primaryText: 'Due today',
 			})
@@ -271,12 +284,17 @@ describe('due.list', () => {
 
 		it('leaves `srsScheduled` false for a hand-scheduled review', async () => {
 			const t = convexTest(schema, modules)
-			const topicId = await seedTopic(t, userAIdentity.subject)
+			const collectionId = await seedCollection(t, userAIdentity.subject)
 			// Due on another day, so this entry exists only via its review.
-			const cardId = await seedCard(t, topicId, userAIdentity.subject, {
-				dueDate: '2026-09-01',
-				primaryText: 'Hand-scheduled',
-			})
+			const cardId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{
+					dueDate: '2026-09-01',
+					primaryText: 'Hand-scheduled',
+				},
+			)
 			await seedReview(t, cardId, userAIdentity.subject, {
 				date: '2026-08-10',
 			})
@@ -293,11 +311,16 @@ describe('due.list', () => {
 
 		it('excludes a completed review from an SRS-due card', async () => {
 			const t = convexTest(schema, modules)
-			const topicId = await seedTopic(t, userAIdentity.subject)
-			const cardId = await seedCard(t, topicId, userAIdentity.subject, {
-				dueDate: '2026-08-10',
-				primaryText: 'Due today',
-			})
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			const cardId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{
+					dueDate: '2026-08-10',
+					primaryText: 'Due today',
+				},
+			)
 			await seedReview(t, cardId, userAIdentity.subject, {
 				date: '2026-08-10',
 				rating: 'good',
@@ -317,10 +340,10 @@ describe('due.list', () => {
 	describe('date ranges', () => {
 		it('covers `[from, to)` and excludes the end day', async () => {
 			const t = convexTest(schema, modules)
-			const topicId = await seedTopic(t, userAIdentity.subject)
+			const collectionId = await seedCollection(t, userAIdentity.subject)
 
 			for (const dueDate of ['2026-08-09', '2026-08-10', '2026-08-12']) {
-				await seedCard(t, topicId, userAIdentity.subject, {
+				await seedCard(t, collectionId, userAIdentity.subject, {
 					dueDate,
 					primaryText: `Due ${dueDate}`,
 				})
@@ -336,8 +359,8 @@ describe('due.list', () => {
 
 		it('returns an empty range as no entries', async () => {
 			const t = convexTest(schema, modules)
-			const topicId = await seedTopic(t, userAIdentity.subject)
-			await seedCard(t, topicId, userAIdentity.subject, {
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-10',
 				primaryText: 'Due today',
 			})
@@ -352,10 +375,10 @@ describe('due.list', () => {
 
 		it('supports a range with only a lower bound', async () => {
 			const t = convexTest(schema, modules)
-			const topicId = await seedTopic(t, userAIdentity.subject)
+			const collectionId = await seedCollection(t, userAIdentity.subject)
 
 			for (const dueDate of ['2026-08-09', '2026-08-10', '2026-08-12']) {
-				await seedCard(t, topicId, userAIdentity.subject, {
+				await seedCard(t, collectionId, userAIdentity.subject, {
 					dueDate,
 					primaryText: `Due ${dueDate}`,
 				})
@@ -371,10 +394,10 @@ describe('due.list', () => {
 
 		it('supports a range with only an upper bound', async () => {
 			const t = convexTest(schema, modules)
-			const topicId = await seedTopic(t, userAIdentity.subject)
+			const collectionId = await seedCollection(t, userAIdentity.subject)
 
 			for (const dueDate of ['2026-08-09', '2026-08-10', '2026-08-12']) {
-				await seedCard(t, topicId, userAIdentity.subject, {
+				await seedCard(t, collectionId, userAIdentity.subject, {
 					dueDate,
 					primaryText: `Due ${dueDate}`,
 				})
@@ -387,17 +410,17 @@ describe('due.list', () => {
 
 		it('supports a fully unbounded range and excludes undated records', async () => {
 			const t = convexTest(schema, modules)
-			const topicId = await seedTopic(t, userAIdentity.subject)
-			await seedCard(t, topicId, userAIdentity.subject, {
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-10',
 				primaryText: 'Dated card',
 			})
-			await seedCard(t, topicId, userAIdentity.subject, {
+			await seedCard(t, collectionId, userAIdentity.subject, {
 				primaryText: 'Undated card',
 			})
 			const scheduledCardId = await seedCard(
 				t,
-				topicId,
+				collectionId,
 				userAIdentity.subject,
 				{ primaryText: 'Dated review' },
 			)
@@ -414,11 +437,16 @@ describe('due.list', () => {
 
 		it('yields one entry per day for a card scheduled on several days', async () => {
 			const t = convexTest(schema, modules)
-			const topicId = await seedTopic(t, userAIdentity.subject)
-			const cardId = await seedCard(t, topicId, userAIdentity.subject, {
-				dueDate: '2026-08-10',
-				primaryText: 'Recurring',
-			})
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			const cardId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{
+					dueDate: '2026-08-10',
+					primaryText: 'Recurring',
+				},
+			)
 			await seedReview(t, cardId, userAIdentity.subject, {
 				date: '2026-08-12',
 			})
@@ -443,17 +471,17 @@ describe('due.list', () => {
 
 		it('sorts entries by date, then by card creation order, newest first', async () => {
 			const t = convexTest(schema, modules)
-			const topicId = await seedTopic(t, userAIdentity.subject)
+			const collectionId = await seedCollection(t, userAIdentity.subject)
 			// Seeded out of date order to prove the sort does the work.
-			await seedCard(t, topicId, userAIdentity.subject, {
+			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-12',
 				primaryText: 'Later',
 			})
-			await seedCard(t, topicId, userAIdentity.subject, {
+			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-10',
 				primaryText: 'First',
 			})
-			await seedCard(t, topicId, userAIdentity.subject, {
+			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-10',
 				primaryText: 'Second',
 			})

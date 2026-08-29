@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
 import { useToday } from '~/hooks/useToday'
-import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
+import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { layout, spacing } from '~/styles/tokens.stylex'
 
 import { ReviewListPage } from './ReviewPages/ReviewListPage'
@@ -24,15 +24,13 @@ const styles = stylex.create({
 
 export function FlaggedPage() {
 	const today = useToday()
-	const { data: flaggedCards } = useSuspenseQuery(
-		reviewCardQueries.listFlagged(),
-	)
+	const { data: flaggedCards } = useSuspenseQuery(cardQueries.listFlagged())
 
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.content)}>
 				<ReviewListPage
-					reviewCards={flaggedCards}
+					cards={flaggedCards}
 					title='Flagged'
 					today={today}
 				/>

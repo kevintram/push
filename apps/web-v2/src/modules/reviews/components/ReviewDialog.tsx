@@ -15,8 +15,8 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
-import { topicQueries } from '~/modules/library/api/topicQueries'
-import { reviewCardQueries } from '~/modules/reviews/api/reviewCardQueries'
+import { collectionQueries } from '~/modules/library/api/collectionQueries'
+import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { dialogColors, reviewColors } from '~/styles/colors/components.stylex'
 import {
 	breakpoints,
@@ -327,16 +327,16 @@ export function ReviewDialog({
 		if (!isOpen) setIsExpanded(false)
 	}, [isOpen])
 
-	const { data: reviewCard } = useQuery({
-		...reviewCardQueries.detail(review.reviewCardId),
+	const { data: card } = useQuery({
+		...cardQueries.detail(review.cardId),
 		enabled: isOpen,
 	})
-	const topicId = reviewCard?.topicId
-	const { data: topic } = useQuery({
-		...topicQueries.detail(topicId ?? ('' as Id<'topics'>), {
+	const collectionId = card?.collectionId
+	const { data: collection } = useQuery({
+		...collectionQueries.detail(collectionId ?? ('' as Id<'collections'>), {
 			expandPath: true,
 		}),
-		enabled: isOpen && topicId !== undefined,
+		enabled: isOpen && collectionId !== undefined,
 	})
 
 	return (
@@ -353,9 +353,9 @@ export function ReviewDialog({
 			</DialogTitle>
 			<header {...stylex.props(styles.header)}>
 				<ReviewDialogBreadcrumbs
-					reviewCard={reviewCard}
-					reviewCardId={review.reviewCardId}
-					topic={topic}
+					card={card}
+					cardId={review.cardId}
+					collection={collection}
 				/>
 				<div {...stylex.props(styles.headerActions)}>
 					<Button.Icon

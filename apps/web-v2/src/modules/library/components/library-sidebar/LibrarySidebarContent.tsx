@@ -8,9 +8,9 @@ import { Button, Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
 import { fontWeights, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
-import { useCreateTopic } from '../../api/topicQueries'
-import type { TopicWithChildren } from '../../types/topic.types'
-import { LibraryTopicItem } from './LibraryTopicItem'
+import { useCreateCollection } from '../../api/collectionQueries'
+import type { CollectionWithChildren } from '../../types/collection.types'
+import { LibraryCollectionItem } from './LibraryCollectionItem'
 
 const styles = stylex.create({
 	container: {
@@ -52,26 +52,31 @@ const styles = stylex.create({
 })
 
 type LibrarySidebarContentProps = {
-	topics: ReadonlyArray<TopicWithChildren>
+	collections: ReadonlyArray<CollectionWithChildren>
 }
 
-export function LibrarySidebarContent({ topics }: LibrarySidebarContentProps) {
-	const createTopic = useCreateTopic()
+export function LibrarySidebarContent({
+	collections,
+}: LibrarySidebarContentProps) {
+	const createCollection = useCreateCollection()
 	const navigate = useNavigate()
 	const { ref: droppableHeaderRef, isDropTarget: headerIsDropTarget } =
 		useDroppable({
 			id: 'library-root',
 		})
 
-	const handleCreateTopic = useCallback(() => {
-		createTopic.mutate(
+	const handleCreateCollection = useCallback(() => {
+		createCollection.mutate(
 			{},
 			{
-				onSuccess: topicId =>
-					navigate({ to: '/library/$topicId', params: { topicId } }),
+				onSuccess: collectionId =>
+					navigate({
+						to: '/library/$collectionId',
+						params: { collectionId },
+					}),
 			},
 		)
-	}, [navigate, createTopic])
+	}, [navigate, createCollection])
 
 	return (
 		<div {...stylex.props(styles.container)}>
@@ -85,20 +90,23 @@ export function LibrarySidebarContent({ topics }: LibrarySidebarContentProps) {
 				>
 					<p {...stylex.props(styles.headerText)}>Library</p>
 					<Button.Icon
-						aria-label='Add topic'
+						aria-label='Add collection'
 						shape='round'
 						size='micro'
 						variant='ghost'
-						onClick={handleCreateTopic}
+						onClick={handleCreateCollection}
 					>
 						<Plus aria-hidden='true' size={iconSizes.md} />
 					</Button.Icon>
 				</div>
 			</div>
-			<nav aria-label='Library topics' {...stylex.props(styles.nav)}>
+			<nav aria-label='Library collections' {...stylex.props(styles.nav)}>
 				<Tree>
-					{topics.map(topic => (
-						<LibraryTopicItem key={topic._id} {...topic} />
+					{collections.map(collection => (
+						<LibraryCollectionItem
+							key={collection._id}
+							{...collection}
+						/>
 					))}
 				</Tree>
 			</nav>

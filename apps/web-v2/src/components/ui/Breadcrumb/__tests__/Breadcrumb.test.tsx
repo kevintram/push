@@ -42,10 +42,10 @@ describe('Breadcrumb', () => {
 	})
 
 	it('allows a custom accessible label', () => {
-		render(<Breadcrumb aria-label='Topic hierarchy' />)
+		render(<Breadcrumb aria-label='Collection hierarchy' />)
 
 		expect(
-			screen.getByRole('navigation', { name: 'Topic hierarchy' }),
+			screen.getByRole('navigation', { name: 'Collection hierarchy' }),
 		).toBeInTheDocument()
 	})
 

@@ -2,6 +2,7 @@ import { assertIsoDate } from '../../shared/date'
 import { type Id } from '../_generated/dataModel'
 import { type QueryCtx } from '../_generated/server'
 import { type DueDateRange, type DueEntry } from '../validators/due'
+import { toReview } from './reviews'
 
 export type { DueDateRange, DueEntry } from '../validators/due'
 
@@ -54,7 +55,7 @@ export async function list(
 	//   2. Uncompleted reviews (`rating` unset) whose `date` falls in range.
 
 	const dueCardsQuery = ctx.db
-		.query('reviewCards')
+		.query('cards')
 		.withIndex('by_ownerId_dueDate', q => {
 			const owned = q.eq('ownerId', userId)
 
@@ -98,24 +99,25 @@ export async function list(
 		})
 
 	// The queries are independent, so issue them concurrently.
-	const [dueCards, dueReviews] = await Promise.all([
+	const [dueCards, dueReviewRows] = await Promise.all([
 		// TODO(2): stop using unbounded `collect()`?
 		dueCardsQuery.collect(),
 		dueReviewsQuery.collect(),
 	])
+	const dueReviews = dueReviewRows.map(toReview)
 
 	const cardsById = new Map(dueCards.map(card => [card._id, card]))
 
-	// Make sure we have all reviewCards for all the dueReviews.
+	// Make sure we have all cards for all the dueReviews.
 	//
 	// missingCardIds = the ids of the cards we need to get
-	const missingCardIds = new Set( // Use set to dedupe to save fetching the same reviewCard twice.
+	const missingCardIds = new Set( // Use set to dedupe to save fetching the same card twice.
 		dueReviews
-			.map(review => review.reviewCardId)
+			.map(review => review.cardId)
 			.filter(id => !cardsById.has(id)),
 	)
 	const missingCards = await Promise.all(
-		[...missingCardIds].map(id => ctx.db.get('reviewCards', id)), // skip ownership check
+		[...missingCardIds].map(id => ctx.db.get('cards', id)), // skip ownership check
 	)
 
 	missingCards.forEach(card => {
@@ -133,7 +135,7 @@ export async function list(
 
 	// Add SRS-due cards first so reviews on the same day can merge into them.
 	const entries = new Map<string, DueEntry>()
-	function entryKey(date: string, cardId: Id<'reviewCards'>): string {
+	function entryKey(date: string, cardId: Id<'cards'>): string {
 		return `${date}|${cardId}`
 	}
 
@@ -156,13 +158,13 @@ export async function list(
 		// never match. Narrowing only, not a real case.
 		if (review.date === undefined) continue
 
-		const card = cardsById.get(review.reviewCardId)
+		const card = cardsById.get(review.cardId)
 
 		// The card was deleted out from under its review (see the missing-card
 		// load above). Skip; there is nothing to show without the card.
 		if (card === undefined) continue
 
-		const key = entryKey(review.date, review.reviewCardId)
+		const key = entryKey(review.date, review.cardId)
 		const entry = entries.get(key)
 
 		if (entry) {

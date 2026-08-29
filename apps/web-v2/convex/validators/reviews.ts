@@ -1,13 +1,13 @@
 import { type Infer, v } from 'convex/values'
 
-import { learningState } from './reviewCards'
+import { learningState } from './cards'
 import { rating } from './reviewRatings'
 
 export { rating }
 
 export const reviewBase = v.object({
 	ownerId: v.string(),
-	reviewCardId: v.id('reviewCards'),
+	cardId: v.id('cards'),
 	rating: v.optional(rating),
 	date: v.optional(v.string()), // YYYY-MM-DD
 	description: v.string(),
@@ -29,35 +29,32 @@ export const reviewRead = reviewBase.extend({
 	_creationTime: v.number(),
 })
 
-export const reviewCreate = reviewBase
-	.omit(
-		'ownerId',
-		'reviewCardId',
-		// omit SRS columns because they're *only* handled by server
-		'stabilityBefore',
-		'difficultyBefore',
-		'stateBefore',
-		'stepBefore',
-		'dueDateBefore',
-		'stabilityAfter',
-		'difficultyAfter',
-		'stateAfter',
-		'stepAfter',
-		'dueDateAfter',
-	)
-	.partial()
-	.extend({ reviewCardId: v.id('reviewCards') }) // require
+export const reviewCreate = v.object({
+	...reviewBase
+		.omit(
+			'ownerId',
+			'cardId',
+			'stabilityBefore',
+			'difficultyBefore',
+			'stateBefore',
+			'stepBefore',
+			'dueDateBefore',
+			'stabilityAfter',
+			'difficultyAfter',
+			'stateAfter',
+			'stepAfter',
+			'dueDateAfter',
+		)
+		.partial().fields,
+	cardId: v.id('cards'),
+})
 
 export const reviewPatch = reviewBase
 	.omit(
-		// omit so they're unsettable
 		'ownerId',
-		'reviewCardId',
-		// omit so we can do the three-state jawn
-		// (1. omit/undefined = leave alone 2. null = clear 3. value = set.)
+		'cardId',
 		'rating',
 		'date',
-		// omit SRS columns because they're handled by the *server* ONLY
 		'stabilityBefore',
 		'difficultyBefore',
 		'stateBefore',
