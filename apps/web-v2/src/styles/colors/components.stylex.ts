@@ -368,9 +368,6 @@ export const reviewsSidebarColors = stylex.defineVars({
 })
 
 export const searchDialogColors = stylex.defineVars({
-	popupBorder: semanticColors.borderSubtle,
-	popupBackground: semanticColors.surfacePrimary,
-
 	headerBorder: semanticColors.borderSubtle,
 	searchIconForeground: semanticColors.textSecondary,
 
