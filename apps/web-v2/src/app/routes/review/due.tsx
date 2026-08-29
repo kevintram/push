@@ -9,6 +9,6 @@ export const Route = createFileRoute('/review/due')({
 	loader: ({ context: { auth, queryClient } }) => {
 		if (!auth.isAuthenticated) return
 
-		return queryClient.ensureQueryData(dueQueries.list(todayIso()))
+		return queryClient.ensureQueryData(dueQueries.listDue(todayIso()))
 	},
 })

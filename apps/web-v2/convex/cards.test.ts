@@ -37,9 +37,6 @@ describe('cards', () => {
 		await expect(
 			t.query(api.cards.listByCollection, { collectionId }),
 		).rejects.toThrow('Unauthenticated')
-		await expect(t.query(api.cards.listNew, {})).rejects.toThrow(
-			'Unauthenticated',
-		)
 		await expect(t.query(api.cards.listFlagged, {})).rejects.toThrow(
 			'Unauthenticated',
 		)
@@ -179,51 +176,6 @@ describe('cards', () => {
 		})
 
 		expect(cards.map(card => card._id)).toEqual([ownCardId])
-	})
-
-	it('uses absent stability as the new-card criterion', async () => {
-		const t = convexTest(schema, modules)
-		const asUserA = t.withIdentity(userAIdentity)
-		const collectionId = await asUserA.mutation(api.collections.create, {})
-		const missingStabilityId = await asUserA.mutation(api.cards.create, {
-			collectionId,
-		})
-
-		const noStabilityId = await t.run(async ctx => {
-			const baseCard = {
-				notes: '',
-				ownerId: userAIdentity.subject,
-				primaryText: '',
-				secondaryText: '',
-				searchText: '',
-				state: 'LEARNING' as const,
-				collectionId,
-				type: 'flashcard' as const,
-			}
-			await ctx.db.insert('cards', {
-				...baseCard,
-				stability: 0,
-			})
-			const noStabilityId = await ctx.db.insert('cards', baseCard)
-			await ctx.db.insert('cards', { ...baseCard, stability: 0 })
-			await ctx.db.insert('cards', {
-				...baseCard,
-				stability: 1,
-			})
-			await ctx.db.insert('cards', {
-				...baseCard,
-				ownerId: userBIdentity.subject,
-			})
-
-			return noStabilityId
-		})
-
-		const newCards = await asUserA.query(api.cards.listNew, {})
-
-		expect(newCards.map(card => card._id)).toEqual([
-			missingStabilityId,
-			noStabilityId,
-		])
 	})
 
 	it("lists only the current user's flagged cards newest first", async () => {
@@ -366,6 +318,60 @@ describe('cards', () => {
 			cardId,
 		})
 		expect(unflagged?.flaggedAt).toBeUndefined()
+	})
+
+	it('retires and unretires a card, and leaves it alone when omitted', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			primaryText: 'Original primary',
+			collectionId,
+		})
+
+		const active = await asUserA.query(api.cards.get, { cardId })
+		expect(active?.retiredAt).toBeUndefined()
+
+		await asUserA.mutation(api.cards.update, {
+			cardId,
+			retiredAt: 1_700_000_000_000,
+		})
+
+		await expect(
+			asUserA.query(api.cards.get, { cardId }),
+		).resolves.toMatchObject({ retiredAt: 1_700_000_000_000 })
+
+		// Omitted leaves the existing value alone.
+		await asUserA.mutation(api.cards.update, {
+			cardId,
+			primaryText: 'Updated primary',
+		})
+
+		await expect(
+			asUserA.query(api.cards.get, { cardId }),
+		).resolves.toMatchObject({
+			primaryText: 'Updated primary',
+			retiredAt: 1_700_000_000_000,
+		})
+
+		await asUserA.mutation(api.cards.update, { cardId, retiredAt: null })
+
+		const unretired = await asUserA.query(api.cards.get, { cardId })
+		expect(unretired?.retiredAt).toBeUndefined()
+	})
+
+	it('creates a card already retired', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
+			retiredAt: 1_700_000_000_000,
+		})
+
+		await expect(
+			asUserA.query(api.cards.get, { cardId }),
+		).resolves.toMatchObject({ retiredAt: 1_700_000_000_000 })
 	})
 
 	it('moves a card between owned collections', async () => {

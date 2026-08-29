@@ -1,10 +1,20 @@
 import * as stylex from '@stylexjs/stylex'
+import { formatForDisplay, useHotkey } from '@tanstack/react-hotkeys'
 import { Maximize2 } from 'lucide-react'
 import { useState } from 'react'
 
-import { Button, createDialogHandle, DialogTrigger } from '~/components/ui'
+import {
+	Button,
+	createDialogHandle,
+	DialogTrigger,
+	Kbd,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '~/components/ui'
 import { CardItem } from '~/modules/reviews/components/CardItem'
 import { FocusOverlayDialog } from '~/modules/reviews/components/focus-overlay/FocusOverlayDialog'
+import { FOCUS_OVERLAY_HOTKEY } from '~/modules/reviews/components/focus-overlay/focusOverlayHotkey'
 import type { Card as CardModel } from '~/modules/reviews/types/review.types'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
@@ -47,19 +57,47 @@ export function ReviewListPage({ cards, title, today }: ReviewListPageProps) {
 	const [focusDialogHandle] = useState(createDialogHandle)
 	const cardCount = cards.length
 
+	useHotkey(
+		FOCUS_OVERLAY_HOTKEY,
+		() => {
+			if (focusDialogHandle.isOpen) focusDialogHandle.close()
+			else focusDialogHandle.open(null)
+		},
+		{
+			enabled: cardCount > 0,
+			preventDefault: true,
+			requireReset: true,
+		},
+	)
+
 	return (
 		<>
 			<div {...stylex.props(styles.content)}>
 				<div {...stylex.props(styles.heading)}>
 					<h1 {...stylex.props(styles.title)}>{title}</h1>
-					<DialogTrigger
-						handle={focusDialogHandle}
-						disabled={cardCount === 0}
-						render={<Button variant='secondary' shape='round' />}
-					>
-						<Maximize2 size={iconSizes.md} />
-						Focus
-					</DialogTrigger>
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<DialogTrigger
+									handle={focusDialogHandle}
+									disabled={cardCount === 0}
+									render={
+										<Button
+											variant='secondary'
+											shape='round'
+										/>
+									}
+								>
+									<Maximize2 size={iconSizes.md} />
+									Focus
+								</DialogTrigger>
+							}
+						/>
+						<TooltipContent>
+							Focus
+							<Kbd>{formatForDisplay(FOCUS_OVERLAY_HOTKEY)}</Kbd>
+						</TooltipContent>
+					</Tooltip>
 				</div>
 				{cardCount === 0 ? (
 					<p {...stylex.props(styles.empty)}>

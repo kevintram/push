@@ -16,6 +16,7 @@ export const cardBase = v.object({
 	secondaryText: v.string(),
 	notes: v.string(),
 	flaggedAt: v.optional(v.number()), // epoch ms; absent when unflagged
+	retiredAt: v.optional(v.number()), // epoch ms; absent when active
 	stability: v.optional(v.number()),
 	difficulty: v.optional(v.number()),
 	state: learningState,
@@ -59,13 +60,15 @@ export const cardCreate = v.object({
 	collectionId: v.id('collections'), // require collectionId
 })
 
-// The mutable card fields, plus `flaggedAt` as a three-state shape
-// where 1. omit/undefined = leave alone 2. null = unflag 3. number = flag.
+// The mutable card fields, plus `flaggedAt` and `retiredAt` as three-state
+// shapes where 1. omit/undefined = leave alone 2. null = clear (unflag /
+// unretire) 3. number = set (flag / retire).
 // Moving via `collectionId` is authorized in the model; `ownerId` stays unsettable.
 export const cardPatch = cardBase
 	.omit(
 		'ownerId', // omit because handled by server only
 		'flaggedAt', // omit to do three-state shape (see above comment)
+		'retiredAt', // omit to do three-state shape (see above comment)
 		// omit SRS columns because they're handled by server
 		'stability',
 		'difficulty',
@@ -77,6 +80,7 @@ export const cardPatch = cardBase
 	)
 	.extend({
 		flaggedAt: v.union(v.number(), v.null()),
+		retiredAt: v.union(v.number(), v.null()),
 	})
 	.partial()
 

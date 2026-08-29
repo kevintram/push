@@ -18,8 +18,3 @@ export type CardSrsState = {
 export type Review = Doc<'reviews'>
 
 export type Rating = NonNullable<Review['rating']>
-
-export type ReviewFilters = {
-	cardId: string
-	order?: 'asc' | 'desc'
-}

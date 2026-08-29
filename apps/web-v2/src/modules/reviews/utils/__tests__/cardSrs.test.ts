@@ -2,7 +2,7 @@ import type { Id } from '@convex/_generated/dataModel'
 import { describe, expect, it } from 'vitest'
 
 import type { Card } from '../../types/review.types'
-import { deriveCardSrsState, getFreshnessTier } from '../cardSrs'
+import { deriveCardSrsState, formatDurability, formatRecall } from '../cardSrs'
 
 function card(overrides: Partial<Card> = {}): Card {
 	return {
@@ -54,16 +54,24 @@ describe('deriveCardSrsState', () => {
 	})
 })
 
-describe('getFreshnessTier', () => {
+describe('formatRecall', () => {
 	it.each([
 		[null, null],
-		[0.75, 'Forgotten'],
-		[0.8, 'Hazy'],
-		[0.85, 'Hazy'],
-		[0.9, 'Fine'],
-		[0.95, 'Fine'],
-		[0.96, 'Fresh'],
-	] as const)('maps %s retrievability to %s', (retrievability, tier) => {
-		expect(getFreshnessTier(retrievability)).toBe(tier)
+		[0.8, '80%'],
+		[0.804, '80%'],
+		[0.996, '100%'],
+	] as const)('formats %s as %s', (retrievability, expected) => {
+		expect(formatRecall(retrievability)).toBe(expected)
+	})
+})
+
+describe('formatDurability', () => {
+	it.each([
+		[null, null],
+		[1, '1d'],
+		[10.4, '10d'],
+		[10.5, '11d'],
+	] as const)('formats %s as %s', (stability, expected) => {
+		expect(formatDurability(stability)).toBe(expected)
 	})
 })

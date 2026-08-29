@@ -1,3 +1,4 @@
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 
 import {
@@ -5,6 +6,7 @@ import {
 	HideModeContext,
 	type HideModeStore,
 } from './HideModeContext'
+import { HIDE_MODE_HOTKEY } from './hideModeHotkey'
 
 const STORAGE_KEY = 'hideMode'
 
@@ -29,6 +31,10 @@ export function HideModeProvider({ children }: HideModeProviderProps) {
 			return newValue
 		})
 	}, [])
+
+	useHotkey(HIDE_MODE_HOTKEY, () => {
+		toggleHide()
+	})
 
 	const storeValue = useMemo<HideModeStore>(
 		() => ({

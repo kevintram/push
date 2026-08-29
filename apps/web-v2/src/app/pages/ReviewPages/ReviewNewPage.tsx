@@ -1,13 +1,19 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 
 import { useToday } from '~/hooks/useToday'
-import { cardQueries } from '~/modules/reviews/api/cardQueries'
+import { dueQueries } from '~/modules/reviews/api/dueQueries'
 
 import { ReviewListPage } from './ReviewListPage'
 
 export function ReviewNewPage() {
 	const today = useToday()
-	const { data: cards } = useSuspenseQuery(cardQueries.listNew())
+	const { data: entries } = useSuspenseQuery(dueQueries.listNew())
 
-	return <ReviewListPage cards={cards} title='New' today={today} />
+	return (
+		<ReviewListPage
+			cards={entries.map(entry => entry.card)}
+			title='New'
+			today={today}
+		/>
+	)
 }

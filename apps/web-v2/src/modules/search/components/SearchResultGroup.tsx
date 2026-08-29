@@ -3,7 +3,7 @@ import { ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
 
 import { Button } from '~/components/ui/Button'
 import {
-	searchDialogColors,
+	dialogColors,
 	searchResultGroupColors,
 } from '~/styles/colors/components.stylex'
 import {
@@ -34,7 +34,7 @@ const styles = stylex.create({
 		minBlockSize: '32px',
 	},
 	headerExpanded: {
-		backgroundColor: searchDialogColors.popupBackground,
+		backgroundColor: dialogColors.popupBackground,
 		insetBlockStart: 0,
 		position: 'sticky',
 		zIndex: 1,

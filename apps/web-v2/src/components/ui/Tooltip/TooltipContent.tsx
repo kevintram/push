@@ -21,10 +21,13 @@ const styles = stylex.create({
 		paddingInline: spacing.sm,
 
 		borderRadius: radii.xs,
+		alignItems: 'center',
 		backgroundColor: tooltipColors.popupBackground,
 		boxShadow: `0 4px 12px ${tooltipColors.popupShadow}`,
 		color: tooltipColors.popupForeground,
-		fontSize: fontSizes.xs,
+		columnGap: spacing.sm,
+		display: 'flex',
+		fontSize: fontSizes.sm,
 		opacity: {
 			default: 1,
 			':is([data-starting-style], [data-ending-style])': 0,

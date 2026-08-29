@@ -22,16 +22,6 @@ export const listByCollection = query({
 	},
 })
 
-export const listNew = query({
-	args: {},
-	returns: v.array(cardRead),
-	handler: async ctx => {
-		const { subject: userId } = await requireIdentity(ctx)
-
-		return await Cards.listNew(ctx, userId)
-	},
-})
-
 export const listFlagged = query({
 	args: {},
 	returns: v.array(cardRead),

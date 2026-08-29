@@ -12,6 +12,11 @@ type UseCardActionsReturn = {
 	toggleType: () => void
 	/** Flags an unflagged card, or clears the flag on a flagged one. */
 	toggleFlag: () => void
+	/**
+	 * Retires an active card, or brings a retired one back. A retired card
+	 * drops out of every review queue; see `due.list`.
+	 */
+	toggleRetire: () => void
 	setIsDeleteDialogOpen: (open: boolean) => void
 	confirmDelete: () => void
 }
@@ -50,6 +55,20 @@ export function useCardActions(card: Card): UseCardActionsReturn {
 		)
 	}, [card._id, card.flaggedAt, updateCard])
 
+	const toggleRetire = useCallback(() => {
+		updateCard.mutate(
+			{
+				cardId: card._id,
+				// `null` unsets the field; see `cards.update`.
+				retiredAt:
+					card.retiredAt === undefined
+						? DateTime.now().toMillis()
+						: null,
+			},
+			{ onError: () => toast.error('Failed to update card retirement') },
+		)
+	}, [card._id, card.retiredAt, updateCard])
+
 	const confirmDelete = useCallback(() => {
 		deleteCard.mutate(
 			{ cardId: card._id },
@@ -67,6 +86,7 @@ export function useCardActions(card: Card): UseCardActionsReturn {
 		isDeleting: deleteCard.isPending,
 		setIsDeleteDialogOpen,
 		toggleFlag,
+		toggleRetire,
 		toggleType,
 	}
 }

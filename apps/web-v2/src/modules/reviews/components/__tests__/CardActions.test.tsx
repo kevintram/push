@@ -141,6 +141,47 @@ describe('CardActions', () => {
 		)
 	})
 
+	it('retires an active card with the current time', async () => {
+		const before = DateTime.now().toMillis()
+		render(<CardActions card={card} />)
+
+		await openMenu()
+		await userEvent
+			.setup()
+			.click(screen.getByRole('menuitem', { name: 'Retire' }))
+
+		expect(updateMutate).toHaveBeenCalledWith(
+			{
+				cardId: card._id,
+				retiredAt: expect.any(Number) as number,
+			},
+			expect.anything(),
+		)
+		const [args] = updateMutate.mock.calls[0] as [{ retiredAt: number }]
+		expect(args.retiredAt).toBeGreaterThanOrEqual(before)
+	})
+
+	it('clears the retirement on a retired card', async () => {
+		render(<CardActions card={{ ...card, retiredAt: 1_700_000_000_000 }} />)
+
+		await userEvent
+			.setup()
+			.click(screen.getByRole('button', { name: 'Unretire' }))
+
+		expect(updateMutate).toHaveBeenCalledWith(
+			{ cardId: card._id, retiredAt: null },
+			expect.anything(),
+		)
+	})
+
+	it('offers no quick-access unretire button on an active card', () => {
+		render(<CardActions card={card} />)
+
+		expect(
+			screen.queryByRole('button', { name: 'Unretire' }),
+		).not.toBeInTheDocument()
+	})
+
 	it('deletes only after the confirmation is accepted', async () => {
 		const user = userEvent.setup()
 		render(<CardActions card={card} />)

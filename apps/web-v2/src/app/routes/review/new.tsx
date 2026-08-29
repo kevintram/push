@@ -1,13 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { ReviewNewPage } from '~/app/pages/ReviewPages/ReviewNewPage'
-import { cardQueries } from '~/modules/reviews/api/cardQueries'
+import { dueQueries } from '~/modules/reviews/api/dueQueries'
 
 export const Route = createFileRoute('/review/new')({
 	component: ReviewNewPage,
 	loader: ({ context: { auth, queryClient } }) => {
 		if (!auth.isAuthenticated) return
 
-		return queryClient.ensureQueryData(cardQueries.listNew())
+		return queryClient.ensureQueryData(dueQueries.listNew())
 	},
 })

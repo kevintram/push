@@ -5,7 +5,6 @@ import { useMutation } from '@tanstack/react-query'
 import { useMatchRoute, useNavigate } from '@tanstack/react-router'
 
 export const cardQueries = {
-	listNew: () => convexQuery(api.cards.listNew, {}),
 	listFlagged: () => convexQuery(api.cards.listFlagged, {}),
 	search: (query: string) => convexQuery(api.cards.search, { query }),
 	listByCollection: (collectionId: Id<'collections'>) =>

@@ -18,7 +18,6 @@ import {
 	breakpoints,
 	fontSizes,
 	iconSizes,
-	radii,
 	spacing,
 } from '~/styles/tokens.stylex'
 
@@ -66,16 +65,6 @@ const styles = stylex.create({
 			[breakpoints.tablet]: '720px',
 		},
 
-		borderColor: searchDialogColors.popupBorder,
-		borderRadius: {
-			default: 0,
-			[breakpoints.tablet]: radii.xl,
-		},
-		borderWidth: {
-			default: 0,
-			[breakpoints.tablet]: '1px',
-		},
-		backgroundColor: searchDialogColors.popupBackground,
 		overflowX: 'hidden',
 		overflowY: 'hidden',
 	},

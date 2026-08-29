@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { Ellipsis, Flag, FolderInput, Trash2, Zap } from 'lucide-react'
+import { Archive, Ellipsis, Flag, FolderInput, Trash2, Zap } from 'lucide-react'
 import { useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
@@ -36,6 +36,12 @@ const styles = stylex.create({
 		fill: cardActionsColors.flagSelectedForeground,
 		color: cardActionsColors.flagSelectedForeground,
 	},
+	// Stroke only, unlike `flagOn` and `flashcardOn`. `Flag` and `Zap` fill into
+	// legible solid shapes; a filled `Archive` collapses into a blob that reads
+	// like the neighbouring trash icon.
+	retiredOn: {
+		color: cardActionsColors.retiredSelectedForeground,
+	},
 })
 
 type CardActionsProps = {
@@ -51,11 +57,13 @@ export function CardActions({ card, xstyle }: CardActionsProps) {
 		isDeleting,
 		setIsDeleteDialogOpen,
 		toggleFlag,
+		toggleRetire,
 		toggleType,
 	} = useCardActions(card)
 
 	const isFlashcard = card.type === 'flashcard'
 	const isFlagged = card.flaggedAt !== undefined
+	const isRetired = card.retiredAt !== undefined
 
 	return (
 		<div {...stylex.props(styles.container, xstyle)}>
@@ -103,6 +111,28 @@ export function CardActions({ card, xstyle }: CardActionsProps) {
 					<TooltipContent>Unflag</TooltipContent>
 				</Tooltip>
 			) : null}
+			{isRetired ? (
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button.Icon
+								aria-label='Unretire'
+								shape='round'
+								variant='ghost'
+								size='small'
+								onClick={toggleRetire}
+							>
+								<Archive
+									aria-hidden='true'
+									size={iconSizes.md}
+									{...stylex.props(styles.retiredOn)}
+								/>
+							</Button.Icon>
+						}
+					/>
+					<TooltipContent>Unretire</TooltipContent>
+				</Tooltip>
+			) : null}
 
 			<DropdownMenu>
 				<DropdownMenuTrigger
@@ -137,6 +167,16 @@ export function CardActions({ card, xstyle }: CardActionsProps) {
 							{...(isFlagged ? stylex.props(styles.flagOn) : {})}
 						/>
 						{isFlagged ? 'Unflag' : 'Flag'}
+					</DropdownMenuItem>
+					<DropdownMenuItem onClick={toggleRetire}>
+						<Archive
+							aria-hidden='true'
+							size={iconSizes.md}
+							{...(isRetired
+								? stylex.props(styles.retiredOn)
+								: {})}
+						/>
+						{isRetired ? 'Unretire' : 'Retire'}
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={() => setIsMoveDialogOpen(true)}>
 						<FolderInput aria-hidden='true' size={iconSizes.md} />

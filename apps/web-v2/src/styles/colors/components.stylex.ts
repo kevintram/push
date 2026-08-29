@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { amber, blue, green, orange, rose, sky } from './primitives.stylex'
+import { amber, blue, orange, violet } from './primitives.stylex'
 import { semanticColors } from './semantic.stylex'
 
 export const breadcrumbColors = stylex.defineVars({
@@ -198,9 +198,14 @@ export const textareaColors = stylex.defineVars({
 	placeholderForeground: semanticColors.textSecondary,
 })
 
+export const kbdColors = stylex.defineVars({
+	background: semanticColors.surfaceRaised,
+	foreground: semanticColors.textSecondary,
+})
+
 export const tooltipColors = stylex.defineVars({
-	popupBackground: semanticColors.surfaceInverse,
-	popupForeground: semanticColors.textOnInverse,
+	popupBackground: semanticColors.surfaceRaised,
+	popupForeground: semanticColors.textPrimary,
 	popupShadow: semanticColors.shadowSubtle,
 })
 
@@ -322,6 +327,10 @@ export const cardActionsColors = stylex.defineVars({
 		default: orange.s500,
 		'@media (prefers-color-scheme: dark)': orange.s500,
 	},
+	retiredSelectedForeground: {
+		default: violet.s400,
+		'@media (prefers-color-scheme: dark)': violet.s400,
+	},
 })
 
 export const cardItemColors = stylex.defineVars({
@@ -340,22 +349,6 @@ export const cardPropertiesColors = stylex.defineVars({
 	iconForeground: semanticColors.textSecondary,
 	labelForeground: semanticColors.textSecondary,
 	valueForeground: semanticColors.textPrimary,
-	freshnessFreshForeground: {
-		default: green.s500,
-		'@media (prefers-color-scheme: dark)': green.s300,
-	},
-	freshnessFineForeground: {
-		default: sky.s500,
-		'@media (prefers-color-scheme: dark)': sky.s300,
-	},
-	freshnessHazyForeground: {
-		default: amber.s500,
-		'@media (prefers-color-scheme: dark)': amber.s300,
-	},
-	freshnessForgottenForeground: {
-		default: rose.s500,
-		'@media (prefers-color-scheme: dark)': rose.s300,
-	},
 })
 
 export const reviewDatePickerColors = stylex.defineVars({
@@ -379,9 +372,6 @@ export const reviewsSidebarColors = stylex.defineVars({
 })
 
 export const searchDialogColors = stylex.defineVars({
-	popupBorder: semanticColors.borderSubtle,
-	popupBackground: semanticColors.surfacePrimary,
-
 	headerBorder: semanticColors.borderSubtle,
 	searchIconForeground: semanticColors.textSecondary,
 
@@ -408,8 +398,4 @@ export const searchResultItemColors = stylex.defineVars({
 
 	secondaryForeground: semanticColors.textSecondary,
 	pathForeground: semanticColors.textSecondary,
-})
-
-export const basicRoutePageColors = stylex.defineVars({
-	descriptionForeground: semanticColors.textSecondary,
 })

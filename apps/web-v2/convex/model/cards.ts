@@ -37,23 +37,6 @@ export async function listByCollection(
 		.collect()
 }
 
-export async function listNew(
-	ctx: QueryCtx,
-	userId: string,
-): Promise<Array<Card>> {
-	return await ctx.db
-		.query('cards')
-		.withIndex('by_ownerId_stability', q =>
-			q
-				.eq('ownerId', userId)
-				// Stability is the source of truth for whether a card has
-				// entered SRS. This also leaves room for inherited cards to
-				// carry stability without inheriting review timestamps.
-				.eq('stability', undefined),
-		)
-		.collect()
-}
-
 export async function listFlagged(
 	ctx: QueryCtx,
 	userId: string,
@@ -94,6 +77,7 @@ export async function create(
 		secondaryText,
 		notes,
 		...(fields.flaggedAt !== undefined && { flaggedAt: fields.flaggedAt }),
+		...(fields.retiredAt !== undefined && { retiredAt: fields.retiredAt }),
 		state: 'LEARNING',
 		// Newline-separated so the last word of one field cannot fuse to the
 		// first word of the next into a single bogus token. Nothing is
@@ -112,7 +96,7 @@ export async function update(
 ): Promise<void> {
 	const card = await requireUserOwns(ctx, userId, cardId)
 
-	const { flaggedAt, collectionId, ...fields } = patch
+	const { flaggedAt, retiredAt, collectionId, ...fields } = patch
 
 	// A card can only move to another collection owned by the same user. Validate the
 	// destination in this transaction so a failed check cannot orphan the card.
@@ -137,6 +121,10 @@ export async function update(
 		// Convex means patching an explicit `undefined`.
 		...(flaggedAt !== undefined && {
 			flaggedAt: flaggedAt ?? undefined,
+		}),
+		// Same three-state shape as `flaggedAt` above.
+		...(retiredAt !== undefined && {
+			retiredAt: retiredAt ?? undefined,
 		}),
 	})
 }

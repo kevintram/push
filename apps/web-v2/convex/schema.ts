@@ -15,9 +15,15 @@ export default defineSchema({
 
 	cards: defineTable(cardBase)
 		.index('by_collectionId_ownerId', ['collectionId', 'ownerId'])
-		.index('by_ownerId_dueDate', ['ownerId', 'dueDate'])
+		// `retiredAt` is an equality prefix so the due queue can exclude
+		// retired cards in the index rather than by post-filter, while
+		// `dueDate` stays available as the range suffix.
+		.index('by_ownerId_retiredAt_dueDate', [
+			'ownerId',
+			'retiredAt',
+			'dueDate',
+		])
 		.index('by_ownerId', ['ownerId'])
-		.index('by_ownerId_stability', ['ownerId', 'stability'])
 		.index('by_ownerId_flaggedAt', ['ownerId', 'flaggedAt'])
 		.searchIndex('by_searchText', {
 			searchField: 'searchText',
