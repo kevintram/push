@@ -1,0 +1,4 @@
+interface:
+    display_name: 'TanStack React Hotkeys'
+    short_description: 'Build and review reliable React keyboard shortcuts'
+    default_prompt: 'Use $tanstack-react-hotkeys to implement and test a keyboard shortcut in Web V2.'

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with the WebV2 application.
+This file provides guidance to AI agents when working with the WebV2 application.
 
 ## Project Architecture
 
@@ -11,6 +11,7 @@ This is the second-generation React web app for 3gulp. It is intentionally small
 - **Data Fetching**: TanStack Query
 - **Styling**: StyleX, with component styles defined inline via `stylex.create()`
 - **Component Primitives**: Base UI may be used for accessible primitives
+- **Keyboard Shortcuts**: TanStack Hotkeys via `@tanstack/react-hotkeys`
 - **Icons**: `lucide-react`
 - **Build Tool**: Vite
 - **Package Manager**: pnpm
@@ -56,6 +57,10 @@ When a file approaches either limit, split it:
 - For conditional values, include a `default` branch.
 - Do not mix `className`, inline `style`, and `stylex.props()` unless an existing compatibility pattern already requires it.
 - Keep global CSS minimal. `src/styles/global.css` should be reserved for StyleX setup, document resets, font smoothing, and true global element rules.
+
+## Keyboard Shortcuts
+
+Use the project-local `tanstack-react-hotkeys` skill when implementing or reviewing keyboard shortcuts. Do not add application shortcuts with manual `document` or `window` keyboard listeners.
 
 ## Project Structure
 
