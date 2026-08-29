@@ -17,7 +17,8 @@ import {
 } from '~/utils/date'
 
 import type { CardSrsState } from '../types/review.types'
-import { getRating } from './reviewRatings'
+import { formatDurability, formatRecall } from '../utils/cardSrs'
+import { getLastReviewedDetails } from './reviewRatings'
 
 const styles = stylex.create({
 	container: {
@@ -65,20 +66,16 @@ export function CardMetadata({
 	}
 
 	const isDueOverdue = getDateTone(nextDueAt, false, today) === 'overdue'
-	const rating = getRating(lastRating ?? undefined)
-	const RatingIcon = rating?.Icon
-	const absoluteLastReviewedAt = formatAbsoluteDate(lastReviewedAt)
-	const lastReviewedLabel = rating
-		? `${rating.label}, reviewed ${absoluteLastReviewedAt}`
-		: `Reviewed ${absoluteLastReviewedAt}`
+	const recall = formatRecall(retrievability)
+	const durability = formatDurability(stability)
+	const {
+		Icon: RatingIcon,
+		ariaLabel: lastReviewedLabel,
+		tooltip: lastReviewedTooltip,
+	} = getLastReviewedDetails(lastReviewedAt, lastRating)
 
 	return (
 		<div {...stylex.props(styles.container)}>
-			{retrievability !== null ? (
-				<span {...stylex.props(styles.item)}>
-					{`${Math.round(retrievability * 100)}% recall`}
-				</span>
-			) : null}
 			{nextDueAt !== null ? (
 				<Tooltip>
 					<TooltipTrigger
@@ -98,6 +95,9 @@ export function CardMetadata({
 					</TooltipContent>
 				</Tooltip>
 			) : null}
+			{recall !== null ? (
+				<span {...stylex.props(styles.item)}>{`${recall} recall`}</span>
+			) : null}
 			<Tooltip>
 				<TooltipTrigger
 					render={
@@ -115,15 +115,11 @@ export function CardMetadata({
 						</span>
 					}
 				/>
-				<TooltipContent>
-					{rating
-						? `${rating.label} on ${absoluteLastReviewedAt}`
-						: absoluteLastReviewedAt}
-				</TooltipContent>
+				<TooltipContent>{lastReviewedTooltip}</TooltipContent>
 			</Tooltip>
-			{stability !== null ? (
+			{durability !== null ? (
 				<span {...stylex.props(styles.item)}>
-					Durable for {Math.round(stability)}d
+					Durable for {durability}
 				</span>
 			) : null}
 		</div>

@@ -1,13 +1,25 @@
 import * as stylex from '@stylexjs/stylex'
 
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { cardPropertiesColors } from '~/styles/colors/components.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
-import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
+import {
+	fontSizes,
+	fontWeights,
+	iconSizes,
+	radii,
+	spacing,
+} from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
-import { formatRelativeDate } from '~/utils/date'
+import {
+	formatAbsoluteDate,
+	formatRelativeDate,
+	getDateTone,
+} from '~/utils/date'
 
 import type { CardSrsState } from '../../types/review.types'
-import { getFreshnessTier } from '../../utils/cardSrs'
+import { formatDurability, formatRecall } from '../../utils/cardSrs'
+import { getLastReviewedDetails } from '../reviewRatings'
 
 const styles = stylex.create({
 	container: {
@@ -41,14 +53,20 @@ const styles = stylex.create({
 		fontWeight: fontWeights.medium,
 	},
 	value: {
+		// Shrink the cell to its text so tooltips anchor to the value rather
+		// than to the full width of the 1fr column.
+		justifySelf: 'start',
+
 		color: cardPropertiesColors.valueForeground,
 		whiteSpace: 'nowrap',
 	},
-	fresh: { color: cardPropertiesColors.freshnessFreshForeground },
-	fine: { color: cardPropertiesColors.freshnessFineForeground },
-	hazy: { color: cardPropertiesColors.freshnessHazyForeground },
-	forgotten: {
-		color: cardPropertiesColors.freshnessForgottenForeground,
+	valueWithIcon: {
+		gap: spacing.xs,
+		alignItems: 'center',
+		display: 'inline-flex',
+	},
+	overdue: {
+		color: semanticColors.textDanger,
 	},
 })
 
@@ -57,13 +75,18 @@ type CardPropertiesPanelProps = CardSrsState & {
 }
 
 export function CardPropertiesPanel({
+	lastReviewedAt,
+	lastRating,
 	nextDueAt,
 	retrievability,
 	stability,
 	today,
 }: CardPropertiesPanelProps) {
-	const freshness = getFreshnessTier(retrievability)
-	const roundedStability = stability === null ? null : Math.round(stability)
+	const isDueOverdue = getDateTone(nextDueAt, false, today) === 'overdue'
+	const lastReviewed =
+		lastReviewedAt === null
+			? null
+			: getLastReviewedDetails(lastReviewedAt, lastRating)
 
 	return (
 		<section aria-label='Properties' {...stylex.props(styles.container)}>
@@ -71,32 +94,72 @@ export function CardPropertiesPanel({
 			<div {...stylex.props(styles.list)}>
 				<div {...stylex.props(styles.row)}>
 					<span {...stylex.props(styles.label)}>Due</span>
+					{nextDueAt === null ? (
+						<span {...stylex.props(styles.value)}>Unscheduled</span>
+					) : (
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<span
+										{...stylex.props(
+											styles.value,
+											isDueOverdue && styles.overdue,
+										)}
+									>
+										{formatRelativeDate(nextDueAt, today)}
+									</span>
+								}
+							/>
+							<TooltipContent>
+								{formatAbsoluteDate(nextDueAt)}
+							</TooltipContent>
+						</Tooltip>
+					)}
+				</div>
+				<div {...stylex.props(styles.row)}>
+					<span {...stylex.props(styles.label)}>Recall</span>
 					<span {...stylex.props(styles.value)}>
-						{nextDueAt === null
-							? 'Unscheduled'
-							: formatRelativeDate(nextDueAt, today)}
+						{formatRecall(retrievability) ?? '—'}
 					</span>
 				</div>
 				<div {...stylex.props(styles.row)}>
-					<span {...stylex.props(styles.label)}>Freshness</span>
-					<span
-						{...stylex.props(
-							styles.value,
-							freshness === 'Fresh' && styles.fresh,
-							freshness === 'Fine' && styles.fine,
-							freshness === 'Hazy' && styles.hazy,
-							freshness === 'Forgotten' && styles.forgotten,
-						)}
-					>
-						{freshness ?? '—'}
-					</span>
+					<span {...stylex.props(styles.label)}>Reviewed</span>
+					{lastReviewedAt === null || lastReviewed === null ? (
+						<span {...stylex.props(styles.value)}>—</span>
+					) : (
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<span
+										aria-label={lastReviewed.ariaLabel}
+										{...stylex.props(
+											styles.value,
+											styles.valueWithIcon,
+										)}
+									>
+										{lastReviewed.Icon ? (
+											<lastReviewed.Icon
+												aria-hidden='true'
+												size={iconSizes.md}
+											/>
+										) : null}
+										{formatRelativeDate(
+											lastReviewedAt,
+											today,
+										)}
+									</span>
+								}
+							/>
+							<TooltipContent>
+								{lastReviewed.tooltip}
+							</TooltipContent>
+						</Tooltip>
+					)}
 				</div>
 				<div {...stylex.props(styles.row)}>
 					<span {...stylex.props(styles.label)}>Durability</span>
 					<span {...stylex.props(styles.value)}>
-						{roundedStability === null
-							? '—'
-							: `${roundedStability} ${roundedStability === 1 ? 'day' : 'days'}`}
+						{formatDurability(stability) ?? '—'}
 					</span>
 				</div>
 			</div>

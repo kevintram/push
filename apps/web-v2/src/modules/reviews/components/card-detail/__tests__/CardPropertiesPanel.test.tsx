@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { CardPropertiesPanel } from '../CardPropertiesPanel'
 
 describe('CardPropertiesPanel', () => {
-	it('shows due, freshness, and durability without last-reviewed metadata', () => {
+	it('shows due, recall, reviewed, and durability', () => {
 		render(
 			<CardPropertiesPanel
 				lastReviewedAt='2026-08-16'
@@ -20,9 +20,26 @@ describe('CardPropertiesPanel', () => {
 			screen.getByRole('region', { name: 'Properties' }),
 		).toBeInTheDocument()
 		expect(screen.getByText('in 2d')).toBeInTheDocument()
-		expect(screen.getByText('Hazy')).toBeInTheDocument()
-		expect(screen.getByText('10 days')).toBeInTheDocument()
-		expect(screen.queryByText('8d ago')).not.toBeInTheDocument()
+		expect(screen.getByText('80%')).toBeInTheDocument()
+		expect(screen.getByText('10d')).toBeInTheDocument()
+		expect(
+			screen.getByLabelText('Good, reviewed Aug 16, 2026'),
+		).toHaveTextContent('8d ago')
+	})
+
+	it('marks an overdue due date', () => {
+		render(
+			<CardPropertiesPanel
+				lastReviewedAt='2026-08-16'
+				lastRating='good'
+				nextDueAt='2026-08-22'
+				retrievability={0.8}
+				stability={10.4}
+				today='2026-08-24'
+			/>,
+		)
+
+		expect(screen.getByText('2d ago')).toBeInTheDocument()
 	})
 
 	it('shows empty property values for an unreviewed card', () => {
@@ -38,6 +55,6 @@ describe('CardPropertiesPanel', () => {
 		)
 
 		expect(screen.getByText('Unscheduled')).toBeInTheDocument()
-		expect(screen.getAllByText('—')).toHaveLength(2)
+		expect(screen.getAllByText('—')).toHaveLength(3)
 	})
 })

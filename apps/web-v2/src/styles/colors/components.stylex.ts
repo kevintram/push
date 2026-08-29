@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { amber, blue, green, orange, rose, sky } from './primitives.stylex'
+import { amber, blue, orange } from './primitives.stylex'
 import { semanticColors } from './semantic.stylex'
 
 export const breadcrumbColors = stylex.defineVars({
@@ -340,22 +340,6 @@ export const cardPropertiesColors = stylex.defineVars({
 	iconForeground: semanticColors.textSecondary,
 	labelForeground: semanticColors.textSecondary,
 	valueForeground: semanticColors.textPrimary,
-	freshnessFreshForeground: {
-		default: green.s500,
-		'@media (prefers-color-scheme: dark)': green.s300,
-	},
-	freshnessFineForeground: {
-		default: sky.s500,
-		'@media (prefers-color-scheme: dark)': sky.s300,
-	},
-	freshnessHazyForeground: {
-		default: amber.s500,
-		'@media (prefers-color-scheme: dark)': amber.s300,
-	},
-	freshnessForgottenForeground: {
-		default: rose.s500,
-		'@media (prefers-color-scheme: dark)': rose.s300,
-	},
 })
 
 export const reviewDatePickerColors = stylex.defineVars({
