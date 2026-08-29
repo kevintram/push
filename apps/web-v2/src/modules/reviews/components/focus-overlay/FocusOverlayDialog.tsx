@@ -1,5 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
+import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { QueryErrorResetBoundary } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { ArrowUpRight, ChevronLeft, ChevronRight, Copy, X } from 'lucide-react'
@@ -13,6 +14,7 @@ import {
 	DialogClose,
 	DialogContent,
 	type DialogHandle,
+	Kbd,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
@@ -24,6 +26,7 @@ import {
 } from '~/styles/colors/components.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
+import { HIDE_MODE_HOTKEY } from '../../hide-mode/hideModeHotkey'
 import { useHideMode } from '../../hide-mode/useHideMode'
 import { FocusOverlayCard } from './FocusOverlayCard'
 import { FocusOverlayCardError } from './FocusOverlayCardError'
@@ -263,6 +266,7 @@ export function FocusOverlayDialog({ handle, cards }: FocusOverlayDialogProps) {
 								{hideMode === 'on'
 									? 'Turn off hide mode'
 									: 'Turn on hide mode'}
+								<Kbd>{formatForDisplay(HIDE_MODE_HOTKEY)}</Kbd>
 							</TooltipContent>
 						</Tooltip>
 						{/* This close renders an anchor, so both it and the button

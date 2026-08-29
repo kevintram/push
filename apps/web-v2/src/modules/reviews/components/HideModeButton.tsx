@@ -1,10 +1,12 @@
 import * as stylex from '@stylexjs/stylex'
+import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { Copy } from 'lucide-react'
 
 import { SidebarItem } from '~/components/sidebar-item'
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
+import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { hideModeButtonColors } from '~/styles/colors/components.stylex'
 
+import { HIDE_MODE_HOTKEY } from '../hide-mode/hideModeHotkey'
 import { useHideMode } from '../hide-mode/useHideMode'
 
 const styles = stylex.create({
@@ -36,6 +38,7 @@ export function HideModeButton() {
 			/>
 			<TooltipContent side='right'>
 				{hideMode === 'on' ? 'Turn off hide mode' : 'Turn on hide mode'}
+				<Kbd>{formatForDisplay(HIDE_MODE_HOTKEY)}</Kbd>
 			</TooltipContent>
 		</Tooltip>
 	)
