@@ -32,7 +32,7 @@ async function seedCard(
 	t: Harness,
 	collectionId: Id<'collections'>,
 	ownerId: string,
-	fields: { dueDate?: string; primaryText: string },
+	fields: { dueDate?: string; primaryText: string; retiredAt?: number },
 ): Promise<Id<'cards'>> {
 	return await t.run(
 		async ctx =>
@@ -69,20 +69,23 @@ async function seedReview(
 async function listEntries(
 	t: Harness,
 	userId: string,
-	dueDate: string | Due.DueDateRange,
+	dueDate: Due.DueFilters['dueDate'],
+	srsScheduled?: boolean,
 ): Promise<Array<Due.DueEntry>> {
-	return await t
-		.withIdentity({ subject: userId })
-		.query(api.due.list, { dueDate })
+	return await t.withIdentity({ subject: userId }).query(api.due.list, {
+		dueDate,
+		...(srsScheduled !== undefined && { srsScheduled }),
+	})
 }
 
 /** The entries as `date` / `primaryText` pairs, for order-sensitive asserts. */
 async function list(
 	t: Harness,
 	userId: string,
-	dueDate: string | Due.DueDateRange,
+	dueDate: Due.DueFilters['dueDate'],
+	srsScheduled?: boolean,
 ): Promise<Array<string>> {
-	const entries = await listEntries(t, userId, dueDate)
+	const entries = await listEntries(t, userId, dueDate, srsScheduled)
 
 	return entries.map(entry => `${entry.date} ${entry.card.primaryText}`)
 }
@@ -496,6 +499,286 @@ describe('due.list', () => {
 				'2026-08-10 Second',
 				'2026-08-10 First',
 			])
+		})
+	})
+
+	describe('the dateless bucket', () => {
+		it('returns cards with no `dueDate`, and their entries carry no date', async () => {
+			const t = convexTest(schema, modules)
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			const cardId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{ primaryText: 'Never reviewed' },
+			)
+
+			const entries = await listEntries(t, userAIdentity.subject, null)
+
+			expect(entries).toHaveLength(1)
+			expect(entries[0]?.card._id).toBe(cardId)
+			expect(entries[0]?.date).toBeUndefined()
+			expect(entries[0]?.srsScheduled).toBe(true)
+		})
+
+		it('returns a card surfaced by an undated uncompleted review', async () => {
+			const t = convexTest(schema, modules)
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			// Dated, so the card itself is outside the dateless bucket; only
+			// its undated review can surface it.
+			const cardId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{ dueDate: '2026-08-10', primaryText: 'Undated review' },
+			)
+			await seedReview(t, cardId, userAIdentity.subject, {})
+
+			const entries = await listEntries(t, userAIdentity.subject, null)
+
+			expect(entries).toHaveLength(1)
+			expect(entries[0]?.card._id).toBe(cardId)
+			expect(entries[0]?.date).toBeUndefined()
+			expect(entries[0]?.srsScheduled).toBe(false)
+			expect(entries[0]?.scheduledReviews).toHaveLength(1)
+		})
+
+		it('excludes cards that have a `dueDate`', async () => {
+			const t = convexTest(schema, modules)
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			await seedCard(t, collectionId, userAIdentity.subject, {
+				dueDate: '2026-08-10',
+				primaryText: 'Dated card',
+			})
+			const undatedId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{ primaryText: 'Undated card' },
+			)
+
+			const entries = await listEntries(t, userAIdentity.subject, null)
+
+			expect(entries.map(entry => entry.card._id)).toEqual([undatedId])
+		})
+
+		it('accepts `null` where `assertIsoDate` would reject', async () => {
+			const t = convexTest(schema, modules)
+
+			await expect(
+				listEntries(t, userAIdentity.subject, null),
+			).resolves.toEqual([])
+		})
+
+		it('sorts dateless entries by card creation, newest first', async () => {
+			const t = convexTest(schema, modules)
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			// Dated, so its own row is outside the dateless bucket, but its
+			// undated review pulls it back in.
+			const datedId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{ dueDate: '2026-08-10', primaryText: 'Dated' },
+			)
+			await seedReview(t, datedId, userAIdentity.subject, {})
+			const undatedId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{ primaryText: 'Undated' },
+			)
+
+			const entries = await listEntries(t, userAIdentity.subject, null)
+
+			// Both are dateless here, so creation order decides: newest first.
+			expect(entries.map(entry => entry.card._id)).toEqual([
+				undatedId,
+				datedId,
+			])
+			expect(entries.every(entry => entry.date === undefined)).toBe(true)
+		})
+	})
+
+	describe('retired cards', () => {
+		it('excludes a retired card from a single day, a range, and `null`', async () => {
+			const t = convexTest(schema, modules)
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			await seedCard(t, collectionId, userAIdentity.subject, {
+				dueDate: '2026-08-10',
+				primaryText: 'Retired dated',
+				retiredAt: 1_700_000_000_000,
+			})
+			await seedCard(t, collectionId, userAIdentity.subject, {
+				primaryText: 'Retired undated',
+				retiredAt: 1_700_000_000_000,
+			})
+
+			await expect(
+				list(t, userAIdentity.subject, '2026-08-10'),
+			).resolves.toEqual([])
+			await expect(
+				list(t, userAIdentity.subject, {
+					from: '2026-08-01',
+					to: '2026-09-01',
+				}),
+			).resolves.toEqual([])
+			await expect(list(t, userAIdentity.subject, {})).resolves.toEqual(
+				[],
+			)
+			await expect(
+				listEntries(t, userAIdentity.subject, null),
+			).resolves.toEqual([])
+		})
+
+		it('excludes a retired card with an uncompleted review on the queried day', async () => {
+			const t = convexTest(schema, modules)
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			const retiredId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{
+					primaryText: 'Retired but scheduled',
+					retiredAt: 1_700_000_000_000,
+				},
+			)
+			await seedReview(t, retiredId, userAIdentity.subject, {
+				date: '2026-08-10',
+			})
+			await seedCard(t, collectionId, userAIdentity.subject, {
+				dueDate: '2026-08-10',
+				primaryText: 'Active',
+			})
+
+			await expect(
+				list(t, userAIdentity.subject, '2026-08-10'),
+			).resolves.toEqual(['2026-08-10 Active'])
+		})
+
+		it('excludes a retired card whose undated review lands in the dateless bucket', async () => {
+			const t = convexTest(schema, modules)
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			const retiredId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{
+					dueDate: '2026-08-10',
+					primaryText: 'Retired',
+					retiredAt: 1_700_000_000_000,
+				},
+			)
+			await seedReview(t, retiredId, userAIdentity.subject, {})
+
+			await expect(
+				listEntries(t, userAIdentity.subject, null),
+			).resolves.toEqual([])
+		})
+	})
+
+	describe('`srsScheduled`', () => {
+		/**
+		 * One SRS-due card and one card that is only on the day because of a
+		 * hand-scheduled review.
+		 */
+		async function seedMixedDay(t: Harness): Promise<void> {
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			await seedCard(t, collectionId, userAIdentity.subject, {
+				dueDate: '2026-08-10',
+				primaryText: 'SRS due',
+			})
+			const handScheduledId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{ dueDate: '2026-09-01', primaryText: 'Hand-scheduled' },
+			)
+			await seedReview(t, handScheduledId, userAIdentity.subject, {
+				date: '2026-08-10',
+			})
+		}
+
+		it('returns both entries when omitted', async () => {
+			const t = convexTest(schema, modules)
+			await seedMixedDay(t)
+
+			await expect(
+				list(t, userAIdentity.subject, '2026-08-10'),
+			).resolves.toEqual([
+				'2026-08-10 Hand-scheduled',
+				'2026-08-10 SRS due',
+			])
+		})
+
+		it('drops the hand-scheduled review-only entry when `true`', async () => {
+			const t = convexTest(schema, modules)
+			await seedMixedDay(t)
+
+			await expect(
+				list(t, userAIdentity.subject, '2026-08-10', true),
+			).resolves.toEqual(['2026-08-10 SRS due'])
+		})
+
+		it('keeps only the review-only entry when `false`', async () => {
+			const t = convexTest(schema, modules)
+			await seedMixedDay(t)
+
+			await expect(
+				list(t, userAIdentity.subject, '2026-08-10', false),
+			).resolves.toEqual(['2026-08-10 Hand-scheduled'])
+		})
+
+		it('still populates `scheduledReviews` when `true`', async () => {
+			const t = convexTest(schema, modules)
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			const cardId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{ dueDate: '2026-08-10', primaryText: 'SRS due' },
+			)
+			await seedReview(t, cardId, userAIdentity.subject, {
+				date: '2026-08-10',
+			})
+
+			const entries = await listEntries(
+				t,
+				userAIdentity.subject,
+				'2026-08-10',
+				true,
+			)
+
+			expect(entries).toHaveLength(1)
+			expect(entries[0]?.scheduledReviews).toHaveLength(1)
+		})
+
+		it('keeps the New page card-driven in the dateless bucket', async () => {
+			const t = convexTest(schema, modules)
+			const collectionId = await seedCollection(t, userAIdentity.subject)
+			const newCardId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{ primaryText: 'New card' },
+			)
+			// In SRS already; only its undated review reaches this bucket.
+			const datedId = await seedCard(
+				t,
+				collectionId,
+				userAIdentity.subject,
+				{ dueDate: '2026-08-10', primaryText: 'Undated review only' },
+			)
+			await seedReview(t, datedId, userAIdentity.subject, {})
+
+			const entries = await listEntries(
+				t,
+				userAIdentity.subject,
+				null,
+				true,
+			)
+
+			expect(entries.map(entry => entry.card._id)).toEqual([newCardId])
 		})
 	})
 })
