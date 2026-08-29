@@ -89,6 +89,11 @@ const review: Review = {
 	date: '2026-07-28',
 }
 
+/** A card with no `dueDate` surfaces as a dateless, SRS-scheduled entry. */
+function toNewEntry(newCard: Card): DueEntry {
+	return { card: newCard, scheduledReviews: [], srsScheduled: true }
+}
+
 function renderRoute(
 	path: string,
 	{
@@ -146,12 +151,12 @@ function renderRoute(
 	queryClient.setQueryData(collectionQueries.list().queryKey, [
 		...collectionsById.values(),
 	])
-	queryClient.setQueryData(dueQueries.list(today).queryKey, dueEntries)
+	queryClient.setQueryData(dueQueries.listDue(today).queryKey, dueEntries)
+	queryClient.setQueryData(dueQueries.listLate(today).queryKey, lateEntries)
 	queryClient.setQueryData(
-		dueQueries.list({ to: today }).queryKey,
-		lateEntries,
+		dueQueries.listNew().queryKey,
+		newCards.map(toNewEntry),
 	)
-	queryClient.setQueryData(cardQueries.listNew().queryKey, newCards)
 	queryClient.setQueryData(cardQueries.listFlagged().queryKey, flaggedCards)
 	// Every reader of `detail` expands, and `expandPath` keys its own cache
 	// entry, so only the expanded shape is seeded. Its ancestors resolve
@@ -531,10 +536,10 @@ describe('v2 app setup', () => {
 		)
 
 		act(() => {
-			queryClient.setQueryData(cardQueries.listNew().queryKey, [
-				secondCard,
-				thirdCard,
-			])
+			queryClient.setQueryData(
+				dueQueries.listNew().queryKey,
+				[secondCard, thirdCard].map(toNewEntry),
+			)
 		})
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
@@ -542,9 +547,10 @@ describe('v2 app setup', () => {
 		expect(screen.getByText('1 of 2')).toBeInTheDocument()
 
 		act(() => {
-			queryClient.setQueryData(cardQueries.listNew().queryKey, [
-				thirdCard,
-			])
+			queryClient.setQueryData(
+				dueQueries.listNew().queryKey,
+				[thirdCard].map(toNewEntry),
+			)
 		})
 		expect(
 			await screen.findByDisplayValue('What is type narrowing?'),
@@ -552,10 +558,10 @@ describe('v2 app setup', () => {
 		expect(screen.getByText('1 of 1')).toBeInTheDocument()
 
 		act(() => {
-			queryClient.setQueryData(cardQueries.listNew().queryKey, [
-				card,
-				thirdCard,
-			])
+			queryClient.setQueryData(
+				dueQueries.listNew().queryKey,
+				[card, thirdCard].map(toNewEntry),
+			)
 		})
 		expect(
 			await screen.findByDisplayValue('What is type narrowing?'),
