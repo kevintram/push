@@ -159,6 +159,9 @@ export const semanticColors = stylex.defineVars({
 	// Status text
 	// Text that communicates a successful or positive outcome.
 	textSuccess: { default: green.s600, [DARK]: green.s300 },
+	// Text that marks content scheduled for the current day, such as a review
+	// that comes due today.
+	textToday: { default: blue.s600, [DARK]: blue.s400 },
 	// Danger text
 	// Text that communicates an error, danger, or destructive consequence.
 	textDanger: { default: rose.s600, [DARK]: rose.s300 },

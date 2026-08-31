@@ -68,6 +68,9 @@ const styles = stylex.create({
 	overdue: {
 		color: semanticColors.textDanger,
 	},
+	today: {
+		color: cardPropertiesColors.valueForegroundToday,
+	},
 })
 
 type CardPropertiesPanelProps = CardSrsState & {
@@ -82,7 +85,7 @@ export function CardPropertiesPanel({
 	stability,
 	today,
 }: CardPropertiesPanelProps) {
-	const isDueOverdue = getDateTone(nextDueAt, false, today) === 'overdue'
+	const dueTone = getDateTone(nextDueAt, false, today)
 	const lastReviewed =
 		lastReviewedAt === null
 			? null
@@ -103,7 +106,9 @@ export function CardPropertiesPanel({
 									<span
 										{...stylex.props(
 											styles.value,
-											isDueOverdue && styles.overdue,
+											dueTone === 'overdue' &&
+												styles.overdue,
+											dueTone === 'today' && styles.today,
 										)}
 									>
 										{formatRelativeDate(nextDueAt, today)}

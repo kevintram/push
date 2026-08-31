@@ -46,6 +46,9 @@ const styles = stylex.create({
 	overdue: {
 		color: semanticColors.textDanger,
 	},
+	today: {
+		color: cardMetadataColors.itemForegroundToday,
+	},
 })
 
 /** Scheduling summary for a card, including its recall estimate. */
@@ -65,7 +68,7 @@ export function CardMetadata({
 		)
 	}
 
-	const isDueOverdue = getDateTone(nextDueAt, false, today) === 'overdue'
+	const dueTone = getDateTone(nextDueAt, false, today)
 	const recall = formatRecall(retrievability)
 	const durability = formatDurability(stability)
 	const {
@@ -83,7 +86,8 @@ export function CardMetadata({
 							<span
 								{...stylex.props(
 									styles.item,
-									isDueOverdue && styles.overdue,
+									dueTone === 'overdue' && styles.overdue,
+									dueTone === 'today' && styles.today,
 								)}
 							>
 								{`Due ${formatRelativeDate(nextDueAt, today)}`}

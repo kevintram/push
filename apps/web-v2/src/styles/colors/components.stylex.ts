@@ -352,6 +352,7 @@ export const cardItemColors = stylex.defineVars({
 
 export const cardMetadataColors = stylex.defineVars({
 	itemForeground: semanticColors.textSecondary,
+	itemForegroundToday: semanticColors.textToday,
 })
 
 export const cardPropertiesColors = stylex.defineVars({
@@ -359,13 +360,11 @@ export const cardPropertiesColors = stylex.defineVars({
 	iconForeground: semanticColors.textSecondary,
 	labelForeground: semanticColors.textSecondary,
 	valueForeground: semanticColors.textPrimary,
+	valueForegroundToday: semanticColors.textToday,
 })
 
 export const reviewDatePickerColors = stylex.defineVars({
-	triggerForegroundToday: {
-		default: blue.s950,
-		'@media (prefers-color-scheme: dark)': blue.s200,
-	},
+	triggerForegroundToday: semanticColors.textToday,
 	triggerForegroundOverdue: semanticColors.textDanger,
 })
 
