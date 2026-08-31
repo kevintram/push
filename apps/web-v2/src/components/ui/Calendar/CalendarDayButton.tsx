@@ -28,6 +28,7 @@ const styles = stylex.create({
 			default: calendarColors.dayButtonForeground,
 			':is([data-selected-single="true"])':
 				calendarColors.dayButtonForegroundSelected,
+			':is([data-today="true"])': calendarColors.dayButtonForegroundToday,
 		},
 		cursor: 'pointer',
 		fontSize: fontSizes.sm,
