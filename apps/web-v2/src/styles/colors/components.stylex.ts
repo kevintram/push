@@ -86,15 +86,16 @@ export const calendarColors = stylex.defineVars({
 	dayButtonBackgroundSelectedHover:
 		semanticColors.surfaceInteractivePrimaryHover,
 	dayButtonBackgroundToday: {
-		default: blue.s50,
-		'@media (prefers-color-scheme: dark)': blue.s950,
+		default: blue.s400,
+		'@media (prefers-color-scheme: dark)': blue.s900,
 	},
 	dayButtonBackgroundTodayHover: {
-		default: blue.s100,
-		'@media (prefers-color-scheme: dark)': blue.s900,
+		default: blue.s600,
+		'@media (prefers-color-scheme: dark)': blue.s600,
 	},
 	dayButtonForeground: semanticColors.textPrimary,
 	dayButtonForegroundSelected: semanticColors.textOnBrand,
+	dayButtonForegroundToday: semanticColors.textOnBrand,
 	dayButtonFocusRingRest: semanticColors.surfaceTransparent,
 	dayButtonFocusRing: semanticColors.borderFocus,
 })
