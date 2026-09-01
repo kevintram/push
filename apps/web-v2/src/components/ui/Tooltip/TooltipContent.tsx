@@ -20,7 +20,10 @@ const styles = stylex.create({
 		paddingBlock: '6px',
 		paddingInline: spacing.sm,
 
+		borderColor: tooltipColors.popupBorder,
 		borderRadius: radii.xs,
+		borderStyle: 'solid',
+		borderWidth: '1px',
 		alignItems: 'center',
 		backgroundColor: tooltipColors.popupBackground,
 		boxShadow: `0 4px 12px ${tooltipColors.popupShadow}`,
