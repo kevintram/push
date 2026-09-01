@@ -205,6 +205,7 @@ export const kbdColors = stylex.defineVars({
 })
 
 export const tooltipColors = stylex.defineVars({
+	popupBorder: semanticColors.borderSubtle,
 	popupBackground: semanticColors.surfaceRaised,
 	popupForeground: semanticColors.textPrimary,
 	popupShadow: semanticColors.shadowSubtle,
