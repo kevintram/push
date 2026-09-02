@@ -14,9 +14,9 @@ import { LibraryCollectionItem } from './LibraryCollectionItem'
 
 const styles = stylex.create({
 	container: {
-		overscrollBehavior: 'none',
 		backgroundColor: librarySidebarColors.background,
 		overflowY: 'auto',
+		overscrollBehaviorY: 'none',
 	},
 	stickyWrapper: {
 		backgroundColor: librarySidebarColors.background,
