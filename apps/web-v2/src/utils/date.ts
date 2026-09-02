@@ -2,7 +2,7 @@ import { DateTime } from 'luxon'
 
 import type { DateString } from '~/types/date'
 
-export type DateTone = 'default' | 'overdue' | 'today'
+export type DueDateTone = 'default' | 'overdue' | 'today'
 
 /** Return the current calendar day in the user's local timezone. */
 export function todayIso(now: DateTime = DateTime.now()): DateString {
@@ -34,11 +34,12 @@ export function formatRelativeDate(
 	return `in ${difference}d`
 }
 
-export function getDateTone(
+/** Tone for a scheduled date: late unless the review is already done. */
+export function getDueDateTone(
 	value: DateString | null,
 	isCompleted: boolean,
 	today: DateString = todayIso(),
-): DateTone {
+): DueDateTone {
 	if (value === null) return 'default'
 
 	const difference = calendarDaysBetween(today, value)

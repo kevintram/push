@@ -13,7 +13,7 @@ import type { DateString } from '~/types/date'
 import {
 	formatAbsoluteDate,
 	formatRelativeDate,
-	getDateTone,
+	getDueDateTone,
 } from '~/utils/date'
 
 import type { CardSrsState } from '../types/review.types'
@@ -72,7 +72,7 @@ export function CardMetadata({
 		)
 	}
 
-	const dueTone = getDateTone(nextDueAt, false, today)
+	const dueTone = getDueDateTone(nextDueAt, false, today)
 	const recall = formatRecall(retrievability)
 	const durability = formatDurability(stability)
 	const {
@@ -109,7 +109,11 @@ export function CardMetadata({
 					render={
 						<span
 							aria-label={lastReviewedLabel}
-							{...stylex.props(styles.item, styles.raisedItem)}
+							{...stylex.props(
+								styles.item,
+								styles.raisedItem,
+								lastReviewedAt === today && styles.today,
+							)}
 						>
 							{RatingIcon ? (
 								<RatingIcon

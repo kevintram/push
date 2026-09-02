@@ -5,7 +5,7 @@ import type { DateString } from '~/types/date'
 import {
 	formatAbsoluteDate,
 	formatRelativeDate,
-	getDateTone,
+	getDueDateTone,
 	todayIso,
 } from '~/utils/date'
 
@@ -83,9 +83,9 @@ describe('date', () => {
 		['2026-07-21', false, 'default'],
 		[null, false, 'default'],
 	] as const)(
-		'uses the %s date tone when completion is %s',
+		'uses the %s due date tone when completion is %s',
 		(value, isCompleted, expected) => {
-			expect(getDateTone(value, isCompleted, today)).toBe(expected)
+			expect(getDueDateTone(value, isCompleted, today)).toBe(expected)
 		},
 	)
 })
