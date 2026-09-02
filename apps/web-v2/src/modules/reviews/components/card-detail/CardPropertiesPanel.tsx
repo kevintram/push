@@ -14,7 +14,7 @@ import type { DateString } from '~/types/date'
 import {
 	formatAbsoluteDate,
 	formatRelativeDate,
-	getDateTone,
+	getDueDateTone,
 } from '~/utils/date'
 
 import type { CardSrsState } from '../../types/review.types'
@@ -85,7 +85,7 @@ export function CardPropertiesPanel({
 	stability,
 	today,
 }: CardPropertiesPanelProps) {
-	const dueTone = getDateTone(nextDueAt, false, today)
+	const dueTone = getDueDateTone(nextDueAt, false, today)
 	const lastReviewed =
 		lastReviewedAt === null
 			? null
@@ -134,6 +134,8 @@ export function CardPropertiesPanel({
 										{...stylex.props(
 											styles.value,
 											styles.valueWithIcon,
+											lastReviewedAt === today &&
+												styles.today,
 										)}
 									>
 										{lastReviewed.Icon ? (
