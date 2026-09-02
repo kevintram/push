@@ -201,9 +201,7 @@ export function Review({ review }: ReviewProps) {
 								}
 							/>
 						</div>
-						<div {...stylex.props(styles.raised)}>
-							<ReviewDurability review={review} size='micro' />
-						</div>
+						<ReviewDurability review={review} size='micro' />
 						<div {...stylex.props(styles.spacer)} />
 						<DropdownMenu>
 							<DropdownMenuTrigger
