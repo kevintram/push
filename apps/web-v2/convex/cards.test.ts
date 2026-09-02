@@ -74,7 +74,7 @@ describe('cards', () => {
 			primaryText: 'Primary',
 			secondaryText: 'Secondary',
 			collectionId,
-			type: 'practice',
+			type: 'flashcard',
 		})
 
 		await expect(
@@ -88,7 +88,7 @@ describe('cards', () => {
 			secondaryText: '',
 			state: 'LEARNING',
 			collectionId,
-			type: 'flashcard',
+			type: 'practice',
 		})
 		expect(
 			(
@@ -104,7 +104,7 @@ describe('cards', () => {
 			notes: 'Notes',
 			primaryText: 'Primary',
 			secondaryText: 'Secondary',
-			type: 'practice',
+			type: 'flashcard',
 		})
 	})
 
