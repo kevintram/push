@@ -72,7 +72,7 @@ export async function create(
 	return await ctx.db.insert('cards', {
 		ownerId: userId,
 		collectionId: fields.collectionId,
-		type: fields.type ?? 'flashcard',
+		type: fields.type ?? 'practice',
 		primaryText,
 		secondaryText,
 		notes,
