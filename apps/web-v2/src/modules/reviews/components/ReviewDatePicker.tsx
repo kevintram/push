@@ -21,7 +21,7 @@ import type { DateString } from '~/types/date'
 import {
 	formatAbsoluteDate,
 	formatRelativeDate,
-	getDateTone,
+	getDueDateTone,
 	parseDate,
 } from '~/utils/date'
 
@@ -58,7 +58,7 @@ export function ReviewDatePicker({
 	const [isOpen, setIsOpen] = useState(false)
 	const today = useToday()
 	const relativeDate = formatRelativeDate(value, today)
-	const dateTone = getDateTone(value, isCompleted, today)
+	const dateTone = getDueDateTone(value, isCompleted, today)
 	const dateToneStyle =
 		dateTone === 'overdue'
 			? styles.overdue
