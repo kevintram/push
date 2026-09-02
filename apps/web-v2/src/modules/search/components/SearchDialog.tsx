@@ -174,6 +174,15 @@ export function SearchDialog() {
 		inputRef.current?.focus()
 	}
 
+	// The query survives a close, so select it on open: typing replaces the
+	// stale query, while an arrow key or a click collapses the selection and
+	// keeps it. `select()` is not specified to focus, so the returned element
+	// is what actually moves focus.
+	const handleInitialFocus = () => {
+		inputRef.current?.select()
+		return inputRef.current
+	}
+
 	const collectionResults = useMemo(
 		() => buildCollectionResults(collections),
 		[collections],
@@ -210,6 +219,7 @@ export function SearchDialog() {
 				</TooltipContent>
 			</Tooltip>
 			<DialogContent
+				initialFocus={handleInitialFocus}
 				showCloseButton={false}
 				viewportXstyle={styles.viewport}
 				xstyle={styles.content}
