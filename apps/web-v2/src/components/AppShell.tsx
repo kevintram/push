@@ -12,7 +12,7 @@ import { AppRail } from './AppRail'
 const styles = stylex.create({
 	shell: {
 		overflow: 'hidden',
-		overscrollBehavior: 'none',
+		overscrollBehaviorY: 'none',
 
 		display: 'flex',
 
