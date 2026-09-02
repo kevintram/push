@@ -22,9 +22,6 @@ import { getLastReviewedDetails } from './reviewRatings'
 
 const styles = stylex.create({
 	container: {
-		position: 'relative',
-		zIndex: 1,
-
 		gap: spacing.xl,
 		alignItems: 'center',
 		display: 'flex',
@@ -42,6 +39,13 @@ const styles = stylex.create({
 		display: 'inline-flex',
 		fontWeight: fontWeights.semibold,
 		whiteSpace: 'nowrap',
+	},
+	// Tooltip triggers must sit above the card's stretched-link overlay to
+	// receive hover. Raise the individual triggers, not the whole row, so the
+	// rest of the metadata stays click-through to the link.
+	raisedItem: {
+		position: 'relative',
+		zIndex: 1,
 	},
 	overdue: {
 		color: semanticColors.textDanger,
@@ -86,6 +90,7 @@ export function CardMetadata({
 							<span
 								{...stylex.props(
 									styles.item,
+									styles.raisedItem,
 									dueTone === 'overdue' && styles.overdue,
 									dueTone === 'today' && styles.today,
 								)}
@@ -104,7 +109,7 @@ export function CardMetadata({
 					render={
 						<span
 							aria-label={lastReviewedLabel}
-							{...stylex.props(styles.item)}
+							{...stylex.props(styles.item, styles.raisedItem)}
 						>
 							{RatingIcon ? (
 								<RatingIcon
