@@ -264,6 +264,35 @@ describe('SearchDialog', () => {
 		).not.toBeInTheDocument()
 	})
 
+	it('selects the preserved query on reopen so typing replaces it', async () => {
+		const user = userEvent.setup()
+		renderDialog()
+		await search(user)
+		await user.click(screen.getByRole('button', { name: 'Close search' }))
+
+		await user.click(screen.getByRole('button', { name: 'Search' }))
+
+		const searchbox = getSearchbox() as HTMLInputElement
+		expect(searchbox).toHaveFocus()
+		expect(searchbox.selectionStart).toBe(0)
+		expect(searchbox.selectionEnd).toBe('collection'.length)
+
+		await user.keyboard('c')
+		expect(getSearchbox()).toHaveValue('c')
+	})
+
+	it('keeps the preserved query when the selection is collapsed first', async () => {
+		const user = userEvent.setup()
+		renderDialog()
+		await search(user)
+		await user.click(screen.getByRole('button', { name: 'Close search' }))
+
+		await user.click(screen.getByRole('button', { name: 'Search' }))
+		await user.keyboard('{ArrowRight}x')
+
+		expect(getSearchbox()).toHaveValue('collectionx')
+	})
+
 	it('clears the query, collapses results, and restores input focus', async () => {
 		const user = userEvent.setup()
 		renderDialog()
