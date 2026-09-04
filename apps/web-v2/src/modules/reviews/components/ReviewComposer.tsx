@@ -260,12 +260,12 @@ export function ReviewComposer({
 			<footer {...stylex.props(styles.footer)}>
 				<div {...stylex.props(styles.footerMetadata)}>
 					<ReviewDatePicker
+						date={draft.date}
 						disabled={isPending}
-						isCompleted={draft.rating !== null}
-						onChange={setDate}
-						showUnscheduledLabel={false}
+						emptyLabel={null}
+						kind={draft.rating === null ? 'scheduled' : 'completed'}
+						onDateChange={setDate}
 						size='medium'
-						value={draft.date}
 					/>
 				</div>
 				<div {...stylex.props(styles.footerActions)}>

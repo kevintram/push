@@ -432,10 +432,14 @@ export function ReviewDialog({
 				<footer {...stylex.props(styles.footer)}>
 					<div {...stylex.props(styles.footerMetadata)}>
 						<ReviewDatePicker
-							isCompleted={review.rating !== undefined}
-							onChange={onSetDate}
+							date={(review.date ?? null) as DateString | null}
+							kind={
+								review.rating === undefined
+									? 'scheduled'
+									: 'completed'
+							}
+							onDateChange={onSetDate}
 							size='medium'
-							value={(review.date ?? null) as DateString | null}
 						/>
 						<ReviewDurability review={review} size='medium' />
 					</div>
