@@ -69,6 +69,10 @@ export function RatingPicker({
 				)}
 			</DropdownMenuTrigger>
 			<DropdownMenuContent>
+				{/*
+				 * Base UI leaves radio items open on click so multi-step menus can
+				 * keep taking input. A rating is a single choice, so close on click.
+				 */}
 				<DropdownMenuRadioGroup
 					value={rating ?? ''}
 					onValueChange={value =>
@@ -76,6 +80,7 @@ export function RatingPicker({
 					}
 				>
 					<DropdownMenuRadioItem
+						closeOnClick
 						value=''
 						prefix={
 							<Circle aria-hidden='true' size={iconSizes.md} />
@@ -86,6 +91,7 @@ export function RatingPicker({
 					{Object.entries(ratings).map(([value, { label, Icon }]) => (
 						<DropdownMenuRadioItem
 							key={value}
+							closeOnClick
 							value={value}
 							prefix={
 								<Icon aria-hidden='true' size={iconSizes.md} />
