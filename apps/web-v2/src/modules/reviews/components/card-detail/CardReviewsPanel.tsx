@@ -2,22 +2,12 @@ import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { Plus } from 'lucide-react'
-import { useCallback } from 'react'
-import { toast } from 'sonner'
 
-import { Button } from '~/components/ui'
 import { reviewsSidebarColors } from '~/styles/colors/components.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
-import {
-	fontSizes,
-	fontWeights,
-	iconSizes,
-	radii,
-	spacing,
-} from '~/styles/tokens.stylex'
+import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
-import { reviewQueries, useCreateReview } from '../../api/reviewQueries'
+import { reviewQueries } from '../../api/reviewQueries'
 import { Review } from '../Review'
 
 const styles = stylex.create({
@@ -62,13 +52,6 @@ type CardReviewsPanelProps = {
 
 export function CardReviewsPanel({ cardId }: CardReviewsPanelProps) {
 	const { data: reviews } = useSuspenseQuery(reviewQueries.listByCard(cardId))
-	const createReview = useCreateReview()
-	const handleCreateReview = useCallback(() => {
-		createReview.mutate(
-			{ cardId },
-			{ onError: () => toast.error('Failed to create review') },
-		)
-	}, [createReview, cardId])
 
 	return (
 		<section aria-label='Reviews' {...stylex.props(styles.container)}>
@@ -82,16 +65,6 @@ export function CardReviewsPanel({ cardId }: CardReviewsPanelProps) {
 					>
 						See all
 					</Link>
-					<Button.Icon
-						aria-label='Add review'
-						variant='ghost'
-						size='micro'
-						disabled={createReview.isPending}
-						onClick={handleCreateReview}
-						shape='round'
-					>
-						<Plus aria-hidden='true' size={iconSizes.md} />
-					</Button.Icon>
 				</div>
 			</div>
 			<div {...stylex.props(styles.list)}>

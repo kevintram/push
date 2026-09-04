@@ -6,7 +6,7 @@ import type { DateString } from '~/types/date'
 
 import type { CardSrsState } from '../../types/review.types'
 import { CardPropertiesPanel } from './CardPropertiesPanel'
-import { CardReviewsPanel } from './CardReviewsPanel'
+import { CardSidebarReviews } from './CardSidebarReviews'
 
 const styles = stylex.create({
 	container: {
@@ -25,14 +25,20 @@ const styles = stylex.create({
 
 type CardSidebarProps = CardSrsState & {
 	cardId: Id<'cards'>
+	showReviews: boolean
 	today: DateString
 }
 
-export function CardSidebar({ cardId, today, ...srsState }: CardSidebarProps) {
+export function CardSidebar({
+	cardId,
+	showReviews,
+	today,
+	...srsState
+}: CardSidebarProps) {
 	return (
 		<aside aria-label='Card details' {...stylex.props(styles.container)}>
+			{showReviews && <CardSidebarReviews cardId={cardId} key={cardId} />}
 			<CardPropertiesPanel {...srsState} today={today} />
-			<CardReviewsPanel cardId={cardId} />
 		</aside>
 	)
 }
