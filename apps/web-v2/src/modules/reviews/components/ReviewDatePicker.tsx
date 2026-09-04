@@ -44,6 +44,7 @@ interface ReviewDatePickerProps {
 	disabled?: boolean
 	isCompleted: boolean
 	onChange?: (value: DateString | null) => void | Promise<void>
+	showUnscheduledLabel?: boolean
 	size?: ButtonSize
 	value: DateString | null
 }
@@ -52,6 +53,7 @@ export function ReviewDatePicker({
 	disabled = false,
 	isCompleted,
 	onChange,
+	showUnscheduledLabel = true,
 	size = 'medium',
 	value,
 }: ReviewDatePickerProps) {
@@ -94,7 +96,9 @@ export function ReviewDatePicker({
 					xstyle={[styles.trigger, dateToneStyle]}
 				>
 					<CalendarIcon aria-hidden='true' size={iconSizes.md} />
-					{relativeDate}
+					{value !== null || showUnscheduledLabel
+						? relativeDate
+						: null}
 				</Button>
 			}
 		/>

@@ -9,6 +9,21 @@ vi.mock('~/hooks/useToday', () => ({
 }))
 
 describe('ReviewDatePicker', () => {
+	it('can hide the visible Unscheduled label while retaining its accessible name', () => {
+		render(
+			<ReviewDatePicker
+				isCompleted={false}
+				showUnscheduledLabel={false}
+				value={null}
+			/>,
+		)
+
+		const trigger = screen.getByRole('button', {
+			name: 'Change review date, Unscheduled',
+		})
+		expect(trigger).toHaveTextContent(/^$/)
+	})
+
 	it('disables future dates for a completed review', async () => {
 		const user = userEvent.setup()
 		render(<ReviewDatePicker isCompleted value='2026-08-09' />)

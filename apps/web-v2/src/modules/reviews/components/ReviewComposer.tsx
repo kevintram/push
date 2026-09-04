@@ -142,9 +142,21 @@ const defaultDraft: ReviewDraft = {
 
 type ReviewComposerProps = {
 	cardId: Id<'cards'>
+	autoFocusDescription?: boolean
+	id?: string
+	onCancel?: () => void
+	onSuccess?: () => void
+	xstyle?: stylex.StyleXStyles
 }
 
-export function ReviewComposer({ cardId }: ReviewComposerProps) {
+export function ReviewComposer({
+	autoFocusDescription = false,
+	cardId,
+	id,
+	onCancel,
+	onSuccess,
+	xstyle,
+}: ReviewComposerProps) {
 	const formRef = useRef<HTMLFormElement>(null)
 	const [draft, setDraft] = useState<ReviewDraft>(defaultDraft)
 	const createReview = useCreateReview()
@@ -176,6 +188,11 @@ export function ReviewComposer({ cardId }: ReviewComposerProps) {
 		setDraft(defaultDraft)
 	}
 
+	const handleCancel = () => {
+		resetDraft()
+		onCancel?.()
+	}
+
 	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
 		if (isSubmitDisabled) return
@@ -190,7 +207,10 @@ export function ReviewComposer({ cardId }: ReviewComposerProps) {
 			},
 			{
 				onError: () => toast.error('Failed to create review'),
-				onSuccess: resetDraft,
+				onSuccess: () => {
+					resetDraft()
+					onSuccess?.()
+				},
 			},
 		)
 	}
@@ -204,9 +224,10 @@ export function ReviewComposer({ cardId }: ReviewComposerProps) {
 	return (
 		<form
 			aria-label='Add review'
+			id={id}
 			onSubmit={handleSubmit}
 			ref={formRef}
-			{...stylex.props(styles.composer)}
+			{...stylex.props(styles.composer, xstyle)}
 		>
 			<aside {...stylex.props(styles.rail)}>
 				<div {...stylex.props(styles.ratingControl)}>
@@ -220,6 +241,7 @@ export function ReviewComposer({ cardId }: ReviewComposerProps) {
 			<div {...stylex.props(styles.editor)}>
 				<Textarea
 					aria-label='Review description'
+					autoFocus={autoFocusDescription}
 					disabled={isPending}
 					onChange={event => setDescription(event.target.value)}
 					placeholder='Add a review...'
@@ -241,15 +263,16 @@ export function ReviewComposer({ cardId }: ReviewComposerProps) {
 						disabled={isPending}
 						isCompleted={draft.rating !== null}
 						onChange={setDate}
+						showUnscheduledLabel={false}
 						size='medium'
 						value={draft.date}
 					/>
 				</div>
 				<div {...stylex.props(styles.footerActions)}>
-					{isDirty && (
+					{(isDirty || onCancel !== undefined) && (
 						<Button
 							disabled={isPending}
-							onClick={resetDraft}
+							onClick={handleCancel}
 							shape='round'
 							type='button'
 							variant='ghost'
