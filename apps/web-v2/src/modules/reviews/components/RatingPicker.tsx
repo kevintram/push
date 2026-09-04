@@ -69,10 +69,6 @@ export function RatingPicker({
 				)}
 			</DropdownMenuTrigger>
 			<DropdownMenuContent>
-				{/*
-				 * Base UI leaves radio items open on click so multi-step menus can
-				 * keep taking input. A rating is a single choice, so close on click.
-				 */}
 				<DropdownMenuRadioGroup
 					value={rating ?? ''}
 					onValueChange={value =>
