@@ -193,12 +193,16 @@ export function Review({ review }: ReviewProps) {
 					<div {...stylex.props(styles.footer)}>
 						<div {...stylex.props(styles.raised)}>
 							<ReviewDatePicker
-								isCompleted={review.rating !== undefined}
-								onChange={setDate}
-								size='micro'
-								value={
+								date={
 									(review.date ?? null) as DateString | null
 								}
+								kind={
+									review.rating === undefined
+										? 'scheduled'
+										: 'completed'
+								}
+								onDateChange={setDate}
+								size='micro'
 							/>
 						</div>
 						<ReviewDurability review={review} size='micro' />

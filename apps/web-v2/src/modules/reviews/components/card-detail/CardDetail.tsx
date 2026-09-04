@@ -142,7 +142,12 @@ export function CardDetail({
 				) : (
 					<CardReviews cardId={cardId} />
 				)}
-				<CardSidebar {...srsState} cardId={cardId} today={today} />
+				<CardSidebar
+					{...srsState}
+					cardId={cardId}
+					showReviews={activeTab === 'overview'}
+					today={today}
+				/>
 			</div>
 		</div>
 	)

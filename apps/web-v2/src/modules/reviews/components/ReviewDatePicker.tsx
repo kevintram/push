@@ -40,45 +40,63 @@ const styles = stylex.create({
 	},
 })
 
-interface ReviewDatePickerProps {
+interface ReviewDatePickerCommonProps {
 	disabled?: boolean
-	isCompleted: boolean
-	onChange?: (value: DateString | null) => void | Promise<void>
 	size?: ButtonSize
-	value: DateString | null
 }
 
-export function ReviewDatePicker({
-	disabled = false,
-	isCompleted,
-	onChange,
-	size = 'medium',
-	value,
-}: ReviewDatePickerProps) {
+type ReviewDatePickerProps = ReviewDatePickerCommonProps &
+	(
+		| {
+				date: DateString | null
+				emptyLabel?: string | null
+				kind: 'scheduled'
+				onDateChange: (date: DateString | null) => void
+		  }
+		| {
+				date: DateString | null
+				kind: 'completed'
+				onDateChange: (date: DateString | null) => void
+		  }
+	)
+
+export function ReviewDatePicker(props: ReviewDatePickerProps) {
+	const { disabled = false, size = 'medium' } = props
 	const [isOpen, setIsOpen] = useState(false)
 	const today = useToday()
-	const relativeDate = formatRelativeDate(value, today)
-	const dateTone = getDueDateTone(value, isCompleted, today)
+	const relativeDate = formatRelativeDate(props.date, today)
+	const isCompleted = props.kind === 'completed'
+	const dateTone = getDueDateTone(props.date, isCompleted, today)
 	const dateToneStyle =
 		dateTone === 'overdue'
 			? styles.overdue
 			: dateTone === 'today'
 				? styles.today
 				: null
-	const absoluteDate = value === null ? null : formatAbsoluteDate(value)
+	const absoluteDate =
+		props.date === null ? null : formatAbsoluteDate(props.date)
+	const triggerLabel =
+		props.date === null && props.kind === 'scheduled'
+			? props.emptyLabel === undefined
+				? relativeDate
+				: props.emptyLabel
+			: props.date === null && props.kind === 'completed'
+				? 'Add completion date'
+				: relativeDate
+	const accessibleTriggerLabel = triggerLabel ?? relativeDate
 	// react-day-picker uses native Date, so convert at this library boundary.
 	const selectedDate =
-		value === null ? undefined : parseDate(value).toJSDate()
+		props.date === null ? undefined : parseDate(props.date).toJSDate()
 
-	const selectDate = async (date: Date | undefined) => {
+	const selectDate = (date: Date | undefined) => {
 		if (!date) return
-		if (onChange)
-			await onChange(DateTime.fromJSDate(date).toISODate() as DateString)
+		props.onDateChange(DateTime.fromJSDate(date).toISODate() as DateString)
 		setIsOpen(false)
 	}
 
-	const clearDate = async () => {
-		if (onChange) await onChange(null)
+	const clearDate = () => {
+		if (props.kind !== 'scheduled') return
+		props.onDateChange(null)
 		setIsOpen(false)
 	}
 
@@ -87,14 +105,14 @@ export function ReviewDatePicker({
 			disabled={disabled}
 			render={
 				<Button
-					aria-label={`Change review date, ${relativeDate}`}
+					aria-label={`Change review date, ${accessibleTriggerLabel}`}
 					disabled={disabled}
 					size={size}
 					variant='ghost'
 					xstyle={[styles.trigger, dateToneStyle]}
 				>
 					<CalendarIcon aria-hidden='true' size={iconSizes.md} />
-					{relativeDate}
+					{triggerLabel}
 				</Button>
 			}
 		/>
@@ -105,31 +123,36 @@ export function ReviewDatePicker({
 			<Tooltip>
 				<TooltipTrigger render={trigger} />
 				<TooltipContent>
-					{absoluteDate ?? 'Add due date'}
+					{absoluteDate ??
+						(props.kind === 'completed'
+							? 'Add completion date'
+							: 'Add due date')}
 				</TooltipContent>
 			</Tooltip>
 			<PopoverContent align='center'>
 				<div {...stylex.props(styles.content)}>
 					<Calendar
-						defaultMonth={selectedDate}
+						defaultMonth={
+							selectedDate ?? parseDate(today).toJSDate()
+						}
 						disabled={
 							isCompleted
 								? { after: parseDate(today).toJSDate() }
 								: undefined
 						}
 						mode='single'
-						onSelect={date => void selectDate(date)}
+						onSelect={selectDate}
 						selected={selectedDate}
 					/>
-					<Button
-						// A completed review must always have a date so disable date clearing.
-						disabled={isCompleted}
-						onClick={() => void clearDate()}
-						size='small'
-						variant='outline'
-					>
-						Clear
-					</Button>
+					{props.kind === 'scheduled' && (
+						<Button
+							onClick={clearDate}
+							size='small'
+							variant='outline'
+						>
+							Clear
+						</Button>
+					)}
 				</div>
 			</PopoverContent>
 		</Popover>

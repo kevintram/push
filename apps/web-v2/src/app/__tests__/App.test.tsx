@@ -916,11 +916,43 @@ describe('v2 app setup', () => {
 		expect(
 			await screen.findAllByText('Correctly described generics.'),
 		).not.toHaveLength(0)
+		const sidebar = screen.getByRole('complementary', {
+			name: 'Card details',
+		})
+		expect(
+			within(sidebar).getByRole('region', { name: 'Properties' }),
+		).toBeInTheDocument()
+		expect(
+			within(sidebar).queryByRole('region', { name: 'Reviews' }),
+		).not.toBeInTheDocument()
+		expect(
+			within(sidebar).queryByRole('button', { name: 'Add review' }),
+		).not.toBeInTheDocument()
+		expect(
+			screen.getByRole('form', { name: 'Add review' }),
+		).toBeInTheDocument()
 		expect(screen.getByRole('tab', { name: 'Reviews' })).toHaveAttribute(
 			'aria-selected',
 			'true',
 		)
 		expect(router.state.location.pathname).toBe(`/cards/${cardId}/reviews`)
+	})
+
+	it('renders review actions and history in the Overview sidebar', async () => {
+		renderRoute(`/cards/${cardId}`)
+
+		const sidebar = await screen.findByRole('complementary', {
+			name: 'Card details',
+		})
+		expect(
+			within(sidebar).getByRole('region', { name: 'Properties' }),
+		).toBeInTheDocument()
+		expect(
+			within(sidebar).getByRole('button', { name: 'Add review' }),
+		).toBeInTheDocument()
+		expect(
+			within(sidebar).getByRole('region', { name: 'Reviews' }),
+		).toBeInTheDocument()
 	})
 
 	it('updates the standalone URL when changing card tabs', async () => {
