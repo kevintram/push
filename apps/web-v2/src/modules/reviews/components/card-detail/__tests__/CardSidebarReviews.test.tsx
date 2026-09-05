@@ -42,7 +42,7 @@ describe('CardSidebarReviews', () => {
 		await user.click(action)
 
 		expect(
-			screen.getByRole('button', { name: 'Close review composer' }),
+			screen.getByRole('button', { name: 'Add review' }),
 		).toHaveAttribute('aria-expanded', 'true')
 		expect(screen.getByTestId('review-composer')).toBeInTheDocument()
 	})
@@ -69,15 +69,13 @@ describe('CardSidebarReviews', () => {
 		expect(screen.getByRole('button', { name: 'Add review' })).toHaveFocus()
 	})
 
-	it('discards the open composer when explicitly closed', async () => {
+	it('disables the add action while the composer is open', async () => {
 		const user = userEvent.setup()
 		render(<CardSidebarReviews cardId={cardId} />)
 
 		await user.click(screen.getByRole('button', { name: 'Add review' }))
-		await user.click(
-			screen.getByRole('button', { name: 'Close review composer' }),
-		)
-
-		expect(screen.queryByTestId('review-composer')).not.toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Add review' }),
+		).toBeDisabled()
 	})
 })

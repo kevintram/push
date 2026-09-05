@@ -41,7 +41,7 @@ export function CardReviews({ cardId }: CardReviewsProps) {
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.content)}>
-				<ReviewComposer cardId={cardId} />
+				<ReviewComposer />
 				<div {...stylex.props(styles.list)}>
 					{reviews.map(review => (
 						<Review key={review._id} review={review} />

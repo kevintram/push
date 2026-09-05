@@ -1,4 +1,3 @@
-import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import {
 	formatForDisplay,
@@ -6,8 +5,7 @@ import {
 	useHotkey,
 } from '@tanstack/react-hotkeys'
 import type { FormEvent } from 'react'
-import { useRef, useState } from 'react'
-import { toast } from 'sonner'
+import { useRef } from 'react'
 
 import {
 	Button,
@@ -19,12 +17,9 @@ import {
 } from '~/components/ui'
 import { reviewComposerColors } from '~/styles/colors/components.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
-import type { DateString } from '~/types/date'
-import { todayIso } from '~/utils/date'
 
-import { useCreateReview } from '../api/reviewQueries'
-import type { Rating } from '../types/review.types'
 import { RatingPicker } from './RatingPicker'
+import { useReviewComposerState } from './reviewComposerContext'
 import { ReviewDatePicker } from './ReviewDatePicker'
 
 const ADD_REVIEW_HOTKEY = 'Mod+Enter' satisfies Hotkey
@@ -126,22 +121,7 @@ const styles = stylex.create({
 	},
 })
 
-type ReviewDraft = {
-	description: string
-	notes: string
-	rating: Rating | null
-	date: DateString | null
-}
-
-const defaultDraft: ReviewDraft = {
-	description: '',
-	notes: '',
-	rating: null,
-	date: null,
-}
-
 type ReviewComposerProps = {
-	cardId: Id<'cards'>
 	autoFocusDescription?: boolean
 	id?: string
 	onCancel?: () => void
@@ -151,42 +131,24 @@ type ReviewComposerProps = {
 
 export function ReviewComposer({
 	autoFocusDescription = false,
-	cardId,
 	id,
 	onCancel,
 	onSuccess,
 	xstyle,
 }: ReviewComposerProps) {
 	const formRef = useRef<HTMLFormElement>(null)
-	const [draft, setDraft] = useState<ReviewDraft>(defaultDraft)
-	const createReview = useCreateReview()
-	const isDirty =
-		draft.description !== '' ||
-		draft.notes !== '' ||
-		draft.rating !== null ||
-		draft.date !== null
-	const isPending = createReview.isPending
+	const {
+		draft,
+		isDirty,
+		isPending,
+		setDescription,
+		setNotes,
+		setRating,
+		setDate,
+		resetDraft,
+		submit,
+	} = useReviewComposerState()
 	const isSubmitDisabled = !isDirty || isPending
-
-	const setDescription = (description: string) =>
-		setDraft(previous => ({ ...previous, description }))
-	const setNotes = (notes: string) =>
-		setDraft(previous => ({ ...previous, notes }))
-	const setRating = (rating: Rating | null) =>
-		setDraft(previous => ({
-			...previous,
-			rating,
-			date:
-				rating !== null && previous.rating === null
-					? todayIso()
-					: previous.date,
-		}))
-	const setDate = (date: DateString | null) =>
-		setDraft(previous => ({ ...previous, date }))
-
-	const resetDraft = () => {
-		setDraft(defaultDraft)
-	}
 
 	const handleCancel = () => {
 		resetDraft()
@@ -195,24 +157,7 @@ export function ReviewComposer({
 
 	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
-		if (isSubmitDisabled) return
-
-		createReview.mutate(
-			{
-				cardId,
-				description: draft.description,
-				notes: draft.notes,
-				...(draft.rating === null ? {} : { rating: draft.rating }),
-				...(draft.date === null ? {} : { date: draft.date }),
-			},
-			{
-				onError: () => toast.error('Failed to create review'),
-				onSuccess: () => {
-					resetDraft()
-					onSuccess?.()
-				},
-			},
-		)
+		if (!isSubmitDisabled) submit(onSuccess)
 	}
 
 	const submitWithHotkey = () => formRef.current?.requestSubmit()

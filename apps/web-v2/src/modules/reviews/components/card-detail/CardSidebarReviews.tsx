@@ -1,7 +1,7 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
-import { Plus, X } from 'lucide-react'
-import { useId, useRef, useState } from 'react'
+import { Plus } from 'lucide-react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 import { Button } from '~/components/ui'
 import { iconSizes } from '~/styles/tokens.stylex'
@@ -23,48 +23,50 @@ const styles = stylex.create({
 
 type CardSidebarReviewsProps = {
 	cardId: Id<'cards'>
+	isComposerOpen?: boolean
+	onComposerOpenChange?: (open: boolean) => void
 }
 
-export function CardSidebarReviews({ cardId }: CardSidebarReviewsProps) {
-	const [isComposerOpen, setIsComposerOpen] = useState(false)
+export function CardSidebarReviews({
+	cardId,
+	isComposerOpen,
+	onComposerOpenChange,
+}: CardSidebarReviewsProps) {
+	const [localComposerOpen, setLocalComposerOpen] = useState(false)
+	const composerOpen = isComposerOpen ?? localComposerOpen
+	const setComposerOpen = onComposerOpenChange ?? setLocalComposerOpen
 	const addReviewButtonRef = useRef<HTMLButtonElement>(null)
 	const composerId = useId()
+	const wasComposerOpen = useRef(composerOpen)
+	useEffect(() => {
+		if (wasComposerOpen.current && !composerOpen) {
+			addReviewButtonRef.current?.focus()
+		}
+		wasComposerOpen.current = composerOpen
+	}, [composerOpen])
 
 	const closeComposer = () => {
-		setIsComposerOpen(false)
-		addReviewButtonRef.current?.focus()
+		setComposerOpen(false)
 	}
 
 	return (
 		<>
 			<Button
 				aria-controls={composerId}
-				aria-expanded={isComposerOpen}
-				aria-label={
-					isComposerOpen ? 'Close review composer' : 'Add review'
-				}
-				onClick={() => {
-					if (isComposerOpen) {
-						closeComposer()
-					} else {
-						setIsComposerOpen(true)
-					}
-				}}
+				aria-expanded={composerOpen}
+				aria-label='Add review'
+				disabled={composerOpen}
+				onClick={() => setComposerOpen(true)}
 				ref={addReviewButtonRef}
 				variant='primary'
 				xstyle={styles.addReview}
 			>
-				{isComposerOpen ? (
-					<X aria-hidden='true' size={iconSizes.md} />
-				) : (
-					<Plus aria-hidden='true' size={iconSizes.md} />
-				)}
-				{isComposerOpen ? 'Close' : 'Add Review'}
+				<Plus aria-hidden='true' size={iconSizes.md} />
+				Add Review
 			</Button>
-			{isComposerOpen && (
+			{composerOpen && (
 				<ReviewComposer
 					autoFocusDescription
-					cardId={cardId}
 					id={composerId}
 					onCancel={closeComposer}
 					onSuccess={closeComposer}
