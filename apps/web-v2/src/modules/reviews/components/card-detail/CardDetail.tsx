@@ -1,7 +1,7 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import type { ReactElement } from 'react'
+import { type ReactElement, useEffect, useState } from 'react'
 
 import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
@@ -11,6 +11,7 @@ import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
 import { CardActions } from '../CardActions'
+import { ReviewComposerProvider } from '../ReviewComposerProvider'
 import { CardBreadcrumbs } from './CardBreadcrumbs'
 import { CardOverview } from './CardOverview'
 import { CardReviews } from './CardReviews'
@@ -94,61 +95,80 @@ export function CardDetail({
 	const { data: card } = useSuspenseQuery(cardQueries.detail(cardId))
 	const today = useToday()
 	const srsState = deriveCardSrsState(card, today)
+	const [isComposerOpen, setIsComposerOpen] = useState(false)
+	const [hasDraft, setHasDraft] = useState(false)
+	useEffect(() => {
+		setIsComposerOpen(false)
+		setHasDraft(false)
+	}, [cardId])
+	useEffect(() => {
+		if (activeTab === 'overview' && hasDraft) setIsComposerOpen(true)
+	}, [activeTab, hasDraft])
 
 	return (
-		<div {...stylex.props(styles.container)}>
-			<header {...stylex.props(styles.toolbar)}>
-				<div {...stylex.props(styles.breadcrumbs)}>
-					<CardBreadcrumbs
-						primaryText={card.primaryText}
-						collectionId={card.collectionId}
-						onNavigate={onNavigate}
+		<ReviewComposerProvider
+			cardId={cardId}
+			key={cardId}
+			onDirtyChange={setHasDraft}
+			onCancel={() => setIsComposerOpen(false)}
+			onCreateSuccess={() => setIsComposerOpen(false)}
+		>
+			<div {...stylex.props(styles.container)}>
+				<header {...stylex.props(styles.toolbar)}>
+					<div {...stylex.props(styles.breadcrumbs)}>
+						<CardBreadcrumbs
+							primaryText={card.primaryText}
+							collectionId={card.collectionId}
+							onNavigate={onNavigate}
+						/>
+					</div>
+					<CardActions card={card} />
+				</header>
+				<Tabs
+					value={activeTab}
+					onValueChange={value => {
+						if (
+							onTabChange &&
+							(value === 'overview' || value === 'reviews')
+						) {
+							onTabChange(value)
+						}
+					}}
+					xstyle={styles.tabsContainer}
+				>
+					<TabsList aria-label='Card sections' xstyle={styles.tabs}>
+						<TabsTrigger
+							value='overview'
+							nativeButton={tabLinks ? false : undefined}
+							render={tabLinks?.overview}
+						>
+							Overview
+						</TabsTrigger>
+						<TabsTrigger
+							value='reviews'
+							nativeButton={tabLinks ? false : undefined}
+							render={tabLinks?.reviews}
+						>
+							Reviews
+						</TabsTrigger>
+					</TabsList>
+				</Tabs>
+				<div {...stylex.props(styles.content)}>
+					{activeTab === 'overview' ? (
+						<CardOverview cardId={cardId} />
+					) : (
+						<CardReviews cardId={cardId} />
+					)}
+					<CardSidebar
+						{...srsState}
+						cardId={cardId}
+						showReviews={activeTab === 'overview'}
+						isComposerOpen={isComposerOpen}
+						onComposerOpenChange={setIsComposerOpen}
+						today={today}
 					/>
 				</div>
-				<CardActions card={card} />
-			</header>
-			<Tabs
-				value={activeTab}
-				onValueChange={value => {
-					if (
-						onTabChange &&
-						(value === 'overview' || value === 'reviews')
-					) {
-						onTabChange(value)
-					}
-				}}
-				xstyle={styles.tabsContainer}
-			>
-				<TabsList aria-label='Card sections' xstyle={styles.tabs}>
-					<TabsTrigger
-						value='overview'
-						nativeButton={tabLinks ? false : undefined}
-						render={tabLinks?.overview}
-					>
-						Overview
-					</TabsTrigger>
-					<TabsTrigger
-						value='reviews'
-						nativeButton={tabLinks ? false : undefined}
-						render={tabLinks?.reviews}
-					>
-						Reviews
-					</TabsTrigger>
-				</TabsList>
-			</Tabs>
-			<div {...stylex.props(styles.content)}>
-				{activeTab === 'overview' ? (
-					<CardOverview cardId={cardId} />
-				) : (
-					<CardReviews cardId={cardId} />
-				)}
-				<CardSidebar
-					{...srsState}
-					cardId={cardId}
-					showReviews={activeTab === 'overview'}
-					today={today}
-				/>
 			</div>
-		</div>
+		</ReviewComposerProvider>
 	)
 }

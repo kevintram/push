@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '~/components/ui'
 
 import { ReviewComposer } from '../ReviewComposer'
+import { ReviewComposerProvider } from '../ReviewComposerProvider'
 
 const { mutate } = vi.hoisted(() => ({ mutate: vi.fn() }))
 
@@ -29,7 +30,9 @@ function renderComposer(
 ) {
 	return render(
 		<TooltipProvider delay={0}>
-			<ReviewComposer cardId={cardId} {...props} />
+			<ReviewComposerProvider cardId={cardId}>
+				<ReviewComposer {...props} />
+			</ReviewComposerProvider>
 		</TooltipProvider>,
 	)
 }
