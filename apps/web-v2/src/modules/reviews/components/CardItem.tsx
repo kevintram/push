@@ -1,6 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
 
 import { cardItemColors } from '~/styles/colors/components.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
@@ -10,7 +9,6 @@ import { useHideMode } from '../hide-mode/useHideMode'
 import type { Card as CardModel, CardSrsState } from '../types/review.types'
 import { CardActions } from './CardActions'
 import { CardMetadata } from './CardMetadata'
-import { Hideable } from './Hideable'
 
 const styles = stylex.create({
 	outer: {
@@ -74,17 +72,7 @@ export function CardItem({ card, srs, today }: CardItemProps) {
 	const { _id, type, primaryText, secondaryText } = card
 	const { hideMode } = useHideMode()
 
-	const [secondaryRevealed, setSecondaryRevealed] = useState(false)
-
-	const secondaryShown =
-		type === 'practice' || // always show if practice
-		hideMode === 'off' || // always show if hideMode off
-		secondaryRevealed
-
-	useEffect(() => {
-		// reset secondaryRevealed
-		setSecondaryRevealed(false)
-	}, [hideMode, _id])
+	const secondaryShown = type === 'practice' || hideMode === 'off'
 
 	return (
 		<div {...stylex.props(styles.outer)}>
@@ -97,19 +85,10 @@ export function CardItem({ card, srs, today }: CardItemProps) {
 					{primaryText.trim() || 'Untitled'}
 				</Link>
 
-				{secondaryText ? (
-					<Hideable
-						revealed={secondaryShown}
-						onRevealedChange={setSecondaryRevealed}
-						// Only raise while hidden so the Reveal button stays
-						// clickable; once revealed, let the answer text fall
-						// under the stretched link so the card stays navigable.
-						xstyle={secondaryShown ? undefined : styles.raised}
-					>
-						<p {...stylex.props(styles.secondaryText)}>
-							{secondaryText}
-						</p>
-					</Hideable>
+				{secondaryText && secondaryShown ? (
+					<p {...stylex.props(styles.secondaryText)}>
+						{secondaryText}
+					</p>
 				) : null}
 
 				<div {...stylex.props(styles.footer)}>
