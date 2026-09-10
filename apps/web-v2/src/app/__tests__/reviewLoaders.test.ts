@@ -1,9 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { Route as FlaggedRoute } from '~/app/routes/flagged'
-import { Route as DueRoute } from '~/app/routes/review/due'
-import { Route as LateRoute } from '~/app/routes/review/late'
-import { Route as NewRoute } from '~/app/routes/review/new'
+import { Route as ReviewRoute } from '~/app/routes/review/route'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { dueQueries } from '~/modules/reviews/api/dueQueries'
 import { todayIso } from '~/utils/date'
@@ -28,10 +26,8 @@ function context(isAuthenticated: boolean): LoaderContext {
 }
 
 const loaders = {
-	due: DueRoute.options.loader as unknown as Loader,
 	flagged: FlaggedRoute.options.loader as unknown as Loader,
-	late: LateRoute.options.loader as unknown as Loader,
-	new: NewRoute.options.loader as unknown as Loader,
+	review: ReviewRoute.options.loader as unknown as Loader,
 }
 
 describe('review queue loaders', () => {
@@ -48,33 +44,23 @@ describe('review queue loaders', () => {
 		},
 	)
 
-	it('preloads only today for due', async () => {
+	it('preloads all review queues for the current day', async () => {
 		const loaderContext = context(true)
+		const today = todayIso()
 
-		await loaders.due({ context: loaderContext })
+		await loaders.review({ context: loaderContext })
 
-		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledWith(
-			dueQueries.listDue(todayIso()),
+		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledTimes(
+			3,
 		)
-	})
-
-	it('preloads dates before today for late', async () => {
-		const loaderContext = context(true)
-
-		await loaders.late({ context: loaderContext })
-
 		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledWith(
-			dueQueries.listLate(todayIso()),
+			dueQueries.listDue(today),
 		)
-	})
-
-	it('preloads new cards', async () => {
-		const loaderContext = context(true)
-
-		await loaders.new({ context: loaderContext })
-
 		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledWith(
 			dueQueries.listNew(),
+		)
+		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledWith(
+			dueQueries.listLate(today),
 		)
 	})
 
