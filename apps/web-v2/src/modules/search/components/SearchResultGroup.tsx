@@ -61,14 +61,9 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 	},
-	empty: {
-		paddingBlock: spacing.lg,
-		paddingInline: spacing.md,
-		color: searchResultGroupColors.emptyForeground,
-		fontSize: fontSizes.sm,
-	},
 })
 
+/** `results` is never empty: the dialog drops a group with no hits. */
 type SearchResultGroupProps = {
 	expanded: boolean
 	label: string
@@ -122,17 +117,11 @@ export function SearchResultGroup({
 				) : null}
 			</div>
 
-			{visibleResults.length === 0 ? (
-				<p {...stylex.props(styles.empty)}>
-					No matching {label.toLowerCase()}.
-				</p>
-			) : (
-				<ul {...stylex.props(styles.list)}>
-					{visibleResults.map(result => (
-						<SearchResultItem key={result.id} result={result} />
-					))}
-				</ul>
-			)}
+			<ul {...stylex.props(styles.list)}>
+				{visibleResults.map(result => (
+					<SearchResultItem key={result.id} result={result} />
+				))}
+			</ul>
 		</section>
 	)
 }

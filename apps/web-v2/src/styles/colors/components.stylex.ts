@@ -396,7 +396,6 @@ export const searchDialogColors = stylex.defineVars({
 export const searchResultGroupColors = stylex.defineVars({
 	titleForeground: semanticColors.textSecondary,
 	controlForeground: semanticColors.textSecondary,
-	emptyForeground: semanticColors.textSecondary,
 })
 
 export const searchResultItemColors = stylex.defineVars({
