@@ -30,7 +30,7 @@ export function HideModeButton() {
 						aria-pressed={hideMode === 'on'}
 						icon={Copy}
 						onClick={toggleHideMode}
-						text='Hide Mode'
+						text='Hide'
 						variant='outline'
 						xstyle={hideMode === 'on' && styles.hideModeOn}
 					/>
