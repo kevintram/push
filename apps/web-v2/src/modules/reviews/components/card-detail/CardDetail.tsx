@@ -83,6 +83,10 @@ const styles = stylex.create({
 		minHeight: 0,
 		minWidth: 0,
 	},
+	sidebar: {
+		position: 'relative',
+		zIndex: 1,
+	},
 })
 
 export function CardDetail({
@@ -149,6 +153,7 @@ export function CardDetail({
 						cardId={cardId}
 						showReviews={activeTab === 'overview'}
 						today={today}
+						xstyle={styles.sidebar}
 					/>
 				</div>
 			</div>
