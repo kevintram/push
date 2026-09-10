@@ -2,6 +2,7 @@ import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import * as stylex from '@stylexjs/stylex'
 import { type LucideIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 import {
 	appRailItemColors,
@@ -19,8 +20,8 @@ export interface SidebarItemProps extends Omit<
 	useRender.ComponentProps<'button'>,
 	'children' | 'className' | 'style'
 > {
+	children: ReactNode
 	icon: LucideIcon
-	text: string
 	ariaLabel?: string
 	/**
 	 * `fat` stacks the icon above the label for the primary rail, `skinny` puts
@@ -121,10 +122,10 @@ const styles = stylex.create({
 export function SidebarItem({
 	active,
 	ariaLabel,
+	children,
 	icon: Icon,
 	layout = 'fat',
 	render,
-	text,
 	variant = 'ghost',
 	xstyle,
 	...props
@@ -133,7 +134,9 @@ export function SidebarItem({
 		defaultTagName: 'button',
 		props: mergeProps<'button'>(
 			{
-				'aria-label': ariaLabel ?? text,
+				'aria-label':
+					ariaLabel ??
+					(typeof children === 'string' ? children : undefined),
 				type: render ? undefined : 'button',
 			},
 			stylex.props(
@@ -154,7 +157,7 @@ export function SidebarItem({
 								layout === 'skinny' && styles.skinnyIcon,
 							)}
 						/>
-						{text}
+						{children}
 					</>
 				),
 			},
