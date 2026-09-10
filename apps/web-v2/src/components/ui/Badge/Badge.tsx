@@ -35,6 +35,15 @@ const styles = stylex.create({
 		outlineStyle: 'solid',
 		outlineWidth: '2px',
 	},
+	interactive: {
+		cursor: 'pointer',
+		transitionDuration: {
+			default: '125ms, 125ms',
+			'@media (prefers-reduced-motion: reduce)': '1ms',
+		},
+		transitionProperty: 'background-color, color',
+		transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
+	},
 	round: { borderRadius: radii.full },
 })
 
@@ -79,6 +88,58 @@ const variants = stylex.create({
 	},
 })
 
+const interactiveVariants = stylex.create({
+	solid: {},
+	secondary: {
+		backgroundColor: {
+			default: badgeColors.secondaryBackground,
+			':hover': badgeColors.secondaryBackgroundHover,
+			':active': badgeColors.secondaryBackgroundPressed,
+		},
+		color: {
+			default: badgeColors.secondaryForeground,
+			':hover': badgeColors.secondaryForegroundHover,
+			':active': badgeColors.secondaryForegroundPressed,
+		},
+	},
+	outline: {
+		backgroundColor: {
+			default: badgeColors.outlineBackground,
+			':hover': badgeColors.outlineBackgroundHover,
+			':active': badgeColors.outlineBackgroundPressed,
+		},
+		color: {
+			default: badgeColors.outlineForeground,
+			':hover': badgeColors.outlineForegroundHover,
+			':active': badgeColors.outlineForegroundPressed,
+		},
+	},
+	ghost: {
+		backgroundColor: {
+			default: badgeColors.ghostBackground,
+			':hover': badgeColors.ghostBackgroundHover,
+			':active': badgeColors.ghostBackgroundPressed,
+		},
+		color: {
+			default: badgeColors.ghostForeground,
+			':hover': badgeColors.ghostForegroundHover,
+			':active': badgeColors.ghostForegroundPressed,
+		},
+	},
+	danger: {
+		backgroundColor: {
+			default: badgeColors.dangerBackground,
+			':hover': badgeColors.dangerBackgroundHover,
+			':active': badgeColors.dangerBackgroundPressed,
+		},
+		color: {
+			default: badgeColors.dangerForeground,
+			':hover': badgeColors.dangerForegroundHover,
+			':active': badgeColors.dangerForegroundPressed,
+		},
+	},
+})
+
 export type BadgeVariant = keyof typeof variants
 export type BadgeShape = 'square' | 'round'
 
@@ -88,12 +149,14 @@ export interface BadgeProps extends Omit<
 > {
 	variant?: BadgeVariant
 	shape?: BadgeShape
+	interactive?: boolean
 	xstyle?: stylex.StyleXStyles
 }
 
 export function Badge({
 	variant = 'solid',
-	shape = 'square',
+	shape = 'round',
+	interactive = false,
 	render,
 	xstyle,
 	...props
@@ -104,6 +167,8 @@ export function Badge({
 			stylex.props(
 				styles.base,
 				variants[variant],
+				interactive && styles.interactive,
+				interactive && interactiveVariants[variant],
 				shape === 'round' && styles.round,
 				xstyle,
 			),

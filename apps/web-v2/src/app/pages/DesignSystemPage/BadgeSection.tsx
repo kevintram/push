@@ -78,7 +78,11 @@ export function BadgeSection() {
 				</div>
 				<div {...stylex.props(styles.row)}>
 					<span {...stylex.props(styles.label)}>As link</span>
-					<Badge render={<a href='#badge' />} variant='outline'>
+					<Badge
+						interactive
+						render={<a href='#badge' />}
+						variant='outline'
+					>
 						Open link
 					</Badge>
 				</div>
