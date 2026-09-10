@@ -28,16 +28,21 @@ type CardSidebarProps = CardSrsState & {
 	cardId: Id<'cards'>
 	showReviews: boolean
 	today: DateString
+	xstyle?: stylex.StyleXStyles
 }
 
 export function CardSidebar({
 	cardId,
 	showReviews,
 	today,
+	xstyle,
 	...srsState
 }: CardSidebarProps) {
 	return (
-		<aside aria-label='Card details' {...stylex.props(styles.container)}>
+		<aside
+			aria-label='Card details'
+			{...stylex.props(styles.container, xstyle)}
+		>
 			{showReviews && <CardSidebarReviews cardId={cardId} key={cardId} />}
 			<CardPropertiesPanel {...srsState} today={today} />
 		</aside>
