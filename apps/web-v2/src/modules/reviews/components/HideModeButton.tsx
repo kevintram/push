@@ -37,7 +37,9 @@ export function HideModeButton() {
 				}
 			/>
 			<TooltipContent side='right'>
-				{hideMode === 'on' ? 'Turn off hide mode' : 'Turn on hide mode'}
+				{hideMode === 'on'
+					? 'Show answers and notes'
+					: 'Hide answers and notes'}
 				<Kbd>{formatForDisplay(HIDE_MODE_HOTKEY)}</Kbd>
 			</TooltipContent>
 		</Tooltip>
