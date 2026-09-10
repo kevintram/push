@@ -2,7 +2,11 @@ import type { Id } from '@convex/_generated/dataModel'
 import { describe, expect, it } from 'vitest'
 
 import type { Card } from '../../types/review.types'
-import { deriveCardSrsState, formatDurability, formatRecall } from '../cardSrs'
+import {
+	deriveCardSrsState,
+	formatDurability,
+	formatDurabilityTooltip,
+} from '../cardSrs'
 
 function card(overrides: Partial<Card> = {}): Card {
 	return {
@@ -54,17 +58,6 @@ describe('deriveCardSrsState', () => {
 	})
 })
 
-describe('formatRecall', () => {
-	it.each([
-		[null, null],
-		[0.8, '80%'],
-		[0.804, '80%'],
-		[0.996, '100%'],
-	] as const)('formats %s as %s', (retrievability, expected) => {
-		expect(formatRecall(retrievability)).toBe(expected)
-	})
-})
-
 describe('formatDurability', () => {
 	it.each([
 		[null, null],
@@ -73,5 +66,14 @@ describe('formatDurability', () => {
 		[10.5, '11d'],
 	] as const)('formats %s as %s', (stability, expected) => {
 		expect(formatDurability(stability)).toBe(expected)
+	})
+})
+
+describe('formatDurabilityTooltip', () => {
+	it.each([
+		[null, null],
+		[10.4, 'Estimated you will remember this for at least 10d'],
+	] as const)('formats %s as %s', (stability, expected) => {
+		expect(formatDurabilityTooltip(stability)).toBe(expected)
 	})
 })

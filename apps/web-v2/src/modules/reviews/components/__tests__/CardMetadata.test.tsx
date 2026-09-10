@@ -1,5 +1,8 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
+
+import { TooltipProvider } from '~/components/ui'
 
 import { CardMetadata } from '../CardMetadata'
 
@@ -105,5 +108,31 @@ describe('CardMetadata', () => {
 
 		expect(screen.getByText('Unreviewed')).toBeInTheDocument()
 		expect(document.querySelector('svg')).not.toBeInTheDocument()
+	})
+
+	it('shows the durability icon and explanation in a tooltip', async () => {
+		const user = userEvent.setup()
+
+		render(
+			<TooltipProvider delay={0}>
+				<CardMetadata
+					lastReviewedAt='2026-08-01'
+					lastRating='good'
+					nextDueAt={null}
+					retrievability={null}
+					stability={10.4}
+					today='2026-08-09'
+				/>
+			</TooltipProvider>,
+		)
+
+		const durability = screen.getByText(/Durability/)
+		expect(durability).toHaveTextContent(/Durability.*10d/)
+		expect(document.querySelector('svg.lucide-anvil')).toBeInTheDocument()
+		await user.hover(durability)
+
+		expect(await screen.findByRole('tooltip')).toHaveTextContent(
+			'Estimated you will remember this for at least 10d',
+		)
 	})
 })
