@@ -156,6 +156,21 @@ describe('SearchDialog', () => {
 		expect(screen.getAllByRole('link')).toHaveLength(6)
 	})
 
+	it('hides a group with no matches', async () => {
+		const user = userEvent.setup()
+		renderDialog({ collectionResults: [] })
+
+		await user.type(getSearchbox(), 'collection')
+		await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(3))
+
+		expect(
+			screen.queryByRole('heading', { name: /^Collections/ }),
+		).not.toBeInTheDocument()
+		expect(
+			screen.getByRole('heading', { name: 'Cards (4)' }),
+		).toBeInTheDocument()
+	})
+
 	it('renders distinct paths separately from same-titled collection descriptions', async () => {
 		const user = userEvent.setup()
 		const duplicateCollections: Array<CollectionSearchResult> = [

@@ -311,9 +311,12 @@ export function SearchDialog() {
 						Only one group can be expanded at a time, and
 						expanding one hides the other so the expanded
 						group gets the full scroll area. With nothing
-						expanded, both render a truncated preview.
+						expanded, both render a truncated preview. A
+						group with no hits is dropped entirely; both
+						being empty is handled by `hasResults` above.
 						*/}
-							{expandedGroup !== 'cards' ? (
+							{expandedGroup !== 'cards' &&
+							collectionResults.length > 0 ? (
 								<SearchResultGroup
 									expanded={expandedGroup === 'collections'}
 									label='Collections'
@@ -325,7 +328,8 @@ export function SearchDialog() {
 									results={collectionResults}
 								/>
 							) : null}
-							{expandedGroup !== 'collections' ? (
+							{expandedGroup !== 'collections' &&
+							cardResults.length > 0 ? (
 								<SearchResultGroup
 									expanded={expandedGroup === 'cards'}
 									label='Cards'
