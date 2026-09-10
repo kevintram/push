@@ -26,6 +26,9 @@ import {
 } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
+import { type CardTypeFilter, filterCardsByType } from './cardTypeFilter'
+import { CardTypeFilterBadges } from './CardTypeFilterBadges'
+
 type ReviewListPageProps = {
 	cards: Array<CardModel>
 	today: DateString
@@ -51,11 +54,16 @@ const styles = stylex.create({
 		color: semanticColors.textSecondary,
 		fontSize: fontSizes.sm,
 	},
+	filters: {
+		marginBlockEnd: spacing.md,
+	},
 })
 
 export function ReviewListPage({ cards, title, today }: ReviewListPageProps) {
 	const [focusDialogHandle] = useState(createDialogHandle)
-	const cardCount = cards.length
+	const [filter, setFilter] = useState<CardTypeFilter>('all')
+	const visibleCards = filterCardsByType(cards, filter)
+	const cardCount = visibleCards.length
 
 	useHotkey(
 		FOCUS_OVERLAY_HOTKEY,
@@ -99,12 +107,15 @@ export function ReviewListPage({ cards, title, today }: ReviewListPageProps) {
 						</TooltipContent>
 					</Tooltip>
 				</div>
+				<CardTypeFilterBadges
+					value={filter}
+					onValueChange={setFilter}
+					xstyle={styles.filters}
+				/>
 				{cardCount === 0 ? (
-					<p {...stylex.props(styles.empty)}>
-						No {title.toLowerCase()} cards.
-					</p>
+					<p {...stylex.props(styles.empty)}>No cards.</p>
 				) : null}
-				{cards.map(card => (
+				{visibleCards.map(card => (
 					<CardItem
 						key={card._id}
 						card={card}
@@ -113,7 +124,10 @@ export function ReviewListPage({ cards, title, today }: ReviewListPageProps) {
 					/>
 				))}
 			</div>
-			<FocusOverlayDialog handle={focusDialogHandle} cards={cards} />
+			<FocusOverlayDialog
+				handle={focusDialogHandle}
+				cards={visibleCards}
+			/>
 		</>
 	)
 }
