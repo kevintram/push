@@ -14,6 +14,48 @@ export const breadcrumbColors = stylex.defineVars({
 	pageForeground: semanticColors.textPrimary,
 })
 
+export const badgeColors = stylex.defineVars({
+	focusRingRest: semanticColors.surfaceTransparent,
+	focusRing: semanticColors.borderFocus,
+
+	solidBackground: semanticColors.surfaceInverse,
+	solidBorder: semanticColors.surfaceInverse,
+	solidForeground: semanticColors.textOnInverse,
+
+	secondaryBackground: semanticColors.surfaceInteractiveSecondary,
+	secondaryBackgroundHover: semanticColors.surfaceInteractiveSecondaryHover,
+	secondaryBackgroundPressed:
+		semanticColors.surfaceInteractiveSecondaryActive,
+	secondaryBorder: semanticColors.surfaceTransparent,
+	secondaryForeground: semanticColors.textInteractive,
+	secondaryForegroundHover: semanticColors.textInteractiveHover,
+	secondaryForegroundPressed: semanticColors.textInteractiveActive,
+
+	outlineBackground: semanticColors.surfaceInteractiveSecondary,
+	outlineBackgroundHover: semanticColors.surfaceInteractiveSecondaryHover,
+	outlineBackgroundPressed: semanticColors.surfaceInteractiveSecondaryActive,
+	outlineBorder: semanticColors.borderSubtle,
+	outlineForeground: semanticColors.textInteractive,
+	outlineForegroundHover: semanticColors.textInteractiveHover,
+	outlineForegroundPressed: semanticColors.textInteractiveActive,
+
+	ghostBackground: semanticColors.surfaceTransparent,
+	ghostBackgroundHover: semanticColors.surfaceTransparentHover,
+	ghostBackgroundPressed: semanticColors.surfaceTransparentActive,
+	ghostBorder: semanticColors.surfaceTransparent,
+	ghostForeground: semanticColors.textInteractive,
+	ghostForegroundHover: semanticColors.textInteractiveHover,
+	ghostForegroundPressed: semanticColors.textInteractiveActive,
+
+	dangerBackground: semanticColors.surfaceInteractiveDanger,
+	dangerBackgroundHover: semanticColors.surfaceInteractiveDangerHover,
+	dangerBackgroundPressed: semanticColors.surfaceInteractiveDangerActive,
+	dangerBorder: semanticColors.surfaceTransparent,
+	dangerForeground: semanticColors.textOnDanger,
+	dangerForegroundHover: semanticColors.textOnDanger,
+	dangerForegroundPressed: semanticColors.textOnDanger,
+})
+
 export const buttonColors = stylex.defineVars({
 	focusRingRest: semanticColors.surfaceTransparent,
 	focusRing: semanticColors.borderFocus,

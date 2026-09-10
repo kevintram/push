@@ -262,7 +262,7 @@ describe('v2 app setup', () => {
 				{ timeout: 3000 },
 			),
 		).toBeInTheDocument()
-		expect(screen.getByText('No due cards.')).toBeInTheDocument()
+		expect(screen.getByText('No cards.')).toBeInTheDocument()
 	})
 
 	it('renders today’s due entry', async () => {
@@ -355,7 +355,7 @@ describe('v2 app setup', () => {
 	it('shows the flagged empty state and disables focus', async () => {
 		renderRoute('/flagged')
 
-		expect(await screen.findByText('No flagged cards.')).toBeInTheDocument()
+		expect(await screen.findByText('No cards.')).toBeInTheDocument()
 		expect(screen.getByRole('button', { name: 'Focus' })).toBeDisabled()
 	})
 
