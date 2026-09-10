@@ -1,15 +1,16 @@
 import * as stylex from '@stylexjs/stylex'
-import { Outlet, useLayoutEffect } from '@tanstack/react-router'
+import { Link, Outlet, useLayoutEffect } from '@tanstack/react-router'
+import { BellRing, Calendar, Sparkles } from 'lucide-react'
 import { useRef } from 'react'
 import { toast } from 'sonner'
 
-import { ReviewSidebar } from '~/modules/reviews/components/ReviewSidebar'
+import { SidebarItem } from '~/components/sidebar-item'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import {
 	appShellColors,
-	reviewSidebarColors,
+	reviewSectionNavigationColors,
 } from '~/styles/colors/components.stylex'
-import { breakpoints, layout, radii, spacing } from '~/styles/tokens.stylex'
+import { breakpoints, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	layout: {
@@ -20,10 +21,23 @@ const styles = stylex.create({
 
 		height: '100%',
 
-		backgroundColor: reviewSidebarColors.background,
+		backgroundColor: reviewSectionNavigationColors.background,
+	},
+	sectionNavigation: {
+		position: 'sticky',
+		top: 0,
+
+		padding: spacing.sm,
+		minInlineSize: '180px',
+
+		backgroundColor: reviewSectionNavigationColors.background,
+
+		gap: spacing.xs,
+		display: 'flex',
+		flexDirection: 'column',
 	},
 	main: {
-		overflow: 'auto',
+		overflow: 'hidden',
 		display: 'flex',
 		flexBasis: 0,
 		flexGrow: 1,
@@ -48,11 +62,10 @@ const styles = stylex.create({
 		},
 	},
 	content: {
-		marginInline: spacing.lg,
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 1,
-		maxWidth: layout.contentColumnMaxWidth,
+		minHeight: 0,
 		minWidth: 0,
 		width: '100%',
 	},
@@ -76,7 +89,29 @@ export function ReviewPageLayout() {
 
 	return (
 		<div {...stylex.props(styles.layout)}>
-			<ReviewSidebar />
+			<nav
+				aria-label='review sections'
+				{...stylex.props(styles.sectionNavigation)}
+			>
+				<SidebarItem
+					icon={Calendar}
+					layout='skinny'
+					render={<Link to='/review/due' />}
+					text='Due'
+				/>
+				<SidebarItem
+					icon={Sparkles}
+					layout='skinny'
+					render={<Link to='/review/new' />}
+					text='New'
+				/>
+				<SidebarItem
+					icon={BellRing}
+					layout='skinny'
+					render={<Link to='/review/late' />}
+					text='Late'
+				/>
+			</nav>
 			<div {...stylex.props(styles.main)}>
 				<div {...stylex.props(styles.content)}>
 					<Outlet />

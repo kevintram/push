@@ -2,11 +2,11 @@ import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { RefObject } from 'react'
 
 import {
-	FOCUS_OVERLAY_NEXT_HOTKEY,
-	FOCUS_OVERLAY_PREVIOUS_HOTKEY,
-} from './focusOverlayHotkey'
+	REVIEW_QUEUE_NEXT_HOTKEY,
+	REVIEW_QUEUE_PREVIOUS_HOTKEY,
+} from './reviewQueueKeybindings'
 
-type FocusOverlayNavigationHotkeysProps = {
+type ReviewQueueHotkeysProps = {
 	canGoNext: boolean
 	canGoPrevious: boolean
 	onNext: () => void
@@ -22,27 +22,27 @@ function isTabNavigation(event: KeyboardEvent) {
 }
 
 /**
- * Registers navigation only while the dialog portal is mounted. Arrow keys
+ * Registers navigation only while its review surface is mounted. Arrow keys
  * keep their intrinsic behavior in editable fields and the card's tab list.
  */
-export function FocusOverlayNavigationHotkeys({
+export function ReviewQueueHotkeys({
 	canGoNext,
 	canGoPrevious,
 	onNext,
 	onPrevious,
 	target,
-}: FocusOverlayNavigationHotkeysProps) {
+}: ReviewQueueHotkeysProps) {
 	useHotkeys(
 		[
 			{
-				hotkey: FOCUS_OVERLAY_PREVIOUS_HOTKEY,
+				hotkey: REVIEW_QUEUE_PREVIOUS_HOTKEY,
 				callback: event => {
 					if (!isTabNavigation(event)) onPrevious()
 				},
 				options: { enabled: canGoPrevious },
 			},
 			{
-				hotkey: FOCUS_OVERLAY_NEXT_HOTKEY,
+				hotkey: REVIEW_QUEUE_NEXT_HOTKEY,
 				callback: event => {
 					if (!isTabNavigation(event)) onNext()
 				},

@@ -13,8 +13,6 @@ import {
 	TooltipTrigger,
 } from '~/components/ui'
 import { CardItem } from '~/modules/reviews/components/CardItem'
-import { FocusOverlayDialog } from '~/modules/reviews/components/focus-overlay/FocusOverlayDialog'
-import { FOCUS_OVERLAY_HOTKEY } from '~/modules/reviews/components/focus-overlay/focusOverlayHotkey'
 import type { Card as CardModel } from '~/modules/reviews/types/review.types'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
@@ -26,10 +24,12 @@ import {
 } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
-type ReviewListPageProps = {
+import { FlaggedCardFocusDialog } from './FlaggedCardFocusDialog'
+import { FLAGGED_CARD_FOCUS_HOTKEY } from './flaggedCardFocusHotkey'
+
+type FlaggedCardListProps = {
 	cards: Array<CardModel>
 	today: DateString
-	title: string
 }
 
 const styles = stylex.create({
@@ -53,12 +53,12 @@ const styles = stylex.create({
 	},
 })
 
-export function ReviewListPage({ cards, title, today }: ReviewListPageProps) {
+export function FlaggedCardList({ cards, today }: FlaggedCardListProps) {
 	const [focusDialogHandle] = useState(createDialogHandle)
 	const cardCount = cards.length
 
 	useHotkey(
-		FOCUS_OVERLAY_HOTKEY,
+		FLAGGED_CARD_FOCUS_HOTKEY,
 		() => {
 			if (focusDialogHandle.isOpen) focusDialogHandle.close()
 			else focusDialogHandle.open(null)
@@ -74,7 +74,7 @@ export function ReviewListPage({ cards, title, today }: ReviewListPageProps) {
 		<>
 			<div {...stylex.props(styles.content)}>
 				<div {...stylex.props(styles.heading)}>
-					<h1 {...stylex.props(styles.title)}>{title}</h1>
+					<h1 {...stylex.props(styles.title)}>Flagged</h1>
 					<Tooltip>
 						<TooltipTrigger
 							render={
@@ -95,14 +95,14 @@ export function ReviewListPage({ cards, title, today }: ReviewListPageProps) {
 						/>
 						<TooltipContent>
 							Focus
-							<Kbd>{formatForDisplay(FOCUS_OVERLAY_HOTKEY)}</Kbd>
+							<Kbd>
+								{formatForDisplay(FLAGGED_CARD_FOCUS_HOTKEY)}
+							</Kbd>
 						</TooltipContent>
 					</Tooltip>
 				</div>
 				{cardCount === 0 ? (
-					<p {...stylex.props(styles.empty)}>
-						No {title.toLowerCase()} cards.
-					</p>
+					<p {...stylex.props(styles.empty)}>No flagged cards.</p>
 				) : null}
 				{cards.map(card => (
 					<CardItem
@@ -113,7 +113,7 @@ export function ReviewListPage({ cards, title, today }: ReviewListPageProps) {
 					/>
 				))}
 			</div>
-			<FocusOverlayDialog handle={focusDialogHandle} cards={cards} />
+			<FlaggedCardFocusDialog handle={focusDialogHandle} cards={cards} />
 		</>
 	)
 }

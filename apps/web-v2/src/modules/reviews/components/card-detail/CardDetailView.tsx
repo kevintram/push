@@ -1,17 +1,14 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { useState } from 'react'
 
-import { CardDetail, type CardTab } from '../card-detail/CardDetail'
+import { CardDetail, type CardTab } from './CardDetail'
 
-type FocusOverlayCardProps = {
+type CardDetailViewProps = {
 	cardId: Id<'cards'>
-	onNavigate: () => void
+	onNavigate?: () => void
 }
 
-export function FocusOverlayCard({
-	cardId,
-	onNavigate,
-}: FocusOverlayCardProps) {
+export function CardDetailView({ cardId, onNavigate }: CardDetailViewProps) {
 	const [activeTab, setActiveTab] = useState<CardTab>('overview')
 
 	return (

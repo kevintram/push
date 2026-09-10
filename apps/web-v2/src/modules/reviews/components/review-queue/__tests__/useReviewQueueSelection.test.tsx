@@ -1,0 +1,51 @@
+import { act, renderHook } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
+
+import type { Card } from '~/modules/reviews/types/review.types'
+
+import { useReviewQueueSelection } from '../useReviewQueueSelection'
+
+const card = (id: string) => ({ _id: id }) as Card
+
+describe('useReviewQueueSelection', () => {
+	it('keeps the selected card when earlier queue items change', () => {
+		const { result, rerender } = renderHook(
+			({ cards }) => useReviewQueueSelection(cards),
+			{ initialProps: { cards: [card('a'), card('b'), card('c')] } },
+		)
+
+		act(() => result.current.goNext())
+		expect(result.current.currentCard?._id).toBe('b')
+
+		rerender({ cards: [card('x'), card('a'), card('b'), card('c')] })
+		expect(result.current.currentCard?._id).toBe('b')
+		expect(result.current.index).toBe(2)
+	})
+
+	it('selects the replacement at the previous position when a card leaves', () => {
+		const { result, rerender } = renderHook(
+			({ cards }) => useReviewQueueSelection(cards),
+			{ initialProps: { cards: [card('a'), card('b'), card('c')] } },
+		)
+
+		act(() => result.current.goNext())
+		act(() => result.current.goNext())
+		expect(result.current.currentCard?._id).toBe('c')
+
+		rerender({ cards: [card('a'), card('b'), card('d')] })
+		expect(result.current.currentCard?._id).toBe('d')
+		expect(result.current.canGoNext).toBe(false)
+	})
+
+	it('does not wrap at either end', () => {
+		const { result } = renderHook(() =>
+			useReviewQueueSelection([card('a'), card('b')]),
+		)
+
+		act(() => result.current.goPrevious())
+		expect(result.current.currentCard?._id).toBe('a')
+		act(() => result.current.goNext())
+		act(() => result.current.goNext())
+		expect(result.current.currentCard?._id).toBe('b')
+	})
+})

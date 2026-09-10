@@ -185,7 +185,7 @@ function renderRoute(
 		cardQueries.listByCollection(collectionId).queryKey,
 		[],
 	)
-	// The focus overlay fetches each card it lands on by id.
+	// The review queue fetches each card it lands on by id.
 	for (const card of newCards) {
 		queryClient.setQueryData(cardQueries.detail(card._id).queryKey, card)
 		queryClient.setQueryData(
@@ -385,18 +385,23 @@ describe('v2 app setup', () => {
 		expect(screen.getByText('1 of 2')).toBeInTheDocument()
 	})
 
-	it('renders the selected card in focus mode', async () => {
-		const user = userEvent.setup()
+	it('renders the selected card in the static review workspace', async () => {
 		renderRoute('/review/new', { newCards: [card] })
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
-
 		expect(
-			screen.getByRole('dialog', { name: 'Focus cards' }),
+			await screen.findByRole('region', {
+				name: 'New review workspace',
+			}),
 		).toBeInTheDocument()
 		expect(
 			await screen.findByDisplayValue('What problem do generics solve?'),
 		).toBeInTheDocument()
+		expect(
+			screen.queryByRole('dialog', { name: 'Focus cards' }),
+		).not.toBeInTheDocument()
+		expect(
+			screen.queryByRole('button', { name: 'Focus' }),
+		).not.toBeInTheDocument()
 		expect(screen.getByText('1 of 1')).toBeInTheDocument()
 		expect(
 			screen.getByRole('button', { name: 'Previous card' }),
@@ -426,30 +431,22 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
-	it('toggles focus mode with the F shortcut', async () => {
+	it('does not toggle or exit the static review workspace', async () => {
 		const user = userEvent.setup()
 		renderRoute('/review/new', { newCards: [card] })
 
-		await screen.findByRole('button', { name: 'Focus' })
+		await screen.findByRole('region', { name: 'New review workspace' })
 		await user.keyboard('f')
 
 		expect(
-			screen.getByRole('dialog', { name: 'Focus cards' }),
+			screen.getByRole('region', { name: 'New review workspace' }),
 		).toBeInTheDocument()
 		expect(
-			await screen.findByDisplayValue('What problem do generics solve?'),
-		).toBeInTheDocument()
-
-		await user.keyboard('f')
-
-		await waitFor(() => {
-			expect(
-				screen.queryByRole('dialog', { name: 'Focus cards' }),
-			).not.toBeInTheDocument()
-		})
+			screen.queryByRole('button', { name: 'Close' }),
+		).not.toBeInTheDocument()
 	})
 
-	it('resets the focus tab when advancing to another card', async () => {
+	it('resets the card tab when advancing to another card', async () => {
 		const user = userEvent.setup()
 		const secondCard: Card = {
 			...card,
@@ -458,7 +455,6 @@ describe('v2 app setup', () => {
 		}
 		renderRoute('/review/new', { newCards: [card, secondCard] })
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 		await user.click(await screen.findByRole('tab', { name: 'Reviews' }))
 		expect(
 			await screen.findByRole('form', { name: 'Add review' }),
@@ -475,7 +471,7 @@ describe('v2 app setup', () => {
 		)
 	})
 
-	it('navigates focus cards once per arrow key press', async () => {
+	it('navigates the review queue once per arrow key press', async () => {
 		const user = userEvent.setup()
 		const secondCard: Card = {
 			...card,
@@ -491,9 +487,8 @@ describe('v2 app setup', () => {
 			newCards: [card, secondCard, thirdCard],
 		})
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
-		const navigationOrigin = screen.getByRole('button', {
-			name: 'Toggle hide mode',
+		const navigationOrigin = await screen.findByRole('button', {
+			name: 'Next card',
 		})
 		navigationOrigin.focus()
 
@@ -523,7 +518,7 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
-	it('preserves arrow key behavior in focus card controls', async () => {
+	it('preserves arrow key behavior in review queue controls', async () => {
 		const user = userEvent.setup()
 		const secondCard: Card = {
 			...card,
@@ -532,7 +527,6 @@ describe('v2 app setup', () => {
 		}
 		renderRoute('/review/new', { newCards: [card, secondCard] })
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 		const reviewsTab = await screen.findByRole('tab', { name: 'Reviews' })
 		await user.click(reviewsTab)
 		await user.keyboard('{ArrowLeft}')
@@ -550,21 +544,23 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
-	it('closes focus mode before following a breadcrumb', async () => {
+	it('follows a breadcrumb directly from the static workspace', async () => {
 		const user = userEvent.setup()
-		renderRoute('/review/new', { newCards: [card] })
+		const { router } = renderRoute('/review/new', { newCards: [card] })
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
-		await user.click(await screen.findByRole('link', { name: 'Library' }))
+		const workspace = await screen.findByRole('region', {
+			name: 'New review workspace',
+		})
+		await user.click(
+			within(workspace).getByRole('link', { name: 'Library' }),
+		)
 
 		await waitFor(() =>
-			expect(
-				screen.queryByRole('dialog', { name: 'Focus cards' }),
-			).not.toBeInTheDocument(),
+			expect(router.state.location.pathname).toBe('/library'),
 		)
 	})
 
-	it('resumes on the card being read when focus is reopened', async () => {
+	it('keeps the selected card mounted in the static workspace', async () => {
 		const user = userEvent.setup()
 		const secondCard: Card = {
 			...card,
@@ -573,7 +569,6 @@ describe('v2 app setup', () => {
 		}
 		renderRoute('/review/new', { newCards: [card, secondCard] })
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 		await user.click(
 			await screen.findByRole('button', { name: 'Next card' }),
 		)
@@ -582,22 +577,14 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 		expect(screen.getByText('2 of 2')).toBeInTheDocument()
 
-		await user.click(screen.getByRole('button', { name: 'Close' }))
-		await waitFor(() =>
-			expect(
-				screen.queryByDisplayValue('What is a discriminated union?'),
-			).not.toBeInTheDocument(),
-		)
-		await user.keyboard('{ArrowLeft}')
-
-		await user.click(screen.getByRole('button', { name: 'Focus' }))
+		await user.keyboard('f')
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
 		).toBeInTheDocument()
 		expect(screen.getByText('2 of 2')).toBeInTheDocument()
 	})
 
-	it('keeps the selected card stable as the focus queue changes', async () => {
+	it('keeps the selected card stable as the review queue changes', async () => {
 		const user = userEvent.setup()
 		const secondCard: Card = {
 			...card,
@@ -613,7 +600,6 @@ describe('v2 app setup', () => {
 			newCards: [card, secondCard, thirdCard],
 		})
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 		await user.click(
 			await screen.findByRole('button', { name: 'Next card' }),
 		)
@@ -652,13 +638,15 @@ describe('v2 app setup', () => {
 		expect(screen.getByText('2 of 2')).toBeInTheDocument()
 	})
 
-	it('disables focus mode when the list is empty', async () => {
+	it('renders an empty static review workspace', async () => {
 		const user = userEvent.setup()
 		renderRoute('/review/new')
 
 		expect(
-			await screen.findByRole('button', { name: 'Focus' }),
-		).toBeDisabled()
+			await screen.findByRole('region', { name: 'New review workspace' }),
+		).toBeInTheDocument()
+		expect(screen.getByText('No cards to review.')).toBeInTheDocument()
+		expect(screen.getByText('No new cards.')).toBeInTheDocument()
 
 		await user.keyboard('f')
 		expect(

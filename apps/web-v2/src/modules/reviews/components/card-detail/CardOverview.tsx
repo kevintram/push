@@ -66,9 +66,9 @@ type CardOverviewProps = {
 }
 
 export function CardOverview({ cardId }: CardOverviewProps) {
-	// TODO(2): Focus mode already has the full live card, but this ID-only API
-	// opens another detail subscription for every card visited. Accept supplied
-	// card data and shorten overlay-only query GC so large queues do not retain
+	// TODO(2): Review surfaces already have the full live card, but this ID-only
+	// API opens another detail subscription for every card visited. Accept supplied
+	// card data and shorten card-detail query GC so large queues do not retain
 	// redundant Convex subscriptions.
 	const { data: card } = useSuspenseQuery(cardQueries.detail(cardId))
 	const { hideMode } = useHideMode()
@@ -107,7 +107,7 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 
 	return (
 		<div {...stylex.props(styles.layout)}>
-			<main {...stylex.props(styles.main)}>
+			<div {...stylex.props(styles.main)}>
 				<div {...stylex.props(styles.content)}>
 					<Textarea
 						aria-label='Card primary text'
@@ -155,7 +155,7 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 						/>
 					</Hideable>
 				</div>
-			</main>
+			</div>
 		</div>
 	)
 }

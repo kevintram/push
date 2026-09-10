@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import type { FallbackProps } from 'react-error-boundary'
 
 import { Button } from '~/components/ui'
-import { focusOverlayCardErrorColors } from '~/styles/colors/components.stylex'
+import { cardDetailErrorColors } from '~/styles/colors/components.stylex'
 import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -18,15 +18,15 @@ const styles = stylex.create({
 
 		fontSize: fontSizes.sm,
 	},
-	message: { color: focusOverlayCardErrorColors.messageForeground },
+	message: { color: cardDetailErrorColors.messageForeground },
 })
 
 /**
- * Keeps a failed card fetch inside the overlay. Without a local boundary the
- * throw from `useSuspenseQuery` reaches the root boundary and replaces the
- * page behind the open dialog.
+ * Keeps a failed card fetch inside the card-detail surface. Without a local
+ * boundary the throw from `useSuspenseQuery` reaches the root boundary and
+ * replaces the surrounding page.
  */
-export function FocusOverlayCardError({
+export function CardDetailErrorFallback({
 	error,
 	resetErrorBoundary,
 }: FallbackProps) {

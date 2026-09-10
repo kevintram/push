@@ -277,16 +277,25 @@ export const moveCollectionDialogColors = stylex.defineVars({
 	statusForeground: semanticColors.textSecondary,
 })
 
-export const focusOverlayColors = stylex.defineVars({
+export const reviewQueueColors = stylex.defineVars({
 	containerBackground: semanticColors.surfaceRaised,
-	cardBackground: semanticColors.surfacePrimary,
+	contentBackground: semanticColors.surfacePrimary,
+	sidebarBackground: semanticColors.surfacePrimary,
 
 	positionForeground: semanticColors.textSecondary,
 	emptyForeground: semanticColors.textSecondary,
 })
 
-export const focusOverlayCardErrorColors = stylex.defineVars({
+export const cardDetailErrorColors = stylex.defineVars({
 	messageForeground: semanticColors.textSecondary,
+})
+
+export const flaggedCardFocusColors = stylex.defineVars({
+	containerBackground: semanticColors.surfaceRaised,
+	cardBackground: semanticColors.surfacePrimary,
+
+	positionForeground: semanticColors.textSecondary,
+	emptyForeground: semanticColors.textSecondary,
 })
 
 export const hideModeButtonColors = stylex.defineVars({
@@ -370,7 +379,7 @@ export const reviewDatePickerColors = stylex.defineVars({
 	triggerForegroundOverdue: semanticColors.textDanger,
 })
 
-export const reviewSidebarColors = stylex.defineVars({
+export const reviewSectionNavigationColors = stylex.defineVars({
 	background: semanticColors.surfaceSecondary,
 })
 
