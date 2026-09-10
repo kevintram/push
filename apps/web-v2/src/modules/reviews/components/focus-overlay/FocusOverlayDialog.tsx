@@ -292,8 +292,8 @@ export function FocusOverlayDialog({ handle, cards }: FocusOverlayDialogProps) {
 							/>
 							<TooltipContent>
 								{hideMode === 'on'
-									? 'Turn off hide mode'
-									: 'Turn on hide mode'}
+									? 'Show answers and notes'
+									: 'Hide answers and notes'}
 								<Kbd>{formatForDisplay(HIDE_MODE_HOTKEY)}</Kbd>
 							</TooltipContent>
 						</Tooltip>
