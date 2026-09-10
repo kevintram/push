@@ -30,10 +30,11 @@ export function HideModeButton() {
 						aria-pressed={hideMode === 'on'}
 						icon={Copy}
 						onClick={toggleHideMode}
-						text='Hide'
 						variant='outline'
 						xstyle={hideMode === 'on' && styles.hideModeOn}
-					/>
+					>
+						Hide
+					</SidebarItem>
 				}
 			/>
 			<TooltipContent side='right'>

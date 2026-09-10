@@ -33,28 +33,20 @@ export function AppRail() {
 	return (
 		<nav aria-label='primary' {...stylex.props(styles.container)}>
 			<SearchDialog />
-			<SidebarItem
-				icon={BookOpen}
-				render={<Link to='/review' />}
-				text='Review'
-			/>
-			<SidebarItem
-				icon={Flag}
-				render={<Link to='/flagged' />}
-				text='Flagged'
-			/>
-			<SidebarItem
-				icon={Library}
-				render={<Link to='/library' />}
-				text='Library'
-			/>
+			<SidebarItem icon={BookOpen} render={<Link to='/review' />}>
+				Review
+			</SidebarItem>
+			<SidebarItem icon={Flag} render={<Link to='/flagged' />}>
+				Flagged
+			</SidebarItem>
+			<SidebarItem icon={Library} render={<Link to='/library' />}>
+				Library
+			</SidebarItem>
 			<div {...stylex.props(styles.spacer)} />
 			<HideModeButton />
-			<SidebarItem
-				icon={Settings}
-				render={<Link to='/settings' />}
-				text='Settings'
-			/>
+			<SidebarItem icon={Settings} render={<Link to='/settings' />}>
+				Settings
+			</SidebarItem>
 		</nav>
 	)
 }
