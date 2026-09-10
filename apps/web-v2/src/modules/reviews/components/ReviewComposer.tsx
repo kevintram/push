@@ -122,7 +122,6 @@ const styles = stylex.create({
 })
 
 type ReviewComposerProps = {
-	autoFocusDescription?: boolean
 	id?: string
 	onCancel?: () => void
 	onSuccess?: () => void
@@ -130,7 +129,6 @@ type ReviewComposerProps = {
 }
 
 export function ReviewComposer({
-	autoFocusDescription = false,
 	id,
 	onCancel,
 	onSuccess,
@@ -186,7 +184,6 @@ export function ReviewComposer({
 			<div {...stylex.props(styles.editor)}>
 				<Textarea
 					aria-label='Review description'
-					autoFocus={autoFocusDescription}
 					disabled={isPending}
 					onChange={event => setDescription(event.target.value)}
 					placeholder='Add a review...'

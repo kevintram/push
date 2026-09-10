@@ -926,7 +926,7 @@ describe('v2 app setup', () => {
 			within(sidebar).queryByRole('region', { name: 'Reviews' }),
 		).not.toBeInTheDocument()
 		expect(
-			within(sidebar).queryByRole('button', { name: 'Add review' }),
+			within(sidebar).queryByRole('form', { name: 'Add review' }),
 		).not.toBeInTheDocument()
 		expect(
 			screen.getByRole('form', { name: 'Add review' }),
@@ -938,7 +938,7 @@ describe('v2 app setup', () => {
 		expect(router.state.location.pathname).toBe(`/cards/${cardId}/reviews`)
 	})
 
-	it('renders review actions and history in the Overview sidebar', async () => {
+	it('renders the composer and history in the Overview sidebar', async () => {
 		renderRoute(`/cards/${cardId}`)
 
 		const sidebar = await screen.findByRole('complementary', {
@@ -948,7 +948,7 @@ describe('v2 app setup', () => {
 			within(sidebar).getByRole('region', { name: 'Properties' }),
 		).toBeInTheDocument()
 		expect(
-			within(sidebar).getByRole('button', { name: 'Add review' }),
+			within(sidebar).getByRole('form', { name: 'Add review' }),
 		).toBeInTheDocument()
 		expect(
 			within(sidebar).getByRole('region', { name: 'Reviews' }),

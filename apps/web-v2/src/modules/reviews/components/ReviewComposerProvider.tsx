@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import { todayIso } from '~/utils/date'
@@ -13,23 +13,19 @@ import {
 
 export function ReviewComposerProvider({
 	cardId,
-	onDirtyChange,
-	onCancel,
-	onCreateSuccess,
 	children,
 }: ReviewComposerProviderProps) {
 	const [draft, setDraft] = useState(emptyReviewDraft)
-	const createReview = useCreateReview()
+	const { isPending, mutate } = useCreateReview()
 	const isDirty =
 		draft.description !== '' ||
 		draft.notes !== '' ||
 		draft.rating !== null ||
 		draft.date !== null
-	useEffect(() => onDirtyChange?.(isDirty), [isDirty, onDirtyChange])
 	const state = useMemo<ReviewComposerState>(
 		() => ({
 			draft,
-			isPending: createReview.isPending,
+			isPending,
 			isDirty,
 			setDescription: value =>
 				setDraft(p => ({ ...p, description: value })),
@@ -44,13 +40,10 @@ export function ReviewComposerProvider({
 							: p.date,
 				})),
 			setDate: value => setDraft(p => ({ ...p, date: value })),
-			resetDraft: () => {
-				setDraft(emptyReviewDraft)
-				onCancel?.()
-			},
+			resetDraft: () => setDraft(emptyReviewDraft),
 			submit: composerSuccess => {
-				if (!isDirty || createReview.isPending) return
-				createReview.mutate(
+				if (!isDirty || isPending) return
+				mutate(
 					{
 						cardId,
 						description: draft.description,
@@ -65,13 +58,12 @@ export function ReviewComposerProvider({
 						onSuccess: () => {
 							setDraft(emptyReviewDraft)
 							composerSuccess?.()
-							onCreateSuccess?.()
 						},
 					},
 				)
 			},
 		}),
-		[cardId, createReview, draft, isDirty, onCancel, onCreateSuccess],
+		[cardId, draft, isDirty, isPending, mutate],
 	)
 	return (
 		<ReviewComposerContext.Provider value={state}>

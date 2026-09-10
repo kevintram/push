@@ -20,35 +20,25 @@ const styles = stylex.create({
 		inlineSize: '320px',
 		maxBlockSize: '100%',
 		minBlockSize: 0,
+		overflowY: 'auto',
 	},
 })
 
 type CardSidebarProps = CardSrsState & {
 	cardId: Id<'cards'>
 	showReviews: boolean
-	isComposerOpen: boolean
-	onComposerOpenChange: (open: boolean) => void
 	today: DateString
 }
 
 export function CardSidebar({
 	cardId,
 	showReviews,
-	isComposerOpen,
-	onComposerOpenChange,
 	today,
 	...srsState
 }: CardSidebarProps) {
 	return (
 		<aside aria-label='Card details' {...stylex.props(styles.container)}>
-			{showReviews && (
-				<CardSidebarReviews
-					cardId={cardId}
-					key={cardId}
-					isComposerOpen={isComposerOpen}
-					onComposerOpenChange={onComposerOpenChange}
-				/>
-			)}
+			{showReviews && <CardSidebarReviews cardId={cardId} key={cardId} />}
 			<CardPropertiesPanel {...srsState} today={today} />
 		</aside>
 	)
