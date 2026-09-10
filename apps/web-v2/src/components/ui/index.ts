@@ -1,3 +1,4 @@
+export * from './Badge'
 export * from './Breadcrumb'
 export { Button, type ButtonProps, type ButtonSize } from './Button/Button'
 export { ButtonIcon, type ButtonIconProps } from './Button/ButtonIcon'

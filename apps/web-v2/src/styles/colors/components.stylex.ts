@@ -14,6 +14,31 @@ export const breadcrumbColors = stylex.defineVars({
 	pageForeground: semanticColors.textPrimary,
 })
 
+export const badgeColors = stylex.defineVars({
+	focusRingRest: semanticColors.surfaceTransparent,
+	focusRing: semanticColors.borderFocus,
+
+	solidBackground: semanticColors.surfaceInverse,
+	solidBorder: semanticColors.surfaceInverse,
+	solidForeground: semanticColors.textOnInverse,
+
+	secondaryBackground: semanticColors.surfaceRaised,
+	secondaryBorder: semanticColors.borderSubtle,
+	secondaryForeground: semanticColors.textPrimary,
+
+	outlineBackground: semanticColors.surfaceTransparent,
+	outlineBorder: semanticColors.borderPrimary,
+	outlineForeground: semanticColors.textPrimary,
+
+	ghostBackground: semanticColors.surfaceTransparent,
+	ghostBorder: semanticColors.surfaceTransparent,
+	ghostForeground: semanticColors.textSecondary,
+
+	dangerBackground: semanticColors.surfaceDanger,
+	dangerBorder: semanticColors.borderDanger,
+	dangerForeground: semanticColors.textDanger,
+})
+
 export const buttonColors = stylex.defineVars({
 	focusRingRest: semanticColors.surfaceTransparent,
 	focusRing: semanticColors.borderFocus,
