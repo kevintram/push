@@ -2,11 +2,27 @@ import type { Card } from '@convex/validators/cards'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DateTime } from 'luxon'
+import type { ComponentProps } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Collection } from '~/modules/library/types/collection.types'
 
 import { CardActions } from '../CardActions'
+
+vi.mock('@tanstack/react-router', () => ({
+	Link: ({
+		children,
+		params,
+		...props
+	}: ComponentProps<'a'> & {
+		params?: { cardId: string }
+		to?: string
+	}) => (
+		<a href={`/cards/${params?.cardId}`} {...props}>
+			{children}
+		</a>
+	),
+}))
 
 const updateMutate = vi.fn()
 const deleteMutate = vi.fn()
@@ -90,6 +106,22 @@ describe('CardActions', () => {
 	beforeEach(() => {
 		updateMutate.mockClear()
 		deleteMutate.mockClear()
+	})
+
+	it('hides the go-to-card action by default', () => {
+		render(<CardActions card={card} />)
+
+		expect(
+			screen.queryByRole('button', { name: 'Go to card' }),
+		).not.toBeInTheDocument()
+	})
+
+	it('shows the go-to-card action when enabled', () => {
+		render(<CardActions card={card} showGoToCard />)
+
+		expect(
+			screen.getByRole('button', { name: 'Go to card' }),
+		).toHaveAttribute('href', '/cards/card-1')
 	})
 
 	it('turns a flashcard into a practice card', async () => {

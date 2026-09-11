@@ -1,17 +1,15 @@
+import type { Hotkey } from '@tanstack/react-hotkeys'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { RefObject } from 'react'
 
-import {
-	FOCUS_OVERLAY_NEXT_HOTKEY,
-	FOCUS_OVERLAY_PREVIOUS_HOTKEY,
-} from './focusOverlayHotkey'
-
-type FocusOverlayNavigationHotkeysProps = {
+type CardNavigationHotkeysProps = {
 	canGoNext: boolean
 	canGoPrevious: boolean
+	nextHotkey: Hotkey
 	onNext: () => void
 	onPrevious: () => void
-	target: RefObject<HTMLElement | null>
+	previousHotkey: Hotkey
+	target?: RefObject<HTMLElement | null>
 }
 
 function isTabNavigation(event: KeyboardEvent) {
@@ -22,27 +20,29 @@ function isTabNavigation(event: KeyboardEvent) {
 }
 
 /**
- * Registers navigation only while the dialog portal is mounted. Arrow keys
+ * Registers navigation only while its card surface is mounted. Navigation keys
  * keep their intrinsic behavior in editable fields and the card's tab list.
  */
-export function FocusOverlayNavigationHotkeys({
+export function CardNavigationHotkeys({
 	canGoNext,
 	canGoPrevious,
+	nextHotkey,
 	onNext,
 	onPrevious,
+	previousHotkey,
 	target,
-}: FocusOverlayNavigationHotkeysProps) {
+}: CardNavigationHotkeysProps) {
 	useHotkeys(
 		[
 			{
-				hotkey: FOCUS_OVERLAY_PREVIOUS_HOTKEY,
+				hotkey: previousHotkey,
 				callback: event => {
 					if (!isTabNavigation(event)) onPrevious()
 				},
 				options: { enabled: canGoPrevious },
 			},
 			{
-				hotkey: FOCUS_OVERLAY_NEXT_HOTKEY,
+				hotkey: nextHotkey,
 				callback: event => {
 					if (!isTabNavigation(event)) onNext()
 				},
@@ -53,7 +53,7 @@ export function FocusOverlayNavigationHotkeys({
 			preventDefault: false,
 			requireReset: true,
 			stopPropagation: false,
-			target,
+			...(target === undefined ? {} : { target }),
 		},
 	)
 

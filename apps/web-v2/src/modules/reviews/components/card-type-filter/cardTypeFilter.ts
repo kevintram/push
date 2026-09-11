@@ -12,9 +12,9 @@ export const CARD_TYPE_FILTER_OPTIONS: ReadonlyArray<{
 ]
 
 export function filterCardsByType(
-	cards: Array<Card>,
+	cards: ReadonlyArray<Card>,
 	filter: CardTypeFilter,
-): Array<Card> {
+): ReadonlyArray<Card> {
 	if (filter === 'all') return cards
 	if (filter === 'flashcard') {
 		return cards.filter(card => card.type === 'flashcard')

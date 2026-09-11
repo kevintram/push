@@ -5,7 +5,7 @@ import { useToday } from '~/hooks/useToday'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { layout, spacing } from '~/styles/tokens.stylex'
 
-import { ReviewListPage } from './ReviewPages/ReviewListPage'
+import { FlaggedCardList } from './FlaggedCardList'
 
 const styles = stylex.create({
 	container: {
@@ -29,11 +29,7 @@ export function FlaggedPage() {
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.content)}>
-				<ReviewListPage
-					cards={flaggedCards}
-					title='Flagged'
-					today={today}
-				/>
+				<FlaggedCardList cards={flaggedCards} today={today} />
 			</div>
 		</div>
 	)

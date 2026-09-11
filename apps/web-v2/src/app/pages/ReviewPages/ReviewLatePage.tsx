@@ -2,8 +2,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 
 import { useToday } from '~/hooks/useToday'
 import { dueQueries } from '~/modules/reviews/api/dueQueries'
-
-import { ReviewListPage } from './ReviewListPage'
+import { ReviewQueueWorkspace } from '~/modules/reviews/components/review-queue/ReviewQueueWorkspace'
 
 export function ReviewLatePage() {
 	const today = useToday()
@@ -14,5 +13,5 @@ export function ReviewLatePage() {
 		...new Map(entries.map(entry => [entry.card._id, entry.card])).values(),
 	]
 
-	return <ReviewListPage cards={cards} title='Late' today={today} />
+	return <ReviewQueueWorkspace cards={cards} title='Late' today={today} />
 }

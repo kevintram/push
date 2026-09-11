@@ -1,7 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
-import { Link } from '@tanstack/react-router'
 
-import { cardItemColors } from '~/styles/colors/components.stylex'
+import { buttonColors, cardItemColors } from '~/styles/colors/components.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
@@ -25,6 +24,12 @@ const styles = stylex.create({
 
 		color: cardItemColors.containerForeground,
 	},
+	active: {
+		backgroundColor: {
+			default: cardItemColors.containerBackgroundActive,
+			':hover': cardItemColors.containerBackgroundActiveHover,
+		},
+	},
 	inner: {
 		paddingBlock: spacing.lg,
 
@@ -36,19 +41,11 @@ const styles = stylex.create({
 		fontSize: fontSizes.lg,
 		fontWeight: fontWeights.semibold,
 
-		textDecoration: 'none',
 		color: cardItemColors.titleForeground,
-
-		// Stretched-link trick
-		'::after': {
-			inset: 0,
-			content: '""',
-			position: 'absolute',
-		},
 	},
 	raised: {
-		// Create seperate z-index context so streched-link
-		// overlay doesn't capture interactins
+		// Create seperate z-index context so overlay button
+		// doesn't capture interactions
 		position: 'relative',
 		zIndex: 1,
 	},
@@ -60,30 +57,69 @@ const styles = stylex.create({
 		alignItems: 'center',
 		display: 'flex',
 	},
+	overlayButton: {
+		inset: 0,
+		position: 'absolute',
+
+		margin: spacing.none,
+		padding: spacing.none,
+		borderRadius: radii.lg,
+		borderStyle: 'none',
+		backgroundColor: 'transparent',
+
+		cursor: 'pointer',
+
+		outlineColor: {
+			default: buttonColors.focusRingRest,
+			':focus-visible': buttonColors.focusRing,
+		},
+		outlineOffset: '-2px',
+		outlineStyle: 'solid',
+		outlineWidth: '2px',
+	},
 })
 
 type CardItemProps = {
 	card: CardModel
 	srs: CardSrsState
 	today: DateString
+	active?: boolean
+	onClick: () => void
+	buttonProps?: Omit<
+		React.ComponentProps<'button'>,
+		'onClick' | 'type' | 'className' | 'style'
+	>
 }
 
-export function CardItem({ card, srs, today }: CardItemProps) {
-	const { _id, type, primaryText, secondaryText } = card
+export function CardItem({
+	card,
+	srs,
+	today,
+	active = false,
+	onClick,
+	buttonProps,
+}: CardItemProps) {
+	const { type, primaryText, secondaryText } = card
 	const { hideMode } = useHideMode()
 
 	const secondaryShown = type === 'practice' || hideMode === 'off'
 
 	return (
-		<div {...stylex.props(styles.outer)}>
+		<div
+			data-active={active ? '' : undefined}
+			{...stylex.props(styles.outer, active && styles.active)}
+		>
+			<button
+				type='button'
+				onClick={onClick}
+				{...stylex.props(styles.overlayButton)}
+				{...buttonProps}
+			/>
+
 			<div {...stylex.props(styles.inner)}>
-				<Link
-					to='/cards/$cardId'
-					params={{ cardId: _id }}
-					{...stylex.props(styles.title)}
-				>
+				<h3 {...stylex.props(styles.title)}>
 					{primaryText.trim() || 'Untitled'}
-				</Link>
+				</h3>
 
 				{secondaryText && secondaryShown ? (
 					<p {...stylex.props(styles.secondaryText)}>

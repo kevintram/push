@@ -185,7 +185,7 @@ function renderRoute(
 		cardQueries.listByCollection(collectionId).queryKey,
 		[],
 	)
-	// The focus overlay fetches each card it lands on by id.
+	// The review queue fetches each card it lands on by id.
 	for (const card of newCards) {
 		queryClient.setQueryData(cardQueries.detail(card._id).queryKey, card)
 		queryClient.setQueryData(
@@ -279,8 +279,8 @@ describe('v2 app setup', () => {
 		})
 
 		expect(
-			await screen.findByRole('link', {
-				name: 'What problem do generics solve?',
+			await screen.findByRole('button', {
+				name: 'Select What problem do generics solve?',
 			}),
 		).toBeInTheDocument()
 	})
@@ -304,8 +304,8 @@ describe('v2 app setup', () => {
 		})
 
 		expect(
-			await screen.findAllByRole('link', {
-				name: 'What problem do generics solve?',
+			await screen.findAllByRole('button', {
+				name: 'Select What problem do generics solve?',
 			}),
 		).toHaveLength(1)
 	})
@@ -314,10 +314,91 @@ describe('v2 app setup', () => {
 		renderRoute('/review/new', { newCards: [card] })
 
 		expect(
-			await screen.findByRole('link', {
-				name: 'What problem do generics solve?',
+			await screen.findByRole('button', {
+				name: 'Select What problem do generics solve?',
 			}),
 		).toBeInTheDocument()
+	})
+
+	it('filters the review queue sidebar by card type', async () => {
+		const user = userEvent.setup()
+		const practiceCard: Card = {
+			...card,
+			_id: 'practice-card' as Id<'cards'>,
+			primaryText: 'Practice prompt',
+			type: 'practice',
+		}
+		const flashcard: Card = {
+			...card,
+			_id: 'flashcard-card' as Id<'cards'>,
+			primaryText: 'Flashcard prompt',
+		}
+		renderRoute('/review/new', { newCards: [flashcard, practiceCard] })
+
+		const sidebar = await screen.findByRole('complementary', {
+			name: 'New cards',
+		})
+		expect(
+			within(sidebar).getByRole('button', {
+				name: 'Select Flashcard prompt',
+			}),
+		).toBeInTheDocument()
+		expect(
+			within(sidebar).getByRole('button', {
+				name: 'Select Practice prompt',
+			}),
+		).toBeInTheDocument()
+		expect(within(sidebar).getByText('2')).toBeInTheDocument()
+
+		await user.click(
+			within(sidebar).getByRole('radio', { name: 'Flashcards' }),
+		)
+
+		expect(
+			within(sidebar).getByRole('button', {
+				name: 'Select Flashcard prompt',
+			}),
+		).toBeInTheDocument()
+		expect(
+			within(sidebar).queryByRole('button', {
+				name: 'Select Practice prompt',
+			}),
+		).not.toBeInTheDocument()
+		expect(within(sidebar).getByText('1')).toBeInTheDocument()
+	})
+
+	it('filters the flagged card list by card type', async () => {
+		const user = userEvent.setup()
+		const practiceCard: Card = {
+			...card,
+			_id: 'practice-card' as Id<'cards'>,
+			flaggedAt: 1,
+			primaryText: 'Practice prompt',
+			type: 'practice',
+		}
+		const flashcard: Card = {
+			...card,
+			_id: 'flashcard-card' as Id<'cards'>,
+			flaggedAt: 2,
+			primaryText: 'Flashcard prompt',
+		}
+		renderRoute('/flagged', {
+			flaggedCards: [flashcard, practiceCard],
+		})
+
+		await screen.findByRole('link', { name: 'Flashcard prompt' })
+		expect(
+			screen.getByRole('link', { name: 'Practice prompt' }),
+		).toBeInTheDocument()
+
+		await user.click(screen.getByRole('radio', { name: 'Not flashcards' }))
+
+		expect(
+			screen.getByRole('link', { name: 'Practice prompt' }),
+		).toBeInTheDocument()
+		expect(
+			screen.queryByRole('link', { name: 'Flashcard prompt' }),
+		).not.toBeInTheDocument()
 	})
 
 	it('renders all flagged cards', async () => {
@@ -383,21 +464,41 @@ describe('v2 app setup', () => {
 			await screen.findByDisplayValue('Flashcard prompt'),
 		).toBeInTheDocument()
 		expect(screen.getByText('1 of 2')).toBeInTheDocument()
+
+		const focusDialog = screen.getByRole('dialog', { name: 'Focus cards' })
+		within(focusDialog).getByRole('button', { name: 'Next card' }).focus()
+		await user.keyboard('{ArrowRight}')
+		expect(
+			await screen.findByDisplayValue('Practice prompt'),
+		).toBeInTheDocument()
+		expect(screen.getByText('2 of 2')).toBeInTheDocument()
+
+		within(focusDialog)
+			.getByRole('button', { name: 'Previous card' })
+			.focus()
+		await user.keyboard('{ArrowLeft}')
+		expect(
+			await screen.findByDisplayValue('Flashcard prompt'),
+		).toBeInTheDocument()
 	})
 
-	it('renders the selected card in focus mode', async () => {
-		const user = userEvent.setup()
+	it('renders the selected card in the static review workspace', async () => {
 		renderRoute('/review/new', { newCards: [card] })
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
-
 		expect(
-			screen.getByRole('dialog', { name: 'Focus cards' }),
+			await screen.findByRole('region', {
+				name: 'New review workspace',
+			}),
 		).toBeInTheDocument()
 		expect(
 			await screen.findByDisplayValue('What problem do generics solve?'),
 		).toBeInTheDocument()
-		expect(screen.getByText('1 of 1')).toBeInTheDocument()
+		expect(
+			screen.queryByRole('dialog', { name: 'Focus cards' }),
+		).not.toBeInTheDocument()
+		expect(
+			screen.queryByRole('button', { name: 'Focus' }),
+		).not.toBeInTheDocument()
 		expect(
 			screen.getByRole('button', { name: 'Previous card' }),
 		).toBeDisabled()
@@ -408,7 +509,7 @@ describe('v2 app setup', () => {
 		// Base UI keeps `role="button"` on the non-native element, but it stays
 		// a real anchor so middle-click and open-in-new-tab still work.
 		const openLink = screen.getByRole('button', {
-			name: 'Open card',
+			name: 'Go to card',
 		})
 		expect(openLink.tagName).toBe('A')
 		expect(openLink).toHaveAttribute('href', '/cards/card-1')
@@ -426,30 +527,81 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
-	it('toggles focus mode with the F shortcut', async () => {
+	it('selects a card from the review sidebar without changing routes', async () => {
 		const user = userEvent.setup()
-		renderRoute('/review/new', { newCards: [card] })
-
-		await screen.findByRole('button', { name: 'Focus' })
-		await user.keyboard('f')
-
-		expect(
-			screen.getByRole('dialog', { name: 'Focus cards' }),
-		).toBeInTheDocument()
-		expect(
-			await screen.findByDisplayValue('What problem do generics solve?'),
-		).toBeInTheDocument()
-
-		await user.keyboard('f')
-
-		await waitFor(() => {
-			expect(
-				screen.queryByRole('dialog', { name: 'Focus cards' }),
-			).not.toBeInTheDocument()
+		const secondCard: Card = {
+			...card,
+			_id: 'card-2' as Id<'cards'>,
+			primaryText: 'What is a discriminated union?',
+		}
+		const { router } = renderRoute('/review/new', {
+			newCards: [card, secondCard],
 		})
+
+		const sidebar = await screen.findByRole('complementary', {
+			name: 'New cards',
+		})
+		const firstCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What problem do generics solve?',
+		})
+		const secondCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What is a discriminated union?',
+		})
+
+		expect(firstCardButton).toHaveAttribute('aria-current', 'true')
+		expect(secondCardButton).not.toHaveAttribute('aria-current')
+
+		await user.click(secondCardButton)
+
+		expect(
+			await screen.findByDisplayValue('What is a discriminated union?'),
+		).toBeInTheDocument()
+		expect(secondCardButton).toHaveAttribute('aria-current', 'true')
+		expect(firstCardButton).not.toHaveAttribute('aria-current')
+		expect(router.state.location.pathname).toBe('/review/new')
 	})
 
-	it('resets the focus tab when advancing to another card', async () => {
+	it('keeps sidebar selection in sync with previous and next controls', async () => {
+		const user = userEvent.setup()
+		const secondCard: Card = {
+			...card,
+			_id: 'card-2' as Id<'cards'>,
+			primaryText: 'What is a discriminated union?',
+		}
+		const thirdCard: Card = {
+			...card,
+			_id: 'card-3' as Id<'cards'>,
+			primaryText: 'What is type narrowing?',
+		}
+		renderRoute('/review/new', {
+			newCards: [card, secondCard, thirdCard],
+		})
+
+		const sidebar = await screen.findByRole('complementary', {
+			name: 'New cards',
+		})
+		const firstCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What problem do generics solve?',
+		})
+		const secondCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What is a discriminated union?',
+		})
+		const thirdCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What is type narrowing?',
+		})
+
+		await user.click(screen.getByRole('button', { name: 'Next card' }))
+		expect(secondCardButton).toHaveAttribute('aria-current', 'true')
+		expect(firstCardButton).not.toHaveAttribute('aria-current')
+
+		await user.click(screen.getByRole('button', { name: 'Next card' }))
+		expect(thirdCardButton).toHaveAttribute('aria-current', 'true')
+
+		await user.click(screen.getByRole('button', { name: 'Previous card' }))
+		expect(secondCardButton).toHaveAttribute('aria-current', 'true')
+	})
+
+	it('does not select a review row when a nested card action is clicked', async () => {
 		const user = userEvent.setup()
 		const secondCard: Card = {
 			...card,
@@ -458,7 +610,56 @@ describe('v2 app setup', () => {
 		}
 		renderRoute('/review/new', { newCards: [card, secondCard] })
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
+		const sidebar = await screen.findByRole('complementary', {
+			name: 'New cards',
+		})
+		expect(
+			within(sidebar).getByRole('button', {
+				name: 'Select What problem do generics solve?',
+			}),
+		).toHaveAttribute('aria-current', 'true')
+		const secondCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What is a discriminated union?',
+		})
+
+		await user.click(
+			within(secondCardButton.parentElement!).getByRole('button', {
+				name: 'Remove as flashcard',
+			}),
+		)
+
+		expect(
+			within(sidebar).getByRole('button', {
+				name: 'Select What problem do generics solve?',
+			}),
+		).toHaveAttribute('aria-current', 'true')
+		expect(secondCardButton).not.toHaveAttribute('aria-current')
+	})
+
+	it('does not toggle or exit the static review workspace', async () => {
+		const user = userEvent.setup()
+		renderRoute('/review/new', { newCards: [card] })
+
+		await screen.findByRole('region', { name: 'New review workspace' })
+		await user.keyboard('f')
+
+		expect(
+			screen.getByRole('region', { name: 'New review workspace' }),
+		).toBeInTheDocument()
+		expect(
+			screen.queryByRole('button', { name: 'Close' }),
+		).not.toBeInTheDocument()
+	})
+
+	it('resets the card tab when advancing to another card', async () => {
+		const user = userEvent.setup()
+		const secondCard: Card = {
+			...card,
+			_id: 'card-2' as Id<'cards'>,
+			primaryText: 'What is a discriminated union?',
+		}
+		renderRoute('/review/new', { newCards: [card, secondCard] })
+
 		await user.click(await screen.findByRole('tab', { name: 'Reviews' }))
 		expect(
 			await screen.findByRole('form', { name: 'Add review' }),
@@ -475,7 +676,7 @@ describe('v2 app setup', () => {
 		)
 	})
 
-	it('navigates focus cards once per arrow key press', async () => {
+	it('navigates the review queue once per J or K key press', async () => {
 		const user = userEvent.setup()
 		const secondCard: Card = {
 			...card,
@@ -491,39 +692,49 @@ describe('v2 app setup', () => {
 			newCards: [card, secondCard, thirdCard],
 		})
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
-		const navigationOrigin = screen.getByRole('button', {
-			name: 'Toggle hide mode',
+		await screen.findByRole('button', { name: 'Next card' })
+		const sidebar = screen.getByRole('complementary', { name: 'New cards' })
+		const firstCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What problem do generics solve?',
 		})
-		navigationOrigin.focus()
+		const secondCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What is a discriminated union?',
+		})
+		const thirdCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What is type narrowing?',
+		})
+		const navigationOrigin = document.body
 
-		fireEvent.keyDown(navigationOrigin, { key: 'ArrowRight' })
+		fireEvent.keyDown(navigationOrigin, { key: 'j' })
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
 		).toBeInTheDocument()
+		expect(secondCardButton).toHaveAttribute('aria-current', 'true')
 
 		fireEvent.keyDown(navigationOrigin, {
-			key: 'ArrowRight',
+			key: 'j',
 			repeat: true,
 		})
 		expect(
 			screen.getByDisplayValue('What is a discriminated union?'),
 		).toBeInTheDocument()
 
-		fireEvent.keyUp(navigationOrigin, { key: 'ArrowRight' })
-		await user.keyboard('{ArrowLeft}')
+		fireEvent.keyUp(navigationOrigin, { key: 'j' })
+		await user.keyboard('k')
 		expect(
 			await screen.findByDisplayValue('What problem do generics solve?'),
 		).toBeInTheDocument()
+		expect(firstCardButton).toHaveAttribute('aria-current', 'true')
 
-		await user.keyboard('{ArrowRight}')
-		await user.keyboard('{ArrowRight}')
+		await user.keyboard('j')
+		await user.keyboard('j')
 		expect(
 			await screen.findByDisplayValue('What is type narrowing?'),
 		).toBeInTheDocument()
+		expect(thirdCardButton).toHaveAttribute('aria-current', 'true')
 	})
 
-	it('preserves arrow key behavior in focus card controls', async () => {
+	it('preserves keyboard behavior in review queue controls', async () => {
 		const user = userEvent.setup()
 		const secondCard: Card = {
 			...card,
@@ -532,39 +743,39 @@ describe('v2 app setup', () => {
 		}
 		renderRoute('/review/new', { newCards: [card, secondCard] })
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 		const reviewsTab = await screen.findByRole('tab', { name: 'Reviews' })
 		await user.click(reviewsTab)
 		await user.keyboard('{ArrowLeft}')
 
 		const overviewTab = screen.getByRole('tab', { name: 'Overview' })
 		expect(overviewTab).toHaveFocus()
-		expect(screen.getByText('1 of 2')).toBeInTheDocument()
 
 		await user.click(overviewTab)
 		const primaryText = screen.getByLabelText('Card primary text')
 		await user.click(primaryText)
-		await user.keyboard('{ArrowRight}')
+		fireEvent.keyDown(primaryText, { key: 'j' })
 		expect(
 			screen.getByDisplayValue('What problem do generics solve?'),
 		).toBeInTheDocument()
 	})
 
-	it('closes focus mode before following a breadcrumb', async () => {
+	it('follows a breadcrumb directly from the static workspace', async () => {
 		const user = userEvent.setup()
-		renderRoute('/review/new', { newCards: [card] })
+		const { router } = renderRoute('/review/new', { newCards: [card] })
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
-		await user.click(await screen.findByRole('link', { name: 'Library' }))
+		const workspace = await screen.findByRole('region', {
+			name: 'New review workspace',
+		})
+		await user.click(
+			within(workspace).getByRole('link', { name: 'Library' }),
+		)
 
 		await waitFor(() =>
-			expect(
-				screen.queryByRole('dialog', { name: 'Focus cards' }),
-			).not.toBeInTheDocument(),
+			expect(router.state.location.pathname).toBe('/library'),
 		)
 	})
 
-	it('resumes on the card being read when focus is reopened', async () => {
+	it('keeps the selected card mounted in the static workspace', async () => {
 		const user = userEvent.setup()
 		const secondCard: Card = {
 			...card,
@@ -573,31 +784,20 @@ describe('v2 app setup', () => {
 		}
 		renderRoute('/review/new', { newCards: [card, secondCard] })
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 		await user.click(
 			await screen.findByRole('button', { name: 'Next card' }),
 		)
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
 		).toBeInTheDocument()
-		expect(screen.getByText('2 of 2')).toBeInTheDocument()
 
-		await user.click(screen.getByRole('button', { name: 'Close' }))
-		await waitFor(() =>
-			expect(
-				screen.queryByDisplayValue('What is a discriminated union?'),
-			).not.toBeInTheDocument(),
-		)
-		await user.keyboard('{ArrowLeft}')
-
-		await user.click(screen.getByRole('button', { name: 'Focus' }))
+		await user.keyboard('f')
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
 		).toBeInTheDocument()
-		expect(screen.getByText('2 of 2')).toBeInTheDocument()
 	})
 
-	it('keeps the selected card stable as the focus queue changes', async () => {
+	it('keeps the selected card stable as the review queue changes', async () => {
 		const user = userEvent.setup()
 		const secondCard: Card = {
 			...card,
@@ -613,7 +813,6 @@ describe('v2 app setup', () => {
 			newCards: [card, secondCard, thirdCard],
 		})
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 		await user.click(
 			await screen.findByRole('button', { name: 'Next card' }),
 		)
@@ -627,7 +826,6 @@ describe('v2 app setup', () => {
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
 		).toBeInTheDocument()
-		expect(screen.getByText('1 of 2')).toBeInTheDocument()
 
 		act(() => {
 			queryClient.setQueryData(
@@ -638,7 +836,6 @@ describe('v2 app setup', () => {
 		expect(
 			await screen.findByDisplayValue('What is type narrowing?'),
 		).toBeInTheDocument()
-		expect(screen.getByText('1 of 1')).toBeInTheDocument()
 
 		act(() => {
 			queryClient.setQueryData(
@@ -649,16 +846,21 @@ describe('v2 app setup', () => {
 		expect(
 			await screen.findByDisplayValue('What is type narrowing?'),
 		).toBeInTheDocument()
-		expect(screen.getByText('2 of 2')).toBeInTheDocument()
 	})
 
-	it('disables focus mode when the list is empty', async () => {
+	it('renders an empty static review workspace', async () => {
 		const user = userEvent.setup()
 		renderRoute('/review/new')
 
 		expect(
-			await screen.findByRole('button', { name: 'Focus' }),
-		).toBeDisabled()
+			await screen.findByRole('region', { name: 'New review workspace' }),
+		).toBeInTheDocument()
+		expect(screen.getByText('No cards to review.')).toBeInTheDocument()
+		expect(screen.getByText('No cards.')).toBeInTheDocument()
+		const sidebar = screen.getByRole('complementary', { name: 'New cards' })
+		expect(
+			within(sidebar).queryAllByRole('button', { name: /^Select / }),
+		).toHaveLength(0)
 
 		await user.keyboard('f')
 		expect(

@@ -1,5 +1,14 @@
 import * as stylex from '@stylexjs/stylex'
-import { Archive, Ellipsis, Flag, FolderInput, Trash2, Zap } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import {
+	Archive,
+	ArrowUpRight,
+	Ellipsis,
+	Flag,
+	FolderInput,
+	Trash2,
+	Zap,
+} from 'lucide-react'
 import { useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
@@ -46,10 +55,15 @@ const styles = stylex.create({
 
 type CardActionsProps = {
 	card: Card
+	showGoToCard?: boolean
 	xstyle?: stylex.StyleXStyles
 }
 
-export function CardActions({ card, xstyle }: CardActionsProps) {
+export function CardActions({
+	card,
+	showGoToCard = false,
+	xstyle,
+}: CardActionsProps) {
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
 	const {
 		confirmDelete,
@@ -67,6 +81,33 @@ export function CardActions({ card, xstyle }: CardActionsProps) {
 
 	return (
 		<div {...stylex.props(styles.container, xstyle)}>
+			{showGoToCard ? (
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button.Icon
+								aria-label='Go to card'
+								shape='round'
+								variant='ghost'
+								size='small'
+								nativeButton={false}
+								render={
+									<Link
+										to='/cards/$cardId'
+										params={{ cardId: card._id }}
+									/>
+								}
+							>
+								<ArrowUpRight
+									aria-hidden='true'
+									size={iconSizes.md}
+								/>
+							</Button.Icon>
+						}
+					/>
+					<TooltipContent>Go to card</TooltipContent>
+				</Tooltip>
+			) : null}
 			{isFlashcard ? (
 				<Tooltip>
 					<TooltipTrigger
