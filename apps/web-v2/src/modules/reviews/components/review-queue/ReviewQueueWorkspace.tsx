@@ -24,7 +24,7 @@ type ReviewQueueWorkspaceProps = {
 
 const styles = stylex.create({
 	shell: {
-		padding: spacing.md,
+		padding: spacing.xs,
 		blockSize: '100%',
 		display: 'flex',
 		flexDirection: 'column',
@@ -35,7 +35,7 @@ const styles = stylex.create({
 		backgroundColor: reviewQueueColors.containerBackground,
 	},
 	panels: {
-		gap: spacing.sm,
+		gap: spacing.xs,
 		display: 'flex',
 		flexBasis: 0,
 		flexDirection: 'row',
@@ -45,6 +45,7 @@ const styles = stylex.create({
 		minInlineSize: 0,
 	},
 	cardColumn: {
+		gap: spacing.xs,
 		display: 'flex',
 		flexBasis: 0,
 		flexDirection: 'column',
