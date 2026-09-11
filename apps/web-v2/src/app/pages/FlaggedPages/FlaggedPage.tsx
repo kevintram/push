@@ -15,8 +15,7 @@ const styles = stylex.create({
 		width: '100%',
 	},
 	content: {
-		marginInline: spacing.lg,
-		maxWidth: layout.contentColumnMaxWidth,
+		maxWidth: `calc(${layout.contentColumnMaxWidth} + (${spacing.lg} * 2))`,
 		minWidth: 0,
 		width: '100%',
 	},
