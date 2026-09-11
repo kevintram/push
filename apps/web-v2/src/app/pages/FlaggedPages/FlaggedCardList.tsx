@@ -17,7 +17,7 @@ import {
 	filterCardsByType,
 } from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
 import { CardTypeFilterBadges } from '~/modules/reviews/components/card-type-filter/CardTypeFilterBadges'
-import { CardItem } from '~/modules/reviews/components/CardItem'
+import { CardItemLink } from '~/modules/reviews/components/CardItemLink'
 import type { Card as CardModel } from '~/modules/reviews/types/review.types'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
@@ -120,7 +120,7 @@ export function FlaggedCardList({ cards, today }: FlaggedCardListProps) {
 					<p {...stylex.props(styles.empty)}>No cards.</p>
 				) : null}
 				{visibleCards.map(card => (
-					<CardItem
+					<CardItemLink
 						key={card._id}
 						card={card}
 						srs={deriveCardSrsState(card, today)}

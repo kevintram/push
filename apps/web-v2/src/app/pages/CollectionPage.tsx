@@ -26,7 +26,7 @@ import { CollectionSidebar } from '~/modules/library/components/collection-sideb
 import { CollectionPathBreadcrumbs } from '~/modules/library/components/CollectionPathBreadcrumbs'
 import { MoveCollectionDialog } from '~/modules/library/components/MoveCollectionDialog'
 import { cardQueries, useCreateCard } from '~/modules/reviews/api/cardQueries'
-import { CardItem } from '~/modules/reviews/components/CardItem'
+import { CardItemLink } from '~/modules/reviews/components/CardItemLink'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { baseColors } from '~/styles/colors/primitives.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
@@ -281,7 +281,7 @@ export function CollectionPage() {
 
 						<div {...stylex.props(styles.cardsList)}>
 							{cards.map(card => (
-								<CardItem
+								<CardItemLink
 									key={card._id}
 									card={card}
 									srs={deriveCardSrsState(card, today)}

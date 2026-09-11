@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 
 import type { CardTypeFilter } from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
 import { CardTypeFilterBadges } from '~/modules/reviews/components/card-type-filter/CardTypeFilterBadges'
-import { CardItem } from '~/modules/reviews/components/CardItem'
+import { CardItemLink } from '~/modules/reviews/components/CardItemLink'
 import type { Card } from '~/modules/reviews/types/review.types'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { reviewQueueColors } from '~/styles/colors/components.stylex'
@@ -88,7 +88,7 @@ export function ReviewQueueSidebar({
 					<p {...stylex.props(styles.empty)}>No cards.</p>
 				) : null}
 				{cards.map(card => (
-					<CardItem
+					<CardItemLink
 						key={card._id}
 						card={card}
 						srs={deriveCardSrsState(card, today)}

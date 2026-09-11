@@ -398,6 +398,8 @@ export const cardActionsColors = stylex.defineVars({
 
 export const cardItemColors = stylex.defineVars({
 	containerBackgroundHover: semanticColors.surfaceTransparentHover,
+	containerBackgroundActive: semanticColors.surfaceTransparentActive,
+	containerBackgroundActiveHover: semanticColors.surfaceTransparentActive,
 	containerForeground: semanticColors.textPrimary,
 
 	titleForeground: semanticColors.textPrimary,
