@@ -78,6 +78,9 @@ const styles = stylex.create({
 		fontSize: fontSizes.sm,
 		justifyContent: 'center',
 	},
+	toolbarWrapper: {
+		padding: spacing.xs,
+	},
 })
 
 export function ReviewQueueWorkspace({
@@ -103,13 +106,15 @@ export function ReviewQueueWorkspace({
 			/>
 			<div {...stylex.props(styles.panels)}>
 				<div {...stylex.props(styles.cardColumn)}>
-					<ReviewQueueToolbar
-						currentCard={currentCard}
-						index={index}
-						cardCount={cards.length}
-						onPrevious={goPrevious}
-						onNext={goNext}
-					/>
+					<div {...stylex.props(styles.toolbarWrapper)}>
+						<ReviewQueueToolbar
+							currentCard={currentCard}
+							index={index}
+							cardCount={cards.length}
+							onPrevious={goPrevious}
+							onNext={goNext}
+						/>
+					</div>
 					<section
 						aria-label='Current card'
 						{...stylex.props(styles.cardPanel)}
