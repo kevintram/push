@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { type ReactNode, useCallback, useState } from 'react'
 
 import { Button } from '~/components/ui'
-import { radii, spacing } from '~/styles/tokens.stylex'
+import { radii } from '~/styles/tokens.stylex'
 
 type HideableProps = {
 	children?: ReactNode
@@ -20,6 +20,9 @@ const styles = stylex.create({
 		gridColumn: '1',
 		gridRow: '1',
 	},
+	childrenHidden: {
+		visibility: 'hidden',
+	},
 	overlay: {
 		borderRadius: radii.lg,
 		gridColumn: '1',
@@ -29,9 +32,6 @@ const styles = stylex.create({
 		alignItems: 'center',
 		display: 'flex',
 		justifyContent: 'center',
-
-		// negative margin so text doesn't peek behind through rounded corners
-		marginInline: `calc(${spacing.xs} * -1)`,
 	},
 })
 
@@ -57,7 +57,10 @@ export function Hideable({
 	return (
 		<div {...stylex.props(styles.container, xstyle)}>
 			<div
-				{...stylex.props(styles.children)}
+				{...stylex.props(
+					styles.children,
+					isRevealed ? undefined : styles.childrenHidden,
+				)}
 				aria-hidden={isRevealed ? undefined : true}
 				inert={isRevealed ? undefined : true}
 			>

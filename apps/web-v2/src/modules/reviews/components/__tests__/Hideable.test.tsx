@@ -7,18 +7,24 @@ import { Hideable } from '../Hideable'
 describe('Hideable', () => {
 	it('starts hidden by default', () => {
 		render(<Hideable>Answer</Hideable>)
+		const children = screen.getByText('Answer')
 
 		expect(
 			screen.getByRole('button', { name: 'Reveal' }),
 		).toBeInTheDocument()
+		expect(children).toHaveAttribute('aria-hidden', 'true')
+		expect(children).toHaveAttribute('inert')
 	})
 
 	it('starts revealed when defaultRevealed is true', () => {
 		render(<Hideable defaultRevealed>Answer</Hideable>)
+		const children = screen.getByText('Answer')
 
 		expect(
 			screen.queryByRole('button', { name: 'Reveal' }),
 		).not.toBeInTheDocument()
+		expect(children).not.toHaveAttribute('aria-hidden')
+		expect(children).not.toHaveAttribute('inert')
 	})
 
 	it('reveals uncontrolled content and notifies the consumer', async () => {
