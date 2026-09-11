@@ -26,11 +26,21 @@ const styles = stylex.create({
 		minBlockSize: 0,
 	},
 	header: {
+		gap: spacing.sm,
 		paddingBlock: spacing.lg,
 		paddingInline: spacing.lg,
+		alignItems: 'baseline',
+		display: 'flex',
 		flexShrink: 0,
 		fontSize: fontSizes.xl,
 		fontWeight: fontWeights.semibold,
+	},
+	count: {
+		color: reviewQueueColors.positionForeground,
+		fontSize: fontSizes.sm,
+		fontWeight: fontWeights.regular,
+		insetBlockStart: '-1px',
+		position: 'relative',
 	},
 	list: {
 		paddingInline: spacing.lg,
@@ -52,7 +62,12 @@ export function ReviewQueueSidebar({
 }: ReviewQueueSidebarProps) {
 	return (
 		<aside aria-label={`${title} cards`} {...stylex.props(styles.panel)}>
-			<h1 {...stylex.props(styles.header)}>{title}</h1>
+			<h1 {...stylex.props(styles.header)}>
+				<span>{title}</span>
+				<span aria-hidden='true' {...stylex.props(styles.count)}>
+					{cards.length}
+				</span>
+			</h1>
 			<div {...stylex.props(styles.list)}>
 				{cards.length === 0 ? (
 					<p {...stylex.props(styles.empty)}>
