@@ -48,6 +48,17 @@ export function useReviewQueueSelection(cards: ReadonlyArray<Card>) {
 		if (next) setSelection({ id: next._id, index: nextIndex })
 	}, [cards, index])
 
+	const selectCard = useCallback(
+		(cardId: Card['_id']) => {
+			const selectedIndex = cards.findIndex(({ _id }) => _id === cardId)
+			const selectedCard = cards[selectedIndex]
+			if (selectedCard) {
+				setSelection({ id: selectedCard._id, index: selectedIndex })
+			}
+		},
+		[cards],
+	)
+
 	return {
 		index,
 		currentCard,
@@ -55,5 +66,6 @@ export function useReviewQueueSelection(cards: ReadonlyArray<Card>) {
 		canGoNext: index !== -1 && index < cards.length - 1,
 		goPrevious,
 		goNext,
+		selectCard,
 	}
 }

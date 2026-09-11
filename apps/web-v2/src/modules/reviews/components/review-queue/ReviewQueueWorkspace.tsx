@@ -94,8 +94,15 @@ export function ReviewQueueWorkspace({
 }: ReviewQueueWorkspaceProps) {
 	const [filter, setFilter] = useState<CardTypeFilter>('all')
 	const visibleCards = filterCardsByType(cards, filter)
-	const { index, currentCard, canGoPrevious, canGoNext, goPrevious, goNext } =
-		useReviewQueueSelection(visibleCards)
+	const {
+		index,
+		currentCard,
+		canGoPrevious,
+		canGoNext,
+		goPrevious,
+		goNext,
+		selectCard,
+	} = useReviewQueueSelection(visibleCards)
 
 	return (
 		<section
@@ -157,6 +164,8 @@ export function ReviewQueueWorkspace({
 					cards={visibleCards}
 					title={title}
 					today={today}
+					currentCardId={currentCard?._id ?? null}
+					onCardClick={selectCard}
 					filter={filter}
 					onFilterChange={setFilter}
 				/>

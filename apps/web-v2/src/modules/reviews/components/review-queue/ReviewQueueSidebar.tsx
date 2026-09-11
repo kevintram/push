@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 
 import type { CardTypeFilter } from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
 import { CardTypeFilterBadges } from '~/modules/reviews/components/card-type-filter/CardTypeFilterBadges'
-import { CardItemLink } from '~/modules/reviews/components/CardItemLink'
+import { CardItem } from '~/modules/reviews/components/CardItem'
 import type { Card } from '~/modules/reviews/types/review.types'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { reviewQueueColors } from '~/styles/colors/components.stylex'
@@ -11,9 +11,11 @@ import type { DateString } from '~/types/date'
 
 type ReviewQueueSidebarProps = {
 	cards: ReadonlyArray<Card>
+	currentCardId: Card['_id'] | null
 	title: string
 	today: DateString
 	filter: CardTypeFilter
+	onCardClick: (cardId: Card['_id']) => void
 	onFilterChange: (filter: CardTypeFilter) => void
 }
 
@@ -65,9 +67,11 @@ const styles = stylex.create({
 
 export function ReviewQueueSidebar({
 	cards,
+	currentCardId,
 	title,
 	today,
 	filter,
+	onCardClick,
 	onFilterChange,
 }: ReviewQueueSidebarProps) {
 	return (
@@ -88,11 +92,18 @@ export function ReviewQueueSidebar({
 					<p {...stylex.props(styles.empty)}>No cards.</p>
 				) : null}
 				{cards.map(card => (
-					<CardItemLink
+					<CardItem
 						key={card._id}
 						card={card}
 						srs={deriveCardSrsState(card, today)}
 						today={today}
+						active={card._id === currentCardId}
+						onClick={() => onCardClick(card._id)}
+						buttonProps={{
+							'aria-label': `Select ${card.primaryText.trim() || 'Untitled'}`,
+							'aria-current':
+								card._id === currentCardId ? 'true' : undefined,
+						}}
 					/>
 				))}
 			</div>

@@ -279,8 +279,8 @@ describe('v2 app setup', () => {
 		})
 
 		expect(
-			await screen.findByRole('link', {
-				name: 'What problem do generics solve?',
+			await screen.findByRole('button', {
+				name: 'Select What problem do generics solve?',
 			}),
 		).toBeInTheDocument()
 	})
@@ -304,8 +304,8 @@ describe('v2 app setup', () => {
 		})
 
 		expect(
-			await screen.findAllByRole('link', {
-				name: 'What problem do generics solve?',
+			await screen.findAllByRole('button', {
+				name: 'Select What problem do generics solve?',
 			}),
 		).toHaveLength(1)
 	})
@@ -314,8 +314,8 @@ describe('v2 app setup', () => {
 		renderRoute('/review/new', { newCards: [card] })
 
 		expect(
-			await screen.findByRole('link', {
-				name: 'What problem do generics solve?',
+			await screen.findByRole('button', {
+				name: 'Select What problem do generics solve?',
 			}),
 		).toBeInTheDocument()
 	})
@@ -339,10 +339,14 @@ describe('v2 app setup', () => {
 			name: 'New cards',
 		})
 		expect(
-			within(sidebar).getByRole('link', { name: 'Flashcard prompt' }),
+			within(sidebar).getByRole('button', {
+				name: 'Select Flashcard prompt',
+			}),
 		).toBeInTheDocument()
 		expect(
-			within(sidebar).getByRole('link', { name: 'Practice prompt' }),
+			within(sidebar).getByRole('button', {
+				name: 'Select Practice prompt',
+			}),
 		).toBeInTheDocument()
 		expect(within(sidebar).getByText('2')).toBeInTheDocument()
 
@@ -351,10 +355,14 @@ describe('v2 app setup', () => {
 		)
 
 		expect(
-			within(sidebar).getByRole('link', { name: 'Flashcard prompt' }),
+			within(sidebar).getByRole('button', {
+				name: 'Select Flashcard prompt',
+			}),
 		).toBeInTheDocument()
 		expect(
-			within(sidebar).queryByRole('link', { name: 'Practice prompt' }),
+			within(sidebar).queryByRole('button', {
+				name: 'Select Practice prompt',
+			}),
 		).not.toBeInTheDocument()
 		expect(within(sidebar).getByText('1')).toBeInTheDocument()
 	})
@@ -519,6 +527,115 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
+	it('selects a card from the review sidebar without changing routes', async () => {
+		const user = userEvent.setup()
+		const secondCard: Card = {
+			...card,
+			_id: 'card-2' as Id<'cards'>,
+			primaryText: 'What is a discriminated union?',
+		}
+		const { router } = renderRoute('/review/new', {
+			newCards: [card, secondCard],
+		})
+
+		const sidebar = await screen.findByRole('complementary', {
+			name: 'New cards',
+		})
+		const firstCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What problem do generics solve?',
+		})
+		const secondCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What is a discriminated union?',
+		})
+
+		expect(firstCardButton).toHaveAttribute('aria-current', 'true')
+		expect(secondCardButton).not.toHaveAttribute('aria-current')
+
+		await user.click(secondCardButton)
+
+		expect(
+			await screen.findByDisplayValue('What is a discriminated union?'),
+		).toBeInTheDocument()
+		expect(secondCardButton).toHaveAttribute('aria-current', 'true')
+		expect(firstCardButton).not.toHaveAttribute('aria-current')
+		expect(router.state.location.pathname).toBe('/review/new')
+	})
+
+	it('keeps sidebar selection in sync with previous and next controls', async () => {
+		const user = userEvent.setup()
+		const secondCard: Card = {
+			...card,
+			_id: 'card-2' as Id<'cards'>,
+			primaryText: 'What is a discriminated union?',
+		}
+		const thirdCard: Card = {
+			...card,
+			_id: 'card-3' as Id<'cards'>,
+			primaryText: 'What is type narrowing?',
+		}
+		renderRoute('/review/new', {
+			newCards: [card, secondCard, thirdCard],
+		})
+
+		const sidebar = await screen.findByRole('complementary', {
+			name: 'New cards',
+		})
+		const firstCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What problem do generics solve?',
+		})
+		const secondCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What is a discriminated union?',
+		})
+		const thirdCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What is type narrowing?',
+		})
+
+		await user.click(screen.getByRole('button', { name: 'Next card' }))
+		expect(secondCardButton).toHaveAttribute('aria-current', 'true')
+		expect(firstCardButton).not.toHaveAttribute('aria-current')
+
+		await user.click(screen.getByRole('button', { name: 'Next card' }))
+		expect(thirdCardButton).toHaveAttribute('aria-current', 'true')
+
+		await user.click(screen.getByRole('button', { name: 'Previous card' }))
+		expect(secondCardButton).toHaveAttribute('aria-current', 'true')
+	})
+
+	it('does not select a review row when a nested card action is clicked', async () => {
+		const user = userEvent.setup()
+		const secondCard: Card = {
+			...card,
+			_id: 'card-2' as Id<'cards'>,
+			primaryText: 'What is a discriminated union?',
+		}
+		renderRoute('/review/new', { newCards: [card, secondCard] })
+
+		const sidebar = await screen.findByRole('complementary', {
+			name: 'New cards',
+		})
+		expect(
+			within(sidebar).getByRole('button', {
+				name: 'Select What problem do generics solve?',
+			}),
+		).toHaveAttribute('aria-current', 'true')
+		const secondCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What is a discriminated union?',
+		})
+
+		await user.click(
+			within(secondCardButton.parentElement!).getByRole('button', {
+				name: 'Remove as flashcard',
+			}),
+		)
+
+		expect(
+			within(sidebar).getByRole('button', {
+				name: 'Select What problem do generics solve?',
+			}),
+		).toHaveAttribute('aria-current', 'true')
+		expect(secondCardButton).not.toHaveAttribute('aria-current')
+	})
+
 	it('does not toggle or exit the static review workspace', async () => {
 		const user = userEvent.setup()
 		renderRoute('/review/new', { newCards: [card] })
@@ -576,12 +693,23 @@ describe('v2 app setup', () => {
 		})
 
 		await screen.findByRole('button', { name: 'Next card' })
+		const sidebar = screen.getByRole('complementary', { name: 'New cards' })
+		const firstCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What problem do generics solve?',
+		})
+		const secondCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What is a discriminated union?',
+		})
+		const thirdCardButton = within(sidebar).getByRole('button', {
+			name: 'Select What is type narrowing?',
+		})
 		const navigationOrigin = document.body
 
 		fireEvent.keyDown(navigationOrigin, { key: 'j' })
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
 		).toBeInTheDocument()
+		expect(secondCardButton).toHaveAttribute('aria-current', 'true')
 
 		fireEvent.keyDown(navigationOrigin, {
 			key: 'j',
@@ -596,12 +724,14 @@ describe('v2 app setup', () => {
 		expect(
 			await screen.findByDisplayValue('What problem do generics solve?'),
 		).toBeInTheDocument()
+		expect(firstCardButton).toHaveAttribute('aria-current', 'true')
 
 		await user.keyboard('j')
 		await user.keyboard('j')
 		expect(
 			await screen.findByDisplayValue('What is type narrowing?'),
 		).toBeInTheDocument()
+		expect(thirdCardButton).toHaveAttribute('aria-current', 'true')
 	})
 
 	it('preserves keyboard behavior in review queue controls', async () => {
@@ -727,6 +857,10 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 		expect(screen.getByText('No cards to review.')).toBeInTheDocument()
 		expect(screen.getByText('No cards.')).toBeInTheDocument()
+		const sidebar = screen.getByRole('complementary', { name: 'New cards' })
+		expect(
+			within(sidebar).queryAllByRole('button', { name: /^Select / }),
+		).toHaveLength(0)
 
 		await user.keyboard('f')
 		expect(

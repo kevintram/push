@@ -8,6 +8,43 @@ import { useReviewQueueSelection } from '../useReviewQueueSelection'
 const card = (id: string) => ({ _id: id }) as Card
 
 describe('useReviewQueueSelection', () => {
+	it('selects an existing card by ID', () => {
+		const { result } = renderHook(() =>
+			useReviewQueueSelection([card('a'), card('b'), card('c')]),
+		)
+
+		act(() => result.current.selectCard('c' as Card['_id']))
+
+		expect(result.current.currentCard?._id).toBe('c')
+		expect(result.current.index).toBe(2)
+	})
+
+	it('does nothing when the ID is absent from the current cards', () => {
+		const { result } = renderHook(() =>
+			useReviewQueueSelection([card('a'), card('b'), card('c')]),
+		)
+
+		act(() => result.current.selectCard('missing' as Card['_id']))
+
+		expect(result.current.currentCard?._id).toBe('a')
+		expect(result.current.index).toBe(0)
+	})
+
+	it('keeps a card selected by identity after queue reordering', () => {
+		const { result, rerender } = renderHook(
+			({ cards }) => useReviewQueueSelection(cards),
+			{ initialProps: { cards: [card('a'), card('b'), card('c')] } },
+		)
+
+		act(() => result.current.selectCard('c' as Card['_id']))
+		expect(result.current.currentCard?._id).toBe('c')
+
+		rerender({ cards: [card('x'), card('c'), card('a')] })
+
+		expect(result.current.currentCard?._id).toBe('c')
+		expect(result.current.index).toBe(1)
+	})
+
 	it('keeps the selected card when earlier queue items change', () => {
 		const { result, rerender } = renderHook(
 			({ cards }) => useReviewQueueSelection(cards),
