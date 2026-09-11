@@ -35,9 +35,15 @@ const styles = stylex.create({
 		gap: spacing.sm,
 		paddingBlock: spacing.lg,
 		paddingInline: spacing.lg,
+		alignItems: 'stretch',
+		display: 'flex',
+		flexDirection: 'column',
+		flexShrink: 0,
+	},
+	titleRow: {
+		gap: spacing.sm,
 		alignItems: 'baseline',
 		display: 'flex',
-		flexShrink: 0,
 		fontSize: fontSizes.xl,
 		fontWeight: fontWeights.semibold,
 	},
@@ -54,10 +60,6 @@ const styles = stylex.create({
 		flexGrow: 1,
 		minBlockSize: 0,
 		overflowY: 'auto',
-	},
-	filters: {
-		paddingInline: spacing.lg,
-		paddingBlockEnd: spacing.sm,
 	},
 	empty: {
 		color: reviewQueueColors.emptyForeground,
@@ -76,17 +78,18 @@ export function ReviewQueueSidebar({
 }: ReviewQueueSidebarProps) {
 	return (
 		<aside aria-label={`${title} cards`} {...stylex.props(styles.panel)}>
-			<h1 {...stylex.props(styles.header)}>
-				<span>{title}</span>
-				<span aria-hidden='true' {...stylex.props(styles.count)}>
-					{cards.length}
-				</span>
-			</h1>
-			<CardTypeFilterBadges
-				value={filter}
-				onValueChange={onFilterChange}
-				xstyle={styles.filters}
-			/>
+			<div {...stylex.props(styles.header)}>
+				<h1 {...stylex.props(styles.titleRow)}>
+					<span>{title}</span>
+					<span aria-hidden='true' {...stylex.props(styles.count)}>
+						{cards.length}
+					</span>
+				</h1>
+				<CardTypeFilterBadges
+					value={filter}
+					onValueChange={onFilterChange}
+				/>
+			</div>
 			<div {...stylex.props(styles.list)}>
 				{cards.length === 0 ? (
 					<p {...stylex.props(styles.empty)}>No cards.</p>
