@@ -1,7 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
 
 import { Separator, Textarea } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
@@ -10,6 +9,7 @@ import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
 import { cardQueries } from '../../api/cardQueries'
 import { useHideMode } from '../../hide-mode/useHideMode'
 import { useCardField } from '../../hooks/useCardField'
+import { useRevealOnEmpty } from '../../hooks/useRevealOnEmpty'
 import { deriveCardSrsState } from '../../utils/cardSrs'
 import { CardMetadata } from '../CardMetadata'
 import { Hideable } from '../Hideable'
@@ -72,14 +72,7 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 	// redundant Convex subscriptions.
 	const { data: card } = useSuspenseQuery(cardQueries.detail(cardId))
 	const { hideMode } = useHideMode()
-	const [secondaryRevealed, setSecondaryRevealed] = useState(false)
-	const [notesRevealed, setNotesRevealed] = useState(false)
 	const today = useToday()
-
-	useEffect(() => {
-		setSecondaryRevealed(false)
-		setNotesRevealed(false)
-	}, [hideMode, cardId])
 
 	const primaryText = useCardField({
 		errorMessage: 'Failed to update card',
@@ -99,6 +92,23 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 		cardId,
 		value: card.notes,
 	})
+
+	// Reveal state is latched at each reset point rather than derived from the
+	// current text, so a field revealed for being empty stays revealed once the
+	// user types into it. Emptiness is read from the drafts above: a hide-mode
+	// toggle has to respect text that has not been saved yet, and a card switch
+	// remounts this component (the card detail subtree is keyed by card), so the
+	// drafts already belong to `cardId` whenever the key changes in place.
+	const resetKey = `${cardId}:${hideMode}`
+	const [secondaryRevealed, setSecondaryRevealed] = useRevealOnEmpty({
+		resetKey,
+		isEmpty: secondaryText.value.trim() === '',
+	})
+	const [notesRevealed, setNotesRevealed] = useRevealOnEmpty({
+		resetKey,
+		isEmpty: notes.value.trim() === '',
+	})
+
 	const srsState = deriveCardSrsState(card, today)
 
 	const primaryTextPlaceholder = card.type === 'practice' ? 'Title' : 'Prompt'
