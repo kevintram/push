@@ -44,6 +44,15 @@ const styles = stylex.create({
 		minBlockSize: 0,
 		minInlineSize: 0,
 	},
+	cardColumn: {
+		display: 'flex',
+		flexBasis: 0,
+		flexDirection: 'column',
+		flexGrow: 1,
+		flexShrink: 1,
+		minBlockSize: 0,
+		minInlineSize: 0,
+	},
 	cardPanel: {
 		borderRadius: radii.lg,
 		overflow: 'hidden',
@@ -88,43 +97,47 @@ export function ReviewQueueWorkspace({
 				onNext={goNext}
 				target={shellRef}
 			/>
-			<ReviewQueueToolbar
-				currentCard={currentCard}
-				index={index}
-				cardCount={cards.length}
-				onPrevious={goPrevious}
-				onNext={goNext}
-			/>
 			<div {...stylex.props(styles.panels)}>
-				<section
-					aria-label='Current card'
-					{...stylex.props(styles.cardPanel)}
-				>
-					{currentCard === null ? (
-						<div {...stylex.props(styles.empty)}>
-							No cards to review.
-						</div>
-					) : (
-						<QueryErrorResetBoundary>
-							{({ reset }) => (
-								<ErrorBoundary
-									onReset={reset}
-									resetKeys={[currentCard._id]}
-									FallbackComponent={CardDetailErrorFallback}
-								>
-									<Suspense
-										key={currentCard._id}
-										fallback={<LoadingIndicator />}
+				<div {...stylex.props(styles.cardColumn)}>
+					<ReviewQueueToolbar
+						currentCard={currentCard}
+						index={index}
+						cardCount={cards.length}
+						onPrevious={goPrevious}
+						onNext={goNext}
+					/>
+					<section
+						aria-label='Current card'
+						{...stylex.props(styles.cardPanel)}
+					>
+						{currentCard === null ? (
+							<div {...stylex.props(styles.empty)}>
+								No cards to review.
+							</div>
+						) : (
+							<QueryErrorResetBoundary>
+								{({ reset }) => (
+									<ErrorBoundary
+										onReset={reset}
+										resetKeys={[currentCard._id]}
+										FallbackComponent={
+											CardDetailErrorFallback
+										}
 									>
-										<CardDetailView
-											cardId={currentCard._id}
-										/>
-									</Suspense>
-								</ErrorBoundary>
-							)}
-						</QueryErrorResetBoundary>
-					)}
-				</section>
+										<Suspense
+											key={currentCard._id}
+											fallback={<LoadingIndicator />}
+										>
+											<CardDetailView
+												cardId={currentCard._id}
+											/>
+										</Suspense>
+									</ErrorBoundary>
+								)}
+							</QueryErrorResetBoundary>
+						)}
+					</section>
+				</div>
 				<ReviewQueueSidebar cards={cards} title={title} today={today} />
 			</div>
 		</section>
