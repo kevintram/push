@@ -249,7 +249,7 @@ export function FlaggedCardFocusDialog({
 											nativeButton={false}
 											render={
 												<Button.Icon
-													aria-label='Open card'
+													aria-label='Go to card'
 													shape='round'
 													variant='secondary'
 													size='small'
@@ -269,7 +269,7 @@ export function FlaggedCardFocusDialog({
 										</DialogClose>
 									}
 								/>
-								<TooltipContent>Open card</TooltipContent>
+								<TooltipContent>Go to card</TooltipContent>
 							</Tooltip>
 						)}
 						<DialogClose
