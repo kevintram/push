@@ -87,11 +87,12 @@ const styles = stylex.create({
 	},
 	content: {
 		gap: spacing.md,
+		paddingInline: spacing.lg,
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 1,
 		marginBlockStart: spacing.xl,
-		maxWidth: layout.contentColumnMaxWidth,
+		maxWidth: `calc(${layout.contentColumnMaxWidth} + (${spacing.lg} * 2))`,
 		minWidth: 0,
 		width: '100%',
 	},

@@ -40,6 +40,7 @@ type FlaggedCardListProps = {
 const styles = stylex.create({
 	content: {
 		marginBlock: spacing.xl,
+		paddingInline: spacing.lg,
 	},
 	heading: {
 		alignItems: 'center',
