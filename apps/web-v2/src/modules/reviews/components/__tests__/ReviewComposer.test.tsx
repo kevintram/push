@@ -92,14 +92,6 @@ describe('ReviewComposer', () => {
 		expect(tooltip.querySelector('kbd')).toHaveTextContent('↵')
 	})
 
-	it('focuses the description when autofocus is requested', () => {
-		renderComposer({ autoFocusDescription: true })
-
-		expect(
-			screen.getByRole('textbox', { name: 'Review description' }),
-		).toHaveFocus()
-	})
-
 	it('shows Cancel and resets the draft when a cancel callback is provided', async () => {
 		const user = userEvent.setup()
 		const onCancel = vi.fn()

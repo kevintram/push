@@ -1,5 +1,8 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
+
+import { TooltipProvider } from '~/components/ui'
 
 import { CardPropertiesPanel } from '../CardPropertiesPanel'
 
@@ -9,7 +12,7 @@ function classesOf(label: string): Array<string> {
 }
 
 describe('CardPropertiesPanel', () => {
-	it('shows due, recall, reviewed, and durability', () => {
+	it('shows due, reviewed, and durability', () => {
 		render(
 			<CardPropertiesPanel
 				lastReviewedAt='2026-08-16'
@@ -25,8 +28,8 @@ describe('CardPropertiesPanel', () => {
 			screen.getByRole('region', { name: 'Properties' }),
 		).toBeInTheDocument()
 		expect(screen.getByText('in 2d')).toBeInTheDocument()
-		expect(screen.getByText('80%')).toBeInTheDocument()
 		expect(screen.getByText('10d')).toBeInTheDocument()
+		expect(screen.queryByText('Recall')).not.toBeInTheDocument()
 		expect(
 			screen.getByLabelText('Good, reviewed Aug 16, 2026'),
 		).toHaveTextContent('8d ago')
@@ -99,6 +102,29 @@ describe('CardPropertiesPanel', () => {
 		)
 
 		expect(screen.getByText('Unscheduled')).toBeInTheDocument()
-		expect(screen.getAllByText('—')).toHaveLength(3)
+		expect(screen.getAllByText('—')).toHaveLength(2)
+	})
+
+	it('explains durability in a tooltip', async () => {
+		const user = userEvent.setup()
+
+		render(
+			<TooltipProvider delay={0}>
+				<CardPropertiesPanel
+					lastReviewedAt={null}
+					lastRating={null}
+					nextDueAt={null}
+					retrievability={null}
+					stability={10.4}
+					today='2026-08-24'
+				/>
+			</TooltipProvider>,
+		)
+
+		await user.hover(screen.getByText('10d'))
+
+		expect(await screen.findByRole('tooltip')).toHaveTextContent(
+			'Estimated you will remember this for at least 10d',
+		)
 	})
 })

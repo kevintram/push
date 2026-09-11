@@ -27,14 +27,17 @@ export function deriveCardSrsState(
 	}
 }
 
-/** Format an FSRS recall estimate for display, or `null` when unavailable. */
-export function formatRecall(retrievability: number | null): string | null {
-	if (retrievability === null) return null
-	return `${Math.round(retrievability * 100)}%`
-}
-
 /** Format FSRS stability in whole days, or `null` when unavailable. */
 export function formatDurability(stability: number | null): string | null {
 	if (stability === null) return null
 	return `${Math.round(stability)}d`
+}
+
+/** Explain the minimum memory duration represented by an FSRS stability value. */
+export function formatDurabilityTooltip(
+	stability: number | null,
+): string | null {
+	const durability = formatDurability(stability)
+	if (durability === null) return null
+	return `Estimated you will remember this for at least ${durability}`
 }

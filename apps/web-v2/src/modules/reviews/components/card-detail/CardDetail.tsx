@@ -1,7 +1,7 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { type ReactElement, useEffect, useState } from 'react'
+import type { ReactElement } from 'react'
 
 import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
@@ -84,6 +84,10 @@ const styles = stylex.create({
 		minHeight: 0,
 		minWidth: 0,
 	},
+	sidebar: {
+		position: 'relative',
+		zIndex: 1,
+	},
 })
 
 export function CardDetail({
@@ -97,24 +101,9 @@ export function CardDetail({
 	const { data: card } = useSuspenseQuery(cardQueries.detail(cardId))
 	const today = useToday()
 	const srsState = deriveCardSrsState(card, today)
-	const [isComposerOpen, setIsComposerOpen] = useState(false)
-	const [hasDraft, setHasDraft] = useState(false)
-	useEffect(() => {
-		setIsComposerOpen(false)
-		setHasDraft(false)
-	}, [cardId])
-	useEffect(() => {
-		if (activeTab === 'overview' && hasDraft) setIsComposerOpen(true)
-	}, [activeTab, hasDraft])
 
 	return (
-		<ReviewComposerProvider
-			cardId={cardId}
-			key={cardId}
-			onDirtyChange={setHasDraft}
-			onCancel={() => setIsComposerOpen(false)}
-			onCreateSuccess={() => setIsComposerOpen(false)}
-		>
+		<ReviewComposerProvider cardId={cardId} key={cardId}>
 			<div {...stylex.props(styles.container)}>
 				<header {...stylex.props(styles.toolbar)}>
 					<div {...stylex.props(styles.breadcrumbs)}>
@@ -165,9 +154,8 @@ export function CardDetail({
 						{...srsState}
 						cardId={cardId}
 						showReviews={activeTab === 'overview'}
-						isComposerOpen={isComposerOpen}
-						onComposerOpenChange={setIsComposerOpen}
 						today={today}
+						xstyle={styles.sidebar}
 					/>
 				</div>
 			</div>

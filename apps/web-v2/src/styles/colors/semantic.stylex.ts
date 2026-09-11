@@ -29,7 +29,7 @@ export const semanticColors = stylex.defineVars({
 	// A recessed surface that should appear inset beneath its surrounding surface.
 	surfaceSunken: { default: neutral.s150, [DARK]: neutral.s850 },
 	// A contrast-reversed surface intended to host inverse foreground colors.
-	surfaceInverse: { default: neutral.s700, [DARK]: neutral.s700 },
+	surfaceInverse: { default: neutral.s900, [DARK]: neutral.s50 },
 	// A surface that communicates the product's primary brand identity.
 	surfaceBrand: { default: indigo.s600, [DARK]: indigo.s600 },
 	// A surface that communicates an error, danger, or destructive consequence.
@@ -114,9 +114,9 @@ export const semanticColors = stylex.defineVars({
 	// Text that communicates its associated content or control is unavailable.
 	textDisabled: { default: neutral.s400, [DARK]: neutral.s500 },
 	// High-emphasis text placed on a contrast-reversed surface.
-	textOnInverse: { default: neutral.s100, [DARK]: neutral.s100 },
+	textOnInverse: { default: neutral.s50, [DARK]: neutral.s900 },
 	// Supporting text placed on a contrast-reversed surface.
-	textOnInverseSecondary: { default: neutral.s400, [DARK]: neutral.s400 },
+	textOnInverseSecondary: { default: neutral.s400, [DARK]: neutral.s600 },
 
 	// Interactive text
 	// The resting color for text that signals an available interaction.

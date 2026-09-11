@@ -262,7 +262,7 @@ describe('v2 app setup', () => {
 				{ timeout: 3000 },
 			),
 		).toBeInTheDocument()
-		expect(screen.getByText('No due cards.')).toBeInTheDocument()
+		expect(screen.getByText('No cards.')).toBeInTheDocument()
 	})
 
 	it('renders today’s due entry', async () => {
@@ -320,6 +320,79 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
+	it('filters the review queue sidebar by card type', async () => {
+		const user = userEvent.setup()
+		const practiceCard: Card = {
+			...card,
+			_id: 'practice-card' as Id<'cards'>,
+			primaryText: 'Practice prompt',
+			type: 'practice',
+		}
+		const flashcard: Card = {
+			...card,
+			_id: 'flashcard-card' as Id<'cards'>,
+			primaryText: 'Flashcard prompt',
+		}
+		renderRoute('/review/new', { newCards: [flashcard, practiceCard] })
+
+		const sidebar = await screen.findByRole('complementary', {
+			name: 'New cards',
+		})
+		expect(
+			within(sidebar).getByRole('link', { name: 'Flashcard prompt' }),
+		).toBeInTheDocument()
+		expect(
+			within(sidebar).getByRole('link', { name: 'Practice prompt' }),
+		).toBeInTheDocument()
+		expect(within(sidebar).getByText('2')).toBeInTheDocument()
+
+		await user.click(
+			within(sidebar).getByRole('radio', { name: 'Flashcards' }),
+		)
+
+		expect(
+			within(sidebar).getByRole('link', { name: 'Flashcard prompt' }),
+		).toBeInTheDocument()
+		expect(
+			within(sidebar).queryByRole('link', { name: 'Practice prompt' }),
+		).not.toBeInTheDocument()
+		expect(within(sidebar).getByText('1')).toBeInTheDocument()
+	})
+
+	it('filters the flagged card list by card type', async () => {
+		const user = userEvent.setup()
+		const practiceCard: Card = {
+			...card,
+			_id: 'practice-card' as Id<'cards'>,
+			flaggedAt: 1,
+			primaryText: 'Practice prompt',
+			type: 'practice',
+		}
+		const flashcard: Card = {
+			...card,
+			_id: 'flashcard-card' as Id<'cards'>,
+			flaggedAt: 2,
+			primaryText: 'Flashcard prompt',
+		}
+		renderRoute('/flagged', {
+			flaggedCards: [flashcard, practiceCard],
+		})
+
+		await screen.findByRole('link', { name: 'Flashcard prompt' })
+		expect(
+			screen.getByRole('link', { name: 'Practice prompt' }),
+		).toBeInTheDocument()
+
+		await user.click(screen.getByRole('radio', { name: 'Not flashcards' }))
+
+		expect(
+			screen.getByRole('link', { name: 'Practice prompt' }),
+		).toBeInTheDocument()
+		expect(
+			screen.queryByRole('link', { name: 'Flashcard prompt' }),
+		).not.toBeInTheDocument()
+	})
+
 	it('renders all flagged cards', async () => {
 		const practiceCard: Card = {
 			...card,
@@ -355,7 +428,7 @@ describe('v2 app setup', () => {
 	it('shows the flagged empty state and disables focus', async () => {
 		renderRoute('/flagged')
 
-		expect(await screen.findByText('No flagged cards.')).toBeInTheDocument()
+		expect(await screen.findByText('No cards.')).toBeInTheDocument()
 		expect(screen.getByRole('button', { name: 'Focus' })).toBeDisabled()
 	})
 
@@ -653,7 +726,7 @@ describe('v2 app setup', () => {
 			await screen.findByRole('region', { name: 'New review workspace' }),
 		).toBeInTheDocument()
 		expect(screen.getByText('No cards to review.')).toBeInTheDocument()
-		expect(screen.getByText('No new cards.')).toBeInTheDocument()
+		expect(screen.getByText('No cards.')).toBeInTheDocument()
 
 		await user.keyboard('f')
 		expect(
@@ -921,7 +994,7 @@ describe('v2 app setup', () => {
 			within(sidebar).queryByRole('region', { name: 'Reviews' }),
 		).not.toBeInTheDocument()
 		expect(
-			within(sidebar).queryByRole('button', { name: 'Add review' }),
+			within(sidebar).queryByRole('form', { name: 'Add review' }),
 		).not.toBeInTheDocument()
 		expect(
 			screen.getByRole('form', { name: 'Add review' }),
@@ -933,7 +1006,7 @@ describe('v2 app setup', () => {
 		expect(router.state.location.pathname).toBe(`/cards/${cardId}/reviews`)
 	})
 
-	it('renders review actions and history in the Overview sidebar', async () => {
+	it('renders the composer and history in the Overview sidebar', async () => {
 		renderRoute(`/cards/${cardId}`)
 
 		const sidebar = await screen.findByRole('complementary', {
@@ -943,7 +1016,7 @@ describe('v2 app setup', () => {
 			within(sidebar).getByRole('region', { name: 'Properties' }),
 		).toBeInTheDocument()
 		expect(
-			within(sidebar).getByRole('button', { name: 'Add review' }),
+			within(sidebar).getByRole('form', { name: 'Add review' }),
 		).toBeInTheDocument()
 		expect(
 			within(sidebar).getByRole('region', { name: 'Reviews' }),

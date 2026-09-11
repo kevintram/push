@@ -1,26 +1,11 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import { CardSidebarReviews } from '../CardSidebarReviews'
 
-type MockReviewComposerProps = {
-	onCancel?: () => void
-	onSuccess?: () => void
-}
-
 vi.mock('../../ReviewComposer', () => ({
-	ReviewComposer: ({ onCancel, onSuccess }: MockReviewComposerProps) => (
-		<div data-testid='review-composer'>
-			<button onClick={onCancel} type='button'>
-				Cancel
-			</button>
-			<button onClick={onSuccess} type='button'>
-				Succeed
-			</button>
-		</div>
-	),
+	ReviewComposer: () => <div data-testid='review-composer' />,
 }))
 
 vi.mock('../CardReviewsPanel', () => ({
@@ -30,52 +15,13 @@ vi.mock('../CardReviewsPanel', () => ({
 const cardId = 'card-1' as Id<'cards'>
 
 describe('CardSidebarReviews', () => {
-	it('opens the composer from the dedicated add action', async () => {
-		const user = userEvent.setup()
+	it('always shows the composer above the reviews panel', () => {
 		render(<CardSidebarReviews cardId={cardId} />)
 
-		const action = screen.getByRole('button', { name: 'Add review' })
-		expect(action).toHaveAttribute('aria-expanded', 'false')
-		expect(screen.queryByTestId('review-composer')).not.toBeInTheDocument()
-		expect(screen.getByText('Reviews panel')).toBeInTheDocument()
-
-		await user.click(action)
-
-		expect(
-			screen.getByRole('button', { name: 'Add review' }),
-		).toHaveAttribute('aria-expanded', 'true')
 		expect(screen.getByTestId('review-composer')).toBeInTheDocument()
-	})
-
-	it('closes and restores focus after cancel', async () => {
-		const user = userEvent.setup()
-		render(<CardSidebarReviews cardId={cardId} />)
-
-		await user.click(screen.getByRole('button', { name: 'Add review' }))
-		await user.click(screen.getByRole('button', { name: 'Cancel' }))
-
-		expect(screen.queryByTestId('review-composer')).not.toBeInTheDocument()
-		expect(screen.getByRole('button', { name: 'Add review' })).toHaveFocus()
-	})
-
-	it('closes and restores focus after successful creation', async () => {
-		const user = userEvent.setup()
-		render(<CardSidebarReviews cardId={cardId} />)
-
-		await user.click(screen.getByRole('button', { name: 'Add review' }))
-		await user.click(screen.getByRole('button', { name: 'Succeed' }))
-
-		expect(screen.queryByTestId('review-composer')).not.toBeInTheDocument()
-		expect(screen.getByRole('button', { name: 'Add review' })).toHaveFocus()
-	})
-
-	it('disables the add action while the composer is open', async () => {
-		const user = userEvent.setup()
-		render(<CardSidebarReviews cardId={cardId} />)
-
-		await user.click(screen.getByRole('button', { name: 'Add review' }))
+		expect(screen.getByText('Reviews panel')).toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Add review' }),
-		).toBeDisabled()
+			screen.queryByRole('button', { name: 'Add review' }),
+		).not.toBeInTheDocument()
 	})
 })

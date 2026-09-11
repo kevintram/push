@@ -9,7 +9,11 @@ describe('SidebarItem', () => {
 	it('renders a button by default and reports clicks', async () => {
 		const user = userEvent.setup()
 		const onClick = vi.fn()
-		render(<SidebarItem icon={Library} onClick={onClick} text='Library' />)
+		render(
+			<SidebarItem icon={Library} onClick={onClick}>
+				Library
+			</SidebarItem>,
+		)
 
 		const item = screen.getByRole('button', { name: 'Library' })
 		expect(item).toHaveAttribute('type', 'button')
@@ -20,11 +24,9 @@ describe('SidebarItem', () => {
 
 	it('renders as the element passed through render', () => {
 		render(
-			<SidebarItem
-				icon={Library}
-				render={<a href='/library' />}
-				text='Library'
-			/>,
+			<SidebarItem icon={Library} render={<a href='/library' />}>
+				Library
+			</SidebarItem>,
 		)
 
 		const item = screen.getByRole('link', { name: 'Library' })
@@ -33,7 +35,11 @@ describe('SidebarItem', () => {
 	})
 
 	it('marks non-link items as active', () => {
-		render(<SidebarItem active icon={Library} text='Library' />)
+		render(
+			<SidebarItem active icon={Library}>
+				Library
+			</SidebarItem>,
+		)
 
 		expect(screen.getByRole('button', { name: 'Library' })).toHaveAttribute(
 			'data-status',
@@ -43,15 +49,26 @@ describe('SidebarItem', () => {
 
 	it('prefers an explicit aria label over the visible text', () => {
 		render(
-			<SidebarItem
-				ariaLabel='Open library'
-				icon={Library}
-				text='Library'
-			/>,
+			<SidebarItem ariaLabel='Open library' icon={Library}>
+				Library
+			</SidebarItem>,
 		)
 
 		expect(
 			screen.getByRole('button', { name: 'Open library' }),
+		).toBeInTheDocument()
+	})
+
+	it('renders custom content', () => {
+		render(
+			<SidebarItem ariaLabel='Library, cards available' icon={Library}>
+				Library
+				<span aria-label='Cards available' role='img' />
+			</SidebarItem>,
+		)
+
+		expect(
+			screen.getByRole('img', { name: 'Cards available' }),
 		).toBeInTheDocument()
 	})
 })

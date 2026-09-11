@@ -48,4 +48,46 @@ describe('useReviewQueueSelection', () => {
 		act(() => result.current.goNext())
 		expect(result.current.currentCard?._id).toBe('b')
 	})
+
+	it('clamps the selection when a filter shrinks the queue past the selected index', () => {
+		const { result, rerender } = renderHook(
+			({ cards }) => useReviewQueueSelection(cards),
+			{
+				initialProps: {
+					cards: [
+						card('a'),
+						card('b'),
+						card('c'),
+						card('d'),
+						card('e'),
+						card('f'),
+					],
+				},
+			},
+		)
+
+		act(() => result.current.goNext())
+		act(() => result.current.goNext())
+		act(() => result.current.goNext())
+		act(() => result.current.goNext())
+		act(() => result.current.goNext())
+		expect(result.current.currentCard?._id).toBe('f')
+		expect(result.current.index).toBe(5)
+
+		// Switching a filter can drop the selected card entirely and shrink
+		// the queue well below the previous index.
+		rerender({ cards: [card('a'), card('c')] })
+
+		expect(result.current.index).toBe(1)
+		expect(result.current.currentCard?._id).toBe('c')
+		expect(result.current.canGoPrevious).toBe(true)
+		expect(result.current.canGoNext).toBe(false)
+
+		// Shrinking to nothing must not leave a stale out-of-range selection.
+		rerender({ cards: [] })
+		expect(result.current.currentCard).toBeNull()
+		expect(result.current.index).toBe(-1)
+		expect(result.current.canGoNext).toBe(false)
+		expect(result.current.canGoPrevious).toBe(false)
+	})
 })

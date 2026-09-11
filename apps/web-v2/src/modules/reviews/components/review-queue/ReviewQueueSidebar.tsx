@@ -1,5 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 
+import type { CardTypeFilter } from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
+import { CardTypeFilterBadges } from '~/modules/reviews/components/card-type-filter/CardTypeFilterBadges'
 import { CardItem } from '~/modules/reviews/components/CardItem'
 import type { Card } from '~/modules/reviews/types/review.types'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
@@ -11,6 +13,8 @@ type ReviewQueueSidebarProps = {
 	cards: ReadonlyArray<Card>
 	title: string
 	today: DateString
+	filter: CardTypeFilter
+	onFilterChange: (filter: CardTypeFilter) => void
 }
 
 const styles = stylex.create({
@@ -49,6 +53,10 @@ const styles = stylex.create({
 		minBlockSize: 0,
 		overflowY: 'auto',
 	},
+	filters: {
+		paddingInline: spacing.lg,
+		paddingBlockEnd: spacing.sm,
+	},
 	empty: {
 		color: reviewQueueColors.emptyForeground,
 		fontSize: fontSizes.sm,
@@ -59,6 +67,8 @@ export function ReviewQueueSidebar({
 	cards,
 	title,
 	today,
+	filter,
+	onFilterChange,
 }: ReviewQueueSidebarProps) {
 	return (
 		<aside aria-label={`${title} cards`} {...stylex.props(styles.panel)}>
@@ -68,11 +78,14 @@ export function ReviewQueueSidebar({
 					{cards.length}
 				</span>
 			</h1>
+			<CardTypeFilterBadges
+				value={filter}
+				onValueChange={onFilterChange}
+				xstyle={styles.filters}
+			/>
 			<div {...stylex.props(styles.list)}>
 				{cards.length === 0 ? (
-					<p {...stylex.props(styles.empty)}>
-						No {title.toLowerCase()} cards.
-					</p>
+					<p {...stylex.props(styles.empty)}>No cards.</p>
 				) : null}
 				{cards.map(card => (
 					<CardItem

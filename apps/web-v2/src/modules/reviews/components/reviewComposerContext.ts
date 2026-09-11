@@ -39,8 +39,5 @@ export function useReviewComposerState() {
 }
 export type ReviewComposerProviderProps = {
 	cardId: Id<'cards'>
-	onDirtyChange?: (dirty: boolean) => void
-	onCancel?: () => void
-	onCreateSuccess?: () => void
 	children: React.ReactNode
 }

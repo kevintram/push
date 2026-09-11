@@ -1,4 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
+import { Anvil } from 'lucide-react'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { cardMetadataColors } from '~/styles/colors/components.stylex'
@@ -17,7 +18,7 @@ import {
 } from '~/utils/date'
 
 import type { CardSrsState } from '../types/review.types'
-import { formatDurability, formatRecall } from '../utils/cardSrs'
+import { formatDurability, formatDurabilityTooltip } from '../utils/cardSrs'
 import { getLastReviewedDetails } from './reviewRatings'
 
 const styles = stylex.create({
@@ -55,12 +56,11 @@ const styles = stylex.create({
 	},
 })
 
-/** Scheduling summary for a card, including its recall estimate. */
+/** Scheduling summary for a card, including its durability estimate. */
 export function CardMetadata({
 	lastReviewedAt,
 	lastRating,
 	nextDueAt,
-	retrievability,
 	stability,
 	today,
 }: CardSrsState & { today: DateString }) {
@@ -73,8 +73,8 @@ export function CardMetadata({
 	}
 
 	const dueTone = getDueDateTone(nextDueAt, false, today)
-	const recall = formatRecall(retrievability)
 	const durability = formatDurability(stability)
+	const durabilityTooltip = formatDurabilityTooltip(stability)
 	const {
 		Icon: RatingIcon,
 		ariaLabel: lastReviewedLabel,
@@ -127,13 +127,24 @@ export function CardMetadata({
 				/>
 				<TooltipContent>{lastReviewedTooltip}</TooltipContent>
 			</Tooltip>
-			{recall !== null ? (
-				<span {...stylex.props(styles.item)}>{`${recall} recall`}</span>
-			) : null}
 			{durability !== null ? (
-				<span {...stylex.props(styles.item)}>
-					Durable for {durability}
-				</span>
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<span
+								{...stylex.props(
+									styles.item,
+									styles.raisedItem,
+								)}
+							>
+								Durability
+								<Anvil aria-hidden='true' size={iconSizes.md} />
+								{durability}
+							</span>
+						}
+					/>
+					<TooltipContent>{durabilityTooltip}</TooltipContent>
+				</Tooltip>
 			) : null}
 		</div>
 	)

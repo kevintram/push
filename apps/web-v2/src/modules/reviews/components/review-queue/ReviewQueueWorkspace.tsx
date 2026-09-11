@@ -1,11 +1,15 @@
 import * as stylex from '@stylexjs/stylex'
 import { QueryErrorResetBoundary } from '@tanstack/react-query'
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
 import { CardDetailErrorFallback } from '~/modules/reviews/components/card-detail/CardDetailErrorFallback'
 import { CardDetailView } from '~/modules/reviews/components/card-detail/CardDetailView'
+import {
+	type CardTypeFilter,
+	filterCardsByType,
+} from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
 import { CardNavigationHotkeys } from '~/modules/reviews/components/CardNavigationHotkeys'
 import type { Card } from '~/modules/reviews/types/review.types'
 import { reviewQueueColors } from '~/styles/colors/components.stylex'
@@ -88,8 +92,10 @@ export function ReviewQueueWorkspace({
 	title,
 	today,
 }: ReviewQueueWorkspaceProps) {
+	const [filter, setFilter] = useState<CardTypeFilter>('all')
+	const visibleCards = filterCardsByType(cards, filter)
 	const { index, currentCard, canGoPrevious, canGoNext, goPrevious, goNext } =
-		useReviewQueueSelection(cards)
+		useReviewQueueSelection(visibleCards)
 
 	return (
 		<section
@@ -110,7 +116,7 @@ export function ReviewQueueWorkspace({
 						<ReviewQueueToolbar
 							currentCard={currentCard}
 							index={index}
-							cardCount={cards.length}
+							cardCount={visibleCards.length}
 							onPrevious={goPrevious}
 							onNext={goNext}
 						/>
@@ -148,7 +154,13 @@ export function ReviewQueueWorkspace({
 						)}
 					</section>
 				</div>
-				<ReviewQueueSidebar cards={cards} title={title} today={today} />
+				<ReviewQueueSidebar
+					cards={visibleCards}
+					title={title}
+					today={today}
+					filter={filter}
+					onFilterChange={setFilter}
+				/>
 			</div>
 		</section>
 	)

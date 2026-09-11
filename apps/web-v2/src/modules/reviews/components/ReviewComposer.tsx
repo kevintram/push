@@ -34,7 +34,6 @@ const styles = stylex.create({
 
 		borderRadius: radii.xl,
 		backgroundColor: reviewComposerColors.containerBackground,
-		boxShadow: `0 4px 16px ${reviewComposerColors.containerShadow}`,
 
 		display: 'grid',
 		gridTemplateColumns: 'max-content minmax(0, 1fr)',
@@ -122,7 +121,6 @@ const styles = stylex.create({
 })
 
 type ReviewComposerProps = {
-	autoFocusDescription?: boolean
 	id?: string
 	onCancel?: () => void
 	onSuccess?: () => void
@@ -130,7 +128,6 @@ type ReviewComposerProps = {
 }
 
 export function ReviewComposer({
-	autoFocusDescription = false,
 	id,
 	onCancel,
 	onSuccess,
@@ -186,7 +183,6 @@ export function ReviewComposer({
 			<div {...stylex.props(styles.editor)}>
 				<Textarea
 					aria-label='Review description'
-					autoFocus={autoFocusDescription}
 					disabled={isPending}
 					onChange={event => setDescription(event.target.value)}
 					placeholder='Add a review...'

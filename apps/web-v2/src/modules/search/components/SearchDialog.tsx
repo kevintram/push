@@ -209,7 +209,9 @@ export function SearchDialog() {
 				<TooltipTrigger
 					render={
 						<DialogTrigger
-							render={<SidebarItem icon={Search} text='Search' />}
+							render={
+								<SidebarItem icon={Search}>Search</SidebarItem>
+							}
 						/>
 					}
 				/>

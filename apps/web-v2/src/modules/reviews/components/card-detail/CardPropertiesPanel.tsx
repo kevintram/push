@@ -1,4 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
+import { Anvil } from 'lucide-react'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { cardPropertiesColors } from '~/styles/colors/components.stylex'
@@ -18,7 +19,7 @@ import {
 } from '~/utils/date'
 
 import type { CardSrsState } from '../../types/review.types'
-import { formatDurability, formatRecall } from '../../utils/cardSrs'
+import { formatDurability, formatDurabilityTooltip } from '../../utils/cardSrs'
 import { getLastReviewedDetails } from '../reviewRatings'
 
 const styles = stylex.create({
@@ -81,7 +82,6 @@ export function CardPropertiesPanel({
 	lastReviewedAt,
 	lastRating,
 	nextDueAt,
-	retrievability,
 	stability,
 	today,
 }: CardPropertiesPanelProps) {
@@ -158,16 +158,32 @@ export function CardPropertiesPanel({
 					)}
 				</div>
 				<div {...stylex.props(styles.row)}>
-					<span {...stylex.props(styles.label)}>Recall</span>
-					<span {...stylex.props(styles.value)}>
-						{formatRecall(retrievability) ?? '—'}
-					</span>
-				</div>
-				<div {...stylex.props(styles.row)}>
 					<span {...stylex.props(styles.label)}>Durability</span>
-					<span {...stylex.props(styles.value)}>
-						{formatDurability(stability) ?? '—'}
-					</span>
+					{stability === null ? (
+						<span {...stylex.props(styles.value)}>—</span>
+					) : (
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<span
+										{...stylex.props(
+											styles.value,
+											styles.valueWithIcon,
+										)}
+									>
+										<Anvil
+											aria-hidden='true'
+											size={iconSizes.md}
+										/>
+										{formatDurability(stability)}
+									</span>
+								}
+							/>
+							<TooltipContent>
+								{formatDurabilityTooltip(stability)}
+							</TooltipContent>
+						</Tooltip>
+					)}
 				</div>
 			</div>
 		</section>

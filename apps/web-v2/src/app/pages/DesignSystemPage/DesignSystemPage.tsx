@@ -10,6 +10,7 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
+import { BadgeSection } from './BadgeSection'
 import { BreadcrumbSection } from './BreadcrumbSection'
 import { ComponentSection } from './ComponentSection'
 import { ScaleSection } from './ScaleSection'
@@ -42,6 +43,7 @@ const sections = [
 	{ href: '#separator', label: 'Separator', count: 2 },
 	{ href: '#breadcrumb', label: 'Breadcrumb', count: 3 },
 	{ href: '#tabs', label: 'Tabs', count: 2 },
+	{ href: '#badge', label: 'Badge', count: 5 },
 	{ href: '#toast', label: 'Toast', count: 5 },
 ]
 
@@ -181,6 +183,7 @@ export function DesignSystemPage() {
 					<ComponentSection />
 					<SeparatorSection />
 					<BreadcrumbSection />
+					<BadgeSection />
 					<TabsSection />
 				</div>
 			</div>

@@ -95,9 +95,8 @@ describe('CardDetail review composer', () => {
 
 		expect(cardActionsRender).toHaveBeenCalledWith(true)
 	})
-	it('shares content in both directions and restores the open sidebar', () => {
+	it('shares content in both directions', () => {
 		const view = render(detail('overview'))
-		fireEvent.click(screen.getByRole('button', { name: 'Add review' }))
 		fireEvent.change(description(), {
 			target: { value: 'Started in sidebar' },
 		})
@@ -113,41 +112,31 @@ describe('CardDetail review composer', () => {
 		view.rerender(detail('overview'))
 		expect(description()).toHaveValue('Updated in reviews')
 		expect(notes()).toHaveValue('Shared notes')
+	})
+
+	it('offers Cancel only once the draft has content', () => {
+		render(detail('overview'))
 		expect(
-			screen.getByRole('button', { name: 'Add review' }),
-		).toHaveAttribute('aria-expanded', 'true')
-	})
+			screen.queryByRole('button', { name: 'Cancel' }),
+		).not.toBeInTheDocument()
 
-	it('opens the sidebar for content first entered on Reviews', () => {
-		const view = render(detail('reviews'))
-		fireEvent.change(notes(), { target: { value: 'Reviews-first notes' } })
-		view.rerender(detail('overview'))
-		expect(notes()).toHaveValue('Reviews-first notes')
-	})
-
-	it('preserves an explicitly opened empty composer across tabs', () => {
-		const view = render(detail('overview'))
-		fireEvent.click(screen.getByRole('button', { name: 'Add review' }))
-		view.rerender(detail('reviews'))
-		view.rerender(detail('overview'))
-		expect(description()).toHaveValue('')
+		fireEvent.change(description(), { target: { value: 'A draft' } })
+		expect(
+			screen.getByRole('button', { name: 'Cancel' }),
+		).toBeInTheDocument()
 	})
 
 	it('clears both placements on Cancel', () => {
 		const view = render(detail('overview'))
-		fireEvent.click(screen.getByRole('button', { name: 'Add review' }))
 		fireEvent.change(description(), { target: { value: 'To cancel' } })
 		fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
-		expect(
-			screen.queryByRole('form', { name: 'Add review' }),
-		).not.toBeInTheDocument()
+		expect(description()).toHaveValue('')
 		view.rerender(detail('reviews'))
 		expect(description()).toHaveValue('')
 	})
 
-	it('closes the sidebar when cancelling from Reviews', () => {
+	it('clears both placements when cancelling from Reviews', () => {
 		const view = render(detail('overview'))
-		fireEvent.click(screen.getByRole('button', { name: 'Add review' }))
 		fireEvent.change(description(), {
 			target: { value: 'Cancel from Reviews' },
 		})
@@ -155,12 +144,7 @@ describe('CardDetail review composer', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
 		expect(description()).toHaveValue('')
 		view.rerender(detail('overview'))
-		expect(
-			screen.queryByRole('form', { name: 'Add review' }),
-		).not.toBeInTheDocument()
-		expect(
-			screen.getByRole('button', { name: 'Add review' }),
-		).toHaveAttribute('aria-expanded', 'false')
+		expect(description()).toHaveValue('')
 	})
 
 	it('discards content when changing cards or leaving CardDetail', () => {
@@ -184,7 +168,6 @@ describe('CardDetail review composer', () => {
 	})
 	it('keeps submission pending across tabs and clears on success after switching', () => {
 		const view = render(detail('overview'))
-		fireEvent.click(screen.getByRole('button', { name: 'Add review' }))
 		fireEvent.change(description(), {
 			target: { value: 'Submit across tabs' },
 		})
@@ -199,9 +182,7 @@ describe('CardDetail review composer', () => {
 		act(() => callbacks.onSuccess())
 		expect(description()).toHaveValue('')
 		view.rerender(detail('overview'))
-		expect(
-			screen.queryByRole('form', { name: 'Add review' }),
-		).not.toBeInTheDocument()
+		expect(description()).toHaveValue('')
 	})
 
 	it('retains content after a failed submission on another tab', () => {

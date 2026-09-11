@@ -12,6 +12,11 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
+import {
+	type CardTypeFilter,
+	filterCardsByType,
+} from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
+import { CardTypeFilterBadges } from '~/modules/reviews/components/card-type-filter/CardTypeFilterBadges'
 import { CardItem } from '~/modules/reviews/components/CardItem'
 import type { Card as CardModel } from '~/modules/reviews/types/review.types'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
@@ -51,11 +56,16 @@ const styles = stylex.create({
 		color: semanticColors.textSecondary,
 		fontSize: fontSizes.sm,
 	},
+	filters: {
+		marginBlockEnd: spacing.md,
+	},
 })
 
 export function FlaggedCardList({ cards, today }: FlaggedCardListProps) {
 	const [focusDialogHandle] = useState(createDialogHandle)
-	const cardCount = cards.length
+	const [filter, setFilter] = useState<CardTypeFilter>('all')
+	const visibleCards = filterCardsByType(cards, filter)
+	const cardCount = visibleCards.length
 
 	useHotkey(
 		FLAGGED_CARD_FOCUS_HOTKEY,
@@ -101,10 +111,15 @@ export function FlaggedCardList({ cards, today }: FlaggedCardListProps) {
 						</TooltipContent>
 					</Tooltip>
 				</div>
+				<CardTypeFilterBadges
+					value={filter}
+					onValueChange={setFilter}
+					xstyle={styles.filters}
+				/>
 				{cardCount === 0 ? (
-					<p {...stylex.props(styles.empty)}>No flagged cards.</p>
+					<p {...stylex.props(styles.empty)}>No cards.</p>
 				) : null}
-				{cards.map(card => (
+				{visibleCards.map(card => (
 					<CardItem
 						key={card._id}
 						card={card}
@@ -113,7 +128,10 @@ export function FlaggedCardList({ cards, today }: FlaggedCardListProps) {
 					/>
 				))}
 			</div>
-			<FlaggedCardFocusDialog handle={focusDialogHandle} cards={cards} />
+			<FlaggedCardFocusDialog
+				handle={focusDialogHandle}
+				cards={visibleCards}
+			/>
 		</>
 	)
 }

@@ -1,11 +1,17 @@
 import * as stylex from '@stylexjs/stylex'
 import { Anvil } from 'lucide-react'
 
-import type { ButtonSize } from '~/components/ui'
+import {
+	type ButtonSize,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '~/components/ui'
 import { reviewColors } from '~/styles/colors/components.stylex'
 import { fontSizes, iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import type { Review } from '../types/review.types'
+import { formatDurabilityTooltip } from '../utils/cardSrs'
 
 const styles = stylex.create({
 	container: {
@@ -68,12 +74,26 @@ export function ReviewDurability({
 			: styles.negativeChange
 
 	return (
-		<div {...stylex.props(styles.container, sizeVariants[size])}>
-			<Anvil aria-hidden='true' {...stylex.props(styles.icon)} />
-			<span>{stabilityAfter}d</span>
-			<span {...stylex.props(stabilityChangeStyle)}>
-				({stabilityChange})
-			</span>
-		</div>
+		<Tooltip>
+			<TooltipTrigger
+				render={
+					<div
+						{...stylex.props(styles.container, sizeVariants[size])}
+					>
+						<Anvil
+							aria-hidden='true'
+							{...stylex.props(styles.icon)}
+						/>
+						<span>{stabilityAfter}d</span>
+						<span {...stylex.props(stabilityChangeStyle)}>
+							({stabilityChange})
+						</span>
+					</div>
+				}
+			/>
+			<TooltipContent>
+				{formatDurabilityTooltip(stabilityAfter)}
+			</TooltipContent>
+		</Tooltip>
 	)
 }

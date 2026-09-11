@@ -16,9 +16,7 @@ const styles = stylex.create({
 		borderRadius: radii.xl,
 		backgroundColor: reviewsSidebarColors.containerBackground,
 		display: 'block',
-		flexShrink: 1,
-		minBlockSize: 0,
-		overflowY: 'auto',
+		flexShrink: 0,
 	},
 	header: {
 		alignItems: 'center',
