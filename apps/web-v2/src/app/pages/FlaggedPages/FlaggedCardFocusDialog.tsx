@@ -20,11 +20,7 @@ import {
 } from '~/components/ui'
 import { CardDetailErrorFallback } from '~/modules/reviews/components/card-detail/CardDetailErrorFallback'
 import { CardDetailView } from '~/modules/reviews/components/card-detail/CardDetailView'
-import { ReviewQueueHotkeys } from '~/modules/reviews/components/review-queue/ReviewQueueHotkeys'
-import {
-	REVIEW_QUEUE_NEXT_HOTKEY,
-	REVIEW_QUEUE_PREVIOUS_HOTKEY,
-} from '~/modules/reviews/components/review-queue/reviewQueueKeybindings'
+import { CardNavigationHotkeys } from '~/modules/reviews/components/CardNavigationHotkeys'
 import { useReviewQueueSelection } from '~/modules/reviews/components/review-queue/useReviewQueueSelection'
 import { HIDE_MODE_HOTKEY } from '~/modules/reviews/hide-mode/hideModeHotkey'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
@@ -34,6 +30,11 @@ import {
 	hideModeButtonColors,
 } from '~/styles/colors/components.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
+
+import {
+	FLAGGED_CARD_FOCUS_NEXT_HOTKEY,
+	FLAGGED_CARD_FOCUS_PREVIOUS_HOTKEY,
+} from './flaggedCardFocusKeybindings'
 
 type FlaggedCardFocusDialogProps = {
 	handle: DialogHandle
@@ -140,9 +141,11 @@ export function FlaggedCardFocusDialog({
 				xstyle={styles.content}
 				showCloseButton={false}
 			>
-				<ReviewQueueHotkeys
+				<CardNavigationHotkeys
 					canGoPrevious={canGoPrevious}
 					canGoNext={canGoNext}
+					previousHotkey={FLAGGED_CARD_FOCUS_PREVIOUS_HOTKEY}
+					nextHotkey={FLAGGED_CARD_FOCUS_NEXT_HOTKEY}
 					onPrevious={goPrevious}
 					onNext={goNext}
 					target={contentRef}
@@ -172,7 +175,7 @@ export function FlaggedCardFocusDialog({
 										Previous
 										<Kbd>
 											{formatForDisplay(
-												REVIEW_QUEUE_PREVIOUS_HOTKEY,
+												FLAGGED_CARD_FOCUS_PREVIOUS_HOTKEY,
 											)}
 										</Kbd>
 									</TooltipContent>
@@ -200,7 +203,7 @@ export function FlaggedCardFocusDialog({
 										Next
 										<Kbd>
 											{formatForDisplay(
-												REVIEW_QUEUE_NEXT_HOTKEY,
+												FLAGGED_CARD_FOCUS_NEXT_HOTKEY,
 											)}
 										</Kbd>
 									</TooltipContent>

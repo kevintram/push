@@ -1,17 +1,15 @@
+import type { Hotkey } from '@tanstack/react-hotkeys'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { RefObject } from 'react'
 
-import {
-	REVIEW_QUEUE_NEXT_HOTKEY,
-	REVIEW_QUEUE_PREVIOUS_HOTKEY,
-} from './reviewQueueKeybindings'
-
-type ReviewQueueHotkeysProps = {
+type CardNavigationHotkeysProps = {
 	canGoNext: boolean
 	canGoPrevious: boolean
+	nextHotkey: Hotkey
 	onNext: () => void
 	onPrevious: () => void
-	target: RefObject<HTMLElement | null>
+	previousHotkey: Hotkey
+	target?: RefObject<HTMLElement | null>
 }
 
 function isTabNavigation(event: KeyboardEvent) {
@@ -22,27 +20,29 @@ function isTabNavigation(event: KeyboardEvent) {
 }
 
 /**
- * Registers navigation only while its review surface is mounted. Arrow keys
+ * Registers navigation only while its card surface is mounted. Navigation keys
  * keep their intrinsic behavior in editable fields and the card's tab list.
  */
-export function ReviewQueueHotkeys({
+export function CardNavigationHotkeys({
 	canGoNext,
 	canGoPrevious,
+	nextHotkey,
 	onNext,
 	onPrevious,
+	previousHotkey,
 	target,
-}: ReviewQueueHotkeysProps) {
+}: CardNavigationHotkeysProps) {
 	useHotkeys(
 		[
 			{
-				hotkey: REVIEW_QUEUE_PREVIOUS_HOTKEY,
+				hotkey: previousHotkey,
 				callback: event => {
 					if (!isTabNavigation(event)) onPrevious()
 				},
 				options: { enabled: canGoPrevious },
 			},
 			{
-				hotkey: REVIEW_QUEUE_NEXT_HOTKEY,
+				hotkey: nextHotkey,
 				callback: event => {
 					if (!isTabNavigation(event)) onNext()
 				},
@@ -53,7 +53,7 @@ export function ReviewQueueHotkeys({
 			preventDefault: false,
 			requireReset: true,
 			stopPropagation: false,
-			target,
+			...(target === undefined ? {} : { target }),
 		},
 	)
 

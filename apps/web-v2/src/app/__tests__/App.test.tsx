@@ -383,6 +383,22 @@ describe('v2 app setup', () => {
 			await screen.findByDisplayValue('Flashcard prompt'),
 		).toBeInTheDocument()
 		expect(screen.getByText('1 of 2')).toBeInTheDocument()
+
+		const focusDialog = screen.getByRole('dialog', { name: 'Focus cards' })
+		within(focusDialog).getByRole('button', { name: 'Next card' }).focus()
+		await user.keyboard('{ArrowRight}')
+		expect(
+			await screen.findByDisplayValue('Practice prompt'),
+		).toBeInTheDocument()
+		expect(screen.getByText('2 of 2')).toBeInTheDocument()
+
+		within(focusDialog)
+			.getByRole('button', { name: 'Previous card' })
+			.focus()
+		await user.keyboard('{ArrowLeft}')
+		expect(
+			await screen.findByDisplayValue('Flashcard prompt'),
+		).toBeInTheDocument()
 	})
 
 	it('renders the selected card in the static review workspace', async () => {
@@ -470,7 +486,7 @@ describe('v2 app setup', () => {
 		)
 	})
 
-	it('navigates the review queue once per arrow key press', async () => {
+	it('navigates the review queue once per J or K key press', async () => {
 		const user = userEvent.setup()
 		const secondCard: Card = {
 			...card,
@@ -486,38 +502,36 @@ describe('v2 app setup', () => {
 			newCards: [card, secondCard, thirdCard],
 		})
 
-		const navigationOrigin = await screen.findByRole('button', {
-			name: 'Next card',
-		})
-		navigationOrigin.focus()
+		await screen.findByRole('button', { name: 'Next card' })
+		const navigationOrigin = document.body
 
-		fireEvent.keyDown(navigationOrigin, { key: 'ArrowRight' })
+		fireEvent.keyDown(navigationOrigin, { key: 'j' })
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
 		).toBeInTheDocument()
 
 		fireEvent.keyDown(navigationOrigin, {
-			key: 'ArrowRight',
+			key: 'j',
 			repeat: true,
 		})
 		expect(
 			screen.getByDisplayValue('What is a discriminated union?'),
 		).toBeInTheDocument()
 
-		fireEvent.keyUp(navigationOrigin, { key: 'ArrowRight' })
-		await user.keyboard('{ArrowLeft}')
+		fireEvent.keyUp(navigationOrigin, { key: 'j' })
+		await user.keyboard('k')
 		expect(
 			await screen.findByDisplayValue('What problem do generics solve?'),
 		).toBeInTheDocument()
 
-		await user.keyboard('{ArrowRight}')
-		await user.keyboard('{ArrowRight}')
+		await user.keyboard('j')
+		await user.keyboard('j')
 		expect(
 			await screen.findByDisplayValue('What is type narrowing?'),
 		).toBeInTheDocument()
 	})
 
-	it('preserves arrow key behavior in review queue controls', async () => {
+	it('preserves keyboard behavior in review queue controls', async () => {
 		const user = userEvent.setup()
 		const secondCard: Card = {
 			...card,
@@ -536,7 +550,7 @@ describe('v2 app setup', () => {
 		await user.click(overviewTab)
 		const primaryText = screen.getByLabelText('Card primary text')
 		await user.click(primaryText)
-		await user.keyboard('{ArrowRight}')
+		fireEvent.keyDown(primaryText, { key: 'j' })
 		expect(
 			screen.getByDisplayValue('What problem do generics solve?'),
 		).toBeInTheDocument()

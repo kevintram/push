@@ -25,7 +25,7 @@ import {
 import type { DateString } from '~/types/date'
 
 import { FlaggedCardFocusDialog } from './FlaggedCardFocusDialog'
-import { FLAGGED_CARD_FOCUS_HOTKEY } from './flaggedCardFocusHotkey'
+import { FLAGGED_CARD_FOCUS_HOTKEY } from './flaggedCardFocusKeybindings'
 
 type FlaggedCardListProps = {
 	cards: Array<CardModel>

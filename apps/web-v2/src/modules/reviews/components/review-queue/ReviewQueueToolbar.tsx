@@ -55,6 +55,28 @@ export function ReviewQueueToolbar({
 							<TooltipTrigger
 								render={
 									<Button.Icon
+										aria-label='Next card'
+										shape='round'
+										variant='secondary'
+										size='small'
+										disabled={index === cardCount - 1}
+										onClick={onNext}
+									>
+										<ChevronDown size={iconSizes.md} />
+									</Button.Icon>
+								}
+							/>
+							<TooltipContent>
+								Next
+								<Kbd>
+									{formatForDisplay(REVIEW_QUEUE_NEXT_HOTKEY)}
+								</Kbd>
+							</TooltipContent>
+						</Tooltip>
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<Button.Icon
 										aria-label='Previous card'
 										shape='round'
 										variant='secondary'
@@ -72,28 +94,6 @@ export function ReviewQueueToolbar({
 									{formatForDisplay(
 										REVIEW_QUEUE_PREVIOUS_HOTKEY,
 									)}
-								</Kbd>
-							</TooltipContent>
-						</Tooltip>
-						<Tooltip>
-							<TooltipTrigger
-								render={
-									<Button.Icon
-										aria-label='Next card'
-										shape='round'
-										variant='secondary'
-										size='small'
-										disabled={index === cardCount - 1}
-										onClick={onNext}
-									>
-										<ChevronDown size={iconSizes.md} />
-									</Button.Icon>
-								}
-							/>
-							<TooltipContent>
-								Next
-								<Kbd>
-									{formatForDisplay(REVIEW_QUEUE_NEXT_HOTKEY)}
 								</Kbd>
 							</TooltipContent>
 						</Tooltip>

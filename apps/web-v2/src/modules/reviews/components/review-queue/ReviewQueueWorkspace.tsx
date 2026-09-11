@@ -1,17 +1,21 @@
 import * as stylex from '@stylexjs/stylex'
 import { QueryErrorResetBoundary } from '@tanstack/react-query'
-import { Suspense, useRef } from 'react'
+import { Suspense } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
 import { CardDetailErrorFallback } from '~/modules/reviews/components/card-detail/CardDetailErrorFallback'
 import { CardDetailView } from '~/modules/reviews/components/card-detail/CardDetailView'
+import { CardNavigationHotkeys } from '~/modules/reviews/components/CardNavigationHotkeys'
 import type { Card } from '~/modules/reviews/types/review.types'
 import { reviewQueueColors } from '~/styles/colors/components.stylex'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
-import { ReviewQueueHotkeys } from './ReviewQueueHotkeys'
+import {
+	REVIEW_QUEUE_NEXT_HOTKEY,
+	REVIEW_QUEUE_PREVIOUS_HOTKEY,
+} from './reviewQueueKeybindings'
 import { ReviewQueueSidebar } from './ReviewQueueSidebar'
 import { ReviewQueueToolbar } from './ReviewQueueToolbar'
 import { useReviewQueueSelection } from './useReviewQueueSelection'
@@ -81,22 +85,21 @@ export function ReviewQueueWorkspace({
 	title,
 	today,
 }: ReviewQueueWorkspaceProps) {
-	const shellRef = useRef<HTMLDivElement>(null)
 	const { index, currentCard, canGoPrevious, canGoNext, goPrevious, goNext } =
 		useReviewQueueSelection(cards)
 
 	return (
 		<section
 			aria-label={`${title} review workspace`}
-			ref={shellRef}
 			{...stylex.props(styles.shell)}
 		>
-			<ReviewQueueHotkeys
+			<CardNavigationHotkeys
 				canGoPrevious={canGoPrevious}
 				canGoNext={canGoNext}
+				previousHotkey={REVIEW_QUEUE_PREVIOUS_HOTKEY}
+				nextHotkey={REVIEW_QUEUE_NEXT_HOTKEY}
 				onPrevious={goPrevious}
 				onNext={goNext}
-				target={shellRef}
 			/>
 			<div {...stylex.props(styles.panels)}>
 				<div {...stylex.props(styles.cardColumn)}>
