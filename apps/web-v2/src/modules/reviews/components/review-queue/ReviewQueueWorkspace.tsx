@@ -114,7 +114,6 @@ export function ReviewQueueWorkspace({
 				<div {...stylex.props(styles.cardColumn)}>
 					<div {...stylex.props(styles.toolbarWrapper)}>
 						<ReviewQueueToolbar
-							currentCard={currentCard}
 							index={index}
 							cardCount={visibleCards.length}
 							onPrevious={goPrevious}

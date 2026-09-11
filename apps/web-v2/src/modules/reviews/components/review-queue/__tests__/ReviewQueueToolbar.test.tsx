@@ -2,18 +2,14 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { TooltipProvider } from '~/components/ui'
-import type { Card } from '~/modules/reviews/types/review.types'
 
 import { ReviewQueueToolbar } from '../ReviewQueueToolbar'
-
-const currentCard = { _id: 'card-1' } as Card
 
 describe('ReviewQueueToolbar', () => {
 	it('does not render a redundant hide mode action', () => {
 		const view = render(
 			<TooltipProvider delay={0}>
 				<ReviewQueueToolbar
-					currentCard={currentCard}
 					index={0}
 					cardCount={2}
 					onPrevious={() => {}}

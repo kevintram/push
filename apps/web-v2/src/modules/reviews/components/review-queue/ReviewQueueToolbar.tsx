@@ -9,7 +9,6 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import type { Card } from '~/modules/reviews/types/review.types'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import {
@@ -18,7 +17,6 @@ import {
 } from './reviewQueueKeybindings'
 
 type ReviewQueueToolbarProps = {
-	currentCard: Card | null
 	index: number
 	cardCount: number
 	onPrevious: () => void
@@ -40,7 +38,6 @@ const styles = stylex.create({
 })
 
 export function ReviewQueueToolbar({
-	currentCard,
 	index,
 	cardCount,
 	onPrevious,
@@ -49,56 +46,48 @@ export function ReviewQueueToolbar({
 	return (
 		<header {...stylex.props(styles.header)}>
 			<div {...stylex.props(styles.headerButtonCluster)}>
-				{currentCard === null ? null : (
-					<>
-						<Tooltip>
-							<TooltipTrigger
-								render={
-									<Button.Icon
-										aria-label='Next card'
-										shape='round'
-										variant='secondary'
-										size='small'
-										disabled={index === cardCount - 1}
-										onClick={onNext}
-									>
-										<ChevronDown size={iconSizes.md} />
-									</Button.Icon>
-								}
-							/>
-							<TooltipContent>
-								Next
-								<Kbd>
-									{formatForDisplay(REVIEW_QUEUE_NEXT_HOTKEY)}
-								</Kbd>
-							</TooltipContent>
-						</Tooltip>
-						<Tooltip>
-							<TooltipTrigger
-								render={
-									<Button.Icon
-										aria-label='Previous card'
-										shape='round'
-										variant='secondary'
-										size='small'
-										disabled={index === 0}
-										onClick={onPrevious}
-									>
-										<ChevronUp size={iconSizes.md} />
-									</Button.Icon>
-								}
-							/>
-							<TooltipContent>
-								Previous
-								<Kbd>
-									{formatForDisplay(
-										REVIEW_QUEUE_PREVIOUS_HOTKEY,
-									)}
-								</Kbd>
-							</TooltipContent>
-						</Tooltip>
-					</>
-				)}
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button.Icon
+								aria-label='Next card'
+								shape='round'
+								variant='secondary'
+								size='small'
+								disabled={index >= cardCount - 1}
+								onClick={onNext}
+							>
+								<ChevronDown size={iconSizes.md} />
+							</Button.Icon>
+						}
+					/>
+					<TooltipContent>
+						Next
+						<Kbd>{formatForDisplay(REVIEW_QUEUE_NEXT_HOTKEY)}</Kbd>
+					</TooltipContent>
+				</Tooltip>
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button.Icon
+								aria-label='Previous card'
+								shape='round'
+								variant='secondary'
+								size='small'
+								disabled={index <= 0}
+								onClick={onPrevious}
+							>
+								<ChevronUp size={iconSizes.md} />
+							</Button.Icon>
+						}
+					/>
+					<TooltipContent>
+						Previous
+						<Kbd>
+							{formatForDisplay(REVIEW_QUEUE_PREVIOUS_HOTKEY)}
+						</Kbd>
+					</TooltipContent>
+				</Tooltip>
 			</div>
 		</header>
 	)
