@@ -130,6 +130,7 @@ export function ReviewQueueWorkspace({
 										>
 											<CardDetailView
 												cardId={currentCard._id}
+												showGoToCard
 											/>
 										</Suspense>
 									</ErrorBoundary>

@@ -7,6 +7,7 @@ import { TooltipProvider } from '~/components/ui'
 import { CardDetail, type CardTab } from '../CardDetail'
 
 const mutation = vi.hoisted(() => ({ mutate: vi.fn(), isPending: false }))
+const cardActionsRender = vi.hoisted(() => vi.fn())
 
 vi.mock('@tanstack/react-query', () => ({
 	useSuspenseQuery: ({ queryKey }: { queryKey: Array<string> }) => ({
@@ -21,7 +22,12 @@ vi.mock('../../../api/reviewQueries', () => ({
 	useCreateReview: () => mutation,
 }))
 vi.mock('../../../utils/cardSrs', () => ({ deriveCardSrsState: () => ({}) }))
-vi.mock('../../CardActions', () => ({ CardActions: () => null }))
+vi.mock('../../CardActions', () => ({
+	CardActions: ({ showGoToCard }: { showGoToCard?: boolean }) => {
+		cardActionsRender(showGoToCard)
+		return null
+	},
+}))
 vi.mock('../CardBreadcrumbs', () => ({ CardBreadcrumbs: () => null }))
 vi.mock('../CardOverview', () => ({ CardOverview: () => null }))
 vi.mock('../CardPropertiesPanel', () => ({ CardPropertiesPanel: () => null }))
@@ -56,13 +62,14 @@ vi.mock('../../ReviewDatePicker', () => ({
 const firstCard = 'card-1' as Id<'cards'>
 const secondCard = 'card-2' as Id<'cards'>
 
-function detail(tab: CardTab, cardId = firstCard) {
+function detail(tab: CardTab, cardId = firstCard, showGoToCard = false) {
 	return (
 		<TooltipProvider delay={0}>
 			<CardDetail
 				cardId={cardId}
 				activeTab={tab}
 				onTabChange={() => {}}
+				showGoToCard={showGoToCard}
 			/>
 		</TooltipProvider>
 	)
@@ -80,6 +87,13 @@ describe('CardDetail review composer', () => {
 	beforeEach(() => {
 		mutation.mutate.mockReset()
 		mutation.isPending = false
+		cardActionsRender.mockReset()
+	})
+
+	it('forwards the go-to-card visibility to CardActions', () => {
+		render(detail('overview', firstCard, true))
+
+		expect(cardActionsRender).toHaveBeenCalledWith(true)
 	})
 	it('shares content in both directions and restores the open sidebar', () => {
 		const view = render(detail('overview'))

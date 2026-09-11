@@ -402,7 +402,6 @@ describe('v2 app setup', () => {
 		expect(
 			screen.queryByRole('button', { name: 'Focus' }),
 		).not.toBeInTheDocument()
-		expect(screen.getByText('1 of 1')).toBeInTheDocument()
 		expect(
 			screen.getByRole('button', { name: 'Previous card' }),
 		).toBeDisabled()
@@ -413,7 +412,7 @@ describe('v2 app setup', () => {
 		// Base UI keeps `role="button"` on the non-native element, but it stays
 		// a real anchor so middle-click and open-in-new-tab still work.
 		const openLink = screen.getByRole('button', {
-			name: 'Open card',
+			name: 'Go to card',
 		})
 		expect(openLink.tagName).toBe('A')
 		expect(openLink).toHaveAttribute('href', '/cards/card-1')
@@ -533,7 +532,6 @@ describe('v2 app setup', () => {
 
 		const overviewTab = screen.getByRole('tab', { name: 'Overview' })
 		expect(overviewTab).toHaveFocus()
-		expect(screen.getByText('1 of 2')).toBeInTheDocument()
 
 		await user.click(overviewTab)
 		const primaryText = screen.getByLabelText('Card primary text')
@@ -575,13 +573,11 @@ describe('v2 app setup', () => {
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
 		).toBeInTheDocument()
-		expect(screen.getByText('2 of 2')).toBeInTheDocument()
 
 		await user.keyboard('f')
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
 		).toBeInTheDocument()
-		expect(screen.getByText('2 of 2')).toBeInTheDocument()
 	})
 
 	it('keeps the selected card stable as the review queue changes', async () => {
@@ -613,7 +609,6 @@ describe('v2 app setup', () => {
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
 		).toBeInTheDocument()
-		expect(screen.getByText('1 of 2')).toBeInTheDocument()
 
 		act(() => {
 			queryClient.setQueryData(
@@ -624,7 +619,6 @@ describe('v2 app setup', () => {
 		expect(
 			await screen.findByDisplayValue('What is type narrowing?'),
 		).toBeInTheDocument()
-		expect(screen.getByText('1 of 1')).toBeInTheDocument()
 
 		act(() => {
 			queryClient.setQueryData(
@@ -635,7 +629,6 @@ describe('v2 app setup', () => {
 		expect(
 			await screen.findByDisplayValue('What is type narrowing?'),
 		).toBeInTheDocument()
-		expect(screen.getByText('2 of 2')).toBeInTheDocument()
 	})
 
 	it('renders an empty static review workspace', async () => {

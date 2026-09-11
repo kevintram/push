@@ -1,15 +1,10 @@
 import { render, screen } from '@testing-library/react'
-import type { ReactNode } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { TooltipProvider } from '~/components/ui'
 import type { Card } from '~/modules/reviews/types/review.types'
 
 import { ReviewQueueToolbar } from '../ReviewQueueToolbar'
-
-vi.mock('@tanstack/react-router', () => ({
-	Link: ({ children }: { children?: ReactNode }) => <a>{children}</a>,
-}))
 
 const currentCard = { _id: 'card-1' } as Card
 
@@ -29,6 +24,9 @@ describe('ReviewQueueToolbar', () => {
 
 		expect(
 			screen.queryByRole('button', { name: 'Toggle hide mode' }),
+		).not.toBeInTheDocument()
+		expect(
+			screen.queryByRole('link', { name: 'Go to card' }),
 		).not.toBeInTheDocument()
 		view.unmount()
 	})

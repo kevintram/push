@@ -22,6 +22,7 @@ export type CardTab = 'overview' | 'reviews'
 type CardDetailBaseProps = {
 	cardId: Id<'cards'>
 	activeTab: CardTab
+	showGoToCard?: boolean
 	/** Called when an internal breadcrumb link is about to navigate. */
 	onNavigate?: () => void
 }
@@ -90,6 +91,7 @@ export function CardDetail({
 	activeTab,
 	onTabChange,
 	tabLinks,
+	showGoToCard = false,
 	onNavigate,
 }: CardDetailProps) {
 	const { data: card } = useSuspenseQuery(cardQueries.detail(cardId))
@@ -122,7 +124,7 @@ export function CardDetail({
 							onNavigate={onNavigate}
 						/>
 					</div>
-					<CardActions card={card} />
+					<CardActions card={card} showGoToCard={showGoToCard} />
 				</header>
 				<Tabs
 					value={activeTab}

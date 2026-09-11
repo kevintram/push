@@ -1,7 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { formatForDisplay } from '@tanstack/react-hotkeys'
-import { Link } from '@tanstack/react-router'
-import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 import {
 	Button,
@@ -11,8 +10,7 @@ import {
 	TooltipTrigger,
 } from '~/components/ui'
 import type { Card } from '~/modules/reviews/types/review.types'
-import { reviewQueueColors } from '~/styles/colors/components.stylex'
-import { fontSizes, iconSizes, spacing } from '~/styles/tokens.stylex'
+import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import {
 	REVIEW_QUEUE_NEXT_HOTKEY,
@@ -32,18 +30,13 @@ const styles = stylex.create({
 		alignItems: 'center',
 		display: 'flex',
 		flexShrink: 0,
-		justifyContent: 'space-between',
+		justifyContent: 'flex-end',
 		paddingBlockEnd: spacing.md,
 	},
 	headerButtonCluster: {
 		gap: spacing.xs,
 		alignItems: 'center',
 		display: 'flex',
-	},
-	position: {
-		paddingInline: spacing.xs,
-		color: reviewQueueColors.positionForeground,
-		fontSize: fontSizes.sm,
 	},
 })
 
@@ -70,7 +63,7 @@ export function ReviewQueueToolbar({
 										disabled={index === 0}
 										onClick={onPrevious}
 									>
-										<ChevronLeft size={iconSizes.md} />
+										<ChevronUp size={iconSizes.md} />
 									</Button.Icon>
 								}
 							/>
@@ -94,7 +87,7 @@ export function ReviewQueueToolbar({
 										disabled={index === cardCount - 1}
 										onClick={onNext}
 									>
-										<ChevronRight size={iconSizes.md} />
+										<ChevronDown size={iconSizes.md} />
 									</Button.Icon>
 								}
 							/>
@@ -105,36 +98,7 @@ export function ReviewQueueToolbar({
 								</Kbd>
 							</TooltipContent>
 						</Tooltip>
-						<span {...stylex.props(styles.position)}>
-							{index + 1} of {cardCount}
-						</span>
 					</>
-				)}
-			</div>
-			<div {...stylex.props(styles.headerButtonCluster)}>
-				{currentCard === null ? null : (
-					<Tooltip>
-						<TooltipTrigger
-							render={
-								<Button.Icon
-									aria-label='Open card'
-									shape='round'
-									variant='secondary'
-									size='small'
-									nativeButton={false}
-									render={
-										<Link
-											to='/cards/$cardId'
-											params={{ cardId: currentCard._id }}
-										/>
-									}
-								>
-									<ArrowUpRight size={iconSizes.md} />
-								</Button.Icon>
-							}
-						/>
-						<TooltipContent>Open card</TooltipContent>
-					</Tooltip>
 				)}
 			</div>
 		</header>

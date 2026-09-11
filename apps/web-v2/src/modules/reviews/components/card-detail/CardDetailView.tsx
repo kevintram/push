@@ -5,10 +5,15 @@ import { CardDetail, type CardTab } from './CardDetail'
 
 type CardDetailViewProps = {
 	cardId: Id<'cards'>
+	showGoToCard?: boolean
 	onNavigate?: () => void
 }
 
-export function CardDetailView({ cardId, onNavigate }: CardDetailViewProps) {
+export function CardDetailView({
+	cardId,
+	showGoToCard = false,
+	onNavigate,
+}: CardDetailViewProps) {
 	const [activeTab, setActiveTab] = useState<CardTab>('overview')
 
 	return (
@@ -16,6 +21,7 @@ export function CardDetailView({ cardId, onNavigate }: CardDetailViewProps) {
 			cardId={cardId}
 			activeTab={activeTab}
 			onTabChange={setActiveTab}
+			showGoToCard={showGoToCard}
 			onNavigate={onNavigate}
 		/>
 	)
