@@ -1,7 +1,7 @@
 import { PointerActivationConstraints, PointerSensor } from '@dnd-kit/dom'
 import { useDraggable, useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
-import { useMatchRoute, useNavigate } from '@tanstack/react-router'
+import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router'
 import { useCallback, useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
@@ -10,6 +10,7 @@ import {
 	TreeItemChildren,
 	TreeItemCollapsibleTrigger,
 	TreeItemContent,
+	TreeItemLabel,
 } from '~/components/ui'
 import { libraryCollectionItemColors } from '~/styles/colors/components.stylex'
 
@@ -147,8 +148,20 @@ export function LibraryCollectionItem({
 					aria-label={`Toggle ${collectionTitle}`}
 				/>
 				<LibraryCollectionContextMenu
-					collectionId={_id}
-					collectionTitle={collectionTitle}
+					trigger={
+						<TreeItemLabel
+							render={
+								<Link
+									to='/library/$collectionId'
+									params={{ collectionId: _id }}
+									activeOptions={{ exact: true }}
+									aria-label={collectionTitle}
+								/>
+							}
+						>
+							{collectionTitle}
+						</TreeItemLabel>
+					}
 					onCreateSubcollection={handleCreateSubcollection}
 					onMove={() => setIsMoveDialogOpen(true)}
 					onDelete={() => setIsDeleteDialogOpen(true)}

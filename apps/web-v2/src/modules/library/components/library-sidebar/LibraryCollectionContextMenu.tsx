@@ -1,6 +1,5 @@
-import type { Id } from '@convex/_generated/dataModel'
-import { Link } from '@tanstack/react-router'
 import { FolderInput, Plus, Trash2 } from 'lucide-react'
+import type { ReactElement } from 'react'
 
 import {
 	ContextMenu,
@@ -8,43 +7,25 @@ import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 	ContextMenuTrigger,
-	TreeItemLabel,
 } from '~/components/ui'
 import { iconSizes } from '~/styles/tokens.stylex'
 
 type LibraryCollectionContextMenuProps = {
-	collectionId: Id<'collections'>
-	collectionTitle: string
+	trigger: ReactElement
 	onCreateSubcollection: () => void
 	onMove: () => void
 	onDelete: () => void
 }
 
 export function LibraryCollectionContextMenu({
-	collectionId,
-	collectionTitle,
+	trigger,
 	onCreateSubcollection,
 	onMove,
 	onDelete,
 }: LibraryCollectionContextMenuProps) {
 	return (
 		<ContextMenu>
-			<ContextMenuTrigger
-				render={
-					<TreeItemLabel
-						render={
-							<Link
-								to='/library/$collectionId'
-								params={{ collectionId }}
-								activeOptions={{ exact: true }}
-								aria-label={collectionTitle}
-							/>
-						}
-					/>
-				}
-			>
-				{collectionTitle}
-			</ContextMenuTrigger>
+			<ContextMenuTrigger render={trigger} />
 			<ContextMenuContent>
 				<ContextMenuItem onClick={onCreateSubcollection}>
 					<Plus aria-hidden='true' size={iconSizes.md} />
