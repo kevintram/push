@@ -1,8 +1,7 @@
 import { createContext, use } from 'react'
 
 type TreeItemContextValue = {
-	expandable: boolean
-	expanded: boolean
+	collapsible: boolean
 	label: string
 	selected: boolean
 }

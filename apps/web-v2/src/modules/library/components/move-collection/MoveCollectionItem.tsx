@@ -27,7 +27,7 @@ export function MoveCollectionItem({
 
 	return (
 		<TreeItem
-			expandable={hasChildren}
+			collapsible={hasChildren}
 			label={collectionTitle}
 			selected={isSelected}
 		>

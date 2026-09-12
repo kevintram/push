@@ -36,9 +36,9 @@ export function TreeItemChildren({
 	xstyle,
 	...props
 }: TreeItemChildrenProps) {
-	const { expandable } = useTreeItemContext()
+	const { collapsible } = useTreeItemContext()
 
-	if (!expandable) return null
+	if (!collapsible) return null
 
 	return (
 		<CollapsibleContent

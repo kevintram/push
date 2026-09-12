@@ -31,7 +31,7 @@ const styles = stylex.create({
 		transitionProperty: 'transform',
 		transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
 	},
-	chevronExpanded: {
+	chevronOpen: {
 		transform: 'rotate(90deg)',
 	},
 })
@@ -41,9 +41,9 @@ export function TreeItemCollapsibleTrigger({
 	xstyle,
 	...props
 }: TreeItemCollapsibleTriggerProps) {
-	const { expandable, expanded, label } = useTreeItemContext()
+	const { collapsible, label } = useTreeItemContext()
 
-	if (!expandable) {
+	if (!collapsible) {
 		return (
 			<span
 				aria-hidden='true'
@@ -56,27 +56,27 @@ export function TreeItemCollapsibleTrigger({
 	return (
 		<CollapsibleTrigger
 			{...props}
-			render={
+			render={(renderProps, { open }) => (
 				<Button.Icon
+					{...renderProps}
 					aria-label={
-						ariaLabel ??
-						`${expanded ? 'Collapse' : 'Expand'} ${label}`
+						ariaLabel ?? `${open ? 'Collapse' : 'Expand'} ${label}`
 					}
 					shape='round'
 					size='micro'
 					variant='ghost'
 					xstyle={xstyle}
-				/>
-			}
-		>
-			<ChevronRight
-				aria-hidden='true'
-				size={iconSizes.md}
-				{...stylex.props(
-					styles.chevron,
-					expanded && styles.chevronExpanded,
-				)}
-			/>
-		</CollapsibleTrigger>
+				>
+					<ChevronRight
+						aria-hidden='true'
+						size={iconSizes.md}
+						{...stylex.props(
+							styles.chevron,
+							open && styles.chevronOpen,
+						)}
+					/>
+				</Button.Icon>
+			)}
+		/>
 	)
 }

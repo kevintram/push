@@ -142,7 +142,7 @@ export function LibraryCollectionItem({
 	return (
 		<TreeItem
 			ref={combinedDraggableRef}
-			expandable={hasChildren}
+			collapsible={hasChildren}
 			label={collectionTitle}
 			selected={isActive}
 			xstyle={[

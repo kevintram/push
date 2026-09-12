@@ -40,11 +40,7 @@ export function MoveCollectionTree({
 	return (
 		<Tree>
 			{allowLibraryRoot ? (
-				<TreeItem
-					expandable={false}
-					label='Library'
-					selected={isLibrarySelected}
-				>
+				<TreeItem label='Library' selected={isLibrarySelected}>
 					<TreeItemContent>
 						<TreeItemCollapsibleTrigger />
 						<TreeItemLabel
