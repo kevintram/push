@@ -39,7 +39,6 @@ const collectionPointerSensor = PointerSensor.configure({
 })
 
 const styles = stylex.create({
-	// TODO: fix these damn color tokens
 	containerDragging: {
 		backgroundColor:
 			libraryCollectionItemColors.containerBackgroundDragging,
