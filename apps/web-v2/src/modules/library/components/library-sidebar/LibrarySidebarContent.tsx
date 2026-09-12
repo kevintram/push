@@ -1,7 +1,7 @@
 import { useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { useNavigate } from '@tanstack/react-router'
-import { Plus } from 'lucide-react'
+import { ChevronsDownUp, Plus } from 'lucide-react'
 import { useCallback } from 'react'
 
 import { Button, Tree } from '~/components/ui'
@@ -71,6 +71,8 @@ export function LibrarySidebarContent({
 	const { ref: libraryRootRef, isDropTarget: libraryRootIsDropTarget } =
 		useDroppable({ id: 'library-root' })
 
+	const handleCollapseAll = useCallback(() => {}, [])
+
 	const handleCreateCollection = useCallback(() => {
 		createCollection.mutate(
 			{},
@@ -99,15 +101,29 @@ export function LibrarySidebarContent({
 			>
 				<div ref={libraryRootRef} {...stylex.props(styles.header)}>
 					<p {...stylex.props(styles.headerText)}>Library</p>
-					<Button.Icon
-						aria-label='Add collection'
-						shape='round'
-						size='micro'
-						variant='ghost'
-						onClick={handleCreateCollection}
-					>
-						<Plus aria-hidden='true' size={iconSizes.md} />
-					</Button.Icon>
+					<div>
+						<Button.Icon
+							aria-label='Collapse all collections'
+							shape='round'
+							size='micro'
+							variant='ghost'
+							onClick={handleCollapseAll}
+						>
+							<ChevronsDownUp
+								aria-hidden='true'
+								size={iconSizes.md}
+							/>
+						</Button.Icon>
+						<Button.Icon
+							aria-label='Add collection'
+							shape='round'
+							size='micro'
+							variant='ghost'
+							onClick={handleCreateCollection}
+						>
+							<Plus aria-hidden='true' size={iconSizes.md} />
+						</Button.Icon>
+					</div>
 				</div>
 			</div>
 			<nav aria-label='Library collections' {...stylex.props(styles.nav)}>
