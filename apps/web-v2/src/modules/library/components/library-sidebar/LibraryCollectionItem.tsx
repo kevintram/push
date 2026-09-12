@@ -1,25 +1,17 @@
 import { PointerActivationConstraints, PointerSensor } from '@dnd-kit/dom'
 import { useDraggable, useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
-import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router'
-import { FolderInput, Plus, Trash2 } from 'lucide-react'
+import { useMatchRoute, useNavigate } from '@tanstack/react-router'
 import { useCallback, useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
-	ContextMenu,
-	ContextMenuContent,
-	ContextMenuItem,
-	ContextMenuSeparator,
-	ContextMenuTrigger,
 	TreeItem,
 	TreeItemChildren,
 	TreeItemCollapsibleTrigger,
 	TreeItemContent,
-	TreeItemLabel,
 } from '~/components/ui'
 import { libraryCollectionItemColors } from '~/styles/colors/components.stylex'
-import { iconSizes } from '~/styles/tokens.stylex'
 
 import {
 	useCreateCollection,
@@ -27,6 +19,7 @@ import {
 } from '../../api/collectionQueries'
 import { type CollectionWithChildren } from '../../types/collection.types'
 import { MoveCollectionDialog } from '../MoveCollectionDialog'
+import { LibraryCollectionContextMenu } from './LibraryCollectionContextMenu'
 
 const collectionPointerSensor = PointerSensor.configure({
 	// sensor configuration so links can still be clicked while we do drag and drop
@@ -152,46 +145,13 @@ export function LibraryCollectionItem({
 		>
 			<TreeItemContent ref={droppableElementRef}>
 				<TreeItemCollapsibleTrigger />
-				<ContextMenu>
-					<ContextMenuTrigger
-						render={
-							<TreeItemLabel
-								render={
-									<Link
-										to='/library/$collectionId'
-										params={{ collectionId: _id }}
-										activeOptions={{ exact: true }}
-										aria-label={collectionTitle}
-									/>
-								}
-							/>
-						}
-					>
-						{collectionTitle}
-					</ContextMenuTrigger>
-					<ContextMenuContent>
-						<ContextMenuItem onClick={handleCreateSubcollection}>
-							<Plus aria-hidden='true' size={iconSizes.md} />
-							Add subcollection
-						</ContextMenuItem>
-						<ContextMenuItem
-							onClick={() => setIsMoveDialogOpen(true)}
-						>
-							<FolderInput
-								aria-hidden='true'
-								size={iconSizes.md}
-							/>
-							Move
-						</ContextMenuItem>
-						<ContextMenuSeparator />
-						<ContextMenuItem
-							onClick={() => setIsDeleteDialogOpen(true)}
-						>
-							<Trash2 aria-hidden='true' size={iconSizes.md} />
-							Delete
-						</ContextMenuItem>
-					</ContextMenuContent>
-				</ContextMenu>
+				<LibraryCollectionContextMenu
+					collectionId={_id}
+					collectionTitle={collectionTitle}
+					onCreateSubcollection={handleCreateSubcollection}
+					onMove={() => setIsMoveDialogOpen(true)}
+					onDelete={() => setIsDeleteDialogOpen(true)}
+				/>
 			</TreeItemContent>
 
 			<TreeItemChildren>
