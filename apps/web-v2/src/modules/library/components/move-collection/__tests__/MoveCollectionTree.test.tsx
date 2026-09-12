@@ -24,7 +24,9 @@ function collection(
 }
 
 describe('MoveCollectionTree', () => {
-	it('renders collections as a selectable tree', () => {
+	it('renders collections as a selectable tree', async () => {
+		const user = userEvent.setup()
+
 		render(
 			<MoveCollectionTree
 				onSelect={vi.fn()}
@@ -37,8 +39,11 @@ describe('MoveCollectionTree', () => {
 		)
 
 		expect(screen.getByRole('button', { name: 'A' })).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: 'B' })).toBeInTheDocument()
 		expect(screen.getByRole('button', { name: 'C' })).toBeInTheDocument()
+
+		await user.click(screen.getByRole('button', { name: 'Toggle A' }))
+
+		expect(screen.getByRole('button', { name: 'B' })).toBeInTheDocument()
 	})
 
 	it('renders a selectable Library root when allowLibraryRoot is true', () => {
@@ -105,7 +110,9 @@ describe('MoveCollectionTree', () => {
 		)
 	})
 
-	it('excludes the specified collection and its entire subtree', () => {
+	it('excludes the specified collection and its entire subtree', async () => {
+		const user = userEvent.setup()
+
 		render(
 			<MoveCollectionTree
 				excludeCollectionId={'B' as Id<'collections'>}
@@ -121,6 +128,9 @@ describe('MoveCollectionTree', () => {
 		)
 
 		expect(screen.getByRole('button', { name: 'A' })).toBeInTheDocument()
+
+		await user.click(screen.getByRole('button', { name: 'Toggle A' }))
+
 		expect(screen.getByRole('button', { name: 'C' })).toBeInTheDocument()
 		expect(
 			screen.queryByRole('button', { name: 'B' }),
@@ -152,7 +162,9 @@ describe('MoveCollectionTree', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('leaves unrelated branches available when excluding a subtree', () => {
+	it('leaves unrelated branches available when excluding a subtree', async () => {
+		const user = userEvent.setup()
+
 		render(
 			<MoveCollectionTree
 				excludeCollectionId={'B' as Id<'collections'>}
@@ -165,9 +177,15 @@ describe('MoveCollectionTree', () => {
 			/>,
 		)
 
-		for (const name of ['A', 'C', 'D', 'E']) {
+		for (const name of ['A', 'D']) {
 			expect(screen.getByRole('button', { name })).toBeInTheDocument()
 		}
+
+		await user.click(screen.getByRole('button', { name: 'Toggle A' }))
+		await user.click(screen.getByRole('button', { name: 'Toggle D' }))
+
+		expect(screen.getByRole('button', { name: 'C' })).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'E' })).toBeInTheDocument()
 		expect(
 			screen.queryByRole('button', { name: 'B' }),
 		).not.toBeInTheDocument()

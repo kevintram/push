@@ -136,7 +136,6 @@ export function LibraryCollectionItem({
 		<TreeItem
 			ref={combinedDraggableRef}
 			collapsible={hasChildren}
-			label={collectionTitle}
 			selected={isActive}
 			xstyle={[
 				isDragging && styles.containerDragging,
@@ -144,7 +143,9 @@ export function LibraryCollectionItem({
 			]}
 		>
 			<TreeItemContent ref={droppableElementRef}>
-				<TreeItemCollapsibleTrigger />
+				<TreeItemCollapsibleTrigger
+					aria-label={`Toggle ${collectionTitle}`}
+				/>
 				<LibraryCollectionContextMenu
 					collectionId={_id}
 					collectionTitle={collectionTitle}

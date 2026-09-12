@@ -26,13 +26,11 @@ export function MoveCollectionItem({
 	const isSelected = selectedCollectionId === _id
 
 	return (
-		<TreeItem
-			collapsible={hasChildren}
-			label={collectionTitle}
-			selected={isSelected}
-		>
+		<TreeItem collapsible={hasChildren} selected={isSelected}>
 			<TreeItemContent>
-				<TreeItemCollapsibleTrigger />
+				<TreeItemCollapsibleTrigger
+					aria-label={`Toggle ${collectionTitle}`}
+				/>
 				<TreeItemLabel
 					aria-pressed={isSelected}
 					onClick={() => onSelect(_id)}

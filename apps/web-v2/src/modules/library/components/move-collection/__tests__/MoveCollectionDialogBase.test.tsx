@@ -132,9 +132,11 @@ describe('MoveCollectionDialogBase', () => {
 			initialDestination: 'collection-1' as Id<'collections'>,
 		})
 
-		await userEvent
-			.setup()
-			.click(screen.getByRole('button', { name: 'Spanish' }))
+		const user = userEvent.setup()
+		await user.click(
+			screen.getByRole('button', { name: 'Toggle Languages' }),
+		)
+		await user.click(screen.getByRole('button', { name: 'Spanish' }))
 
 		expect(screen.getByRole('button', { name: 'Move' })).toBeEnabled()
 	})

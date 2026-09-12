@@ -17,15 +17,15 @@ describe('Tree', () => {
 
 		const { container } = render(
 			<Tree aria-label='Collections'>
-				<TreeItem collapsible label='Parent'>
+				<TreeItem collapsible defaultOpen>
 					<TreeItemContent>
-						<TreeItemCollapsibleTrigger />
+						<TreeItemCollapsibleTrigger aria-label='Toggle Parent' />
 						<TreeItemLabel>Parent</TreeItemLabel>
 					</TreeItemContent>
 					<TreeItemChildren>
-						<TreeItem label='Child'>
+						<TreeItem>
 							<TreeItemContent>
-								<TreeItemCollapsibleTrigger />
+								<TreeItemCollapsibleTrigger aria-label='Toggle Child' />
 								<TreeItemLabel>Child</TreeItemLabel>
 							</TreeItemContent>
 						</TreeItem>
@@ -37,9 +37,7 @@ describe('Tree', () => {
 		expect(container.querySelectorAll('ul')).toHaveLength(2)
 		expect(container.querySelectorAll('li')).toHaveLength(2)
 
-		await user.click(
-			screen.getByRole('button', { name: 'Collapse Parent' }),
-		)
+		await user.click(screen.getByRole('button', { name: 'Toggle Parent' }))
 
 		expect(
 			screen.queryByRole('button', { name: 'Child' }),
@@ -50,9 +48,9 @@ describe('Tree', () => {
 	it('renders an alignment placeholder for a leaf item', () => {
 		const { container } = render(
 			<Tree>
-				<TreeItem label='Leaf'>
+				<TreeItem>
 					<TreeItemContent>
-						<TreeItemCollapsibleTrigger />
+						<TreeItemCollapsibleTrigger aria-label='Toggle Leaf' />
 						<TreeItemLabel>Leaf</TreeItemLabel>
 					</TreeItemContent>
 				</TreeItem>
@@ -79,17 +77,16 @@ describe('Tree', () => {
 				<TreeItem
 					collapsible
 					defaultOpen={false}
-					label='Uncontrolled'
 					onOpenChange={onUncontrolledOpenChange}
 				>
 					<TreeItemContent>
-						<TreeItemCollapsibleTrigger />
+						<TreeItemCollapsibleTrigger aria-label='Toggle Uncontrolled' />
 						<TreeItemLabel>Uncontrolled</TreeItemLabel>
 					</TreeItemContent>
 					<TreeItemChildren>
-						<TreeItem label='Child'>
+						<TreeItem>
 							<TreeItemContent>
-								<TreeItemCollapsibleTrigger />
+								<TreeItemCollapsibleTrigger aria-label='Toggle Child' />
 								<TreeItemLabel>Child</TreeItemLabel>
 							</TreeItemContent>
 						</TreeItem>
@@ -99,13 +96,13 @@ describe('Tree', () => {
 		)
 
 		expect(
-			screen.getByRole('button', { name: 'Expand Uncontrolled' }),
+			screen.getByRole('button', { name: 'Toggle Uncontrolled' }),
 		).toHaveAttribute('aria-expanded', 'false')
 		await user.click(
-			screen.getByRole('button', { name: 'Expand Uncontrolled' }),
+			screen.getByRole('button', { name: 'Toggle Uncontrolled' }),
 		)
 		expect(
-			screen.getByRole('button', { name: 'Collapse Uncontrolled' }),
+			screen.getByRole('button', { name: 'Toggle Uncontrolled' }),
 		).toHaveAttribute('aria-expanded', 'true')
 		expect(onUncontrolledOpenChange).toHaveBeenCalledWith(
 			true,
@@ -117,18 +114,17 @@ describe('Tree', () => {
 				<TreeItem
 					collapsible
 					key='controlled'
-					label='Controlled'
 					open={false}
 					onOpenChange={onOpenChange}
 				>
 					<TreeItemContent>
-						<TreeItemCollapsibleTrigger />
+						<TreeItemCollapsibleTrigger aria-label='Toggle Controlled' />
 						<TreeItemLabel>Controlled</TreeItemLabel>
 					</TreeItemContent>
 					<TreeItemChildren>
-						<TreeItem label='Child'>
+						<TreeItem>
 							<TreeItemContent>
-								<TreeItemCollapsibleTrigger />
+								<TreeItemCollapsibleTrigger aria-label='Toggle Child' />
 								<TreeItemLabel>Child</TreeItemLabel>
 							</TreeItemContent>
 						</TreeItem>
@@ -138,11 +134,11 @@ describe('Tree', () => {
 		)
 
 		await user.click(
-			screen.getByRole('button', { name: 'Expand Controlled' }),
+			screen.getByRole('button', { name: 'Toggle Controlled' }),
 		)
 		expect(onOpenChange).toHaveBeenCalledWith(true, expect.anything())
 		expect(
-			screen.getByRole('button', { name: 'Expand Controlled' }),
+			screen.getByRole('button', { name: 'Toggle Controlled' }),
 		).toHaveAttribute('aria-expanded', 'false')
 
 		rerender(
@@ -150,19 +146,18 @@ describe('Tree', () => {
 				<TreeItem
 					collapsible
 					key='controlled'
-					label='Controlled'
 					open
 					onOpenChange={onOpenChange}
 				>
 					<TreeItemContent>
-						<TreeItemCollapsibleTrigger />
+						<TreeItemCollapsibleTrigger aria-label='Toggle Controlled' />
 						<TreeItemLabel>Controlled</TreeItemLabel>
 					</TreeItemContent>
 				</TreeItem>
 			</Tree>,
 		)
 		expect(
-			screen.getByRole('button', { name: 'Collapse Controlled' }),
+			screen.getByRole('button', { name: 'Toggle Controlled' }),
 		).toHaveAttribute('aria-expanded', 'true')
 	})
 
@@ -171,15 +166,15 @@ describe('Tree', () => {
 
 		render(
 			<Tree>
-				<TreeItem collapsible label='Parent'>
+				<TreeItem collapsible defaultOpen>
 					<TreeItemContent>
 						<TreeItemCollapsibleTrigger aria-label='Toggle branch' />
 						<TreeItemLabel>Parent</TreeItemLabel>
 					</TreeItemContent>
 					<TreeItemChildren>
-						<TreeItem label='Child'>
+						<TreeItem>
 							<TreeItemContent>
-								<TreeItemCollapsibleTrigger />
+								<TreeItemCollapsibleTrigger aria-label='Toggle Child' />
 								<TreeItemLabel>Child</TreeItemLabel>
 							</TreeItemContent>
 						</TreeItem>
@@ -201,9 +196,9 @@ describe('Tree', () => {
 	it('supports a custom primary action through the label render prop', () => {
 		render(
 			<Tree>
-				<TreeItem label='Linked item' selected>
+				<TreeItem selected>
 					<TreeItemContent>
-						<TreeItemCollapsibleTrigger />
+						<TreeItemCollapsibleTrigger aria-label='Toggle Linked item' />
 						<TreeItemLabel render={<a href='/linked-item' />}>
 							Linked item
 						</TreeItemLabel>

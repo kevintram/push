@@ -2,7 +2,6 @@ import { createContext, use } from 'react'
 
 type TreeItemContextValue = {
 	collapsible: boolean
-	label: string
 	selected: boolean
 }
 

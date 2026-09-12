@@ -10,10 +10,12 @@ import {
 } from '../Collapsible'
 import { useTreeItemContext } from './TreeItemContext'
 
-export interface TreeItemCollapsibleTriggerProps extends Omit<
+export type TreeItemCollapsibleTriggerProps = Omit<
 	CollapsibleTriggerProps,
-	'children' | 'render' | 'xstyle'
-> {
+	'aria-label' | 'children' | 'render' | 'xstyle'
+> & {
+	/** A stable accessible name for the toggle button. */
+	'aria-label': string
 	xstyle?: stylex.StyleXStyles
 }
 
@@ -37,11 +39,10 @@ const styles = stylex.create({
 })
 
 export function TreeItemCollapsibleTrigger({
-	'aria-label': ariaLabel,
 	xstyle,
 	...props
 }: TreeItemCollapsibleTriggerProps) {
-	const { collapsible, label } = useTreeItemContext()
+	const { collapsible } = useTreeItemContext()
 
 	if (!collapsible) {
 		return (
@@ -59,9 +60,6 @@ export function TreeItemCollapsibleTrigger({
 			render={(renderProps, { open }) => (
 				<Button.Icon
 					{...renderProps}
-					aria-label={
-						ariaLabel ?? `${open ? 'Collapse' : 'Expand'} ${label}`
-					}
 					shape='round'
 					size='micro'
 					variant='ghost'

@@ -10,7 +10,6 @@ export interface TreeItemProps extends Omit<
 	'render' | 'xstyle'
 > {
 	collapsible?: boolean
-	label: string
 	selected?: boolean
 	xstyle?: stylex.StyleXStyles
 }
@@ -26,14 +25,13 @@ const styles = stylex.create({
 
 export function TreeItem({
 	collapsible = false,
-	defaultOpen = true,
-	label,
+	defaultOpen = false,
 	selected = false,
 	xstyle,
 	...props
 }: TreeItemProps) {
 	return (
-		<TreeItemContext value={{ collapsible, label, selected }}>
+		<TreeItemContext value={{ collapsible, selected }}>
 			<Collapsible
 				defaultOpen={defaultOpen}
 				render={<li />}

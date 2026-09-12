@@ -24,7 +24,9 @@ function collection(
 }
 
 describe('MoveCollectionItem', () => {
-	it('renders a collection and its children recursively', () => {
+	it('renders a collection and its children recursively', async () => {
+		const user = userEvent.setup()
+
 		render(
 			<ul>
 				<MoveCollectionItem
@@ -40,9 +42,15 @@ describe('MoveCollectionItem', () => {
 		expect(
 			screen.getByRole('button', { name: 'parent' }),
 		).toBeInTheDocument()
+
+		await user.click(screen.getByRole('button', { name: 'Toggle parent' }))
+
 		expect(
 			screen.getByRole('button', { name: 'child' }),
 		).toBeInTheDocument()
+
+		await user.click(screen.getByRole('button', { name: 'Toggle child' }))
+
 		expect(
 			screen.getByRole('button', { name: 'grandchild' }),
 		).toBeInTheDocument()
@@ -63,29 +71,31 @@ describe('MoveCollectionItem', () => {
 			</ul>,
 		)
 
-		await user.click(screen.getByRole('button', { name: 'Collapse child' }))
-		await user.click(
-			screen.getByRole('button', { name: 'Collapse parent' }),
-		)
+		await user.click(screen.getByRole('button', { name: 'Toggle parent' }))
+		await user.click(screen.getByRole('button', { name: 'Toggle child' }))
+		await user.click(screen.getByRole('button', { name: 'Toggle child' }))
+		await user.click(screen.getByRole('button', { name: 'Toggle parent' }))
 
 		expect(
 			screen.queryByRole('button', { name: 'child' }),
 		).not.toBeInTheDocument()
 
-		await user.click(screen.getByRole('button', { name: 'Expand parent' }))
+		await user.click(screen.getByRole('button', { name: 'Toggle parent' }))
 
 		expect(
 			screen.getByRole('button', { name: 'child' }),
 		).toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Expand child' }),
+			screen.getByRole('button', { name: 'Toggle child' }),
 		).toHaveAttribute('aria-expanded', 'false')
 		expect(
 			screen.queryByRole('button', { name: 'grandchild' }),
 		).not.toBeInTheDocument()
 	})
 
-	it('marks the selected collection with aria-pressed', () => {
+	it('marks the selected collection with aria-pressed', async () => {
+		const user = userEvent.setup()
+
 		render(
 			<ul>
 				<MoveCollectionItem
@@ -100,6 +110,9 @@ describe('MoveCollectionItem', () => {
 			'aria-pressed',
 			'false',
 		)
+
+		await user.click(screen.getByRole('button', { name: 'Toggle parent' }))
+
 		expect(screen.getByRole('button', { name: 'child' })).toHaveAttribute(
 			'aria-pressed',
 			'true',
@@ -108,6 +121,7 @@ describe('MoveCollectionItem', () => {
 
 	it('calls onSelect with the collection ID when clicked', async () => {
 		const onSelect = vi.fn()
+		const user = userEvent.setup()
 
 		render(
 			<ul>
@@ -119,9 +133,8 @@ describe('MoveCollectionItem', () => {
 			</ul>,
 		)
 
-		await userEvent
-			.setup()
-			.click(screen.getByRole('button', { name: 'child' }))
+		await user.click(screen.getByRole('button', { name: 'Toggle parent' }))
+		await user.click(screen.getByRole('button', { name: 'child' }))
 
 		expect(onSelect).toHaveBeenCalledWith('child')
 	})
