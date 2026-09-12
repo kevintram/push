@@ -54,7 +54,7 @@ type LibraryCollectionItemProps = CollectionWithChildren & {
 	 * Disables this collection and its descendants as drop targets. Parent links pass
 	 * this down while their subtree is being dragged to prevent cyclic reparenting.
 	 */
-	disableDrop?: boolean
+	dropDisabled?: boolean
 }
 
 export function LibraryCollectionItem({
@@ -62,7 +62,7 @@ export function LibraryCollectionItem({
 	title,
 	childCollections,
 	parentId,
-	disableDrop = false,
+	dropDisabled = false,
 }: LibraryCollectionItemProps) {
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -83,7 +83,7 @@ export function LibraryCollectionItem({
 	})
 	// Disable this subtree's drop targets when dragging
 	// (otherwise we could drop subtree root onto descendant)
-	const isDropDisabled = disableDrop || isDragging
+	const isDropDisabled = dropDisabled || isDragging
 
 	const { ref: droppableElementRef, isDropTarget } = useDroppable({
 		id: `${_id}`,
@@ -160,7 +160,7 @@ export function LibraryCollectionItem({
 					<LibraryCollectionItem
 						key={child._id}
 						{...child}
-						disableDrop={isDropDisabled}
+						dropDisabled={isDropDisabled}
 					/>
 				))}
 			</TreeItemChildren>

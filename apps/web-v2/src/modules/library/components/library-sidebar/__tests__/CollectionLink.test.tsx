@@ -173,7 +173,7 @@ describe('CollectionLink drag and drop', () => {
 				{...collection('parent', [
 					collection('child', [collection('grandchild')]),
 				])}
-				disableDrop
+				dropDisabled
 			/>,
 		)
 
