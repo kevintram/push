@@ -155,6 +155,19 @@ const disabledVariants = stylex.create({
 		},
 		color: buttonColors.primaryDisabledForeground,
 	},
+	ghost: {
+		borderColor: {
+			default: buttonColors.ghostDisabledBorder,
+			':hover': buttonColors.ghostDisabledBorder,
+			':active': buttonColors.ghostDisabledBorder,
+		},
+		backgroundColor: {
+			default: buttonColors.ghostDisabledBackground,
+			':hover': buttonColors.ghostDisabledBackground,
+			':active': buttonColors.ghostDisabledBackground,
+		},
+		color: buttonColors.ghostDisabledForeground,
+	},
 	generic: {
 		borderColor: {
 			default: buttonColors.disabledBorder,
@@ -244,7 +257,9 @@ function renderButton({
 		disabled &&
 			(variant === 'primary'
 				? disabledVariants.brand
-				: disabledVariants.generic),
+				: variant === 'ghost'
+					? disabledVariants.ghost
+					: disabledVariants.generic),
 		xstyle,
 	)
 
