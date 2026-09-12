@@ -296,7 +296,7 @@ export const notAuthenticatedPageColors = stylex.defineVars({
 
 export const librarySidebarColors = stylex.defineVars({
 	background: semanticColors.surfaceSecondary,
-	headerBackgroundDropTarget: semanticColors.surfaceTransparentActive,
+	containerBackgroundDropTarget: semanticColors.surfaceTransparentHover,
 })
 
 export const libraryCollectionItemColors = stylex.defineVars({

@@ -10,6 +10,10 @@ import {
 import { treeifyCollections } from '../../utils/treeifyCollections'
 import { LibrarySidebarContent } from './LibrarySidebarContent'
 
+/**
+ * Owns collection data and the drag-and-drop provider boundary. The content
+ * remains a child so its droppable hook runs beneath this provider.
+ */
 export function LibrarySidebar() {
 	const { data: collections } = useSuspenseQuery(collectionQueries.list())
 	const collectionTree = useMemo(
