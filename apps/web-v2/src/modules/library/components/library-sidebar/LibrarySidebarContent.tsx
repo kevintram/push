@@ -1,8 +1,9 @@
+import type { Id } from '@convex/_generated/dataModel'
 import { useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { useNavigate } from '@tanstack/react-router'
 import { ChevronsDownUp, Plus } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import { Button, Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
@@ -10,7 +11,10 @@ import { fontWeights, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { useCreateCollection } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
-import { LibraryCollectionItem } from './LibraryCollectionItem'
+import {
+	type CollectionOpenChangeHandler,
+	LibraryCollectionItem,
+} from './LibraryCollectionItem'
 
 const styles = stylex.create({
 	container: {
@@ -65,13 +69,36 @@ type LibrarySidebarContentProps = {
 export function LibrarySidebarContent({
 	collections,
 }: LibrarySidebarContentProps) {
+	// Accept stale IDs when the reactive tree changes. They are harmless, are
+	// cleared by collapse-all, and avoiding reconciliation keeps this state simple.
+	const [openCollectionIds, setOpenCollectionIds] = useState<
+		ReadonlySet<Id<'collections'>>
+	>(() => new Set())
 	const createCollection = useCreateCollection()
 	const navigate = useNavigate()
 
 	const { ref: libraryRootRef, isDropTarget: libraryRootIsDropTarget } =
 		useDroppable({ id: 'library-root' })
 
-	const handleCollapseAll = useCallback(() => {}, [])
+	const handleCollectionOpenChange: CollectionOpenChangeHandler = useCallback(
+		(collectionId, open) => {
+			setOpenCollectionIds(previousIds => {
+				if (previousIds.has(collectionId) === open) return previousIds
+
+				const nextIds = new Set(previousIds)
+				if (open) nextIds.add(collectionId)
+				else nextIds.delete(collectionId)
+				return nextIds
+			})
+		},
+		[],
+	)
+
+	const handleCollapseAll = useCallback(() => {
+		setOpenCollectionIds(previousIds =>
+			previousIds.size === 0 ? previousIds : new Set(),
+		)
+	}, [])
 
 	const handleCreateCollection = useCallback(() => {
 		createCollection.mutate(
@@ -104,6 +131,7 @@ export function LibrarySidebarContent({
 					<div>
 						<Button.Icon
 							aria-label='Collapse all collections'
+							disabled={openCollectionIds.size === 0}
 							shape='round'
 							size='micro'
 							variant='ghost'
@@ -132,6 +160,8 @@ export function LibrarySidebarContent({
 						<LibraryCollectionItem
 							key={collection._id}
 							{...collection}
+							openCollectionIds={openCollectionIds}
+							onCollectionOpenChange={handleCollectionOpenChange}
 						/>
 					))}
 				</Tree>

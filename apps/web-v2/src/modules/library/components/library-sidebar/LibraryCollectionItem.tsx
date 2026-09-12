@@ -1,3 +1,4 @@
+import type { Id } from '@convex/_generated/dataModel'
 import { PointerActivationConstraints, PointerSensor } from '@dnd-kit/dom'
 import { useDraggable, useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
@@ -50,6 +51,10 @@ const styles = stylex.create({
 })
 
 type LibraryCollectionItemProps = CollectionWithChildren & {
+	/** IDs of collections whose branches are currently open in the sidebar. */
+	openCollectionIds: ReadonlySet<Id<'collections'>>
+	/** Updates the controlled open state for this collection. */
+	onCollectionOpenChange: CollectionOpenChangeHandler
 	/**
 	 * Disables this collection and its descendants as drop targets. Parent links pass
 	 * this down while their subtree is being dragged to prevent cyclic reparenting.
@@ -57,11 +62,18 @@ type LibraryCollectionItemProps = CollectionWithChildren & {
 	dropDisabled?: boolean
 }
 
+export type CollectionOpenChangeHandler = (
+	collectionId: Id<'collections'>,
+	open: boolean,
+) => void
+
 export function LibraryCollectionItem({
 	_id,
 	title,
 	childCollections,
 	parentId,
+	openCollectionIds,
+	onCollectionOpenChange,
 	dropDisabled = false,
 }: LibraryCollectionItemProps) {
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
@@ -136,6 +148,8 @@ export function LibraryCollectionItem({
 		<TreeItem
 			ref={combinedDraggableRef}
 			collapsible={hasChildren}
+			open={openCollectionIds.has(_id)}
+			onOpenChange={open => onCollectionOpenChange(_id, open)}
 			selected={isActive}
 			xstyle={[
 				isDragging && styles.containerDragging,
@@ -172,6 +186,8 @@ export function LibraryCollectionItem({
 					<LibraryCollectionItem
 						key={child._id}
 						{...child}
+						openCollectionIds={openCollectionIds}
+						onCollectionOpenChange={onCollectionOpenChange}
 						dropDisabled={isDropDisabled}
 					/>
 				))}

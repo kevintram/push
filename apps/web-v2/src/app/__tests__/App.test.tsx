@@ -965,7 +965,11 @@ describe('v2 app setup', () => {
 		const parentToggle = await screen.findByRole('button', {
 			name: 'Toggle Languages',
 		})
+		const collapseAllButton = screen.getByRole('button', {
+			name: 'Collapse all collections',
+		})
 		expect(parentToggle).toHaveAttribute('aria-expanded', 'false')
+		expect(collapseAllButton).toBeDisabled()
 		expect(
 			screen.queryByRole('link', { name: 'TypeScript' }),
 		).not.toBeInTheDocument()
@@ -978,6 +982,34 @@ describe('v2 app setup', () => {
 		expect(
 			screen.getByRole('button', { name: 'Toggle Languages' }),
 		).toHaveAttribute('aria-expanded', 'true')
+		expect(collapseAllButton).toBeEnabled()
+
+		await user.click(
+			screen.getByRole('button', { name: 'Toggle TypeScript' }),
+		)
+		expect(
+			screen.getByRole('link', { name: 'Generics' }),
+		).toBeInTheDocument()
+
+		await user.click(collapseAllButton)
+
+		expect(
+			screen.getByRole('button', { name: 'Toggle Languages' }),
+		).toHaveAttribute('aria-expanded', 'false')
+		expect(collapseAllButton).toBeDisabled()
+		expect(
+			screen.queryByRole('link', { name: 'TypeScript' }),
+		).not.toBeInTheDocument()
+
+		await user.click(
+			screen.getByRole('button', { name: 'Toggle Languages' }),
+		)
+		expect(
+			screen.getByRole('button', { name: 'Toggle TypeScript' }),
+		).toHaveAttribute('aria-expanded', 'false')
+		expect(
+			screen.queryByRole('link', { name: 'Generics' }),
+		).not.toBeInTheDocument()
 
 		await user.click(
 			screen.getByRole('button', { name: 'Toggle Languages' }),
