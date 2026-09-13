@@ -35,7 +35,14 @@ describe('LibrarySidebarContent', () => {
 	})
 
 	it('keeps the header as the root drop target', () => {
-		render(<LibrarySidebarContent collections={[]} />)
+		render(
+			<LibrarySidebarContent
+				collections={[]}
+				openCollectionIds={new Set()}
+				onCollectionOpenChange={vi.fn()}
+				onCollapseAll={vi.fn()}
+			/>,
+		)
 
 		expect(mocks.useDroppable).toHaveBeenCalledWith({ id: 'library-root' })
 		expect(mocks.droppableRef).toHaveBeenCalledWith(
@@ -44,12 +51,26 @@ describe('LibrarySidebarContent', () => {
 	})
 
 	it('highlights the whole sidebar when the header is the drop target', () => {
-		const { rerender } = render(<LibrarySidebarContent collections={[]} />)
+		const { rerender } = render(
+			<LibrarySidebarContent
+				collections={[]}
+				openCollectionIds={new Set()}
+				onCollectionOpenChange={vi.fn()}
+				onCollapseAll={vi.fn()}
+			/>,
+		)
 		const sidebar = screen.getByRole('navigation').parentElement
 		const restingClassName = sidebar?.className
 
 		mocks.isDropTarget = true
-		rerender(<LibrarySidebarContent collections={[]} />)
+		rerender(
+			<LibrarySidebarContent
+				collections={[]}
+				openCollectionIds={new Set()}
+				onCollectionOpenChange={vi.fn()}
+				onCollapseAll={vi.fn()}
+			/>,
+		)
 
 		expect(sidebar?.className).not.toBe(restingClassName)
 	})

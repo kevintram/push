@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { useNavigate } from '@tanstack/react-router'
 import { ChevronsDownUp, Plus } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import { Button, Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
@@ -59,6 +59,9 @@ const styles = stylex.create({
 
 type LibrarySidebarContentProps = {
 	collections: ReadonlyArray<CollectionWithChildren>
+	openCollectionIds: ReadonlySet<Id<'collections'>>
+	onCollectionOpenChange: CollectionOpenChangeHandler
+	onCollapseAll: () => void
 }
 
 /**
@@ -68,37 +71,15 @@ type LibrarySidebarContentProps = {
  */
 export function LibrarySidebarContent({
 	collections,
+	openCollectionIds,
+	onCollectionOpenChange,
+	onCollapseAll,
 }: LibrarySidebarContentProps) {
-	// Accept stale IDs when the reactive tree changes. They are harmless, are
-	// cleared by collapse-all, and avoiding reconciliation keeps this state simple.
-	const [openCollectionIds, setOpenCollectionIds] = useState<
-		ReadonlySet<Id<'collections'>>
-	>(() => new Set())
 	const createCollection = useCreateCollection()
 	const navigate = useNavigate()
 
 	const { ref: libraryRootRef, isDropTarget: libraryRootIsDropTarget } =
 		useDroppable({ id: 'library-root' })
-
-	const handleCollectionOpenChange: CollectionOpenChangeHandler = useCallback(
-		(collectionId, open) => {
-			setOpenCollectionIds(previousIds => {
-				if (previousIds.has(collectionId) === open) return previousIds
-
-				const nextIds = new Set(previousIds)
-				if (open) nextIds.add(collectionId)
-				else nextIds.delete(collectionId)
-				return nextIds
-			})
-		},
-		[],
-	)
-
-	const handleCollapseAll = useCallback(() => {
-		setOpenCollectionIds(previousIds =>
-			previousIds.size === 0 ? previousIds : new Set(),
-		)
-	}, [])
 
 	const handleCreateCollection = useCallback(() => {
 		createCollection.mutate(
@@ -135,7 +116,7 @@ export function LibrarySidebarContent({
 							shape='round'
 							size='micro'
 							variant='ghost'
-							onClick={handleCollapseAll}
+							onClick={onCollapseAll}
 						>
 							<ChevronsDownUp
 								aria-hidden='true'
@@ -161,7 +142,7 @@ export function LibrarySidebarContent({
 							key={collection._id}
 							{...collection}
 							openCollectionIds={openCollectionIds}
-							onCollectionOpenChange={handleCollectionOpenChange}
+							onCollectionOpenChange={onCollectionOpenChange}
 						/>
 					))}
 				</Tree>
