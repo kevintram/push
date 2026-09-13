@@ -34,7 +34,6 @@ export function MoveCollectionDialog({
 	return (
 		<MoveCollectionDialogBase
 			allowLibraryRoot
-			description='Subcollections and cards will move with this collection.'
 			excludeCollectionId={collectionId}
 			initialDestination={parentId ?? null}
 			isPending={updateCollection.isPending}

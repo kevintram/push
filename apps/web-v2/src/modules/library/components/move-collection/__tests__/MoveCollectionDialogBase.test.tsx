@@ -173,14 +173,6 @@ describe('MoveCollectionDialogBase', () => {
 		expect(onOpenChange).not.toHaveBeenCalled()
 	})
 
-	it('renders a description when provided', () => {
-		renderDialog({ description: 'Items will move together.' })
-
-		expect(
-			screen.getByText('Items will move together.'),
-		).toBeInTheDocument()
-	})
-
 	it('calls onMove with null when Library root is selected', async () => {
 		const onMove = vi.fn()
 		render(

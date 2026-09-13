@@ -156,20 +156,4 @@ describe('MoveCollectionDialog', () => {
 
 		expect(onOpenChange).toHaveBeenCalledWith(false)
 	})
-
-	it('renders a description about moving subcollections', () => {
-		render(
-			<MoveCollectionDialog
-				onOpenChange={vi.fn()}
-				parentId={languages.parentId}
-				collectionId={languages._id}
-			/>,
-		)
-
-		expect(
-			screen.getByText(
-				'Subcollections and cards will move with this collection.',
-			),
-		).toBeInTheDocument()
-	})
 })

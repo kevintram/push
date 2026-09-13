@@ -7,7 +7,6 @@ import {
 	Button,
 	Dialog,
 	DialogContent,
-	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -41,7 +40,6 @@ const styles = stylex.create({
 })
 
 type CommonMoveCollectionDialogBaseProps = {
-	description?: string
 	excludeCollectionId?: Id<'collections'>
 	isPending: boolean
 	onOpenChange: (open: boolean) => void
@@ -66,7 +64,6 @@ type MoveCollectionDialogBaseProps = CommonMoveCollectionDialogBaseProps &
 
 export function MoveCollectionDialogBase(props: MoveCollectionDialogBaseProps) {
 	const {
-		description,
 		excludeCollectionId,
 		initialDestination,
 		isPending,
@@ -104,9 +101,6 @@ export function MoveCollectionDialogBase(props: MoveCollectionDialogBaseProps) {
 			<DialogContent>
 				<DialogHeader xstyle={styles.header}>
 					<DialogTitle>{title}</DialogTitle>
-					{description ? (
-						<DialogDescription>{description}</DialogDescription>
-					) : null}
 				</DialogHeader>
 
 				<nav
