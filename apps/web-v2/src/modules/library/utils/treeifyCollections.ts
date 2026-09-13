@@ -5,11 +5,19 @@ import type {
 
 type CollectionId = Collection['_id']
 
+export type CollectionTree = {
+	/** Top-level collections, in input order, with nested `childCollections`. */
+	roots: Array<CollectionWithChildren>
+	/** Every collection by id, including nested ones. Same node objects as in `roots`. */
+	nodesById: ReadonlyMap<CollectionId, CollectionWithChildren>
+}
+
 // treeifyCollections converts a flat, parent-linked collection list into an ordered
-// forest of collections with recursively nested children.
+// forest of collections with recursively nested children, along with a lookup map of
+// every collection by id.
 export function treeifyCollections(
 	collections: ReadonlyArray<Collection>,
-): Array<CollectionWithChildren> {
+): CollectionTree {
 	// Build the complete lookup before linking any collections. This lets children
 	// appear before their parents in the input while preserving the input order.
 	const nodesById = new Map<CollectionId, CollectionWithChildren>(
@@ -45,7 +53,7 @@ export function treeifyCollections(
 		}
 	}
 
-	return roots
+	return { roots, nodesById }
 }
 
 // findCyclicIds returns the ids of collections that lie on a parent cycle, including

@@ -83,7 +83,7 @@ export function MoveCollectionDialogBase(props: MoveCollectionDialogBaseProps) {
 	} = useQuery(collectionQueries.list())
 
 	const collectionTree = useMemo(
-		() => treeifyCollections(collections ?? []),
+		() => treeifyCollections(collections ?? []).roots,
 		[collections],
 	)
 	const canMove = selectedDestination !== initialDestination
