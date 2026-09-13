@@ -9,6 +9,8 @@ import { reviewQueueColors } from '~/styles/colors/components.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
+import { REVIEW_QUEUE_SIDEBAR_ID } from './ReviewQueueToolbar'
+
 type ReviewQueueSidebarProps = {
 	cards: ReadonlyArray<Card>
 	currentCardId: Card['_id'] | null
@@ -77,7 +79,11 @@ export function ReviewQueueSidebar({
 	onFilterChange,
 }: ReviewQueueSidebarProps) {
 	return (
-		<aside aria-label={`${title} cards`} {...stylex.props(styles.panel)}>
+		<aside
+			id={REVIEW_QUEUE_SIDEBAR_ID}
+			aria-label={`${title} cards`}
+			{...stylex.props(styles.panel)}
+		>
 			<div {...stylex.props(styles.header)}>
 				<h1 {...stylex.props(styles.titleRow)}>
 					<span>{title}</span>

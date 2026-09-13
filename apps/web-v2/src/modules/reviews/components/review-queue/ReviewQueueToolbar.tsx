@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { formatForDisplay } from '@tanstack/react-hotkeys'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, Menu } from 'lucide-react'
 
 import {
 	Button,
@@ -19,9 +19,13 @@ import {
 type ReviewQueueToolbarProps = {
 	index: number
 	cardCount: number
+	queueSidebarOpen: boolean
 	onPrevious: () => void
 	onNext: () => void
+	onQueueSidebarToggle: () => void
 }
+
+export const REVIEW_QUEUE_SIDEBAR_ID = 'review-queue-sidebar'
 
 const styles = stylex.create({
 	header: {
@@ -40,8 +44,10 @@ const styles = stylex.create({
 export function ReviewQueueToolbar({
 	index,
 	cardCount,
+	queueSidebarOpen,
 	onPrevious,
 	onNext,
+	onQueueSidebarToggle,
 }: ReviewQueueToolbarProps) {
 	return (
 		<header {...stylex.props(styles.header)}>
@@ -86,6 +92,30 @@ export function ReviewQueueToolbar({
 						<Kbd>
 							{formatForDisplay(REVIEW_QUEUE_PREVIOUS_HOTKEY)}
 						</Kbd>
+					</TooltipContent>
+				</Tooltip>
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button.Icon
+								aria-label={
+									queueSidebarOpen
+										? 'Hide queue'
+										: 'Show queue'
+								}
+								aria-expanded={queueSidebarOpen}
+								aria-controls={REVIEW_QUEUE_SIDEBAR_ID}
+								shape='round'
+								variant='secondary'
+								size='small'
+								onClick={onQueueSidebarToggle}
+							>
+								<Menu size={iconSizes.md} />
+							</Button.Icon>
+						}
+					/>
+					<TooltipContent>
+						{queueSidebarOpen ? 'Hide queue' : 'Show queue'}
 					</TooltipContent>
 				</Tooltip>
 			</div>

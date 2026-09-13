@@ -93,6 +93,8 @@ export function ReviewQueueWorkspace({
 	today,
 }: ReviewQueueWorkspaceProps) {
 	const [filter, setFilter] = useState<CardTypeFilter>('all')
+	const [queueSidebarOpen, setQueueSidebarOpen] = useState(true)
+
 	const visibleCards = filterCardsByType(cards, filter)
 	const {
 		index,
@@ -103,6 +105,10 @@ export function ReviewQueueWorkspace({
 		goNext,
 		selectCard,
 	} = useReviewQueueSelection(visibleCards)
+
+	const onQueueSidebarToggle = () => {
+		setQueueSidebarOpen(currOpen => !currOpen)
+	}
 
 	return (
 		<section
@@ -123,8 +129,10 @@ export function ReviewQueueWorkspace({
 						<ReviewQueueToolbar
 							index={index}
 							cardCount={visibleCards.length}
+							queueSidebarOpen={queueSidebarOpen}
 							onPrevious={goPrevious}
 							onNext={goNext}
+							onQueueSidebarToggle={onQueueSidebarToggle}
 						/>
 					</div>
 					<section
@@ -160,15 +168,17 @@ export function ReviewQueueWorkspace({
 						)}
 					</section>
 				</div>
-				<ReviewQueueSidebar
-					cards={visibleCards}
-					title={title}
-					today={today}
-					currentCardId={currentCard?._id ?? null}
-					onCardClick={selectCard}
-					filter={filter}
-					onFilterChange={setFilter}
-				/>
+				{queueSidebarOpen && (
+					<ReviewQueueSidebar
+						cards={visibleCards}
+						title={title}
+						today={today}
+						currentCardId={currentCard?._id ?? null}
+						onCardClick={selectCard}
+						filter={filter}
+						onFilterChange={setFilter}
+					/>
+				)}
 			</div>
 		</section>
 	)
