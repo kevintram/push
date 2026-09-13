@@ -26,9 +26,9 @@ const KEY_SEPARATOR = '\0'
  * branches are open. Suspends until the collection list has loaded.
  *
  * The selected collection is the one the current route points at, if any.
- * When it changes, its ancestors are opened so it is visible. The selected
- * collection itself stays as the user left it. A manual collapse-all is not
- * undone by refetches of the same selection.
+ * When it changes, it and its ancestors are opened, so it is visible and its
+ * children are revealed. A manual collapse-all is not undone by refetches of
+ * the same selection.
  */
 export function useCollectionTree(): CollectionTree {
 	const { data: collections } = useSuspenseQuery(collectionQueries.list())
@@ -72,22 +72,22 @@ export function useCollectionTree(): CollectionTree {
 		selectedCollectionId === undefined
 			? undefined
 			: tree.nodesById.get(selectedCollectionId)
+	// Ancestors first, root first, then the selection itself, so the key both
+	// identifies the selection and lists every branch to open, outside-in.
 	const selectionKey = selected
-		? [selected._id, ...selected.path].join(KEY_SEPARATOR)
+		? [...selected.path, selected._id].join(KEY_SEPARATOR)
 		: null
 
 	useEffect(() => {
 		if (selectionKey === null) return
 		// Round-trip through the key so the effect depends only on the key.
-		// Root collections yield [] here because the key is just the selected ID.
-		const [, ...ancestorIds] = selectionKey.split(
+		const idsToOpen = selectionKey.split(
 			KEY_SEPARATOR,
 		) as Array<CollectionId>
-		if (ancestorIds.length === 0) return
 
 		setOpenCollectionIds(previousIds => {
-			if (ancestorIds.every(id => previousIds.has(id))) return previousIds
-			return new Set([...previousIds, ...ancestorIds])
+			if (idsToOpen.every(id => previousIds.has(id))) return previousIds
+			return new Set([...previousIds, ...idsToOpen])
 		})
 	}, [selectionKey])
 
