@@ -136,7 +136,7 @@ describe('useCollectionTree', () => {
 		expect(result.current.openCollectionIds.size).toBe(0)
 	})
 
-	it("opens the selected collection's ancestors, not the collection itself", () => {
+	it('opens the selected collection and its ancestors', () => {
 		const collections = [
 			makeCollection('root'),
 			makeCollection('parent', ['root'], 'root'),
@@ -150,6 +150,7 @@ describe('useCollectionTree', () => {
 		expect([...result.current.openCollectionIds]).toEqual([
 			'root',
 			'parent',
+			'child',
 		])
 	})
 
@@ -163,7 +164,7 @@ describe('useCollectionTree', () => {
 		selectCollection('child')
 		const { result, rerender } = renderHook(() => useCollectionTree())
 
-		expect([...result.current.openCollectionIds]).toEqual(['root'])
+		expect([...result.current.openCollectionIds]).toEqual(['root', 'child'])
 
 		act(() => {
 			result.current.collapseAll()
@@ -199,17 +200,20 @@ describe('useCollectionTree', () => {
 		selectCollection('second-child')
 		rerender()
 
-		expect([...result.current.openCollectionIds]).toEqual(['root'])
+		expect([...result.current.openCollectionIds]).toEqual([
+			'root',
+			'second-child',
+		])
 	})
 
-	it('opens nothing and does not throw for a root collection', () => {
+	it('opens a selected root collection, which has no ancestors', () => {
 		const collections = [makeCollection('root')]
 
 		selectCollection('root')
 		loadCollections(collections)
 		const { result } = renderHook(() => useCollectionTree())
 
-		expect(result.current.openCollectionIds.size).toBe(0)
+		expect([...result.current.openCollectionIds]).toEqual(['root'])
 	})
 
 	it('opens nothing when the route has no collection', () => {
