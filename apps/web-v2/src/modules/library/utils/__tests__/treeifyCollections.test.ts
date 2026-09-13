@@ -25,7 +25,7 @@ describe('treeifyCollections', () => {
 			collection('second-root'),
 		]
 
-		expect(treeifyCollections(collections)).toEqual([
+		expect(treeifyCollections(collections).roots).toEqual([
 			{
 				...collections[0],
 				childCollections: [
@@ -47,11 +47,34 @@ describe('treeifyCollections', () => {
 		])
 	})
 
+	it('maps every collection by id, reusing the same node objects as the tree', () => {
+		const collections = [
+			collection('root'),
+			collection('child', 'root'),
+			collection('grandchild', 'child'),
+			collection('second-root'),
+		]
+
+		const { roots, nodesById } = treeifyCollections(collections)
+
+		expect(nodesById.size).toBe(collections.length)
+
+		const root = roots[0]
+		const child = root?.childCollections[0]
+		const grandchild = child?.childCollections[0]
+		const secondRoot = roots[1]
+
+		expect(nodesById.get(collections[0]!._id)).toBe(root)
+		expect(nodesById.get(collections[1]!._id)).toBe(child)
+		expect(nodesById.get(collections[2]!._id)).toBe(grandchild)
+		expect(nodesById.get(collections[3]!._id)).toBe(secondRoot)
+	})
+
 	it('links children that appear before their parents', () => {
 		const child = collection('child', 'root')
 		const root = collection('root')
 
-		expect(treeifyCollections([child, root])).toEqual([
+		expect(treeifyCollections([child, root]).roots).toEqual([
 			{ ...root, childCollections: [{ ...child, childCollections: [] }] },
 		])
 	})
@@ -59,7 +82,7 @@ describe('treeifyCollections', () => {
 	it('keeps collections with missing parents at the root', () => {
 		const orphan = collection('orphan', 'missing')
 
-		expect(treeifyCollections([orphan])).toEqual([
+		expect(treeifyCollections([orphan]).roots).toEqual([
 			{ ...orphan, childCollections: [] },
 		])
 	})
@@ -67,7 +90,7 @@ describe('treeifyCollections', () => {
 	it('breaks self-referencing parents', () => {
 		const selfParent = collection('self', 'self')
 
-		expect(treeifyCollections([selfParent])).toEqual([
+		expect(treeifyCollections([selfParent]).roots).toEqual([
 			{ ...selfParent, childCollections: [] },
 		])
 	})
@@ -76,7 +99,7 @@ describe('treeifyCollections', () => {
 		const first = collection('first', 'second')
 		const second = collection('second', 'first')
 
-		expect(treeifyCollections([first, second])).toEqual([
+		expect(treeifyCollections([first, second]).roots).toEqual([
 			{ ...first, childCollections: [] },
 			{ ...second, childCollections: [] },
 		])
@@ -87,7 +110,7 @@ describe('treeifyCollections', () => {
 		const second = collection('second', 'first')
 		const descendant = collection('descendant', 'first')
 
-		expect(treeifyCollections([first, second, descendant])).toEqual([
+		expect(treeifyCollections([first, second, descendant]).roots).toEqual([
 			{
 				...first,
 				childCollections: [{ ...descendant, childCollections: [] }],

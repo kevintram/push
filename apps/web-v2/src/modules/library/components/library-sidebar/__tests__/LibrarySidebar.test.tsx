@@ -34,6 +34,10 @@ vi.mock('@tanstack/react-query', () => ({
 	useSuspenseQuery: () => ({ data: [] }),
 }))
 
+vi.mock('@tanstack/react-router', () => ({
+	useParams: () => ({ collectionId: undefined }),
+}))
+
 vi.mock('../../../api/collectionQueries', () => ({
 	collectionQueries: { list: () => ({}) },
 	useUpdateCollection: () => ({ mutate: mocks.updateCollection }),

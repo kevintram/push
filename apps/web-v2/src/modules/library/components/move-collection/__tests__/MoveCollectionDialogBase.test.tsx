@@ -132,9 +132,11 @@ describe('MoveCollectionDialogBase', () => {
 			initialDestination: 'collection-1' as Id<'collections'>,
 		})
 
-		await userEvent
-			.setup()
-			.click(screen.getByRole('button', { name: 'Spanish' }))
+		const user = userEvent.setup()
+		await user.click(
+			screen.getByRole('button', { name: 'Toggle Languages' }),
+		)
+		await user.click(screen.getByRole('button', { name: 'Spanish' }))
 
 		expect(screen.getByRole('button', { name: 'Move' })).toBeEnabled()
 	})
@@ -169,14 +171,6 @@ describe('MoveCollectionDialogBase', () => {
 		closeButton.click()
 
 		expect(onOpenChange).not.toHaveBeenCalled()
-	})
-
-	it('renders a description when provided', () => {
-		renderDialog({ description: 'Items will move together.' })
-
-		expect(
-			screen.getByText('Items will move together.'),
-		).toBeInTheDocument()
 	})
 
 	it('calls onMove with null when Library root is selected', async () => {

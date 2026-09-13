@@ -963,29 +963,74 @@ describe('v2 app setup', () => {
 		})
 
 		const parentToggle = await screen.findByRole('button', {
-			name: 'Collapse Languages',
+			name: 'Toggle Languages',
 		})
-		expect(parentToggle).toHaveAttribute('aria-expanded', 'true')
+		const collapseAllButton = screen.getByRole('button', {
+			name: 'Collapse all collections',
+		})
+		expect(parentToggle).toHaveAttribute('aria-expanded', 'false')
+		expect(collapseAllButton).toBeDisabled()
 		expect(
-			screen.getByRole('link', { name: 'TypeScript' }),
-		).toBeInTheDocument()
+			screen.queryByRole('link', { name: 'TypeScript' }),
+		).not.toBeInTheDocument()
 
 		await user.click(parentToggle)
 
 		expect(
-			screen.queryByRole('link', { name: 'TypeScript' }),
-		).not.toBeInTheDocument()
+			screen.getByRole('link', { name: 'TypeScript' }),
+		).toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Expand Languages' }),
-		).toHaveAttribute('aria-expanded', 'false')
+			screen.getByRole('button', { name: 'Toggle Languages' }),
+		).toHaveAttribute('aria-expanded', 'true')
+		expect(collapseAllButton).toBeEnabled()
 
 		await user.click(
-			screen.getByRole('button', { name: 'Expand Languages' }),
+			screen.getByRole('button', { name: 'Toggle TypeScript' }),
+		)
+		expect(
+			screen.getByRole('link', { name: 'Generics' }),
+		).toBeInTheDocument()
+
+		await user.click(collapseAllButton)
+
+		expect(
+			screen.getByRole('button', { name: 'Toggle Languages' }),
+		).toHaveAttribute('aria-expanded', 'false')
+		expect(collapseAllButton).toBeDisabled()
+		expect(
+			screen.queryByRole('link', { name: 'TypeScript' }),
+		).not.toBeInTheDocument()
+
+		await user.click(
+			screen.getByRole('button', { name: 'Toggle Languages' }),
+		)
+		expect(
+			screen.getByRole('button', { name: 'Toggle TypeScript' }),
+		).toHaveAttribute('aria-expanded', 'false')
+		expect(
+			screen.queryByRole('link', { name: 'Generics' }),
+		).not.toBeInTheDocument()
+
+		await user.click(
+			screen.getByRole('button', { name: 'Toggle Languages' }),
+		)
+
+		expect(
+			screen.queryByRole('link', { name: 'TypeScript' }),
+		).not.toBeInTheDocument()
+
+		await user.click(
+			screen.getByRole('button', { name: 'Toggle Languages' }),
 		)
 
 		expect(
 			screen.getByRole('link', { name: 'TypeScript' }),
 		).toBeInTheDocument()
+
+		await user.click(
+			screen.getByRole('button', { name: 'Toggle TypeScript' }),
+		)
+
 		expect(
 			screen.getByRole('link', { name: 'Generics' }),
 		).toBeInTheDocument()
@@ -999,7 +1044,7 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 		expect(
 			screen.queryByRole('button', {
-				name: 'Collapse Learning TypeScript',
+				name: 'Toggle Learning TypeScript',
 			}),
 		).not.toBeInTheDocument()
 	})

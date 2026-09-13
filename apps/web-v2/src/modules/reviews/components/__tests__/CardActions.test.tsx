@@ -241,6 +241,9 @@ describe('CardActions', () => {
 		const moveButton = screen.getByRole('button', { name: 'Move' })
 		expect(moveButton).toBeDisabled()
 
+		await user.click(
+			screen.getByRole('button', { name: 'Toggle Languages' }),
+		)
 		await user.click(screen.getByRole('button', { name: 'Spanish' }))
 		expect(moveButton).toBeEnabled()
 		await user.click(moveButton)

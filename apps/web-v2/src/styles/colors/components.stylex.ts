@@ -105,6 +105,10 @@ export const buttonColors = stylex.defineVars({
 	primaryDisabledBackground: semanticColors.surfaceInteractivePrimaryDisabled,
 	primaryDisabledForeground: semanticColors.textOnBrandDisabled,
 
+	ghostDisabledBorder: semanticColors.surfaceTransparent,
+	ghostDisabledBackground: semanticColors.surfaceTransparent,
+	ghostDisabledForeground: semanticColors.textInteractiveDisabled,
+
 	disabledBorder: semanticColors.borderDisabled,
 	disabledBackground: semanticColors.surfaceInteractiveSecondaryDisabled,
 	disabledForeground: semanticColors.textDisabled,
@@ -296,7 +300,7 @@ export const notAuthenticatedPageColors = stylex.defineVars({
 
 export const librarySidebarColors = stylex.defineVars({
 	background: semanticColors.surfaceSecondary,
-	headerBackgroundDropTarget: semanticColors.surfaceTransparentActive,
+	containerBackgroundDropTarget: semanticColors.surfaceTransparentHover,
 })
 
 export const libraryCollectionItemColors = stylex.defineVars({

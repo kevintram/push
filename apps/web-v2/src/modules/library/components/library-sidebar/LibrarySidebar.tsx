@@ -1,21 +1,21 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { DragDropProvider } from '@dnd-kit/react'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
 
-import {
-	collectionQueries,
-	useUpdateCollection,
-} from '../../api/collectionQueries'
-import { treeifyCollections } from '../../utils/treeifyCollections'
+import { useUpdateCollection } from '../../api/collectionQueries'
 import { LibrarySidebarContent } from './LibrarySidebarContent'
+import { useCollectionTree } from './useCollectionTree'
 
+/**
+ * Owns the library tree and the drag-and-drop provider boundary. The content
+ * remains a child so its droppable hook runs beneath this provider.
+ */
 export function LibrarySidebar() {
-	const { data: collections } = useSuspenseQuery(collectionQueries.list())
-	const collectionTree = useMemo(
-		() => treeifyCollections(collections),
-		[collections],
-	)
+	const {
+		rootCollections,
+		openCollectionIds,
+		setCollectionOpen,
+		collapseAll,
+	} = useCollectionTree()
 	const updateCollection = useUpdateCollection()
 
 	return (
@@ -46,7 +46,12 @@ export function LibrarySidebar() {
 				}
 			}}
 		>
-			<LibrarySidebarContent collections={collectionTree} />
+			<LibrarySidebarContent
+				collections={rootCollections}
+				openCollectionIds={openCollectionIds}
+				onCollectionOpenChange={setCollectionOpen}
+				onCollapseAll={collapseAll}
+			/>
 		</DragDropProvider>
 	)
 }

@@ -40,13 +40,9 @@ export function MoveCollectionTree({
 	return (
 		<Tree>
 			{allowLibraryRoot ? (
-				<TreeItem
-					expandable={false}
-					label='Library'
-					selected={isLibrarySelected}
-				>
+				<TreeItem selected={isLibrarySelected}>
 					<TreeItemContent>
-						<TreeItemCollapsibleTrigger />
+						<TreeItemCollapsibleTrigger aria-label='Toggle Library' />
 						<TreeItemLabel
 							aria-pressed={isLibrarySelected}
 							onClick={() => onSelect(null)}

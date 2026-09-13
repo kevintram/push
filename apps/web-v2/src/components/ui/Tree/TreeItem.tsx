@@ -1,5 +1,4 @@
 import * as stylex from '@stylexjs/stylex'
-import { useState } from 'react'
 
 import { radii, spacing } from '~/styles/tokens.stylex'
 
@@ -8,13 +7,9 @@ import { TreeItemContext } from './TreeItemContext'
 
 export interface TreeItemProps extends Omit<
 	CollapsibleProps,
-	'defaultOpen' | 'onOpenChange' | 'open' | 'render' | 'xstyle'
+	'render' | 'xstyle'
 > {
-	defaultExpanded?: boolean
-	expandable?: boolean
-	expanded?: boolean
-	label: string
-	onExpandedChange?: CollapsibleProps['onOpenChange']
+	collapsible?: boolean
 	selected?: boolean
 	xstyle?: stylex.StyleXStyles
 }
@@ -29,34 +24,16 @@ const styles = stylex.create({
 })
 
 export function TreeItem({
-	defaultExpanded = true,
-	expandable = false,
-	expanded: controlledExpanded,
-	label,
-	onExpandedChange,
+	collapsible = false,
+	defaultOpen = false,
 	selected = false,
 	xstyle,
 	...props
 }: TreeItemProps) {
-	const [uncontrolledExpanded, setUncontrolledExpanded] =
-		useState(defaultExpanded)
-	const expanded = expandable && (controlledExpanded ?? uncontrolledExpanded)
-
-	const handleExpandedChange: NonNullable<
-		CollapsibleProps['onOpenChange']
-	> = (nextExpanded, eventDetails) => {
-		if (controlledExpanded === undefined) {
-			setUncontrolledExpanded(nextExpanded)
-		}
-
-		onExpandedChange?.(nextExpanded, eventDetails)
-	}
-
 	return (
-		<TreeItemContext value={{ expandable, expanded, label, selected }}>
+		<TreeItemContext value={{ collapsible, selected }}>
 			<Collapsible
-				open={expanded}
-				onOpenChange={handleExpandedChange}
+				defaultOpen={defaultOpen}
 				render={<li />}
 				xstyle={[styles.root, xstyle]}
 				data-slot='tree-item'
