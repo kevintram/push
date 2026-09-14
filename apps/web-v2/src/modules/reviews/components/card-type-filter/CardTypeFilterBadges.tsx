@@ -11,6 +11,7 @@ const styles = stylex.create({
 	group: {
 		gap: spacing.sm,
 		display: 'flex',
+		flexWrap: 'wrap',
 	},
 	radio: {
 		cursor: 'pointer',

@@ -30,7 +30,8 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 0,
-		inlineSize: '360px',
+		// TODO: add mobile drawer
+		inlineSize: 'clamp(200px, 30%, 320px)',
 		minBlockSize: 0,
 	},
 	header: {

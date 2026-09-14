@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { QueryErrorResetBoundary } from '@tanstack/react-query'
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
@@ -28,6 +28,16 @@ type ReviewQueueWorkspaceProps = {
 	cards: ReadonlyArray<Card>
 	title: string
 	today: DateString
+}
+
+const TABLET_VIEWPORT_QUERY = '(min-width: 768px)'
+
+function isTabletViewport() {
+	return (
+		typeof window === 'undefined' ||
+		typeof window.matchMedia !== 'function' ||
+		window.matchMedia(TABLET_VIEWPORT_QUERY).matches
+	)
 }
 
 const styles = stylex.create({
@@ -93,7 +103,29 @@ export function ReviewQueueWorkspace({
 	today,
 }: ReviewQueueWorkspaceProps) {
 	const [filter, setFilter] = useState<CardTypeFilter>('all')
-	const [queueSidebarOpen, setQueueSidebarOpen] = useState(true)
+	const [queueSidebarOpen, setQueueSidebarOpen] = useState(isTabletViewport)
+
+	useEffect(() => {
+		if (typeof window.matchMedia !== 'function') {
+			return
+		}
+
+		const tabletViewport = window.matchMedia(TABLET_VIEWPORT_QUERY)
+		const closeSidebarOnSmallViewport = (event: MediaQueryListEvent) => {
+			if (!event.matches) {
+				setQueueSidebarOpen(false)
+			}
+		}
+
+		tabletViewport.addEventListener('change', closeSidebarOnSmallViewport)
+
+		return () => {
+			tabletViewport.removeEventListener(
+				'change',
+				closeSidebarOnSmallViewport,
+			)
+		}
+	}, [])
 
 	const visibleCards = filterCardsByType(cards, filter)
 	const {
