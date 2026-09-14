@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { TooltipProvider } from '~/components/ui'
 
@@ -108,6 +108,27 @@ describe('CardMetadata', () => {
 
 		expect(screen.getByText('Unreviewed')).toBeInTheDocument()
 		expect(document.querySelector('svg')).not.toBeInTheDocument()
+	})
+
+	it('forwards metadata clicks when requested', async () => {
+		const user = userEvent.setup()
+		const onClick = vi.fn()
+
+		render(
+			<CardMetadata
+				lastReviewedAt='2026-08-01'
+				lastRating='good'
+				nextDueAt='2026-08-10'
+				retrievability={0.85}
+				stability={10}
+				today='2026-08-09'
+				onClick={onClick}
+			/>,
+		)
+
+		await user.click(screen.getByText('Due Tomorrow'))
+
+		expect(onClick).toHaveBeenCalledOnce()
 	})
 
 	it('shows the durability icon and explanation in a tooltip', async () => {

@@ -146,7 +146,7 @@ export function CardItem({
 				) : null}
 
 				<div {...stylex.props(styles.footer)}>
-					<CardMetadata {...srs} today={today} />
+					<CardMetadata {...srs} today={today} onClick={onClick} />
 					<CardActions card={card} xstyle={styles.raised} />
 				</div>
 			</div>

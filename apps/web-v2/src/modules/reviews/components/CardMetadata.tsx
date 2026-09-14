@@ -28,6 +28,9 @@ const styles = stylex.create({
 		flexShrink: 1,
 		minWidth: 0,
 	},
+	clickable: {
+		cursor: 'pointer',
+	},
 	container: {
 		gap: {
 			default: spacing.xl,
@@ -77,10 +80,25 @@ export function CardMetadata({
 	nextDueAt,
 	stability,
 	today,
-}: CardSrsState & { today: DateString }) {
+	onClick,
+}: CardSrsState & {
+	today: DateString
+	/**
+	 * Tooltip triggers are raised above CardItem's overlay button so they can
+	 * receive hover events. Forward their clicks because they cannot reach that
+	 * sibling overlay button directly.
+	 *
+	 * TODO(3): I feel like there should be a better way to do this but I don't feel
+	 * like thinking right now.
+	 */
+	onClick?: React.MouseEventHandler<HTMLDivElement>
+}) {
 	if (lastReviewedAt === null) {
 		return (
-			<div {...stylex.props(styles.boundary)}>
+			<div
+				onClick={onClick}
+				{...stylex.props(styles.boundary, onClick && styles.clickable)}
+			>
 				<div {...stylex.props(styles.container)}>
 					<span {...stylex.props(styles.item)}>Unreviewed</span>
 				</div>
@@ -98,7 +116,10 @@ export function CardMetadata({
 	} = getLastReviewedDetails(lastReviewedAt, lastRating)
 
 	return (
-		<div {...stylex.props(styles.boundary)}>
+		<div
+			onClick={onClick}
+			{...stylex.props(styles.boundary, onClick && styles.clickable)}
+		>
 			<div {...stylex.props(styles.container)}>
 				{nextDueAt !== null ? (
 					<Tooltip>
