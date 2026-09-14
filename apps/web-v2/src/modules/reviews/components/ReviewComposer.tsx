@@ -15,7 +15,6 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { reviewComposerColors } from '~/styles/colors/components.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 import { RatingPicker } from './RatingPicker'
@@ -29,16 +28,13 @@ const styles = stylex.create({
 		columnGap: spacing.sm,
 		rowGap: spacing.sm,
 
-		padding: spacing.md,
-		marginInline: `calc(${spacing.md} * -1)`,
-
-		borderRadius: radii.xl,
-		backgroundColor: reviewComposerColors.containerBackground,
+		padding: 0,
+		marginInline: 0,
 
 		display: 'grid',
 		gridTemplateColumns: 'max-content minmax(0, 1fr)',
 		gridTemplateRows: 'auto auto',
-		inlineSize: `calc(100% + (${spacing.md} * 2))`,
+		inlineSize: '100%',
 		minInlineSize: 0,
 	},
 	rail: {
@@ -52,7 +48,6 @@ const styles = stylex.create({
 	},
 	ratingControl: {
 		borderRadius: radii.md,
-		backgroundColor: reviewComposerColors.containerBackground,
 	},
 	editor: {
 		gap: spacing.sm,
