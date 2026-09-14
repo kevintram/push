@@ -1,12 +1,25 @@
 import * as stylex from '@stylexjs/stylex'
+import { X } from 'lucide-react'
 
+import {
+	Button,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '~/components/ui'
 import type { CardTypeFilter } from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
 import { CardTypeFilterBadges } from '~/modules/reviews/components/card-type-filter/CardTypeFilterBadges'
 import { CardItem } from '~/modules/reviews/components/CardItem'
 import type { Card } from '~/modules/reviews/types/review.types'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { reviewQueueColors } from '~/styles/colors/components.stylex'
-import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
+import {
+	fontSizes,
+	fontWeights,
+	iconSizes,
+	radii,
+	spacing,
+} from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
 import { REVIEW_QUEUE_SIDEBAR_ID } from './ReviewQueueToolbar'
@@ -19,6 +32,7 @@ type ReviewQueueSidebarProps = {
 	filter: CardTypeFilter
 	onCardClick: (cardId: Card['_id']) => void
 	onFilterChange: (filter: CardTypeFilter) => void
+	onClose: () => void
 }
 
 const styles = stylex.create({
@@ -45,13 +59,30 @@ const styles = stylex.create({
 	},
 	titleRow: {
 		gap: spacing.sm,
+		alignItems: 'center',
+		display: 'flex',
+		justifyContent: 'space-between',
+	},
+	titleText: {
+		gap: spacing.sm,
 		alignItems: 'baseline',
 		display: 'flex',
 		fontSize: fontSizes.xl,
 		fontWeight: fontWeights.semibold,
+		minInlineSize: 0,
+	},
+	closeButton: {
+		flexShrink: 0,
+	},
+	titleLabel: {
+		overflow: 'hidden',
+		minInlineSize: 0,
+		textOverflow: 'ellipsis',
+		whiteSpace: 'nowrap',
 	},
 	count: {
 		color: reviewQueueColors.positionForeground,
+		flexShrink: 0,
 		fontSize: fontSizes.sm,
 		fontWeight: fontWeights.regular,
 		insetBlockStart: '-1px',
@@ -78,6 +109,7 @@ export function ReviewQueueSidebar({
 	filter,
 	onCardClick,
 	onFilterChange,
+	onClose,
 }: ReviewQueueSidebarProps) {
 	return (
 		<aside
@@ -86,12 +118,36 @@ export function ReviewQueueSidebar({
 			{...stylex.props(styles.panel)}
 		>
 			<div {...stylex.props(styles.header)}>
-				<h1 {...stylex.props(styles.titleRow)}>
-					<span>{title}</span>
-					<span aria-hidden='true' {...stylex.props(styles.count)}>
-						{cards.length}
-					</span>
-				</h1>
+				<div {...stylex.props(styles.titleRow)}>
+					<h1 {...stylex.props(styles.titleText)}>
+						<span {...stylex.props(styles.titleLabel)}>
+							{title}
+						</span>
+						<span
+							aria-hidden='true'
+							{...stylex.props(styles.count)}
+						>
+							{cards.length}
+						</span>
+					</h1>
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<Button.Icon
+									aria-label='Close queue'
+									xstyle={styles.closeButton}
+									shape='round'
+									size='micro'
+									variant='ghost'
+									onClick={onClose}
+								>
+									<X aria-hidden='true' size={iconSizes.md} />
+								</Button.Icon>
+							}
+						/>
+						<TooltipContent>Close queue</TooltipContent>
+					</Tooltip>
+				</div>
 				<CardTypeFilterBadges
 					value={filter}
 					onValueChange={onFilterChange}

@@ -20,6 +20,7 @@ type ReviewQueueToolbarProps = {
 	index: number
 	cardCount: number
 	queueSidebarOpen: boolean
+	queueSidebarToggleRef?: React.Ref<HTMLButtonElement>
 	onPrevious: () => void
 	onNext: () => void
 	onQueueSidebarToggle: () => void
@@ -45,6 +46,7 @@ export function ReviewQueueToolbar({
 	index,
 	cardCount,
 	queueSidebarOpen,
+	queueSidebarToggleRef,
 	onPrevious,
 	onNext,
 	onQueueSidebarToggle,
@@ -98,6 +100,7 @@ export function ReviewQueueToolbar({
 					<TooltipTrigger
 						render={
 							<Button.Icon
+								ref={queueSidebarToggleRef}
 								aria-label={
 									queueSidebarOpen
 										? 'Hide queue'

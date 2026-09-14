@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { QueryErrorResetBoundary } from '@tanstack/react-query'
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
@@ -42,7 +42,6 @@ function isTabletViewport() {
 
 const styles = stylex.create({
 	shell: {
-		padding: spacing.xs,
 		blockSize: '100%',
 		display: 'flex',
 		flexDirection: 'column',
@@ -104,6 +103,7 @@ export function ReviewQueueWorkspace({
 }: ReviewQueueWorkspaceProps) {
 	const [filter, setFilter] = useState<CardTypeFilter>('all')
 	const [queueSidebarOpen, setQueueSidebarOpen] = useState(isTabletViewport)
+	const queueSidebarToggleRef = useRef<HTMLButtonElement>(null)
 
 	useEffect(() => {
 		if (typeof window.matchMedia !== 'function') {
@@ -142,6 +142,13 @@ export function ReviewQueueWorkspace({
 		setQueueSidebarOpen(currOpen => !currOpen)
 	}
 
+	// The close control lives inside the sidebar, so closing would drop focus
+	// to the document body. Hand it back to the toolbar toggle instead.
+	const onQueueSidebarClose = () => {
+		setQueueSidebarOpen(false)
+		queueSidebarToggleRef.current?.focus()
+	}
+
 	return (
 		<section
 			aria-label={`${title} review workspace`}
@@ -162,6 +169,7 @@ export function ReviewQueueWorkspace({
 							index={index}
 							cardCount={visibleCards.length}
 							queueSidebarOpen={queueSidebarOpen}
+							queueSidebarToggleRef={queueSidebarToggleRef}
 							onPrevious={goPrevious}
 							onNext={goNext}
 							onQueueSidebarToggle={onQueueSidebarToggle}
@@ -209,6 +217,7 @@ export function ReviewQueueWorkspace({
 						onCardClick={selectCard}
 						filter={filter}
 						onFilterChange={setFilter}
+						onClose={onQueueSidebarClose}
 					/>
 				)}
 			</div>

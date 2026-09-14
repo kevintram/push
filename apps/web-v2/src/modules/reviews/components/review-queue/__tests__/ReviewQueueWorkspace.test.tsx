@@ -48,6 +48,36 @@ describe('ReviewQueueWorkspace', () => {
 		).toHaveAttribute('aria-expanded', 'true')
 	})
 
+	it('closes the queue from the sidebar close button', async () => {
+		const user = userEvent.setup()
+		render(
+			<ReviewQueueWorkspace
+				cards={[]}
+				title='Due'
+				today={'2026-09-13' as DateString}
+			/>,
+		)
+
+		await user.click(screen.getByRole('button', { name: 'Close queue' }))
+
+		expect(
+			screen.queryByRole('complementary', { name: 'Due cards' }),
+		).not.toBeInTheDocument()
+
+		const showButton = screen.getByRole('button', { name: 'Show queue' })
+		expect(showButton).toBeInTheDocument()
+		expect(showButton).toHaveFocus()
+
+		await user.click(showButton)
+
+		expect(
+			screen.getByRole('complementary', { name: 'Due cards' }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Hide queue' }),
+		).toHaveAttribute('aria-expanded', 'true')
+	})
+
 	it('starts closed on small viewports', () => {
 		vi.spyOn(window, 'matchMedia').mockReturnValue({
 			matches: false,
