@@ -1,17 +1,27 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import type { ReactElement } from 'react'
+import { PanelRight } from 'lucide-react'
+import { type ReactElement, useId, useState } from 'react'
 
-import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
+import {
+	Button,
+	Tabs,
+	TabsList,
+	TabsTrigger,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
-import { spacing } from '~/styles/tokens.stylex'
+import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { CardActions } from '../CardActions'
 import { ReviewComposerProvider } from '../ReviewComposerProvider'
+import { AddReviewPopover } from './AddReviewPopover'
 import { CardBreadcrumbs } from './CardBreadcrumbs'
 import { CardOverview } from './CardOverview'
 import { CardReviews } from './CardReviews'
@@ -42,6 +52,7 @@ type CardDetailProps = CardDetailBaseProps &
 const styles = stylex.create({
 	container: {
 		blockSize: '100%',
+		containerType: 'inline-size',
 		inlineSize: '100%',
 
 		display: 'flex',
@@ -65,9 +76,28 @@ const styles = stylex.create({
 		minWidth: 0,
 	},
 	tabsContainer: {
-		paddingInline: spacing.lg,
 		flexShrink: 0,
 		marginInlineStart: `calc(${spacing.sm} * -1)`,
+	},
+	secondaryToolbar: {
+		paddingInline: spacing.lg,
+		alignItems: 'center',
+		display: 'flex',
+		flexShrink: 0,
+		justifyContent: 'space-between',
+		paddingBlockEnd: spacing.xs,
+	},
+	secondaryToolbarActions: {
+		alignItems: 'center',
+		columnGap: spacing.xs,
+		display: 'flex',
+		flexShrink: 0,
+	},
+	sidebarToggle: {
+		display: {
+			default: 'none',
+			'@container (min-width: 640px)': 'inline-flex',
+		},
 	},
 	tabs: {
 		backgroundColor: semanticColors.surfaceTransparent,
@@ -85,8 +115,21 @@ const styles = stylex.create({
 		minWidth: 0,
 	},
 	sidebar: {
+		display: {
+			default: 'none',
+			'@container (min-width: 640px)': 'flex',
+		},
 		position: 'relative',
 		zIndex: 1,
+	},
+	reviewFallback: {
+		display: {
+			default: 'flex',
+			'@container (min-width: 640px)': 'none',
+		},
+	},
+	reviewFallbackClosed: {
+		display: 'flex',
 	},
 })
 
@@ -101,6 +144,8 @@ export function CardDetail({
 	const { data: card } = useSuspenseQuery(cardQueries.detail(cardId))
 	const today = useToday()
 	const srsState = deriveCardSrsState(card, today)
+	const [sidebarOpen, setSidebarOpen] = useState(true)
+	const sidebarId = useId()
 
 	return (
 		<ReviewComposerProvider cardId={cardId} key={cardId}>
@@ -115,48 +160,97 @@ export function CardDetail({
 					</div>
 					<CardActions card={card} showGoToCard={showGoToCard} />
 				</header>
-				<Tabs
-					value={activeTab}
-					onValueChange={value => {
-						if (
-							onTabChange &&
-							(value === 'overview' || value === 'reviews')
-						) {
-							onTabChange(value)
-						}
-					}}
-					xstyle={styles.tabsContainer}
-				>
-					<TabsList aria-label='Card sections' xstyle={styles.tabs}>
-						<TabsTrigger
-							value='overview'
-							nativeButton={tabLinks ? false : undefined}
-							render={tabLinks?.overview}
+				<div {...stylex.props(styles.secondaryToolbar)}>
+					<Tabs
+						value={activeTab}
+						onValueChange={value => {
+							if (
+								onTabChange &&
+								(value === 'overview' || value === 'reviews')
+							) {
+								onTabChange(value)
+							}
+						}}
+						xstyle={styles.tabsContainer}
+					>
+						<TabsList
+							aria-label='Card sections'
+							xstyle={styles.tabs}
 						>
-							Overview
-						</TabsTrigger>
-						<TabsTrigger
-							value='reviews'
-							nativeButton={tabLinks ? false : undefined}
-							render={tabLinks?.reviews}
-						>
-							Reviews
-						</TabsTrigger>
-					</TabsList>
-				</Tabs>
+							<TabsTrigger
+								value='overview'
+								nativeButton={tabLinks ? false : undefined}
+								render={tabLinks?.overview}
+							>
+								Overview
+							</TabsTrigger>
+							<TabsTrigger
+								value='reviews'
+								nativeButton={tabLinks ? false : undefined}
+								render={tabLinks?.reviews}
+							>
+								Reviews
+							</TabsTrigger>
+						</TabsList>
+					</Tabs>
+					<div {...stylex.props(styles.secondaryToolbarActions)}>
+						{activeTab === 'overview' && (
+							<AddReviewPopover
+								xstyle={
+									sidebarOpen
+										? styles.reviewFallback
+										: styles.reviewFallbackClosed
+								}
+							/>
+						)}
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<Button.Icon
+										aria-label={
+											sidebarOpen
+												? 'Hide details'
+												: 'Show details'
+										}
+										aria-expanded={sidebarOpen}
+										aria-controls={sidebarId}
+										shape='round'
+										variant='secondary'
+										size='small'
+										xstyle={styles.sidebarToggle}
+										onClick={() =>
+											setSidebarOpen(open => !open)
+										}
+									>
+										<PanelRight
+											aria-hidden='true'
+											size={iconSizes.md}
+										/>
+									</Button.Icon>
+								}
+							/>
+							<TooltipContent>
+								{sidebarOpen ? 'Hide details' : 'Show details'}
+							</TooltipContent>
+						</Tooltip>
+					</div>
+				</div>
 				<div {...stylex.props(styles.content)}>
 					{activeTab === 'overview' ? (
 						<CardOverview cardId={cardId} />
 					) : (
 						<CardReviews cardId={cardId} />
 					)}
-					<CardSidebar
-						{...srsState}
-						cardId={cardId}
-						showReviews={activeTab === 'overview'}
-						today={today}
-						xstyle={styles.sidebar}
-					/>
+					{sidebarOpen && (
+						<CardSidebar
+							id={sidebarId}
+							{...srsState}
+							cardId={cardId}
+							showReviews={activeTab === 'overview'}
+							today={today}
+							xstyle={styles.sidebar}
+						/>
+					)}
 				</div>
 			</div>
 		</ReviewComposerProvider>
