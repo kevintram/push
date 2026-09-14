@@ -5,7 +5,7 @@ import {
 	useHotkey,
 } from '@tanstack/react-hotkeys'
 import type { FormEvent } from 'react'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import {
 	Button,
@@ -15,7 +15,6 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { reviewComposerColors } from '~/styles/colors/components.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 import { RatingPicker } from './RatingPicker'
@@ -29,16 +28,13 @@ const styles = stylex.create({
 		columnGap: spacing.sm,
 		rowGap: spacing.sm,
 
-		padding: spacing.md,
-		marginInline: `calc(${spacing.md} * -1)`,
-
-		borderRadius: radii.xl,
-		backgroundColor: reviewComposerColors.containerBackground,
+		padding: 0,
+		marginInline: 0,
 
 		display: 'grid',
 		gridTemplateColumns: 'max-content minmax(0, 1fr)',
 		gridTemplateRows: 'auto auto',
-		inlineSize: `calc(100% + (${spacing.md} * 2))`,
+		inlineSize: '100%',
 		minInlineSize: 0,
 	},
 	rail: {
@@ -52,7 +48,6 @@ const styles = stylex.create({
 	},
 	ratingControl: {
 		borderRadius: radii.md,
-		backgroundColor: reviewComposerColors.containerBackground,
 	},
 	editor: {
 		gap: spacing.sm,
@@ -121,6 +116,7 @@ const styles = stylex.create({
 })
 
 type ReviewComposerProps = {
+	autoFocusDescription?: boolean
 	id?: string
 	onCancel?: () => void
 	onSuccess?: () => void
@@ -128,12 +124,14 @@ type ReviewComposerProps = {
 }
 
 export function ReviewComposer({
+	autoFocusDescription = false,
 	id,
 	onCancel,
 	onSuccess,
 	xstyle,
 }: ReviewComposerProps) {
 	const formRef = useRef<HTMLFormElement>(null)
+	const descriptionRef = useRef<HTMLTextAreaElement>(null)
 	const {
 		draft,
 		isDirty,
@@ -146,6 +144,10 @@ export function ReviewComposer({
 		submit,
 	} = useReviewComposerState()
 	const isSubmitDisabled = !isDirty || isPending
+
+	useEffect(() => {
+		if (autoFocusDescription) descriptionRef.current?.focus()
+	}, [autoFocusDescription])
 
 	const handleCancel = () => {
 		resetDraft()
@@ -187,6 +189,7 @@ export function ReviewComposer({
 					onChange={event => setDescription(event.target.value)}
 					placeholder='Add a review...'
 					value={draft.description}
+					ref={descriptionRef}
 					xstyle={styles.description}
 				/>
 				<Textarea

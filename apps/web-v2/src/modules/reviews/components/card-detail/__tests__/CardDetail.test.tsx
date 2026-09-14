@@ -1,5 +1,5 @@
 import type { Id } from '@convex/_generated/dataModel'
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { TooltipProvider } from '~/components/ui'
@@ -83,6 +83,25 @@ function notes() {
 	return screen.getByRole('textbox', { name: 'Review notes' })
 }
 
+function fallbackForm() {
+	const forms = screen.getAllByRole('form', { name: 'Add review' })
+	const fallback = forms.at(-1)
+	if (!fallback) throw new Error('Expected the fallback form to be open')
+	return fallback
+}
+
+function fallbackDescription() {
+	return within(fallbackForm()).getByRole('textbox', {
+		name: 'Review description',
+	})
+}
+
+function expectFallbackClosed() {
+	expect(screen.queryAllByRole('form', { name: 'Add review' })).toHaveLength(
+		0,
+	)
+}
+
 describe('CardDetail review composer', () => {
 	beforeEach(() => {
 		mutation.mutate.mockReset()
@@ -95,6 +114,121 @@ describe('CardDetail review composer', () => {
 
 		expect(cardActionsRender).toHaveBeenCalledWith(true)
 	})
+
+	it('toggles the card details sidebar accessibly', () => {
+		render(detail('overview'))
+
+		const sidebarToggle = screen.getByRole('button', {
+			name: 'Hide details',
+		})
+		const sidebar = screen.getByRole('complementary', {
+			name: 'Card details',
+		})
+		expect(sidebarToggle).toHaveAttribute('aria-expanded', 'true')
+		expect(sidebarToggle).toHaveAttribute('aria-controls', sidebar.id)
+
+		fireEvent.click(sidebarToggle)
+		expect(
+			screen.getByRole('button', { name: 'Show details' }),
+		).toHaveAttribute('aria-expanded', 'false')
+		expect(
+			screen.queryByRole('complementary', { name: 'Card details' }),
+		).not.toBeInTheDocument()
+
+		fireEvent.click(screen.getByRole('button', { name: 'Show details' }))
+		expect(
+			screen.getByRole('complementary', { name: 'Card details' }),
+		).toBeInTheDocument()
+	})
+
+	it('hands the shared draft to the fallback popover when the sidebar closes', () => {
+		const view = render(detail('overview'))
+		fireEvent.change(description(), {
+			target: { value: 'Keep this draft' },
+		})
+		fireEvent.click(screen.getByRole('button', { name: 'Hide details' }))
+
+		const fallbackTrigger = screen.getByRole('button', {
+			name: 'Add review',
+		})
+		fireEvent.click(fallbackTrigger)
+		expect(fallbackDescription()).toHaveValue('Keep this draft')
+		expect(fallbackDescription()).toHaveFocus()
+
+		fireEvent.click(fallbackTrigger)
+		expectFallbackClosed()
+
+		fireEvent.click(screen.getByRole('button', { name: 'Show details' }))
+		expect(description()).toHaveValue('Keep this draft')
+		view.unmount()
+	})
+
+	it('preserves the shared draft when the fallback is dismissed', () => {
+		render(detail('overview'))
+		fireEvent.click(screen.getByRole('button', { name: 'Hide details' }))
+		const fallbackTrigger = screen.getByRole('button', {
+			name: 'Add review',
+		})
+		fireEvent.click(fallbackTrigger)
+		fireEvent.change(fallbackDescription(), {
+			target: { value: 'Keep on dismiss' },
+		})
+
+		fireEvent.keyDown(document, { key: 'Escape' })
+		expectFallbackClosed()
+
+		fireEvent.click(fallbackTrigger)
+		expect(fallbackDescription()).toHaveValue('Keep on dismiss')
+	})
+
+	it('resets and closes the fallback popover on Cancel', () => {
+		render(detail('overview'))
+		fireEvent.click(screen.getByRole('button', { name: 'Hide details' }))
+		const fallbackTrigger = screen.getByRole('button', {
+			name: 'Add review',
+		})
+		fireEvent.click(fallbackTrigger)
+		fireEvent.change(fallbackDescription(), {
+			target: { value: 'Discard me' },
+		})
+		fireEvent.click(
+			within(fallbackForm()).getByRole('button', { name: 'Cancel' }),
+		)
+
+		expectFallbackClosed()
+		fireEvent.click(fallbackTrigger)
+		expect(fallbackDescription()).toHaveValue('')
+	})
+
+	it('closes the fallback popover after successful submission', () => {
+		render(detail('overview'))
+		fireEvent.click(screen.getByRole('button', { name: 'Hide details' }))
+		const fallbackTrigger = screen.getByRole('button', {
+			name: 'Add review',
+		})
+		fireEvent.click(fallbackTrigger)
+		fireEvent.change(fallbackDescription(), {
+			target: { value: 'Submit me' },
+		})
+		fireEvent.click(
+			within(fallbackForm()).getByRole('button', { name: 'Add' }),
+		)
+
+		const callbacks = mutation.mutate.mock.calls[0]?.[1]
+		act(() => callbacks.onSuccess())
+		expectFallbackClosed()
+		fireEvent.click(fallbackTrigger)
+		expect(fallbackDescription()).toHaveValue('')
+	})
+
+	it('does not render the fallback on Reviews', () => {
+		render(detail('reviews'))
+
+		expect(
+			screen.queryByRole('button', { name: 'Add review' }),
+		).not.toBeInTheDocument()
+	})
+
 	it('shares content in both directions', () => {
 		const view = render(detail('overview'))
 		fireEvent.change(description(), {

@@ -3,7 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
 import { reviewComposerColors } from '~/styles/colors/components.stylex'
-import { layout, spacing } from '~/styles/tokens.stylex'
+import { layout, radii, spacing } from '~/styles/tokens.stylex'
 
 import { reviewQueries } from '../../api/reviewQueries'
 import { Review } from '../Review'
@@ -30,7 +30,10 @@ const styles = stylex.create({
 		width: '100%',
 	},
 	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
-	composer: {
+	composerSurface: {
+		padding: spacing.md,
+		borderRadius: radii.xl,
+		backgroundColor: reviewComposerColors.containerBackground,
 		boxShadow: `0 4px 16px ${reviewComposerColors.containerShadow}`,
 	},
 })
@@ -45,7 +48,9 @@ export function CardReviews({ cardId }: CardReviewsProps) {
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.content)}>
-				<ReviewComposer xstyle={styles.composer} />
+				<div {...stylex.props(styles.composerSurface)}>
+					<ReviewComposer />
+				</div>
 				<div {...stylex.props(styles.list)}>
 					{reviews.map(review => (
 						<Review key={review._id} review={review} />

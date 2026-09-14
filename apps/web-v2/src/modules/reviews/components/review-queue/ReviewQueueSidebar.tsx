@@ -1,13 +1,28 @@
 import * as stylex from '@stylexjs/stylex'
+import { X } from 'lucide-react'
 
+import {
+	Button,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '~/components/ui'
 import type { CardTypeFilter } from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
 import { CardTypeFilterBadges } from '~/modules/reviews/components/card-type-filter/CardTypeFilterBadges'
 import { CardItem } from '~/modules/reviews/components/CardItem'
 import type { Card } from '~/modules/reviews/types/review.types'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { reviewQueueColors } from '~/styles/colors/components.stylex'
-import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
+import {
+	fontSizes,
+	fontWeights,
+	iconSizes,
+	radii,
+	spacing,
+} from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
+
+import { REVIEW_QUEUE_SIDEBAR_ID } from './ReviewQueueToolbar'
 
 type ReviewQueueSidebarProps = {
 	cards: ReadonlyArray<Card>
@@ -17,6 +32,7 @@ type ReviewQueueSidebarProps = {
 	filter: CardTypeFilter
 	onCardClick: (cardId: Card['_id']) => void
 	onFilterChange: (filter: CardTypeFilter) => void
+	onClose: () => void
 }
 
 const styles = stylex.create({
@@ -28,27 +44,46 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 0,
-		inlineSize: '360px',
+		// TODO: add mobile drawer
+		inlineSize: 'clamp(200px, 30%, 320px)',
 		minBlockSize: 0,
 	},
 	header: {
-		gap: spacing.sm,
-		paddingBlock: spacing.lg,
+		gap: spacing.xs,
 		paddingInline: spacing.lg,
 		alignItems: 'stretch',
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 0,
+		paddingBlockEnd: spacing.sm,
+		paddingBlockStart: spacing.xs,
 	},
 	titleRow: {
+		gap: spacing.sm,
+		alignItems: 'center',
+		display: 'flex',
+		justifyContent: 'space-between',
+	},
+	titleText: {
 		gap: spacing.sm,
 		alignItems: 'baseline',
 		display: 'flex',
 		fontSize: fontSizes.xl,
 		fontWeight: fontWeights.semibold,
+		minInlineSize: 0,
+	},
+	closeButton: {
+		flexShrink: 0,
+	},
+	titleLabel: {
+		overflow: 'hidden',
+		minInlineSize: 0,
+		textOverflow: 'ellipsis',
+		whiteSpace: 'nowrap',
 	},
 	count: {
 		color: reviewQueueColors.positionForeground,
+		flexShrink: 0,
 		fontSize: fontSizes.sm,
 		fontWeight: fontWeights.regular,
 		insetBlockStart: '-1px',
@@ -59,6 +94,7 @@ const styles = stylex.create({
 		flexBasis: 0,
 		flexGrow: 1,
 		minBlockSize: 0,
+		paddingBlockStart: spacing.xs,
 		overflowY: 'auto',
 	},
 	empty: {
@@ -75,16 +111,45 @@ export function ReviewQueueSidebar({
 	filter,
 	onCardClick,
 	onFilterChange,
+	onClose,
 }: ReviewQueueSidebarProps) {
 	return (
-		<aside aria-label={`${title} cards`} {...stylex.props(styles.panel)}>
+		<aside
+			id={REVIEW_QUEUE_SIDEBAR_ID}
+			aria-label={`${title} cards`}
+			{...stylex.props(styles.panel)}
+		>
 			<div {...stylex.props(styles.header)}>
-				<h1 {...stylex.props(styles.titleRow)}>
-					<span>{title}</span>
-					<span aria-hidden='true' {...stylex.props(styles.count)}>
-						{cards.length}
-					</span>
-				</h1>
+				<div {...stylex.props(styles.titleRow)}>
+					<h1 {...stylex.props(styles.titleText)}>
+						<span {...stylex.props(styles.titleLabel)}>
+							{title}
+						</span>
+						<span
+							aria-hidden='true'
+							{...stylex.props(styles.count)}
+						>
+							{cards.length}
+						</span>
+					</h1>
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<Button.Icon
+									aria-label='Close queue'
+									xstyle={styles.closeButton}
+									shape='round'
+									size='small'
+									variant='ghost'
+									onClick={onClose}
+								>
+									<X aria-hidden='true' size={iconSizes.md} />
+								</Button.Icon>
+							}
+						/>
+						<TooltipContent>Close queue</TooltipContent>
+					</Tooltip>
+				</div>
 				<CardTypeFilterBadges
 					value={filter}
 					onValueChange={onFilterChange}
@@ -100,6 +165,7 @@ export function ReviewQueueSidebar({
 						card={card}
 						srs={deriveCardSrsState(card, today)}
 						today={today}
+						density='compact'
 						active={card._id === currentCardId}
 						onClick={() => onCardClick(card._id)}
 						buttonProps={{

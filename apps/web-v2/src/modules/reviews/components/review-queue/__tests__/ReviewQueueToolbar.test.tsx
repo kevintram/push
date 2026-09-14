@@ -12,8 +12,10 @@ describe('ReviewQueueToolbar', () => {
 				<ReviewQueueToolbar
 					index={0}
 					cardCount={2}
+					queueSidebarOpen
 					onPrevious={() => {}}
 					onNext={() => {}}
+					onQueueSidebarToggle={() => {}}
 				/>
 			</TooltipProvider>,
 		)
@@ -24,6 +26,46 @@ describe('ReviewQueueToolbar', () => {
 		expect(
 			screen.queryByRole('link', { name: 'Go to card' }),
 		).not.toBeInTheDocument()
+		view.unmount()
+	})
+
+	it('exposes the queue state and controls the sidebar accessibly', () => {
+		const view = render(
+			<ReviewQueueToolbar
+				index={0}
+				cardCount={2}
+				queueSidebarOpen
+				onPrevious={() => {}}
+				onNext={() => {}}
+				onQueueSidebarToggle={() => {}}
+			/>,
+		)
+
+		const toggle = screen.getByRole('button', {
+			name: 'Close queue',
+		})
+		expect(toggle).toHaveAttribute('aria-expanded', 'true')
+		expect(toggle).toHaveAttribute('aria-controls', 'review-queue-sidebar')
+
+		view.rerender(
+			<ReviewQueueToolbar
+				index={0}
+				cardCount={2}
+				queueSidebarOpen={false}
+				onPrevious={() => {}}
+				onNext={() => {}}
+				onQueueSidebarToggle={() => {}}
+			/>,
+		)
+
+		const closedToggle = screen.getByRole('button', {
+			name: 'Open queue',
+		})
+		expect(closedToggle).toHaveAttribute('aria-expanded', 'false')
+		expect(closedToggle).toHaveAttribute(
+			'aria-controls',
+			'review-queue-sidebar',
+		)
 		view.unmount()
 	})
 })

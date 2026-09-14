@@ -37,11 +37,17 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 	},
+	innerCompact: {
+		paddingBlock: spacing.md,
+	},
 	title: {
 		fontSize: fontSizes.lg,
 		fontWeight: fontWeights.semibold,
 
 		color: cardItemColors.titleForeground,
+	},
+	titleCompact: {
+		fontSize: fontSizes.md,
 	},
 	raised: {
 		// Create seperate z-index context so overlay button
@@ -83,6 +89,7 @@ type CardItemProps = {
 	card: CardModel
 	srs: CardSrsState
 	today: DateString
+	density?: 'comfortable' | 'compact'
 	active?: boolean
 	onClick: () => void
 	buttonProps?: Omit<
@@ -95,6 +102,7 @@ export function CardItem({
 	card,
 	srs,
 	today,
+	density = 'comfortable',
 	active = false,
 	onClick,
 	buttonProps,
@@ -116,8 +124,18 @@ export function CardItem({
 				{...buttonProps}
 			/>
 
-			<div {...stylex.props(styles.inner)}>
-				<h3 {...stylex.props(styles.title)}>
+			<div
+				{...stylex.props(
+					styles.inner,
+					density === 'compact' && styles.innerCompact,
+				)}
+			>
+				<h3
+					{...stylex.props(
+						styles.title,
+						density === 'compact' && styles.titleCompact,
+					)}
+				>
 					{primaryText.trim() || 'Untitled'}
 				</h3>
 
@@ -128,7 +146,7 @@ export function CardItem({
 				) : null}
 
 				<div {...stylex.props(styles.footer)}>
-					<CardMetadata {...srs} today={today} />
+					<CardMetadata {...srs} today={today} onClick={onClick} />
 					<CardActions card={card} xstyle={styles.raised} />
 				</div>
 			</div>

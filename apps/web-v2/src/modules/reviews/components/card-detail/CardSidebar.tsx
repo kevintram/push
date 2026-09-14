@@ -1,7 +1,7 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 
-import { breakpoints, spacing } from '~/styles/tokens.stylex'
+import { spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
 import type { CardSrsState } from '../../types/review.types'
@@ -11,13 +11,9 @@ import { CardSidebarReviews } from './CardSidebarReviews'
 const styles = stylex.create({
 	container: {
 		gap: spacing.sm,
-		display: {
-			default: 'none',
-			[breakpoints.tablet]: 'flex',
-		},
 		flexDirection: 'column',
 		flexShrink: 0,
-		inlineSize: '320px',
+		inlineSize: 'clamp(200px, 30%, 320px)',
 		maxBlockSize: '100%',
 		minBlockSize: 0,
 		overflowY: 'auto',
@@ -25,6 +21,7 @@ const styles = stylex.create({
 })
 
 type CardSidebarProps = CardSrsState & {
+	id: string
 	cardId: Id<'cards'>
 	showReviews: boolean
 	today: DateString
@@ -32,6 +29,7 @@ type CardSidebarProps = CardSrsState & {
 }
 
 export function CardSidebar({
+	id,
 	cardId,
 	showReviews,
 	today,
@@ -40,6 +38,7 @@ export function CardSidebar({
 }: CardSidebarProps) {
 	return (
 		<aside
+			id={id}
 			aria-label='Card details'
 			{...stylex.props(styles.container, xstyle)}
 		>

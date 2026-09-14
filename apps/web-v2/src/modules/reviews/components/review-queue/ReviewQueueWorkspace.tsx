@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { QueryErrorResetBoundary } from '@tanstack/react-query'
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
@@ -30,9 +30,18 @@ type ReviewQueueWorkspaceProps = {
 	today: DateString
 }
 
+const TABLET_VIEWPORT_QUERY = '(min-width: 768px)'
+
+function isTabletViewport() {
+	return (
+		typeof window === 'undefined' ||
+		typeof window.matchMedia !== 'function' ||
+		window.matchMedia(TABLET_VIEWPORT_QUERY).matches
+	)
+}
+
 const styles = stylex.create({
 	shell: {
-		padding: spacing.xs,
 		blockSize: '100%',
 		display: 'flex',
 		flexDirection: 'column',
@@ -93,6 +102,31 @@ export function ReviewQueueWorkspace({
 	today,
 }: ReviewQueueWorkspaceProps) {
 	const [filter, setFilter] = useState<CardTypeFilter>('all')
+	const [queueSidebarOpen, setQueueSidebarOpen] = useState(isTabletViewport)
+	const queueSidebarToggleRef = useRef<HTMLButtonElement>(null)
+
+	useEffect(() => {
+		if (typeof window.matchMedia !== 'function') {
+			return
+		}
+
+		const tabletViewport = window.matchMedia(TABLET_VIEWPORT_QUERY)
+		const closeSidebarOnSmallViewport = (event: MediaQueryListEvent) => {
+			if (!event.matches) {
+				setQueueSidebarOpen(false)
+			}
+		}
+
+		tabletViewport.addEventListener('change', closeSidebarOnSmallViewport)
+
+		return () => {
+			tabletViewport.removeEventListener(
+				'change',
+				closeSidebarOnSmallViewport,
+			)
+		}
+	}, [])
+
 	const visibleCards = filterCardsByType(cards, filter)
 	const {
 		index,
@@ -103,6 +137,17 @@ export function ReviewQueueWorkspace({
 		goNext,
 		selectCard,
 	} = useReviewQueueSelection(visibleCards)
+
+	const onQueueSidebarToggle = () => {
+		setQueueSidebarOpen(currOpen => !currOpen)
+	}
+
+	// The close control lives inside the sidebar, so closing would drop focus
+	// to the document body. Hand it back to the toolbar toggle instead.
+	const onQueueSidebarClose = () => {
+		setQueueSidebarOpen(false)
+		queueSidebarToggleRef.current?.focus()
+	}
 
 	return (
 		<section
@@ -123,8 +168,11 @@ export function ReviewQueueWorkspace({
 						<ReviewQueueToolbar
 							index={index}
 							cardCount={visibleCards.length}
+							queueSidebarOpen={queueSidebarOpen}
+							queueSidebarToggleRef={queueSidebarToggleRef}
 							onPrevious={goPrevious}
 							onNext={goNext}
+							onQueueSidebarToggle={onQueueSidebarToggle}
 						/>
 					</div>
 					<section
@@ -160,15 +208,18 @@ export function ReviewQueueWorkspace({
 						)}
 					</section>
 				</div>
-				<ReviewQueueSidebar
-					cards={visibleCards}
-					title={title}
-					today={today}
-					currentCardId={currentCard?._id ?? null}
-					onCardClick={selectCard}
-					filter={filter}
-					onFilterChange={setFilter}
-				/>
+				{queueSidebarOpen && (
+					<ReviewQueueSidebar
+						cards={visibleCards}
+						title={title}
+						today={today}
+						currentCardId={currentCard?._id ?? null}
+						onCardClick={selectCard}
+						filter={filter}
+						onFilterChange={setFilter}
+						onClose={onQueueSidebarClose}
+					/>
+				)}
 			</div>
 		</section>
 	)
