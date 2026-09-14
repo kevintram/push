@@ -38,7 +38,7 @@ const styles = stylex.create({
 		flexDirection: 'column',
 	},
 	innerCompact: {
-		paddingBlock: spacing.sm,
+		paddingBlock: spacing.md,
 	},
 	title: {
 		fontSize: fontSizes.lg,

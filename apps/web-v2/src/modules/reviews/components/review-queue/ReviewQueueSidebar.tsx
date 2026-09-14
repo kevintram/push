@@ -49,13 +49,14 @@ const styles = stylex.create({
 		minBlockSize: 0,
 	},
 	header: {
-		gap: spacing.sm,
-		paddingBlock: spacing.lg,
+		gap: spacing.xs,
 		paddingInline: spacing.lg,
 		alignItems: 'stretch',
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 0,
+		paddingBlockEnd: spacing.sm,
+		paddingBlockStart: spacing.xs,
 	},
 	titleRow: {
 		gap: spacing.sm,
@@ -93,6 +94,7 @@ const styles = stylex.create({
 		flexBasis: 0,
 		flexGrow: 1,
 		minBlockSize: 0,
+		paddingBlockStart: spacing.xs,
 		overflowY: 'auto',
 	},
 	empty: {
@@ -137,7 +139,7 @@ export function ReviewQueueSidebar({
 									aria-label='Close queue'
 									xstyle={styles.closeButton}
 									shape='round'
-									size='micro'
+									size='small'
 									variant='ghost'
 									onClick={onClose}
 								>
@@ -163,6 +165,7 @@ export function ReviewQueueSidebar({
 						card={card}
 						srs={deriveCardSrsState(card, today)}
 						today={today}
+						density='compact'
 						active={card._id === currentCardId}
 						onClick={() => onCardClick(card._id)}
 						buttonProps={{
