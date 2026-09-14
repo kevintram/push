@@ -103,8 +103,8 @@ export function ReviewQueueToolbar({
 								ref={queueSidebarToggleRef}
 								aria-label={
 									queueSidebarOpen
-										? 'Hide queue'
-										: 'Show queue'
+										? 'Close queue'
+										: 'Open queue'
 								}
 								aria-expanded={queueSidebarOpen}
 								aria-controls={REVIEW_QUEUE_SIDEBAR_ID}
@@ -118,7 +118,7 @@ export function ReviewQueueToolbar({
 						}
 					/>
 					<TooltipContent>
-						{queueSidebarOpen ? 'Hide queue' : 'Show queue'}
+						{queueSidebarOpen ? 'Close queue' : 'Open queue'}
 					</TooltipContent>
 				</Tooltip>
 			</div>

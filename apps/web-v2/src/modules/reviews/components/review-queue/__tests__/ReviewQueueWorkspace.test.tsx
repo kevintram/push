@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -18,34 +18,35 @@ describe('ReviewQueueWorkspace', () => {
 		)
 
 		const sidebar = screen.getByRole('complementary', { name: 'Due cards' })
-		const hideButton = screen.getByRole('button', {
-			name: 'Hide queue',
+		const closeButton = screen.getByRole('button', {
+			name: 'Close queue',
+			expanded: true,
 		})
 		expect(sidebar).toHaveAttribute('id', 'review-queue-sidebar')
-		expect(hideButton).toHaveAttribute('aria-expanded', 'true')
-		expect(hideButton).toHaveAttribute(
+		expect(closeButton).toHaveAttribute('aria-expanded', 'true')
+		expect(closeButton).toHaveAttribute(
 			'aria-controls',
 			'review-queue-sidebar',
 		)
 
-		await user.click(hideButton)
+		await user.click(closeButton)
 
-		const showButton = screen.getByRole('button', {
-			name: 'Show queue',
+		const openButton = screen.getByRole('button', {
+			name: 'Open queue',
 		})
-		expect(showButton).toHaveAttribute('aria-expanded', 'false')
+		expect(openButton).toHaveAttribute('aria-expanded', 'false')
 		expect(
 			screen.queryByRole('complementary', { name: 'Due cards' }),
 		).not.toBeInTheDocument()
 
-		await user.click(showButton)
+		await user.click(openButton)
 
 		expect(
 			screen.getByRole('complementary', { name: 'Due cards' }),
 		).toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Hide queue' }),
-		).toHaveAttribute('aria-expanded', 'true')
+			screen.getByRole('button', { name: 'Close queue', expanded: true }),
+		).toBeInTheDocument()
 	})
 
 	it('closes the queue from the sidebar close button', async () => {
@@ -58,24 +59,28 @@ describe('ReviewQueueWorkspace', () => {
 			/>,
 		)
 
-		await user.click(screen.getByRole('button', { name: 'Close queue' }))
+		const sidebar = screen.getByRole('complementary', { name: 'Due cards' })
+
+		await user.click(
+			within(sidebar).getByRole('button', { name: 'Close queue' }),
+		)
 
 		expect(
 			screen.queryByRole('complementary', { name: 'Due cards' }),
 		).not.toBeInTheDocument()
 
-		const showButton = screen.getByRole('button', { name: 'Show queue' })
-		expect(showButton).toBeInTheDocument()
-		expect(showButton).toHaveFocus()
+		const openButton = screen.getByRole('button', { name: 'Open queue' })
+		expect(openButton).toBeInTheDocument()
+		expect(openButton).toHaveFocus()
 
-		await user.click(showButton)
+		await user.click(openButton)
 
 		expect(
 			screen.getByRole('complementary', { name: 'Due cards' }),
 		).toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Hide queue' }),
-		).toHaveAttribute('aria-expanded', 'true')
+			screen.getByRole('button', { name: 'Close queue', expanded: true }),
+		).toBeInTheDocument()
 	})
 
 	it('starts closed on small viewports', () => {
@@ -102,7 +107,7 @@ describe('ReviewQueueWorkspace', () => {
 			screen.queryByRole('complementary', { name: 'Due cards' }),
 		).not.toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Show queue' }),
+			screen.getByRole('button', { name: 'Open queue' }),
 		).toHaveAttribute('aria-expanded', 'false')
 	})
 

@@ -42,7 +42,7 @@ describe('ReviewQueueToolbar', () => {
 		)
 
 		const toggle = screen.getByRole('button', {
-			name: 'Hide queue',
+			name: 'Close queue',
 		})
 		expect(toggle).toHaveAttribute('aria-expanded', 'true')
 		expect(toggle).toHaveAttribute('aria-controls', 'review-queue-sidebar')
@@ -59,7 +59,7 @@ describe('ReviewQueueToolbar', () => {
 		)
 
 		const closedToggle = screen.getByRole('button', {
-			name: 'Show queue',
+			name: 'Open queue',
 		})
 		expect(closedToggle).toHaveAttribute('aria-expanded', 'false')
 		expect(closedToggle).toHaveAttribute(
