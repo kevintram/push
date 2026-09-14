@@ -22,11 +22,19 @@ import { formatDurability, formatDurabilityTooltip } from '../utils/cardSrs'
 import { getLastReviewedDetails } from './reviewRatings'
 
 const styles = stylex.create({
+	boundary: {
+		containerType: 'inline-size',
+		flexGrow: 1,
+		flexShrink: 1,
+		minWidth: 0,
+	},
 	container: {
-		gap: spacing.xl,
+		gap: {
+			default: spacing.xl,
+			'@container (max-width: 400px)': spacing.md,
+		},
 		alignItems: 'center',
 		display: 'flex',
-		flexGrow: 1,
 		flexWrap: 'nowrap',
 
 		overflow: 'hidden',
@@ -40,6 +48,12 @@ const styles = stylex.create({
 		display: 'inline-flex',
 		fontWeight: fontWeights.semibold,
 		whiteSpace: 'nowrap',
+	},
+	durability: {
+		display: {
+			default: 'inline-flex',
+			'@container (max-width: 400px)': 'none',
+		},
 	},
 	// Tooltip triggers must sit above the card's stretched-link overlay to
 	// receive hover. Raise the individual triggers, not the whole row, so the
@@ -66,8 +80,10 @@ export function CardMetadata({
 }: CardSrsState & { today: DateString }) {
 	if (lastReviewedAt === null) {
 		return (
-			<div {...stylex.props(styles.container)}>
-				<span {...stylex.props(styles.item)}>Unreviewed</span>
+			<div {...stylex.props(styles.boundary)}>
+				<div {...stylex.props(styles.container)}>
+					<span {...stylex.props(styles.item)}>Unreviewed</span>
+				</div>
 			</div>
 		)
 	}
@@ -82,70 +98,76 @@ export function CardMetadata({
 	} = getLastReviewedDetails(lastReviewedAt, lastRating)
 
 	return (
-		<div {...stylex.props(styles.container)}>
-			{nextDueAt !== null ? (
+		<div {...stylex.props(styles.boundary)}>
+			<div {...stylex.props(styles.container)}>
+				{nextDueAt !== null ? (
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<span
+									{...stylex.props(
+										styles.item,
+										styles.raisedItem,
+										dueTone === 'overdue' && styles.overdue,
+										dueTone === 'today' && styles.today,
+									)}
+								>
+									{`Due ${formatRelativeDate(nextDueAt, today)}`}
+								</span>
+							}
+						/>
+						<TooltipContent>
+							{formatAbsoluteDate(nextDueAt)}
+						</TooltipContent>
+					</Tooltip>
+				) : null}
 				<Tooltip>
 					<TooltipTrigger
 						render={
 							<span
+								aria-label={lastReviewedLabel}
 								{...stylex.props(
 									styles.item,
 									styles.raisedItem,
-									dueTone === 'overdue' && styles.overdue,
-									dueTone === 'today' && styles.today,
+									lastReviewedAt === today && styles.today,
 								)}
 							>
-								{`Due ${formatRelativeDate(nextDueAt, today)}`}
+								{RatingIcon ? (
+									<RatingIcon
+										aria-hidden='true'
+										size={iconSizes.md}
+									/>
+								) : null}
+								{formatRelativeDate(lastReviewedAt, today)}
 							</span>
 						}
 					/>
-					<TooltipContent>
-						{formatAbsoluteDate(nextDueAt)}
-					</TooltipContent>
+					<TooltipContent>{lastReviewedTooltip}</TooltipContent>
 				</Tooltip>
-			) : null}
-			<Tooltip>
-				<TooltipTrigger
-					render={
-						<span
-							aria-label={lastReviewedLabel}
-							{...stylex.props(
-								styles.item,
-								styles.raisedItem,
-								lastReviewedAt === today && styles.today,
-							)}
-						>
-							{RatingIcon ? (
-								<RatingIcon
-									aria-hidden='true'
-									size={iconSizes.md}
-								/>
-							) : null}
-							{formatRelativeDate(lastReviewedAt, today)}
-						</span>
-					}
-				/>
-				<TooltipContent>{lastReviewedTooltip}</TooltipContent>
-			</Tooltip>
-			{durability !== null ? (
-				<Tooltip>
-					<TooltipTrigger
-						render={
-							<span
-								{...stylex.props(
-									styles.item,
-									styles.raisedItem,
-								)}
-							>
-								Durability
-								<Anvil aria-hidden='true' size={iconSizes.md} />
-								{durability}
-							</span>
-						}
-					/>
-					<TooltipContent>{durabilityTooltip}</TooltipContent>
-				</Tooltip>
-			) : null}
+				{durability !== null ? (
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<span
+									{...stylex.props(
+										styles.item,
+										styles.raisedItem,
+										styles.durability,
+									)}
+								>
+									Durability
+									<Anvil
+										aria-hidden='true'
+										size={iconSizes.md}
+									/>
+									{durability}
+								</span>
+							}
+						/>
+						<TooltipContent>{durabilityTooltip}</TooltipContent>
+					</Tooltip>
+				) : null}
+			</div>
 		</div>
 	)
 }
