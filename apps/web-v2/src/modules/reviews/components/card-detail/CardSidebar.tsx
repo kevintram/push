@@ -13,7 +13,7 @@ const styles = stylex.create({
 		gap: spacing.sm,
 		flexDirection: 'column',
 		flexShrink: 0,
-		inlineSize: 'clamp(200px, 30%, 320px)',
+		inlineSize: 'clamp(240px, 30%, 320px)',
 		maxBlockSize: '100%',
 		minBlockSize: 0,
 		overflowY: 'auto',
