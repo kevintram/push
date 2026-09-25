@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Library } from 'lucide-react'
+import { Library, Search } from 'lucide-react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { SidebarItem } from '../SidebarItem'
@@ -70,5 +70,17 @@ describe('SidebarItem', () => {
 		expect(
 			screen.getByRole('img', { name: 'Cards available' }),
 		).toBeInTheDocument()
+	})
+
+	it('keeps icon-only items accessible', () => {
+		render(
+			<SidebarItem.Icon aria-label='Search'>
+				<Search aria-hidden='true' />
+			</SidebarItem.Icon>,
+		)
+
+		const item = screen.getByRole('button', { name: 'Search' })
+		expect(item).toHaveAttribute('type', 'button')
+		expect(item.querySelectorAll('svg')).toHaveLength(1)
 	})
 })

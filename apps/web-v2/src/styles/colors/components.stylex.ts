@@ -283,7 +283,7 @@ export const loadingIndicatorColors = stylex.defineVars({
 	foreground: semanticColors.textSecondary,
 })
 
-export const appRailItemColors = stylex.defineVars({
+export const sidebarItemColors = stylex.defineVars({
 	background: semanticColors.surfaceTransparent,
 	backgroundHover: semanticColors.surfaceTransparentHover,
 	backgroundSelected: semanticColors.surfaceTransparentActive,
