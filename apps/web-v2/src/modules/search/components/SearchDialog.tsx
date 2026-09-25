@@ -210,7 +210,12 @@ export function SearchDialog() {
 					render={
 						<DialogTrigger
 							render={
-								<SidebarItem icon={Search}>Search</SidebarItem>
+								<SidebarItem.Icon aria-label='Search'>
+									<Search
+										aria-hidden='true'
+										size={iconSizes.md}
+									/>
+								</SidebarItem.Icon>
 							}
 						/>
 					}

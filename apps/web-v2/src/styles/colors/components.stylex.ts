@@ -270,11 +270,12 @@ export const treeColors = stylex.defineVars({
 	labelFocusRing: semanticColors.borderFocus,
 })
 
-export const appRailColors = stylex.defineVars({
-	background: semanticColors.surfaceSunken,
+export const sidebarSectionHeaderColors = stylex.defineVars({
+	foreground: semanticColors.textTertiary,
 })
 
 export const appShellColors = stylex.defineVars({
+	chromeBackground: semanticColors.surfaceSunken,
 	surfaceBackground: semanticColors.surfacePrimary,
 	surfaceShadow: semanticColors.shadowSubtle,
 })
@@ -299,7 +300,6 @@ export const notAuthenticatedPageColors = stylex.defineVars({
 })
 
 export const librarySidebarColors = stylex.defineVars({
-	background: semanticColors.surfaceSecondary,
 	containerBackgroundDropTarget: semanticColors.surfaceTransparentHover,
 })
 
@@ -425,10 +425,6 @@ export const cardPropertiesColors = stylex.defineVars({
 export const reviewDatePickerColors = stylex.defineVars({
 	triggerForegroundToday: semanticColors.textToday,
 	triggerForegroundOverdue: semanticColors.textDanger,
-})
-
-export const reviewSectionNavigationColors = stylex.defineVars({
-	background: semanticColors.surfaceSecondary,
 })
 
 export const reviewsSidebarColors = stylex.defineVars({

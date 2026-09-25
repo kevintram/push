@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { LibrarySidebarContent } from '../LibrarySidebarContent'
@@ -45,9 +46,37 @@ describe('LibrarySidebarContent', () => {
 		)
 
 		expect(mocks.useDroppable).toHaveBeenCalledWith({ id: 'library-root' })
-		expect(mocks.droppableRef).toHaveBeenCalledWith(
-			screen.getByText('Library').parentElement,
+		const dropTarget = mocks.droppableRef.mock.calls.at(-1)?.[0]
+		expect(dropTarget).toContainElement(
+			screen.getByRole('button', { name: 'Collapse all collections' }),
 		)
+		expect(dropTarget).toContainElement(
+			screen.getByRole('button', { name: 'Add collection' }),
+		)
+	})
+
+	it('collapses and expands the collection list from its section header', async () => {
+		const user = userEvent.setup()
+		render(
+			<LibrarySidebarContent
+				collections={[]}
+				openCollectionIds={new Set()}
+				onCollectionOpenChange={vi.fn()}
+				onCollapseAll={vi.fn()}
+			/>,
+		)
+
+		await user.click(
+			screen.getByRole('button', { name: 'Collapse Library' }),
+		)
+		expect(
+			screen.queryByRole('navigation', { name: 'Library collections' }),
+		).not.toBeInTheDocument()
+
+		await user.click(screen.getByRole('button', { name: 'Expand Library' }))
+		expect(
+			screen.getByRole('navigation', { name: 'Library collections' }),
+		).toBeInTheDocument()
 	})
 
 	it('highlights the whole sidebar when the header is the drop target', () => {

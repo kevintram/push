@@ -890,6 +890,37 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
+	it('keeps the unified navigation available on the settings route', async () => {
+		renderRoute('/settings')
+
+		await screen.findByRole('heading', { name: 'Account' })
+		const primaryNavigation = screen.getByRole('navigation', {
+			name: 'primary',
+		})
+
+		expect(
+			within(primaryNavigation).getByRole('button', {
+				name: 'Collapse Review',
+			}),
+		).toBeInTheDocument()
+		expect(
+			within(primaryNavigation).getByRole('link', { name: 'Due' }),
+		).toBeInTheDocument()
+		expect(
+			within(primaryNavigation).getByRole('link', { name: 'Flagged' }),
+		).toBeInTheDocument()
+		expect(
+			within(primaryNavigation).getByRole('button', {
+				name: 'Collapse Library',
+			}),
+		).toBeInTheDocument()
+		expect(
+			within(primaryNavigation).getByRole('navigation', {
+				name: 'Library collections',
+			}),
+		).toBeInTheDocument()
+	})
+
 	it('opens search over the current page without navigating away', async () => {
 		const user = userEvent.setup()
 		renderRoute('/settings')
@@ -1127,7 +1158,7 @@ describe('v2 app setup', () => {
 		).toHaveAttribute('aria-current', 'page')
 		expect(
 			screen.queryByRole('navigation', { name: 'Library collections' }),
-		).not.toBeInTheDocument()
+		).toBeInTheDocument()
 	})
 
 	it('uses practice-specific card placeholders', async () => {

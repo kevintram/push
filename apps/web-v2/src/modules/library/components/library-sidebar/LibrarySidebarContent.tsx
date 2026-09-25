@@ -2,12 +2,27 @@ import type { Id } from '@convex/_generated/dataModel'
 import { useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { useNavigate } from '@tanstack/react-router'
-import { ChevronsDownUp, Plus } from 'lucide-react'
+import { ChevronDown, ChevronsDownUp, Plus } from 'lucide-react'
 import { useCallback } from 'react'
 
-import { Button, Tree } from '~/components/ui'
-import { librarySidebarColors } from '~/styles/colors/components.stylex'
-import { fontWeights, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
+import {
+	Button,
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+	Tree,
+} from '~/components/ui'
+import {
+	librarySidebarColors,
+	sidebarSectionHeaderColors,
+} from '~/styles/colors/components.stylex'
+import {
+	fontSizes,
+	fontWeights,
+	iconSizes,
+	radii,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 import { useCreateCollection } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
@@ -18,42 +33,71 @@ import {
 
 const styles = stylex.create({
 	container: {
-		borderRadius: radii['2xl'],
-		backgroundColor: librarySidebarColors.background,
-		overflowY: 'auto',
+		display: 'flex',
+		flexDirection: 'column',
+		inlineSize: '100%',
+		height: '100%',
+		minHeight: 0,
 		overscrollBehaviorY: 'none',
 	},
 	containerIsDropTarget: {
 		backgroundColor: librarySidebarColors.containerBackgroundDropTarget,
 	},
-	stickyWrapper: {
-		backgroundColor: librarySidebarColors.background,
-		insetBlockStart: 0,
-		position: 'sticky',
-		zIndex: 1,
-	},
-	stickyWrapperIsDropTarget: {
-		backgroundColor: 'transparent',
-	},
 	header: {
-		padding: spacing.xs,
-		marginInline: spacing.xs,
+		gap: spacing.xs,
 		paddingBlockStart: spacing.md,
 
+		alignItems: 'center',
 		display: 'flex',
+		inlineSize: '100%',
+		minBlockSize: '36px',
 	},
-	headerText: {
+	toggle: {
+		borderWidth: 0,
+		gap: spacing.xs,
+		paddingBlock: spacing.xs,
 		paddingInline: spacing.sm,
+
+		borderRadius: radii.lg,
+		alignItems: 'center',
+		backgroundColor: 'transparent',
+		color: sidebarSectionHeaderColors.foreground,
+		cursor: 'pointer',
+		display: 'flex',
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
-		fontWeight: fontWeights.semibold,
+		fontFamily: 'inherit',
+		fontSize: fontSizes.md,
+		fontWeight: fontWeights.regular,
+		minInlineSize: 0,
+		textAlign: 'start',
+	},
+	chevron: {
+		blockSize: iconSizes.sm,
+		flexShrink: 0,
+		inlineSize: iconSizes.sm,
+		opacity: {
+			default: 0,
+			[stylex.when.ancestor(':focus-within')]: 1,
+			[stylex.when.ancestor(':hover')]: 1,
+		},
+	},
+	chevronCollapsed: {
+		transform: 'rotate(-90deg)',
+	},
+	actions: {
+		display: 'flex',
+		flexShrink: 0,
 	},
 	nav: {
 		padding: spacing.md,
-		flexShrink: 0,
-		inlineSize: '240px',
-		height: '100%',
+		flexBasis: 0,
+		flexGrow: 1,
+		flexShrink: 1,
+		inlineSize: '100%',
+		minHeight: 0,
+		overflowY: 'auto',
 	},
 })
 
@@ -95,47 +139,66 @@ export function LibrarySidebarContent({
 	}, [navigate, createCollection])
 
 	return (
-		<div
-			{...stylex.props(
+		<Collapsible
+			defaultOpen
+			render={<section aria-label='Library' />}
+			xstyle={[
 				styles.container,
 				libraryRootIsDropTarget && styles.containerIsDropTarget,
-			)}
+			]}
 		>
 			<div
-				{...stylex.props(
-					styles.stickyWrapper,
-					libraryRootIsDropTarget && styles.stickyWrapperIsDropTarget,
-				)}
+				ref={libraryRootRef}
+				{...stylex.props(stylex.defaultMarker(), styles.header)}
 			>
-				<div ref={libraryRootRef} {...stylex.props(styles.header)}>
-					<p {...stylex.props(styles.headerText)}>Library</p>
-					<div>
-						<Button.Icon
-							aria-label='Collapse all collections'
-							disabled={openCollectionIds.size === 0}
-							shape='round'
-							size='micro'
-							variant='ghost'
-							onClick={onCollapseAll}
+				<CollapsibleTrigger
+					render={(renderProps, { open }) => (
+						<button
+							{...renderProps}
+							aria-label={`${open ? 'Collapse' : 'Expand'} Library`}
+							type='button'
 						>
-							<ChevronsDownUp
+							<span>Library</span>
+							<ChevronDown
 								aria-hidden='true'
-								size={iconSizes.md}
+								{...stylex.props(
+									styles.chevron,
+									!open && styles.chevronCollapsed,
+								)}
 							/>
-						</Button.Icon>
-						<Button.Icon
-							aria-label='Add collection'
-							shape='round'
-							size='micro'
-							variant='ghost'
-							onClick={handleCreateCollection}
-						>
-							<Plus aria-hidden='true' size={iconSizes.md} />
-						</Button.Icon>
-					</div>
+						</button>
+					)}
+					xstyle={styles.toggle}
+				/>
+				<div {...stylex.props(styles.actions)}>
+					<Button.Icon
+						aria-label='Collapse all collections'
+						disabled={openCollectionIds.size === 0}
+						shape='round'
+						size='micro'
+						variant='ghost'
+						onClick={onCollapseAll}
+					>
+						<ChevronsDownUp
+							aria-hidden='true'
+							size={iconSizes.md}
+						/>
+					</Button.Icon>
+					<Button.Icon
+						aria-label='Add collection'
+						shape='round'
+						size='micro'
+						variant='ghost'
+						onClick={handleCreateCollection}
+					>
+						<Plus aria-hidden='true' size={iconSizes.md} />
+					</Button.Icon>
 				</div>
 			</div>
-			<nav aria-label='Library collections' {...stylex.props(styles.nav)}>
+			<CollapsibleContent
+				render={<nav aria-label='Library collections' />}
+				xstyle={styles.nav}
+			>
 				<Tree>
 					{collections.map(collection => (
 						<LibraryCollectionItem
@@ -146,7 +209,7 @@ export function LibrarySidebarContent({
 						/>
 					))}
 				</Tree>
-			</nav>
-		</div>
+			</CollapsibleContent>
+		</Collapsible>
 	)
 }

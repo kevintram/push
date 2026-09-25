@@ -1,13 +1,10 @@
 import * as stylex from '@stylexjs/stylex'
 import type { ReactNode } from 'react'
 
-import {
-	appRailColors,
-	appShellColors,
-} from '~/styles/colors/components.stylex'
+import { appShellColors } from '~/styles/colors/components.stylex'
 import { breakpoints, radii } from '~/styles/tokens.stylex'
 
-import { AppRail } from './AppRail'
+import { AppSidebar } from './AppSidebar'
 
 const styles = stylex.create({
 	shell: {
@@ -18,7 +15,7 @@ const styles = stylex.create({
 
 		height: '100svh',
 
-		backgroundColor: appRailColors.background,
+		backgroundColor: appShellColors.chromeBackground,
 	},
 	children: {
 		marginBlock: {
@@ -56,7 +53,7 @@ type AppShellProps = {
 export function AppShell({ children }: AppShellProps) {
 	return (
 		<div {...stylex.props(styles.shell)}>
-			<AppRail />
+			<AppSidebar />
 			<main {...stylex.props(styles.children)}>{children}</main>
 		</div>
 	)

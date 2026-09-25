@@ -26,8 +26,8 @@ export interface SidebarItemProps extends Omit<
 	icon?: LucideIcon
 	ariaLabel?: string
 	/**
-	 * `fat` stacks the icon above the label for the primary rail, `skinny` puts
-	 * them on one line for nested section navs.
+	 * `fat` stacks the icon above the label; `skinny` puts them on one line.
+	 * Defaults to `skinny`.
 	 */
 	layout?: 'fat' | 'skinny'
 	iconOnly?: boolean
@@ -139,7 +139,7 @@ export function SidebarItem({
 	children,
 	icon: Icon,
 	iconOnly = false,
-	layout = 'fat',
+	layout = 'skinny',
 	render,
 	variant = 'ghost',
 	xstyle,
