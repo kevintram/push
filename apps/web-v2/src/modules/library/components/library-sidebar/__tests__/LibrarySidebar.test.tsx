@@ -31,7 +31,7 @@ vi.mock('@dnd-kit/react', () => ({
 }))
 
 vi.mock('@tanstack/react-query', () => ({
-	useSuspenseQuery: () => ({ data: [] }),
+	useQuery: () => ({ data: [] }),
 }))
 
 vi.mock('@tanstack/react-router', () => ({

@@ -1,5 +1,5 @@
 import type { Id } from '@convex/_generated/dataModel'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -23,7 +23,8 @@ const KEY_SEPARATOR = '\0'
 
 /**
  * The library tree: the user's collections as a forest, plus which of its
- * branches are open. Suspends until the collection list has loaded.
+ * branches are open. It stays empty while the collection list loads so the
+ * persistent app sidebar never blocks the current route.
  *
  * The selected collection is the one the current route points at, if any.
  * When it changes, it and its ancestors are opened, so it is visible and its
@@ -31,10 +32,13 @@ const KEY_SEPARATOR = '\0'
  * the same selection.
  */
 export function useCollectionTree(): CollectionTree {
-	const { data: collections } = useSuspenseQuery(collectionQueries.list())
+	// The tree is mounted by the app-level sidebar on every authenticated route.
+	// Keep the shell usable while this global query is loading; library routes
+	// still prefetch the same query in their route loaders.
+	// TODO(2): Handle query errors so a failed request isn't shown as an empty library.
+	const { data: collections = [] } = useQuery(collectionQueries.list())
 	const tree = useMemo(() => treeifyCollections(collections), [collections])
-	// Read loosely: this hook renders under the library layout on both the index
-	// route and the `$collectionId` route, so the param may be absent.
+	// Read loosely because most routes do not define a collectionId param.
 	const { collectionId: selectedCollectionId } = useParams({
 		strict: false,
 	}) as { collectionId?: CollectionId }
