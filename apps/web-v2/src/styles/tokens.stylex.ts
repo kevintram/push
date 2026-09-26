@@ -19,6 +19,11 @@ export const fontWeights = stylex.defineVars({
 	bold: '750',
 })
 
+export const iconWeights = stylex.defineVars({
+	regular: '2',
+	medium: '2.5',
+})
+
 export const radii = stylex.defineVars({
 	xs: '6px',
 	sm: '8px',
@@ -43,8 +48,8 @@ export const spacing = stylex.defineVars({
 })
 
 export const iconSizes = stylex.defineVars({
-	xs: '0.5rem',
-	sm: '0.75rem',
+	xs: '0.75rem',
+	sm: '0.85rem',
 	md: '1rem',
 	lg: '1.5rem',
 	xl: '2rem',
