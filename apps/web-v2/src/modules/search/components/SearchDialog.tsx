@@ -4,7 +4,6 @@ import { Search, X } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
-import { SidebarItem } from '~/components/sidebar-item'
 import {
 	Button,
 	Dialog,
@@ -210,12 +209,17 @@ export function SearchDialog() {
 					render={
 						<DialogTrigger
 							render={
-								<SidebarItem.Icon aria-label='Search'>
+								<Button.Icon
+									aria-label='Search'
+									shape='round'
+									size='micro'
+									variant='ghost'
+								>
 									<Search
 										aria-hidden='true'
 										size={iconSizes.md}
 									/>
-								</SidebarItem.Icon>
+								</Button.Icon>
 							}
 						/>
 					}
