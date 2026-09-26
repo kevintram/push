@@ -22,6 +22,7 @@ import {
 	breakpoints,
 	fontSizes,
 	iconSizes,
+	iconWeights,
 	spacing,
 } from '~/styles/tokens.stylex'
 
@@ -217,7 +218,8 @@ export function SearchDialog() {
 								>
 									<Search
 										aria-hidden='true'
-										size={iconSizes.md}
+										size={iconSizes.sm}
+										strokeWidth={iconWeights.medium}
 									/>
 								</Button.Icon>
 							}
