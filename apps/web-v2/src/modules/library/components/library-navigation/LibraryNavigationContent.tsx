@@ -102,7 +102,7 @@ const styles = stylex.create({
 	},
 })
 
-type LibrarySidebarContentProps = {
+type LibraryNavigationContentProps = {
 	collections: ReadonlyArray<CollectionWithChildren>
 	openCollectionIds: ReadonlySet<Id<'collections'>>
 	onCollectionOpenChange: CollectionOpenChangeHandler
@@ -114,12 +114,12 @@ type LibrarySidebarContentProps = {
  * entire sidebar while its ref is attached to the header element as the root
  * drop target.
  */
-export function LibrarySidebarContent({
+export function LibraryNavigationContent({
 	collections,
 	openCollectionIds,
 	onCollectionOpenChange,
 	onCollapseAll,
-}: LibrarySidebarContentProps) {
+}: LibraryNavigationContentProps) {
 	const createCollection = useCreateCollection()
 	const navigate = useNavigate()
 

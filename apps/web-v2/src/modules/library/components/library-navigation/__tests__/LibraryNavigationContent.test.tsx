@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { LibrarySidebarContent } from '../LibrarySidebarContent'
+import { LibraryNavigationContent } from '../LibraryNavigationContent'
 
 const mocks = vi.hoisted(() => ({
 	droppableRef: vi.fn<(element: HTMLElement | null) => void>(),
@@ -28,7 +28,7 @@ vi.mock('../../../api/collectionQueries', () => ({
 	useCreateCollection: () => ({ mutate: vi.fn() }),
 }))
 
-describe('LibrarySidebarContent', () => {
+describe('LibraryNavigationContent', () => {
 	beforeEach(() => {
 		mocks.droppableRef.mockClear()
 		mocks.isDropTarget = false
@@ -37,7 +37,7 @@ describe('LibrarySidebarContent', () => {
 
 	it('keeps the header as the root drop target', () => {
 		render(
-			<LibrarySidebarContent
+			<LibraryNavigationContent
 				collections={[]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
@@ -58,7 +58,7 @@ describe('LibrarySidebarContent', () => {
 	it('collapses and expands the collection list from its section header', async () => {
 		const user = userEvent.setup()
 		render(
-			<LibrarySidebarContent
+			<LibraryNavigationContent
 				collections={[]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
@@ -81,7 +81,7 @@ describe('LibrarySidebarContent', () => {
 
 	it('highlights the whole sidebar when the header is the drop target', () => {
 		const { rerender } = render(
-			<LibrarySidebarContent
+			<LibraryNavigationContent
 				collections={[]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
@@ -93,7 +93,7 @@ describe('LibrarySidebarContent', () => {
 
 		mocks.isDropTarget = true
 		rerender(
-			<LibrarySidebarContent
+			<LibraryNavigationContent
 				collections={[]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}

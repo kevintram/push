@@ -2,14 +2,13 @@ import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 import { Settings } from 'lucide-react'
 
-import { LibrarySidebar } from '~/modules/library/components/library-sidebar/LibrarySidebar'
+import { SidebarItem } from '~/components/sidebar'
+import { LibraryNavigation } from '~/modules/library/components/library-navigation/LibraryNavigation'
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
+import { ReviewNavigation } from '~/modules/reviews/components/review-navigation/ReviewNavigation'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import { appShellColors } from '~/styles/colors/components.stylex'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
-
-import { ReviewNavigation } from './ReviewNavigation'
-import { SidebarItem } from './sidebar-item'
 
 const styles = stylex.create({
 	container: {
@@ -74,7 +73,7 @@ export function AppSidebar() {
 			</div>
 			<ReviewNavigation />
 			<div {...stylex.props(styles.library)}>
-				<LibrarySidebar />
+				<LibraryNavigation />
 			</div>
 			<div {...stylex.props(styles.footer)}>
 				<HideModeButton />

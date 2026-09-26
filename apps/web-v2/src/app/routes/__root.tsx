@@ -2,9 +2,9 @@ import type { QueryClient } from '@tanstack/react-query'
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import { ErrorBoundary } from 'react-error-boundary'
 
+import { AppShell } from '~/app/layout/AppShell'
 import { ErrorPage } from '~/app/pages/ErrorPage'
 import { NotFoundPage } from '~/app/pages/NotFoundPage'
-import { AppShell } from '~/components/AppShell'
 import { AuthGate } from '~/modules/auth/components/AuthGate'
 
 export type RouterContext = {

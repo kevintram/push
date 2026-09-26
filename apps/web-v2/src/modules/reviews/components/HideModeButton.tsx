@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { Copy } from 'lucide-react'
 
-import { SidebarItem } from '~/components/sidebar-item'
+import { SidebarItem } from '~/components/sidebar'
 import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { hideModeButtonColors } from '~/styles/colors/components.stylex'
 

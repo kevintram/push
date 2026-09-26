@@ -2,7 +2,7 @@ import { act, render } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { LibrarySidebar } from '../LibrarySidebar'
+import { LibraryNavigation } from '../LibraryNavigation'
 
 type TestDragEndEvent = {
 	canceled: boolean
@@ -43,22 +43,22 @@ vi.mock('../../../api/collectionQueries', () => ({
 	useUpdateCollection: () => ({ mutate: mocks.updateCollection }),
 }))
 
-vi.mock('../LibrarySidebarContent', () => ({
-	LibrarySidebarContent: () => <div>Library sidebar content</div>,
+vi.mock('../LibraryNavigationContent', () => ({
+	LibraryNavigationContent: () => <div>Library sidebar content</div>,
 }))
 
 function finishDrag(event: TestDragEndEvent) {
 	act(() => mocks.onDragEnd?.(event))
 }
 
-describe('LibrarySidebar drag and drop', () => {
+describe('LibraryNavigation drag and drop', () => {
 	beforeEach(() => {
 		mocks.onDragEnd = undefined
 		mocks.updateCollection.mockClear()
 	})
 
 	it('reparents a collection when dropped onto another collection', () => {
-		render(<LibrarySidebar />)
+		render(<LibraryNavigation />)
 
 		finishDrag({
 			canceled: false,
@@ -75,7 +75,7 @@ describe('LibrarySidebar drag and drop', () => {
 	})
 
 	it('moves a collection to the root when dropped onto the library header', () => {
-		render(<LibrarySidebar />)
+		render(<LibraryNavigation />)
 
 		finishDrag({
 			canceled: false,
@@ -127,7 +127,7 @@ describe('LibrarySidebar drag and drop', () => {
 			},
 		},
 	])('does not update a collection when $name', ({ event }) => {
-		render(<LibrarySidebar />)
+		render(<LibraryNavigation />)
 
 		finishDrag(event)
 

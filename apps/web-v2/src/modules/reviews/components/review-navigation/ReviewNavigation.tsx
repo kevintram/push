@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { BellRing, Calendar, ChevronDown, Flag, Sparkles } from 'lucide-react'
 
-import { SidebarItem } from '~/components/sidebar-item'
+import { SidebarItem } from '~/components/sidebar'
 import {
 	Collapsible,
 	CollapsibleContent,
