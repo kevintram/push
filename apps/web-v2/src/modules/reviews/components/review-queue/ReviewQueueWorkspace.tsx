@@ -13,7 +13,7 @@ import {
 import { CardNavigationHotkeys } from '~/modules/reviews/components/CardNavigationHotkeys'
 import type { Card } from '~/modules/reviews/types/review.types'
 import { reviewQueueColors } from '~/styles/colors/components.stylex'
-import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { breakpoints, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
 import {
@@ -52,7 +52,8 @@ const styles = stylex.create({
 		backgroundColor: reviewQueueColors.containerBackground,
 	},
 	panels: {
-		gap: spacing.xs,
+		padding: spacing.sm,
+		gap: spacing.sm,
 		display: 'flex',
 		flexBasis: 0,
 		flexDirection: 'row',
@@ -75,6 +76,10 @@ const styles = stylex.create({
 		borderRadius: radii.lg,
 		overflow: 'hidden',
 		backgroundColor: reviewQueueColors.contentBackground,
+		boxShadow: {
+			default: 'none',
+			[breakpoints.desktop]: `0 0 4px ${reviewQueueColors.panelShadow}`,
+		},
 		display: 'flex',
 		flexBasis: 0,
 		flexGrow: 1,

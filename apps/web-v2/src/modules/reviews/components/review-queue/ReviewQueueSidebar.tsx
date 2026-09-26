@@ -14,6 +14,7 @@ import type { Card } from '~/modules/reviews/types/review.types'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { reviewQueueColors } from '~/styles/colors/components.stylex'
 import {
+	breakpoints,
 	fontSizes,
 	fontWeights,
 	iconSizes,
@@ -41,6 +42,10 @@ const styles = stylex.create({
 		overflow: 'hidden',
 		backgroundColor: reviewQueueColors.sidebarBackground,
 		blockSize: '100%',
+		boxShadow: {
+			default: 'none',
+			[breakpoints.desktop]: `0 0 4px ${reviewQueueColors.panelShadow}`,
+		},
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 0,

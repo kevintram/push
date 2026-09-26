@@ -327,6 +327,7 @@ export const reviewQueueColors = stylex.defineVars({
 	containerBackground: semanticColors.surfaceRaised,
 	contentBackground: semanticColors.surfacePrimary,
 	sidebarBackground: semanticColors.surfacePrimary,
+	panelShadow: semanticColors.shadowSubtle,
 
 	positionForeground: semanticColors.textSecondary,
 	emptyForeground: semanticColors.textSecondary,
