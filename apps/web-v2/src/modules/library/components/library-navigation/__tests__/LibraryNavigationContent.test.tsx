@@ -1,5 +1,5 @@
 import type { Id } from '@convex/_generated/dataModel'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -104,6 +104,27 @@ describe('LibraryNavigationContent', () => {
 		expect(
 			screen.getByRole('navigation', { name: 'Library collections' }),
 		).toBeInTheDocument()
+	})
+
+	it('adds the top fade only while the collection list is scrolled', () => {
+		render(
+			<LibraryNavigationContent
+				collections={[]}
+				openCollectionIds={new Set()}
+				onCollectionOpenChange={vi.fn()}
+				onCollapseAll={vi.fn()}
+			/>,
+		)
+		const navigation = screen.getByRole('navigation', {
+			name: 'Library collections',
+		})
+		const restingClassName = navigation.className
+
+		fireEvent.scroll(navigation, { target: { scrollTop: 1 } })
+		expect(navigation.className).not.toBe(restingClassName)
+
+		fireEvent.scroll(navigation, { target: { scrollTop: 0 } })
+		expect(navigation.className).toBe(restingClassName)
 	})
 
 	it('highlights the whole sidebar when the header is the drop target', () => {

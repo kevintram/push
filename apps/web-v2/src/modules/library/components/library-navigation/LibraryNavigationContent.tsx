@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { useNavigate } from '@tanstack/react-router'
 import { ChevronsDownUp, Plus } from 'lucide-react'
-import { useCallback } from 'react'
+import { type UIEvent, useCallback, useState } from 'react'
 
 import {
 	SidebarCollapsibleActions,
@@ -14,7 +14,7 @@ import {
 } from '~/components/sidebar'
 import { Button, Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
-import { iconSizes, iconWeights } from '~/styles/tokens.stylex'
+import { iconSizes, iconWeights, spacing } from '~/styles/tokens.stylex'
 
 import { useCreateCollection } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
@@ -36,14 +36,27 @@ const styles = stylex.create({
 		backgroundColor: librarySidebarColors.containerBackgroundDropTarget,
 	},
 	nav: {
+		WebkitMaskImage:
+			'linear-gradient(to bottom, black 0, black calc(100% - 24px), transparent 100%)',
 		paddingBlock: 0,
 		paddingInline: 0,
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
 		inlineSize: '100%',
+		maskImage:
+			'linear-gradient(to bottom, black 0, black calc(100% - 24px), transparent 100%)',
 		minHeight: 0,
 		overflowY: 'auto',
+	},
+	navScrolled: {
+		WebkitMaskImage:
+			'linear-gradient(to bottom, transparent 0, black 24px, black calc(100% - 24px), transparent 100%)',
+		maskImage:
+			'linear-gradient(to bottom, transparent 0, black 24px, black calc(100% - 24px), transparent 100%)',
+	},
+	collectionTree: {
+		paddingBlockEnd: spacing.xl,
 	},
 })
 
@@ -67,6 +80,10 @@ export function LibraryNavigationContent({
 }: LibraryNavigationContentProps) {
 	const createCollection = useCreateCollection()
 	const navigate = useNavigate()
+	const [hasScrolled, setHasScrolled] = useState(false)
+	// TODO(4): Investigate simplifying the two mask variants and scroll state while
+	// keeping no initial header gap, a full-size top fade after scrolling, and
+	// clearance at the bottom edge.
 
 	const { ref: libraryRootRef, isDropTarget: libraryRootIsDropTarget } =
 		useDroppable({ id: 'library-root' })
@@ -83,6 +100,10 @@ export function LibraryNavigationContent({
 			},
 		)
 	}, [navigate, createCollection])
+
+	const handleScroll = useCallback((event: UIEvent<HTMLElement>) => {
+		setHasScrolled(event.currentTarget.scrollTop > 0)
+	}, [])
 
 	return (
 		<SidebarCollapsibleItem
@@ -127,9 +148,10 @@ export function LibraryNavigationContent({
 			</SidebarCollapsibleHeader>
 			<SidebarCollapsibleContent
 				render={<nav aria-label='Library collections' />}
-				xstyle={styles.nav}
+				xstyle={[styles.nav, hasScrolled && styles.navScrolled]}
+				onScroll={handleScroll}
 			>
-				<Tree>
+				<Tree xstyle={styles.collectionTree}>
 					{collections.map(collection => (
 						<LibraryCollectionItem
 							key={collection._id}
