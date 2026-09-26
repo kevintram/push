@@ -1,7 +1,9 @@
 import * as stylex from '@stylexjs/stylex'
 import type { ReactNode } from 'react'
 
+import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { appShellColors } from '~/styles/colors/components.stylex'
+import { hideModeAppShellTheme } from '~/styles/colors/hideModeThemes'
 import { breakpoints, radii } from '~/styles/tokens.stylex'
 
 import { AppSidebar } from './AppSidebar'
@@ -51,9 +53,15 @@ type AppShellProps = {
 }
 
 export function AppShell({ children }: AppShellProps) {
+	const { hideMode } = useHideMode()
+	const isHideMode = hideMode === 'on'
+
 	return (
-		<div {...stylex.props(styles.shell)}>
-			<AppSidebar />
+		<div
+			data-hide-mode={isHideMode ? 'on' : 'off'}
+			{...stylex.props(styles.shell, isHideMode && hideModeAppShellTheme)}
+		>
+			<AppSidebar hideMode={isHideMode} />
 			<main {...stylex.props(styles.children)}>{children}</main>
 		</div>
 	)

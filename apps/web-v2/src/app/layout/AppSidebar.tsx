@@ -8,6 +8,17 @@ import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { ReviewNavigation } from '~/modules/reviews/components/review-navigation/ReviewNavigation'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import { appShellColors } from '~/styles/colors/components.stylex'
+import {
+	hideModeButtonTheme,
+	hideModeLibraryCollectionItemTheme,
+	hideModeLibrarySidebarTheme,
+	hideModeSidebarButtonTheme,
+	hideModeSidebarItemTheme,
+	hideModeSidebarSectionHeaderTheme,
+	hideModeSidebarTheme,
+	hideModeTreeTheme,
+} from '~/styles/colors/hideModeThemes'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -16,6 +27,7 @@ const styles = stylex.create({
 		gap: spacing.xs,
 
 		backgroundColor: appShellColors.chromeBackground,
+		color: semanticColors.textPrimary,
 
 		display: 'flex',
 		flexDirection: 'column',
@@ -63,9 +75,26 @@ const styles = stylex.create({
 	},
 })
 
-export function AppSidebar() {
+type AppSidebarProps = {
+	hideMode: boolean
+}
+
+export function AppSidebar({ hideMode }: AppSidebarProps) {
 	return (
-		<nav aria-label='primary' {...stylex.props(styles.container)}>
+		<nav
+			aria-label='primary'
+			{...stylex.props(
+				styles.container,
+				hideMode && hideModeSidebarTheme,
+				hideMode && hideModeSidebarItemTheme,
+				hideMode && hideModeSidebarSectionHeaderTheme,
+				hideMode && hideModeSidebarButtonTheme,
+				hideMode && hideModeTreeTheme,
+				hideMode && hideModeLibrarySidebarTheme,
+				hideMode && hideModeLibraryCollectionItemTheme,
+				hideMode && hideModeButtonTheme,
+			)}
+		>
 			<div {...stylex.props(styles.brandRow)}>
 				<Link to='/review' {...stylex.props(styles.brand)}>
 					<span>3gulp</span>
