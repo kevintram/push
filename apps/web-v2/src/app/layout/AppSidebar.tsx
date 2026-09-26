@@ -41,7 +41,10 @@ const styles = stylex.create({
 		fontSize: fontSizes.lg,
 		fontWeight: fontWeights.semibold,
 	},
-	search: {
+	actions: {
+		gap: spacing.xs,
+		alignItems: 'center',
+		display: 'flex',
 		marginInlineStart: 'auto',
 	},
 	footer: {
@@ -67,7 +70,8 @@ export function AppSidebar() {
 				<Link to='/review' {...stylex.props(styles.brand)}>
 					<span>3gulp</span>
 				</Link>
-				<div {...stylex.props(styles.search)}>
+				<div {...stylex.props(styles.actions)}>
+					<HideModeButton />
 					<SearchDialog />
 				</div>
 			</div>
@@ -76,7 +80,6 @@ export function AppSidebar() {
 				<LibraryNavigation />
 			</div>
 			<div {...stylex.props(styles.footer)}>
-				<HideModeButton />
 				<SidebarItem
 					icon={Settings}
 					render={

@@ -909,6 +909,24 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
+	it('groups hide mode immediately before search in the sidebar header', async () => {
+		renderRoute('/settings')
+
+		await screen.findByRole('heading', { name: 'Account' })
+		const primaryNavigation = screen.getByRole('navigation', {
+			name: 'primary',
+		})
+		const hideModeButton = within(primaryNavigation).getByRole('button', {
+			name: 'Hide mode',
+		})
+		const searchButton = within(primaryNavigation).getByRole('button', {
+			name: 'Search',
+		})
+
+		expect(hideModeButton.parentElement).toBe(searchButton.parentElement)
+		expect(hideModeButton.nextElementSibling).toBe(searchButton)
+	})
+
 	it('opens search over the current page without navigating away', async () => {
 		const user = userEvent.setup()
 		renderRoute('/settings')
