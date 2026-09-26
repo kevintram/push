@@ -336,14 +336,6 @@ export const cardDetailErrorColors = stylex.defineVars({
 	messageForeground: semanticColors.textSecondary,
 })
 
-export const flaggedCardFocusColors = stylex.defineVars({
-	containerBackground: semanticColors.surfaceRaised,
-	cardBackground: semanticColors.surfacePrimary,
-
-	positionForeground: semanticColors.textSecondary,
-	emptyForeground: semanticColors.textSecondary,
-})
-
 export const hideModeButtonColors = stylex.defineVars({
 	backgroundActive: {
 		default: blue.s200,

@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
-import { Flag, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
 
 import { LibrarySidebar } from '~/modules/library/components/library-sidebar/LibrarySidebar'
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
@@ -73,12 +73,6 @@ export function AppSidebar() {
 				</div>
 			</div>
 			<ReviewNavigation />
-			<SidebarItem
-				icon={Flag}
-				render={<Link activeOptions={{ exact: true }} to='/flagged' />}
-			>
-				Flagged
-			</SidebarItem>
 			<div {...stylex.props(styles.library)}>
 				<LibrarySidebar />
 			</div>

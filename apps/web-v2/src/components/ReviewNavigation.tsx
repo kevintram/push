@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { BellRing, Calendar, ChevronDown, Sparkles } from 'lucide-react'
+import { BellRing, Calendar, ChevronDown, Flag, Sparkles } from 'lucide-react'
 
 import { SidebarItem } from '~/components/sidebar-item'
 import {
@@ -11,6 +11,7 @@ import {
 	StatusDot,
 } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
+import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { dueQueries } from '~/modules/reviews/api/dueQueries'
 import { sidebarSectionHeaderColors } from '~/styles/colors/components.stylex'
 import {
@@ -71,9 +72,6 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 	},
-	child: {
-		paddingInlineStart: spacing.xl,
-	},
 	statusDotWrapper: {
 		paddingInline: spacing.sm,
 		display: 'flex',
@@ -88,10 +86,12 @@ export function ReviewNavigation() {
 	const { data: dueEntries } = useQuery(dueQueries.listDue(today))
 	const { data: newEntries } = useQuery(dueQueries.listNew())
 	const { data: lateEntries } = useQuery(dueQueries.listLate(today))
+	const { data: flaggedCards } = useQuery(cardQueries.listFlagged())
 
 	const hasDue = (dueEntries?.length ?? 0) > 0
 	const hasNew = (newEntries?.length ?? 0) > 0
 	const hasLate = (lateEntries?.length ?? 0) > 0
+	const hasFlagged = (flaggedCards?.length ?? 0) > 0
 
 	return (
 		<Collapsible
@@ -128,7 +128,6 @@ export function ReviewNavigation() {
 					ariaLabel={hasDue ? 'Due, cards available' : undefined}
 					icon={Calendar}
 					render={<Link to='/review/due' />}
-					xstyle={styles.child}
 				>
 					Due
 					{hasDue && (
@@ -141,7 +140,6 @@ export function ReviewNavigation() {
 					ariaLabel={hasNew ? 'New, cards available' : undefined}
 					icon={Sparkles}
 					render={<Link to='/review/new' />}
-					xstyle={styles.child}
 				>
 					New
 					{hasNew && (
@@ -154,10 +152,23 @@ export function ReviewNavigation() {
 					ariaLabel={hasLate ? 'Late, cards available' : undefined}
 					icon={BellRing}
 					render={<Link to='/review/late' />}
-					xstyle={styles.child}
 				>
 					Late
 					{hasLate && (
+						<span {...stylex.props(styles.statusDotWrapper)}>
+							<StatusDot />
+						</span>
+					)}
+				</SidebarItem>
+				<SidebarItem
+					ariaLabel={
+						hasFlagged ? 'Flagged, cards available' : undefined
+					}
+					icon={Flag}
+					render={<Link to='/review/flagged' />}
+				>
+					Flagged
+					{hasFlagged && (
 						<span {...stylex.props(styles.statusDotWrapper)}>
 							<StatusDot />
 						</span>

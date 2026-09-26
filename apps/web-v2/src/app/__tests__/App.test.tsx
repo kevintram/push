@@ -367,7 +367,7 @@ describe('v2 app setup', () => {
 		expect(within(sidebar).getByText('1')).toBeInTheDocument()
 	})
 
-	it('filters the flagged card list by card type', async () => {
+	it('filters the flagged review queue by card type', async () => {
 		const user = userEvent.setup()
 		const practiceCard: Card = {
 			...card,
@@ -382,66 +382,41 @@ describe('v2 app setup', () => {
 			flaggedAt: 2,
 			primaryText: 'Flashcard prompt',
 		}
-		renderRoute('/flagged', {
+		renderRoute('/review/flagged', {
 			flaggedCards: [flashcard, practiceCard],
 		})
 
-		await screen.findByRole('link', { name: 'Flashcard prompt' })
-		expect(
-			screen.getByRole('link', { name: 'Practice prompt' }),
-		).toBeInTheDocument()
-
-		await user.click(screen.getByRole('radio', { name: 'Not flashcards' }))
-
-		expect(
-			screen.getByRole('link', { name: 'Practice prompt' }),
-		).toBeInTheDocument()
-		expect(
-			screen.queryByRole('link', { name: 'Flashcard prompt' }),
-		).not.toBeInTheDocument()
-	})
-
-	it('renders all flagged cards', async () => {
-		const practiceCard: Card = {
-			...card,
-			_id: 'practice-card' as Id<'cards'>,
-			flaggedAt: 1,
-			primaryText: 'Practice prompt',
-			type: 'practice',
-		}
-		const flashcard: Card = {
-			...card,
-			_id: 'flashcard-card' as Id<'cards'>,
-			flaggedAt: 2,
-			primaryText: 'Flashcard prompt',
-		}
-		renderRoute('/flagged', {
-			flaggedCards: [flashcard, practiceCard],
+		const sidebar = await screen.findByRole('complementary', {
+			name: 'Flagged cards',
 		})
-
 		expect(
-			await screen.findByRole('heading', {
-				level: 1,
-				name: 'Flagged',
+			within(sidebar).getByRole('button', {
+				name: 'Select Flashcard prompt',
 			}),
 		).toBeInTheDocument()
 		expect(
-			screen.getByRole('link', { name: 'Flashcard prompt' }),
+			within(sidebar).getByRole('button', {
+				name: 'Select Practice prompt',
+			}),
+		).toBeInTheDocument()
+
+		await user.click(
+			within(sidebar).getByRole('radio', { name: 'Not flashcards' }),
+		)
+
+		expect(
+			within(sidebar).getByRole('button', {
+				name: 'Select Practice prompt',
+			}),
 		).toBeInTheDocument()
 		expect(
-			screen.getByRole('link', { name: 'Practice prompt' }),
-		).toBeInTheDocument()
+			within(sidebar).queryByRole('button', {
+				name: 'Select Flashcard prompt',
+			}),
+		).not.toBeInTheDocument()
 	})
 
-	it('shows the flagged empty state and disables focus', async () => {
-		renderRoute('/flagged')
-
-		expect(await screen.findByText('No cards.')).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: 'Focus' })).toBeDisabled()
-	})
-
-	it('passes all flagged cards into focus mode', async () => {
-		const user = userEvent.setup()
+	it('renders flagged cards in the review workspace', async () => {
 		const practiceCard: Card = {
 			...card,
 			_id: 'practice-card' as Id<'cards'>,
@@ -455,31 +430,44 @@ describe('v2 app setup', () => {
 			flaggedAt: 2,
 			primaryText: 'Flashcard prompt',
 		}
-		renderRoute('/flagged', {
+		renderRoute('/review/flagged', {
 			flaggedCards: [flashcard, practiceCard],
 		})
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 		expect(
-			await screen.findByDisplayValue('Flashcard prompt'),
+			await screen.findByRole('region', {
+				name: 'Flagged review workspace',
+			}),
 		).toBeInTheDocument()
-		expect(screen.getByText('1 of 2')).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Select Flashcard prompt' }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Select Practice prompt' }),
+		).toBeInTheDocument()
+	})
 
-		const focusDialog = screen.getByRole('dialog', { name: 'Focus cards' })
-		within(focusDialog).getByRole('button', { name: 'Next card' }).focus()
-		await user.keyboard('{ArrowRight}')
-		expect(
-			await screen.findByDisplayValue('Practice prompt'),
-		).toBeInTheDocument()
-		expect(screen.getByText('2 of 2')).toBeInTheDocument()
+	it('shows the flagged review workspace empty state', async () => {
+		renderRoute('/review/flagged')
 
-		within(focusDialog)
-			.getByRole('button', { name: 'Previous card' })
-			.focus()
-		await user.keyboard('{ArrowLeft}')
 		expect(
-			await screen.findByDisplayValue('Flashcard prompt'),
+			await screen.findByRole('region', {
+				name: 'Flagged review workspace',
+			}),
 		).toBeInTheDocument()
+		expect(screen.getByText('No cards to review.')).toBeInTheDocument()
+		expect(screen.getByText('No cards.')).toBeInTheDocument()
+	})
+
+	it('redirects the legacy flagged route into Review', async () => {
+		const { router } = renderRoute('/flagged')
+
+		expect(
+			await screen.findByRole('region', {
+				name: 'Flagged review workspace',
+			}),
+		).toBeInTheDocument()
+		expect(router.state.location.pathname).toBe('/review/flagged')
 	})
 
 	it('renders the selected card in the static review workspace', async () => {
@@ -869,7 +857,7 @@ describe('v2 app setup', () => {
 	})
 
 	it.each([
-		['/flagged', 'Flagged'],
+		['/review/flagged', 'Flagged'],
 		['/settings', 'Settings'],
 	])('renders the %s route', async (path, heading) => {
 		renderRoute(path)
