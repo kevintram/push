@@ -1,3 +1,4 @@
+import type { Id } from '@convex/_generated/dataModel'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -74,6 +75,32 @@ describe('LibraryNavigationContent', () => {
 		).not.toBeInTheDocument()
 
 		await user.click(screen.getByRole('button', { name: 'Expand Library' }))
+		expect(
+			screen.getByRole('navigation', { name: 'Library collections' }),
+		).toBeInTheDocument()
+	})
+
+	it('keeps collapse-all independent from the Library section', async () => {
+		const user = userEvent.setup()
+		const onCollapseAll = vi.fn()
+		render(
+			<LibraryNavigationContent
+				collections={[]}
+				openCollectionIds={
+					new Set(['collection-id' as Id<'collections'>])
+				}
+				onCollectionOpenChange={vi.fn()}
+				onCollapseAll={onCollapseAll}
+			/>,
+		)
+
+		await user.click(
+			screen.getByRole('button', { name: 'Collapse all collections' }),
+		)
+		expect(onCollapseAll).toHaveBeenCalledOnce()
+		expect(
+			screen.getByRole('button', { name: 'Collapse Library' }),
+		).toHaveAttribute('aria-expanded', 'true')
 		expect(
 			screen.getByRole('navigation', { name: 'Library collections' }),
 		).toBeInTheDocument()

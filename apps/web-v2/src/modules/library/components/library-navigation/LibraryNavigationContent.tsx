@@ -2,27 +2,19 @@ import type { Id } from '@convex/_generated/dataModel'
 import { useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { useNavigate } from '@tanstack/react-router'
-import { ChevronDown, ChevronsDownUp, Plus } from 'lucide-react'
+import { ChevronsDownUp, Plus } from 'lucide-react'
 import { useCallback } from 'react'
 
 import {
-	Button,
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-	Tree,
-} from '~/components/ui'
-import {
-	librarySidebarColors,
-	sidebarSectionHeaderColors,
-} from '~/styles/colors/components.stylex'
-import {
-	fontSizes,
-	fontWeights,
-	iconSizes,
-	radii,
-	spacing,
-} from '~/styles/tokens.stylex'
+	SidebarCollapsibleActions,
+	SidebarCollapsibleContent,
+	SidebarCollapsibleHeader,
+	SidebarCollapsibleItem,
+	SidebarCollapsibleTrigger,
+} from '~/components/sidebar'
+import { Button, Tree } from '~/components/ui'
+import { librarySidebarColors } from '~/styles/colors/components.stylex'
+import { iconSizes, iconWeights } from '~/styles/tokens.stylex'
 
 import { useCreateCollection } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
@@ -42,53 +34,6 @@ const styles = stylex.create({
 	},
 	containerIsDropTarget: {
 		backgroundColor: librarySidebarColors.containerBackgroundDropTarget,
-	},
-	header: {
-		gap: spacing.xs,
-		paddingBlockStart: spacing.md,
-
-		alignItems: 'center',
-		display: 'flex',
-		inlineSize: '100%',
-		minBlockSize: '36px',
-	},
-	toggle: {
-		borderWidth: 0,
-		gap: spacing.xs,
-		paddingBlock: spacing.xs,
-		paddingInline: spacing.sm,
-
-		borderRadius: radii.lg,
-		alignItems: 'center',
-		backgroundColor: 'transparent',
-		color: sidebarSectionHeaderColors.foreground,
-		cursor: 'pointer',
-		display: 'flex',
-		flexBasis: 0,
-		flexGrow: 1,
-		flexShrink: 1,
-		fontFamily: 'inherit',
-		fontSize: fontSizes.md,
-		fontWeight: fontWeights.regular,
-		minInlineSize: 0,
-		textAlign: 'start',
-	},
-	chevron: {
-		blockSize: iconSizes.sm,
-		flexShrink: 0,
-		inlineSize: iconSizes.sm,
-		opacity: {
-			default: 0,
-			[stylex.when.ancestor(':focus-within')]: 1,
-			[stylex.when.ancestor(':hover')]: 1,
-		},
-	},
-	chevronCollapsed: {
-		transform: 'rotate(-90deg)',
-	},
-	actions: {
-		display: 'flex',
-		flexShrink: 0,
 	},
 	nav: {
 		paddingBlock: 0,
@@ -140,38 +85,17 @@ export function LibraryNavigationContent({
 	}, [navigate, createCollection])
 
 	return (
-		<Collapsible
+		<SidebarCollapsibleItem
 			defaultOpen
-			render={<section aria-label='Library' />}
+			aria-label='Library'
 			xstyle={[
 				styles.container,
 				libraryRootIsDropTarget && styles.containerIsDropTarget,
 			]}
 		>
-			<div
-				ref={libraryRootRef}
-				{...stylex.props(stylex.defaultMarker(), styles.header)}
-			>
-				<CollapsibleTrigger
-					render={(renderProps, { open }) => (
-						<button
-							{...renderProps}
-							aria-label={`${open ? 'Collapse' : 'Expand'} Library`}
-							type='button'
-						>
-							<span>Library</span>
-							<ChevronDown
-								aria-hidden='true'
-								{...stylex.props(
-									styles.chevron,
-									!open && styles.chevronCollapsed,
-								)}
-							/>
-						</button>
-					)}
-					xstyle={styles.toggle}
-				/>
-				<div {...stylex.props(styles.actions)}>
+			<SidebarCollapsibleHeader ref={libraryRootRef}>
+				<SidebarCollapsibleTrigger>Library</SidebarCollapsibleTrigger>
+				<SidebarCollapsibleActions>
 					<Button.Icon
 						aria-label='Collapse all collections'
 						disabled={openCollectionIds.size === 0}
@@ -182,7 +106,8 @@ export function LibraryNavigationContent({
 					>
 						<ChevronsDownUp
 							aria-hidden='true'
-							size={iconSizes.md}
+							size={iconSizes.sm}
+							strokeWidth={iconWeights.medium}
 						/>
 					</Button.Icon>
 					<Button.Icon
@@ -192,11 +117,15 @@ export function LibraryNavigationContent({
 						variant='ghost'
 						onClick={handleCreateCollection}
 					>
-						<Plus aria-hidden='true' size={iconSizes.md} />
+						<Plus
+							aria-hidden='true'
+							size={iconSizes.sm}
+							strokeWidth={iconWeights.medium}
+						/>
 					</Button.Icon>
-				</div>
-			</div>
-			<CollapsibleContent
+				</SidebarCollapsibleActions>
+			</SidebarCollapsibleHeader>
+			<SidebarCollapsibleContent
 				render={<nav aria-label='Library collections' />}
 				xstyle={styles.nav}
 			>
@@ -210,7 +139,7 @@ export function LibraryNavigationContent({
 						/>
 					))}
 				</Tree>
-			</CollapsibleContent>
-		</Collapsible>
+			</SidebarCollapsibleContent>
+		</SidebarCollapsibleItem>
 	)
 }

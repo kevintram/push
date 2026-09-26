@@ -1,72 +1,22 @@
 import * as stylex from '@stylexjs/stylex'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { BellRing, Calendar, ChevronDown, Flag, Sparkles } from 'lucide-react'
+import { BellRing, Calendar, Flag, Sparkles } from 'lucide-react'
 
-import { SidebarItem } from '~/components/sidebar'
 import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-	StatusDot,
-} from '~/components/ui'
+	SidebarCollapsibleContent,
+	SidebarCollapsibleHeader,
+	SidebarCollapsibleItem,
+	SidebarCollapsibleTrigger,
+	SidebarItem,
+} from '~/components/sidebar'
+import { StatusDot } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { dueQueries } from '~/modules/reviews/api/dueQueries'
-import { sidebarSectionHeaderColors } from '~/styles/colors/components.stylex'
-import {
-	fontSizes,
-	fontWeights,
-	iconSizes,
-	radii,
-	spacing,
-} from '~/styles/tokens.stylex'
+import { spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
-	section: {
-		display: 'flex',
-		flexDirection: 'column',
-	},
-	header: {
-		alignItems: 'center',
-		display: 'flex',
-		inlineSize: '100%',
-		minBlockSize: '36px',
-	},
-	toggle: {
-		borderWidth: 0,
-		gap: spacing.xs,
-		paddingBlock: spacing.xs,
-		paddingInline: spacing.sm,
-
-		borderRadius: radii.lg,
-		alignItems: 'center',
-		backgroundColor: 'transparent',
-		color: sidebarSectionHeaderColors.foreground,
-		cursor: 'pointer',
-		display: 'flex',
-		flexBasis: 0,
-		flexGrow: 1,
-		flexShrink: 1,
-		fontFamily: 'inherit',
-		fontSize: fontSizes.md,
-		fontWeight: fontWeights.regular,
-		minInlineSize: 0,
-		textAlign: 'start',
-	},
-	chevron: {
-		blockSize: iconSizes.sm,
-		flexShrink: 0,
-		inlineSize: iconSizes.sm,
-		opacity: {
-			default: 0,
-			[stylex.when.ancestor(':focus-within')]: 1,
-			[stylex.when.ancestor(':hover')]: 1,
-		},
-	},
-	chevronCollapsed: {
-		transform: 'rotate(-90deg)',
-	},
 	items: {
 		gap: spacing.xs,
 		display: 'flex',
@@ -94,33 +44,11 @@ export function ReviewNavigation() {
 	const hasFlagged = (flaggedCards?.length ?? 0) > 0
 
 	return (
-		<Collapsible
-			defaultOpen
-			render={<section aria-label='Review' />}
-			xstyle={styles.section}
-		>
-			<div {...stylex.props(stylex.defaultMarker(), styles.header)}>
-				<CollapsibleTrigger
-					render={(renderProps, { open }) => (
-						<button
-							{...renderProps}
-							aria-label={`${open ? 'Collapse' : 'Expand'} Review`}
-							type='button'
-						>
-							<span>Review</span>
-							<ChevronDown
-								aria-hidden='true'
-								{...stylex.props(
-									styles.chevron,
-									!open && styles.chevronCollapsed,
-								)}
-							/>
-						</button>
-					)}
-					xstyle={styles.toggle}
-				/>
-			</div>
-			<CollapsibleContent
+		<SidebarCollapsibleItem defaultOpen aria-label='Review'>
+			<SidebarCollapsibleHeader>
+				<SidebarCollapsibleTrigger>Review</SidebarCollapsibleTrigger>
+			</SidebarCollapsibleHeader>
+			<SidebarCollapsibleContent
 				render={<nav aria-label='review sections' />}
 				xstyle={styles.items}
 			>
@@ -174,7 +102,7 @@ export function ReviewNavigation() {
 						</span>
 					)}
 				</SidebarItem>
-			</CollapsibleContent>
-		</Collapsible>
+			</SidebarCollapsibleContent>
+		</SidebarCollapsibleItem>
 	)
 }
