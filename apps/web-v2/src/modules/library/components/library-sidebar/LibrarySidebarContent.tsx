@@ -91,7 +91,7 @@ const styles = stylex.create({
 		flexShrink: 0,
 	},
 	nav: {
-		paddingBlock: spacing.md,
+		paddingBlock: 0,
 		paddingInline: 0,
 		flexBasis: 0,
 		flexGrow: 1,
