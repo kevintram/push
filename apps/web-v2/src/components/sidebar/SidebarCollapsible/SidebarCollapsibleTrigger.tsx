@@ -14,10 +14,9 @@ import {
 
 const styles = stylex.create({
 	trigger: {
+		padding: spacing.sm,
 		borderWidth: 0,
 		gap: spacing.xs,
-		paddingBlock: spacing.md,
-		paddingInline: spacing.sm,
 
 		borderRadius: radii.lg,
 		alignItems: 'center',
