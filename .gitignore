@@ -4,7 +4,6 @@
 # Worktree helpers
 print-run-cmds.sh
 .worktree.env
-/apps/api/run.sh
 /apps/web/run.sh
 
 # IDEs
@@ -43,13 +42,6 @@ coverage/
 .vite/
 .tanstack/
 
-# Python
-__pycache__/
-*.py[oc]
-*.egg-info
-.venv/
-wheels/
-
 # Android
 *.iml
 .gradle/
@@ -81,7 +73,6 @@ DerivedData/
 *.dSYM.zip
 *.dSYM
 Pods/
-py-fsrs/
 
 # claude code
 ./claude/settings.local.json
