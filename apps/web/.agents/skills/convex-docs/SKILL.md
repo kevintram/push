@@ -12,7 +12,7 @@ convex-expert carries baked, plugin-versioned knowledge — excellent for stable
 ## Workflow
 
 1. PIN the version: read the installed `convex` version (`node -p "require('./node_modules/convex/package.json').version"` or `package.json`), and the versions of any `@convex-dev/*` components in play. The docs you trust must match THESE versions — version skew is the single largest source of wrong Convex code.
-2. FRESHNESS HIERARCHY (cheapest-correct first, the Supabase-taught order):
+2. FRESHNESS HIERARCHY (cheapest-correct first):
    (a) if a served docs tool / MCP `search_convex_docs` is available, use it (it returns version-scoped, reranked answers sized to the context window);
    (b) else fetch the specific docs page as MARKDOWN — request `docs.convex.dev/<path>` and prefer a `.md`/markdown form when the site serves one (far fewer tokens than HTML), or the component's README at the pinned version;
    (c) only then fall back to a general web search, and treat its version as unverified.

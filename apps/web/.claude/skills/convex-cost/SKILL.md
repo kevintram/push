@@ -7,7 +7,7 @@ description: "Preview Convex spend — rank functions by bytes/documents-read ×
 
 # Preview what this app will cost
 
-Cost surprises come from a handful of functions reading far more data than anyone realized — the same read-heavy patterns convex-advisor flags for perf, seen through the money lens. This capability makes spend legible: it reads the deployment's own bytes/documents-read evidence, attributes it to the functions driving it, projects how it grows with traffic, and names the cheapest fix. It also carries the confirm-cost discipline (Supabase's structural consent for paid actions): before anything metered, state the price and get an explicit yes.
+Cost surprises come from a handful of functions reading far more data than anyone realized — the same read-heavy patterns convex-advisor flags for perf, seen through the money lens. This capability makes spend legible: it reads the deployment's own bytes/documents-read evidence, attributes it to the functions driving it, projects how it grows with traffic, and names the cheapest fix. It also carries the project's confirm-cost discipline: before anything metered, state the price and get an explicit yes.
 
 ## Workflow
 

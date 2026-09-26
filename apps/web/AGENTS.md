@@ -1,10 +1,10 @@
 # AGENTS.md
 
-This file provides guidance to AI agents when working with the WebV2 application.
+This file provides guidance to AI agents when working with the primary web application.
 
 ## Project Architecture
 
-This is the second-generation React web app for 3gulp. It is intentionally small right now and should grow conservatively around the existing app shell, route, style, and test patterns.
+This is the primary React web app for 3gulp. Grow it conservatively around the existing app shell, route, style, and test patterns.
 
 - **Frontend**: React 19 with TypeScript
 - **Routing**: TanStack Router with file-based routes
@@ -17,14 +17,14 @@ This is the second-generation React web app for 3gulp. It is intentionally small
 - **Package Manager**: pnpm
 - **Testing**: Vitest with Testing Library and Happy DOM
 - **Linting/Formatting**: Oxlint + Oxfmt
-- **Backend**: FastAPI via `VITE_API_URL`
+- **Backend**: Convex
 
 ## Development Commands
 
 Please check `package.json` for the latest scripts. Current commands:
 
 - `pnpm dev` - Start development server with hot reload
-- `./run.sh` - Worktree dev server on the assigned WebV2 port
+- `./run.sh` - Worktree dev server on the assigned web app port
 - `pnpm build` - Build for production into `dist/`
 - `pnpm preview` - Preview the production build locally
 - `pnpm test` - Run unit/integration tests in watch mode
@@ -35,7 +35,7 @@ Please check `package.json` for the latest scripts. Current commands:
 - `pnpm format` - Format code with Oxfmt
 - `pnpm validate` - Run the full local validation pipeline
 
-Worktrees: use `apps/web-v2/run.sh` from the worktree. It runs `worktree-scripts/gen-env.sh` to refresh env files, then starts Vite on `WEB_V2_PORT` (`6173 + slot`).
+Worktrees: use `apps/web/run.sh` from the worktree. It runs `worktree-scripts/gen-env.sh` to refresh env files, then starts Vite on `WEB_PORT` (`6173 + slot`).
 
 ## Component Size Limits
 
@@ -90,7 +90,7 @@ src/
 
 **Components**: Colocate components with the page or module that owns them. Only promote to `src/components/` when genuinely reused across unrelated domains. Reserve `src/components/ui/` for shared primitive components.
 
-**Modules**: Product areas live in `src/modules/<module>/` 
+**Modules**: Product areas live in `src/modules/<module>/`
 
 Module shape:
 
@@ -139,13 +139,16 @@ Vitest runs two projects (see `vite.config.ts`): `frontend` for `src/` under Hap
 - Both `convex/*.test.ts` and `convex/test.setup.ts` are kept out of deploys by the Convex bundler's rule that skips filenames containing more than one dot. Preserve that shape when adding files under `convex/` that must not ship.
 - Use Testing Library for behavior-focused assertions.
 - Prefer the smallest useful test scope: pure utilities first, component tests for UI behavior, route integration tests for routing/provider behavior.
-- There is no WebV2 Playwright setup yet. If E2E coverage is added, follow the root repository guidance for browser authentication and session cleanup.
+- There is no Playwright setup yet. If E2E coverage is added, follow the root repository guidance for browser authentication and session cleanup.
 
-## API and Auth Notes
+## Backend and Auth Notes
 
-The API is cookie-authenticated and generally cannot be tested by hitting API endpoints directly. User-facing flows should be validated through the browser when auth is involved.
+The app uses Convex for its backend and Clerk for authentication. Validate
+authenticated user flows through the browser.
 
-Local WebV2 uses `VITE_API_URL` from `apps/web-v2/.env.local`, refreshed by `worktree-scripts/gen-env.sh`. If WebV2 API requests fail locally with CORS or cookie issues, check the worktree-generated API origin settings before changing frontend request code.
+Local web app configuration uses `VITE_CLERK_PUBLISHABLE_KEY` and
+`VITE_CONVEX_URL` in `apps/web/.env.local`. Worktree setup refreshes these from
+the shared `web.env.local` template beside the repository.
 
 ## Date Conventions
 

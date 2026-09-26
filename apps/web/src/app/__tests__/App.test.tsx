@@ -238,7 +238,7 @@ function renderRoute(
 	return { ...rendered, queryClient, router }
 }
 
-describe('v2 app setup', () => {
+describe('app setup', () => {
 	it('redirects the index route to the due review page', async () => {
 		const { router } = renderRoute('/')
 
