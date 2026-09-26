@@ -80,9 +80,11 @@ const styles = stylex.create({
 		textAlign: 'center',
 	},
 	skinny: {
-		padding: spacing.sm,
 		borderRadius: radii.lg,
+		paddingBlock: spacing.xs,
 		fontSize: fontSizes.sm,
+		paddingInlineEnd: spacing.xs,
+		paddingInlineStart: spacing.sm, // so indicators align with SidebarHeaderActions
 	},
 	icon: {
 		display: 'block',
