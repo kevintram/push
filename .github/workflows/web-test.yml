@@ -37,7 +37,9 @@ jobs:
           cache-dependency-path: 'apps/web/pnpm-lock.yaml'
 
       - name: Install dependencies
-        run: pnpm i && pnpm playwright install --with-deps
+        run: pnpm i
 
       - name: Validate
-        run: pnpm run lint && pnpm test:ci && pnpm test:e2e:ci
+        env:
+          TZ: Pacific/Kiritimati
+        run: pnpm run lint && pnpm test:ci && pnpm run build

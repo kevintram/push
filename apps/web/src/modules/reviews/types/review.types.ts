@@ -1,41 +1,20 @@
-import { type LearningState } from '~/models/learning-state.types'
+import type { Doc } from '@convex/_generated/dataModel'
+import type { Card } from '@convex/validators/cards'
 
-export type Rating = 'miss' | 'hard' | 'good' | 'easy'
+import type { DateString } from '~/types/date'
 
-export type Review = {
-	id: number
-	review_card_id: number
-	rating: Rating | null
+export type { Card }
 
-	description: string
-	notes: string
-	scheduled_at: string | null
-	completed_at: string | null
-	effective_date: string | null
-
-	inserted_at: string
-	updated_at: string
-	review_card: {
-		id: number
-		topic_id: number
-		type: 'practice' | 'flashcard'
-		primary_text: string
-		secondary_text: string
-	}
-
-	// Entity FSRS state before review
-	stability_before: number | null
-	difficulty_before: number | null
-	state_before: LearningState | null
-	step_before: number | null
-	due_before: string | null
-
-	// Entity FSRS state after review
-	stability_after: number | null
-	difficulty_after: number | null
-	state_after: LearningState | null
-	step_after: number | null
-	due_after: string | null
+/** Client-derived scheduling metadata displayed alongside a card. */
+export type CardSrsState = {
+	stability: number | null
+	lastReviewedAt: DateString | null
+	lastRating: Rating | null
+	nextDueAt: DateString | null
+	/** Recall probability today, between zero and one. */
+	retrievability: number | null
 }
 
-export type ReviewListItem = Review
+export type Review = Doc<'reviews'>
+
+export type Rating = NonNullable<Review['rating']>

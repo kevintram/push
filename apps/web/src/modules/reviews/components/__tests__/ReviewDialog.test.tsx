@@ -1,116 +1,157 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import type { Id } from '@convex/_generated/dataModel'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
+import { Dialog } from '~/components/ui'
+import type { DateString } from '~/types/date'
+
+import type { Review } from '../../types/review.types'
 import { ReviewDialog } from '../ReviewDialog'
 
-vi.mock('@tanstack/react-router', () => ({
-	useNavigate: () => vi.fn(),
+vi.mock('@tanstack/react-query', () => ({
+	useQuery: () => ({ data: undefined }),
 }))
 
-vi.mock('../../api/getReviews', () => ({
-	useReview: () => ({
-		data: {
-			id: 7,
-			review_card_id: 11,
-			rating: null,
-			description: 'Review description',
-			notes: 'Review notes',
-			scheduled_at: null,
-			completed_at: null,
-			effective_date: null,
-			inserted_at: '2026-03-12T00:00:00Z',
-			updated_at: '2026-03-12T00:00:00Z',
-			review_card: {
-				id: 11,
-				topic_id: 5,
-				type: 'flashcard',
-				primary_text: 'Prompt',
-				secondary_text: 'Answer',
-			},
-			stability_before: null,
-			difficulty_before: null,
-			state_before: null,
-			step_before: null,
-			due_before: null,
-			stability_after: null,
-			difficulty_after: null,
-			state_after: null,
-			step_after: null,
-			due_after: null,
-		},
-		isLoading: false,
-	}),
+vi.mock('~/modules/library/api/collectionQueries', () => ({
+	collectionQueries: {
+		detail: () => ({
+			queryKey: ['collection'],
+			queryFn: async () => undefined,
+		}),
+	},
 }))
 
-vi.mock('../../api/updateReview', () => ({
-	useUpdateReview: () => ({
-		isPending: false,
-		mutate: vi.fn(),
-	}),
+vi.mock('~/modules/reviews/api/cardQueries', () => ({
+	cardQueries: {
+		detail: () => ({
+			queryKey: ['card'],
+			queryFn: async () => undefined,
+		}),
+	},
 }))
 
-vi.mock('../../api/deleteReview', () => ({
-	useDeleteReview: () => ({
-		mutate: vi.fn(),
-		mutateAsync: vi.fn(),
-	}),
+vi.mock('../RatingPicker', () => ({
+	RatingPicker: () => <button type='button'>Rating</button>,
 }))
+
+vi.mock('../ReviewDatePicker', () => ({
+	ReviewDatePicker: () => (
+		<button aria-label='Review date' type='button'>
+			Date
+		</button>
+	),
+}))
+
+vi.mock('../ReviewDialogBreadcrumbs', () => ({
+	ReviewDialogBreadcrumbs: () => <nav>Breadcrumbs</nav>,
+}))
+
+vi.mock('../ReviewDurability', () => ({
+	ReviewDurability: () => <span>Durability</span>,
+}))
+
+const review = {
+	_creationTime: 0,
+	_id: 'review-1' as Id<'reviews'>,
+	date: '2026-08-25',
+	description: 'A description',
+	notes: 'Some notes',
+	ownerId: 'user-1',
+	rating: 'good',
+	cardId: 'card-1' as Id<'cards'>,
+	stabilityAfter: 15,
+} as Review
+
+function ReviewDialogHarness({ onDelete }: { onDelete: () => void }) {
+	const [isOpen, setIsOpen] = useState(true)
+	const descriptionField = {
+		flush: vi.fn(),
+		onChange: vi.fn(),
+		setValue: vi.fn(),
+		value: review.description,
+	}
+	const notesField = {
+		flush: vi.fn(),
+		onChange: vi.fn(),
+		setValue: vi.fn(),
+		value: review.notes,
+	}
+
+	return (
+		<>
+			<button onClick={() => setIsOpen(true)} type='button'>
+				Open review
+			</button>
+			<Dialog open={isOpen} onOpenChange={setIsOpen}>
+				<ReviewDialog
+					descriptionField={descriptionField}
+					isOpen={isOpen}
+					notesField={notesField}
+					onDelete={onDelete}
+					onSetDate={vi.fn<(value: DateString | null) => void>()}
+					onSetRating={vi.fn()}
+					review={review}
+				/>
+			</Dialog>
+		</>
+	)
+}
 
 describe('ReviewDialog', () => {
-	it('expands and resets to compact after close', async () => {
+	it('toggles the same mounted editor and keeps focus on the window control', async () => {
 		const user = userEvent.setup()
-		const onOpenChange = vi.fn()
-		const { rerender } = render(
-			<ReviewDialog
-				onOpenChange={onOpenChange}
-				open={true}
-				reviewId={7}
-			/>,
-		)
 
-		let dialogContent = document.querySelector(
-			'[data-slot="dialog-content"]',
-		)
-		expect(dialogContent).toHaveClass('sm:max-w-[540px]')
+		render(<ReviewDialogHarness onDelete={vi.fn()} />)
 
-		await user.click(
-			screen.getByRole('button', { name: 'Expand review dialog' }),
-		)
-
-		expect(dialogContent).toHaveClass('sm:max-w-5xl')
-		expect(
-			screen.getByRole('button', { name: 'Collapse review dialog' }),
-		).toBeInTheDocument()
-
-		rerender(
-			<ReviewDialog
-				onOpenChange={onOpenChange}
-				open={false}
-				reviewId={7}
-			/>,
-		)
-
-		await waitFor(() => {
-			expect(
-				screen.queryByRole('button', {
-					name: 'Collapse review dialog',
-				}),
-			).not.toBeInTheDocument()
+		const description = screen.getByRole('textbox', {
+			name: 'Review description',
 		})
+		const notes = screen.getByRole('textbox', { name: 'Review notes' })
+		const expand = screen.getByRole('button', { name: 'Expand review' })
 
-		rerender(
-			<ReviewDialog
-				onOpenChange={onOpenChange}
-				open={true}
-				reviewId={7}
-			/>,
-		)
+		expect(expand).toHaveAttribute('aria-expanded', 'false')
+		await user.click(expand)
 
 		expect(
-			screen.getByRole('button', { name: 'Expand review dialog' }),
-		).toBeInTheDocument()
-		dialogContent = document.querySelector('[data-slot="dialog-content"]')
-		expect(dialogContent).toHaveClass('sm:max-w-[540px]')
+			screen.getByRole('button', { name: 'Collapse review' }),
+		).toHaveFocus()
+		expect(
+			screen.getByRole('button', { name: 'Collapse review' }),
+		).toHaveAttribute('aria-expanded', 'true')
+		expect(
+			screen.getByRole('textbox', { name: 'Review description' }),
+		).toBe(description)
+		expect(screen.getByRole('textbox', { name: 'Review notes' })).toBe(
+			notes,
+		)
+	})
+
+	it('keeps delete in the footer actions menu', async () => {
+		const user = userEvent.setup()
+		const onDelete = vi.fn()
+
+		render(<ReviewDialogHarness onDelete={onDelete} />)
+
+		await user.click(screen.getByRole('button', { name: 'Review actions' }))
+		await user.click(screen.getByRole('menuitem', { name: 'Delete' }))
+
+		expect(onDelete).toHaveBeenCalledOnce()
+	})
+
+	it('resets expansion after close and reopen', async () => {
+		const user = userEvent.setup()
+
+		render(<ReviewDialogHarness onDelete={vi.fn()} />)
+
+		await user.click(screen.getByRole('button', { name: 'Expand review' }))
+		await user.click(screen.getByRole('button', { name: 'Close review' }))
+
+		await user.click(screen.getByRole('button', { name: 'Open review' }))
+
+		expect(
+			screen.getByRole('button', { name: 'Expand review' }),
+		).toHaveAttribute('aria-expanded', 'false')
 	})
 })

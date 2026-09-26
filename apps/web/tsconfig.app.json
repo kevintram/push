@@ -2,8 +2,9 @@
 	"$schema": "https://json.schemastore.org/tsconfig",
 	"compilerOptions": {
 		"allowUnreachableCode": false,
-		"baseUrl": ".",
 		"paths": {
+			"@convex/*": ["./convex/*"],
+			"@shared/*": ["./shared/*"],
 			"~/*": ["./src/*"]
 		},
 		"erasableSyntaxOnly": true,

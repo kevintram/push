@@ -1,36 +1,13 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 
-import { FlaggedPage, type FlaggedPageFilter } from '~/app/pages/FlaggedPage'
-
-type FlaggedRouteSearch = {
-	filter?: FlaggedPageFilter
-}
-
-function isFlaggedPageFilter(value: unknown): value is FlaggedPageFilter {
-	return value === 'all' || value === 'practice' || value === 'flashcard'
-}
+import { FlaggedPage } from '~/app/pages/FlaggedPages/FlaggedPage'
+import { cardQueries } from '~/modules/reviews/api/cardQueries'
 
 export const Route = createFileRoute('/flagged')({
-	validateSearch: (search): FlaggedRouteSearch => ({
-		filter: isFlaggedPageFilter(search.filter) ? search.filter : undefined,
-	}),
-	component: FlaggedRoute,
+	component: FlaggedPage,
+	loader: ({ context: { auth, queryClient } }) => {
+		if (!auth.isAuthenticated) return
+
+		return queryClient.ensureQueryData(cardQueries.listFlagged())
+	},
 })
-
-function FlaggedRoute() {
-	const navigate = useNavigate()
-	const search = Route.useSearch()
-	const filter = search.filter ?? 'all'
-
-	return (
-		<FlaggedPage
-			filter={filter}
-			onFilterChange={nextFilter =>
-				navigate({
-					to: '/flagged',
-					search: nextFilter === 'all' ? {} : { filter: nextFilter },
-				})
-			}
-		/>
-	)
-}

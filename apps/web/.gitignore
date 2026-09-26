@@ -1,15 +1,18 @@
+# Dependencies
 node_modules
-.DS_Store
-.env
-.env.*
+
+# Build output
 dist
-dist-ssr
-*.local
+
+# Test and coverage output
 coverage
-.nyc_output
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-# Local Netlify folder
+test-results
+
+# Local env files
+.env.local
+.env.*.local
+
+# Tool caches and generated metadata
+.tanstack
+.vite
 .netlify

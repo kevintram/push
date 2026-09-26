@@ -1,107 +1,65 @@
 # 3gulp Monorepo
 
-This is a monorepo containing all 3gulp applications and services.
+This repository contains the 3gulp applications.
 
-## Repository Structure
+## Repository structure
 
-```
-3gulp-mono/
-├── apps/
-│   ├── web/          # React/Vite web application (pnpm)
-│   ├── site/         # Astro marketing site (pnpm)
-│   ├── api/          # FastAPI backend (Python/uv)
-│   ├── android/      # Android app (Kotlin/Gradle)
-│   └── ios/          # iOS app (Swift/Xcode)
-├── supabase/         # Supabase configuration, migrations, and seeds
-└── .gitignore
+```text
+apps/
+├── web/       # React/Vite application with Clerk and Convex
+├── site/      # Astro marketing site
+├── android/   # Android app (development not started)
+└── ios/       # iOS app (development not started)
 ```
 
-## Working with Apps
+## Web app
 
-Each app is independent and uses its own package manager:
+The primary application lives in `apps/web/` and uses React, TypeScript, Vite,
+TanStack Router, Clerk, and Convex.
 
-### Web App (`apps/web/`)
-- **Tech**: React 19, TypeScript, Vite, TanStack Router
-- **Package Manager**: pnpm
 ```bash
 cd apps/web
 pnpm install
 pnpm dev
 ```
 
-Web app linting rules:
-- React/TSX component files are limited to 500 lines.
-- Component files may define one React component.
-- `pnpm run lint` enforces TypeScript checks, ESLint checks, formatting checks, and the React one-component rule.
-- `pnpm run validate` runs `lint`, `test:ci`, and `test:e2e:ci`.
+Other useful commands are `pnpm run lint`, `pnpm test:ci`, `pnpm run build`,
+and `pnpm run validate`.
 
-### Marketing Site (`apps/site/`)
-- **Tech**: Astro, TypeScript
-- **Package Manager**: pnpm
+## Marketing site
+
+The Astro site lives in `apps/site/`.
+
 ```bash
 cd apps/site
 pnpm install
 pnpm dev
 ```
 
-### API (`apps/api/`)
-- **Tech**: FastAPI, Python 3.12+
-- **Package Manager**: uv
-```bash
-cd apps/api
-uv sync
-fastapi dev app/main.py
-```
-
-### Android App (`apps/android/`)
-- **Tech**: Kotlin, Gradle
-- **Build Tool**: Gradle
-```bash
-cd apps/android
-./gradlew build
-```
-
-### iOS App (`apps/ios/`)
-- **Tech**: Swift, Xcode
-- **Build Tool**: Xcode
-```bash
-cd apps/ios
-open 3gulp-ios.xcodeproj
-```
-
-## Development
-
-Each application maintains its own:
-- Dependencies
-- Build configuration
-- Development workflow
-- Documentation (see respective CLAUDE.md files)
-
 ## Worktrees
 
-Git worktrees enable parallel development with isolated ports. Each worktree gets a slot *S* (0–15) that determines its ports (API `8000 + S`, Web `5173 + S`, Web V2 `6173 + S`).
+Git worktrees support parallel development with isolated app ports. Each
+worktree gets a slot *S* (0–15), and the web app runs on port `6173 + S`.
 
-- **Setup** (`worktree-scripts/add.sh`):
-  1. Claims a slot in `worktree-slots.toml`
-  2. Generates all environment files via `worktree-scripts/gen-env.sh`: `.worktree.env`, `.env`, `apps/api/.env`, `apps/web/.env.local`, and `apps/web-v2/.env.local`
-  3. Generates run scripts for api, web, and web-v2: `apps/api/run.sh`, `apps/web/run.sh`, and `apps/web-v2/run.sh`
-- **Dev servers**: Use each app's `run.sh` to start on its assigned port. The script refreshes generated environment values and recreates missing files.
-- **Web V2 auth template**: Create an uncommitted `web-v2.env.local` beside the repository/worktrees with the development `VITE_CLERK_PUBLISHABLE_KEY` and `VITE_CONVEX_URL`. Worktrees copy or refresh those values in `apps/web-v2/.env.local`; generated API values are then updated for the worktree slot.
-- **Teardown**: `worktree-scripts/remove.sh` removes the worktree and frees its slot.
+- `worktree-scripts/add.sh` creates a worktree and installs app dependencies.
+- `worktree-scripts/gen-env.sh` writes `.worktree.env`, site `PUBLIC_APP_URL`,
+  and `apps/web/.env.local` from the shared `web.env.local` template beside the
+  repository. The template should contain `VITE_CLERK_PUBLISHABLE_KEY` and
+  `VITE_CONVEX_URL`.
+- Run `apps/web/run.sh` to refresh the environment and start the app on its
+  assigned port.
+- `worktree-scripts/remove.sh` removes a worktree and frees its slot.
 
-### WorkOS redirect URIs
-Whitelist `http://localhost:8000/callback` through `http://localhost:8015/callback` for the slot range.
+The site login button redirects to `PUBLIC_APP_URL`. Configure that variable
+for the deployed site to point to the deployed app.
 
-## Commit Guidelines
+## Commit guidelines
 
-This project follows [Conventional Commits](https://www.conventionalcommits.org/):
-- Format: `<type>(<scope>): <description>`
-- Types: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`
-- Scopes: `web`, `site`, `api`, `android`, `ios`, or omit for repo-wide changes
+Use `<scope>: <description>` for commits. Scopes include `web`, `site`,
+`android`, and `ios`; omit the scope for repository-wide changes.
 
-Examples:
-```
-feat(web): add dark mode toggle
-fix(api): handle non-existent user edge case
-chore: update root .gitignore
+```text
+web: add review filters
+site: improve landing page copy
+update root ignore rules
 ```

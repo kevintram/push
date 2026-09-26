@@ -13,11 +13,9 @@
 		"coverage",
 		"dist",
 		"node_modules",
-		"playwright-report",
 		"public",
 		"src/app/routeTree.gen.ts",
-		"src/types/database.types.ts",
-		"test-results"
+		"convex/_generated"
 	],
 	"rules": {
 		"constructor-super": "error",
@@ -57,6 +55,18 @@
 		"no-prototype-builtins": "error",
 		"no-redeclare": "error",
 		"no-regex-spaces": "error",
+		"no-restricted-globals": [
+			"warn",
+			{
+				"globals": [
+					{
+						"name": "Date",
+						"message": "Prefer Luxon's DateTime. Native Date is appropriate at external-library boundaries."
+					}
+				],
+				"checkGlobalObject": true
+			}
+		],
 		"no-self-assign": "error",
 		"no-setter-return": "error",
 		"no-shadow-restricted-names": "error",
@@ -90,6 +100,27 @@
 		{
 			"files": ["**/*.{ts,tsx}"],
 			"rules": {
+				"@stylexjs/enforce-extension": [
+					"error",
+					{
+						"themeFileExtension": ".stylex.ts"
+					}
+				],
+				"@stylexjs/no-conflicting-props": "error",
+				"@stylexjs/no-legacy-contextual-styles": "error",
+				"@stylexjs/no-lookahead-selectors": "error",
+				"@stylexjs/no-nonstandard-styles": "error",
+				"@stylexjs/no-unused": "error",
+				"@stylexjs/sort-keys": [
+					"error",
+					{
+						"allowLineSeparatedGroups": true
+					}
+				],
+				"@stylexjs/valid-shorthands": "error",
+				"@stylexjs/valid-styles": "error",
+				"@tanstack/router/create-route-property-order": "warn",
+				"@tanstack/router/route-param-names": "error",
 				"constructor-super": "off",
 				"getter-return": "off",
 				"no-class-assign": "off",
@@ -131,6 +162,18 @@
 				"typescript/prefer-namespace-keyword": "error",
 				"typescript/triple-slash-reference": "error",
 				"react/display-name": "error",
+				"react/forbid-component-props": [
+					"error",
+					{
+						"forbid": ["className", "style"]
+					}
+				],
+				"react/forbid-dom-props": [
+					"error",
+					{
+						"forbid": ["className", "style"]
+					}
+				],
 				"react/jsx-key": "error",
 				"react/jsx-no-comment-textnodes": "error",
 				"react/jsx-no-duplicate-props": "error",
@@ -148,7 +191,12 @@
 				"react/no-unsafe": "off",
 				"react/react-in-jsx-scope": "off",
 				"react/require-render-return": "error",
-				"react/no-multi-comp": "error",
+				"react/no-multi-comp": [
+					"error",
+					{
+						"ignoreStateless": true
+					}
+				],
 				"simple-import-sort/exports": "error",
 				"simple-import-sort/imports": "error",
 				"no-empty-function": "off",
@@ -177,7 +225,11 @@
 				"typescript/no-non-null-assertion": "off"
 			},
 			"plugins": ["typescript", "react"],
-			"jsPlugins": ["eslint-plugin-simple-import-sort"]
+			"jsPlugins": [
+				"eslint-plugin-simple-import-sort",
+				"@stylexjs/eslint-plugin",
+				"@tanstack/eslint-plugin-router"
+			]
 		},
 		{
 			"files": ["src/**/*.test.{ts,tsx}", "src/testing/**/*.{ts,tsx}"],
@@ -189,9 +241,9 @@
 			"plugins": ["typescript", "react"]
 		},
 		{
-			"files": ["src/components/ui/**/*.{ts,tsx}"],
+			"files": ["src/**/*.css.ts"],
 			"rules": {
-				"react/no-multi-comp": "off"
+				"react/only-export-components": "off"
 			},
 			"plugins": ["react"]
 		}

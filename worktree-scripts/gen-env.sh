@@ -8,9 +8,7 @@ PARENT_DIR="$(cd "$ROOT_DIR/.." && pwd)"
 SLOTS_FILE="$PARENT_DIR/worktree-slots.toml"
 WORKTREE_ENV="$ROOT_DIR/.worktree.env"
 
-BASE_API_PORT=8000
-BASE_WEB_PORT=5173
-BASE_WEB_V2_PORT=6173
+BASE_WEB_PORT=6173
 MAX_SLOT=15
 
 if ! git -C "$ROOT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -119,21 +117,13 @@ if [ -z "$slot" ]; then
     exit 1
 fi
 
-API_PORT=$((BASE_API_PORT + slot))
 WEB_PORT=$((BASE_WEB_PORT + slot))
-WEB_V2_PORT=$((BASE_WEB_V2_PORT + slot))
-API_URL="http://localhost:${API_PORT}"
 APP_URL="http://localhost:${WEB_PORT}"
-APP_V2_URL="http://localhost:${WEB_V2_PORT}"
 
 cat > "$WORKTREE_ENV" <<EOF
 WORKTREE_SLOT=${slot}
-API_PORT=${API_PORT}
 WEB_PORT=${WEB_PORT}
-WEB_V2_PORT=${WEB_V2_PORT}
-API_URL=${API_URL}
 APP_URL=${APP_URL}
-APP_V2_URL=${APP_V2_URL}
 EOF
 
 if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
@@ -179,78 +169,48 @@ get_env_var() {
     ' "$file"
 }
 
-# Create or update apps/api/.env
-API_ENV="$ROOT_DIR/apps/api/.env"
-if [ ! -f "$API_ENV" ]; then
-    if [ -f "$PARENT_DIR/api.env.local" ]; then
-        cp "$PARENT_DIR/api.env.local" "$API_ENV"
-        echo "Created apps/api/.env"
-    else
-        echo "WARNING: Template api.env.local not found in $PARENT_DIR and apps/api/.env does not exist"
-    fi
-fi
-if [ -f "$API_ENV" ]; then
-    set_env_var "$API_ENV" "APP_URL" "$APP_URL"
-    set_env_var "$API_ENV" "APP_V2_URL" "$APP_V2_URL"
-    set_env_var "$API_ENV" "API_URL" "$API_URL"
-    set_env_var "$API_ENV" "DOMAIN" "localhost"
-    set_env_var "$API_ENV" "CORS_ALLOWED_ORIGINS" "$APP_URL,$APP_V2_URL"
-    if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
-        echo "Updated apps/api/.env"
-    fi
-fi
-
-# Create or update apps/web/.env.local
+# Create or update the promoted app's environment from its shared template.
 WEB_ENV="$ROOT_DIR/apps/web/.env.local"
+WEB_ENV_TEMPLATE="$PARENT_DIR/web.env.local"
+if [ ! -f "$WEB_ENV_TEMPLATE" ] || \
+    [ -z "$(get_env_var "$WEB_ENV_TEMPLATE" "VITE_CLERK_PUBLISHABLE_KEY")" ] || \
+    [ -z "$(get_env_var "$WEB_ENV_TEMPLATE" "VITE_CONVEX_URL")" ]; then
+    LEGACY_WEB_ENV_TEMPLATE="$PARENT_DIR/web-v2.env.local"
+    if [ -f "$LEGACY_WEB_ENV_TEMPLATE" ] && \
+        [ -n "$(get_env_var "$LEGACY_WEB_ENV_TEMPLATE" "VITE_CLERK_PUBLISHABLE_KEY")" ] && \
+        [ -n "$(get_env_var "$LEGACY_WEB_ENV_TEMPLATE" "VITE_CONVEX_URL")" ]; then
+        WEB_ENV_TEMPLATE="$LEGACY_WEB_ENV_TEMPLATE"
+        echo "WARNING: Using legacy web-v2.env.local; rename it to web.env.local when convenient"
+    fi
+fi
 if [ ! -f "$WEB_ENV" ]; then
-    if [ -f "$PARENT_DIR/web.env.local" ]; then
-        cp "$PARENT_DIR/web.env.local" "$WEB_ENV"
+    if [ -f "$WEB_ENV_TEMPLATE" ]; then
+        cp "$WEB_ENV_TEMPLATE" "$WEB_ENV"
         echo "Created apps/web/.env.local"
     else
-        echo "WARNING: Template web.env.local not found in $PARENT_DIR and apps/web/.env.local does not exist"
+        touch "$WEB_ENV"
+        echo "Created apps/web/.env.local (template web.env.local not found in $PARENT_DIR)"
     fi
 fi
-if [ -f "$WEB_ENV" ]; then
-    set_env_var "$WEB_ENV" "VITE_API_URL" "$API_URL"
-    if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
-        echo "Updated apps/web/.env.local"
-    fi
-fi
-
-# Create or update apps/web-v2/.env.local
-WEB_V2_ENV="$ROOT_DIR/apps/web-v2/.env.local"
-WEB_V2_ENV_TEMPLATE="$PARENT_DIR/web-v2.env.local"
-if [ -d "$ROOT_DIR/apps/web-v2" ]; then
-    if [ ! -f "$WEB_V2_ENV" ]; then
-        if [ -f "$WEB_V2_ENV_TEMPLATE" ]; then
-            cp "$WEB_V2_ENV_TEMPLATE" "$WEB_V2_ENV"
-            echo "Created apps/web-v2/.env.local"
-        else
-            touch "$WEB_V2_ENV"
-            echo "Created apps/web-v2/.env.local (template web-v2.env.local not found in $PARENT_DIR)"
+if [ -f "$WEB_ENV_TEMPLATE" ]; then
+    for key in VITE_CLERK_PUBLISHABLE_KEY VITE_CONVEX_URL; do
+        template_value="$(get_env_var "$WEB_ENV_TEMPLATE" "$key")"
+        if [ -n "$template_value" ]; then
+            set_env_var "$WEB_ENV" "$key" "$template_value"
         fi
-    fi
-    set_env_var "$WEB_V2_ENV" "VITE_API_URL" "$API_URL"
-    if [ -f "$WEB_V2_ENV_TEMPLATE" ]; then
-        for key in VITE_CLERK_PUBLISHABLE_KEY VITE_CONVEX_URL; do
-            template_value="$(get_env_var "$WEB_V2_ENV_TEMPLATE" "$key")"
-            if [ -n "$template_value" ]; then
-                set_env_var "$WEB_V2_ENV" "$key" "$template_value"
-            fi
-        done
-    fi
-    remove_env_var "$WEB_V2_ENV" "VITE_WORKOS_CLIENT_ID"
-    remove_env_var "$WEB_V2_ENV" "VITE_WORKOS_REDIRECT_URI"
-    remove_env_var "$WEB_V2_ENV" "VITE_WORKOS_SIGN_OUT_RETURN_TO"
-    if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
-        echo "Updated apps/web-v2/.env.local"
-    fi
+    done
 fi
+remove_env_var "$WEB_ENV" "VITE_API_URL"
+remove_env_var "$WEB_ENV" "VITE_SUPABASE_URL"
+remove_env_var "$WEB_ENV" "VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY"
+remove_env_var "$WEB_ENV" "VITE_WORKOS_CLIENT_ID"
+remove_env_var "$WEB_ENV" "VITE_WORKOS_REDIRECT_URI"
+remove_env_var "$WEB_ENV" "VITE_WORKOS_SIGN_OUT_RETURN_TO"
 
 # Create or update apps/site/.env
 SITE_ENV="$ROOT_DIR/apps/site/.env"
 touch "$SITE_ENV"
-set_env_var "$SITE_ENV" "PUBLIC_API_URL" "$API_URL"
+remove_env_var "$SITE_ENV" "PUBLIC_API_URL"
 set_env_var "$SITE_ENV" "PUBLIC_APP_URL" "$APP_URL"
 if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
     echo "Updated apps/site/.env"

@@ -1,112 +1,176 @@
 # AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI agents when working with the primary web application.
 
 ## Project Architecture
 
-This is a React application built with modern tooling focused on topic-based learning and practice.
+This is the primary React web app for 3gulp. Grow it conservatively around the existing app shell, route, style, and test patterns.
+
 - **Frontend**: React 19 with TypeScript
-- **Routing**: TanStack Router (file-based routing with type safety)
-- **Styling**: Tailwind CSS v4
-- **Component Library**: shadcn/ui w/ Base UI components (see https://ui.shadcn.com/docs/changelog/2026-01-base-ui)
-- **Data Fetching**: TanStack Query with React Query
-- **Backend**: FastAPI (Python) for data access and business logic
-- **Date Handling**: Day.js for all date parsing, formatting, and manipulation
-- **Build Tool**: Vite 6
+- **Routing**: TanStack Router with file-based routes
+- **Data Fetching**: TanStack Query
+- **Styling**: StyleX, with component styles defined inline via `stylex.create()`
+- **Component Primitives**: Base UI may be used for accessible primitives
+- **Keyboard Shortcuts**: TanStack Hotkeys via `@tanstack/react-hotkeys`
+- **Icons**: `lucide-react`
+- **Build Tool**: Vite
 - **Package Manager**: pnpm
-- **Testing**: Vitest (unit/integration), Playwright (E2E)
+- **Testing**: Vitest with Testing Library and Happy DOM
 - **Linting/Formatting**: Oxlint + Oxfmt
-- **Mocking**: MSW (Mock Service Worker)
+- **Backend**: Convex
 
 ## Development Commands
-- Please see the package.json file for all the latest command scripts.
 
-For your convenience, these are the commands as of writing this:
+Please check `package.json` for the latest scripts. Current commands:
+
 - `pnpm dev` - Start development server with hot reload
-- `./run.sh` - Worktree dev server (assigned port)
-- `pnpm build` - Build for production (output to `dist/`)
-- `pnpm preview` - Preview production build locally
+- `./run.sh` - Worktree dev server on the assigned web app port
+- `pnpm build` - Build for production into `dist/`
+- `pnpm preview` - Preview the production build locally
 - `pnpm test` - Run unit/integration tests in watch mode
-- `pnpm test:ci` - Run all tests once (for CI)
-- `pnpm test:e2e` - Run E2E tests with Playwright UI
-- `pnpm test:e2e:ci` - Run E2E tests headlessly
+- `pnpm test:ci` - Run all tests once for CI
 - `pnpm lint:tsc` - Run TypeScript compiler checks
 - `pnpm lint:oxlint` - Run Oxlint checks
-- `pnpm lint` - Run all linting (TypeScript + Oxlint + formatting checks)
+- `pnpm lint` - Run TypeScript, Oxlint, and formatting checks
 - `pnpm format` - Format code with Oxfmt
-- `pnpm validate` - Run full validation pipeline (lint + test:ci + test:e2e:ci)
+- `pnpm validate` - Run the full local validation pipeline
 
-Worktrees: use `apps/web/run.sh` from the worktree. It runs `worktree-scripts/gen-env.sh` to refresh all env files (and recreate any missing ones) then starts on the assigned port.
+Worktrees: use `apps/web/run.sh` from the worktree. It runs `worktree-scripts/gen-env.sh` to refresh env files, then starts Vite on `WEB_PORT` (`6173 + slot`).
 
 ## Component Size Limits
 
-Keep `src/**/*.tsx` files under **500 lines** and to **one React component**. Oxlint enforces the component limit. (`src/components/ui/` and test files are excluded from the automated component check, but the same discipline applies.)
+Keep `src/**/*.tsx` files under **500 lines** and to **one React component**. Oxlint enforces the component rule for normal source files.
 
-When a file approaches either limit, split it: extract presentational sections into sibling `.tsx` files, and move orchestration, derived state, and mutations into a colocated `.ts` hook.
+When a file approaches either limit, split it:
 
-## Button Icon Sizing
+- Extract presentational sections into sibling `.tsx` files.
+- Move derived state, mutations, and orchestration into colocated `.ts` hooks or utilities.
+- Keep route files thin and delegate page rendering to `src/app/pages/`.
 
-Button icons inherit their size automatically from the button's `size` variant — do not pass manual sizing classes (`h-4 w-4`, `size-4`, etc.) to SVGs inside buttons. Just use `<Plus />`, not `<Plus className='h-4 w-4' />`. Icons that need to opt out of inherited sizing (e.g. for color-only overrides) can use an explicit `size-*` or `h-*`/`w-*` class to escape the automatic selector.
+## StyleX Conventions
+
+- Use `stylex.create()` for component styles and `stylex.props()` to apply them.
+- Define component styles inline in the component file (a `styles` const above the component), not in a separate per-component style module.
+- Reserve `*.stylex.ts` files for shared tokens imported by components. Keep app-wide theme tokens in `src/styles/*.stylex.ts`.
+- Use `defineVars()` for themeable values and `defineConsts()` for static shared values such as media queries.
+- Use longhand CSS properties and single-value shorthands rather than multi-value shorthands.
+- For conditional values, include a `default` branch.
+- Do not mix `className`, inline `style`, and `stylex.props()` unless an existing compatibility pattern already requires it.
+- Keep global CSS minimal. `src/styles/global.css` should be reserved for StyleX setup, document resets, font smoothing, and true global element rules.
+
+## Keyboard Shortcuts
+
+Use the project-local `tanstack-react-hotkeys` skill when implementing or reviewing keyboard shortcuts. Do not add application shortcuts with manual `document` or `window` keyboard listeners.
 
 ## Project Structure
 
-```
+```text
 src/
-├── app/                     # Application routing and page orchestration
-│   ├── routes/              # TanStack Router file-based routes (no test files here)
-│   ├── pages/               # Page components; complex pages get their own folder
-│   │   ├── topic-detail/    # e.g. TopicDetailPage.tsx + sibling sections + hooks
-│   │   └── review-card-detail/
-│   ├── layouts/             # Layout wrappers (PageLayout, etc.)
-│   ├── components/          # App-level components not owned by a module
-│   ├── hooks/               # App-level hooks
-│   └── __tests__/routes/    # Route-level integration tests
-│
-├── components/              # Shared cross-domain components
-│   └── ui/                  # shadcn/ui design-system primitives
-│
-├── modules/                 # Product and domain modules
-│   ├── shell/               # App chrome (AppShell, AppHeader, AppSidebar)
-│   ├── review-cards/
-│   ├── reviews/
-│   ├── search/
-│   └── topics/
-│
+├── app/                     # Routing, page orchestration, app providers
+│   ├── routes/              # TanStack Router file-based routes
+│   ├── pages/               # Page components
+│   └── __tests__/           # App and route integration tests
+├── components/              # Cross-domain shared components
+│   └── ui/                  # Shared primitive UI components
+├── modules/                 # Product/domain modules
 ├── hooks/                   # App-wide shared hooks
 ├── lib/                     # Preconfigured library wrappers
 ├── models/                  # Shared data models
-├── stores/                  # Global state (React context providers)
+├── stores/                  # Global state providers
+├── styles/                  # Global CSS and StyleX theme tokens
 ├── testing/                 # Shared test infrastructure
-│   ├── msw/                 # MSW handlers and mock data fixtures
-│   └── support/             # Test utilities and render helpers
 └── utils/                   # Shared utility functions
-
-e2e/
-└── tests/                   # Playwright E2E specs
 ```
 
-### Placement Rules
+## Placement Rules
 
-**Components**: Colocate with the page or module that owns them. Only promote to `src/components/` when genuinely used across multiple unrelated domains. `src/components/ui/` is reserved for design-system primitives (shadcn/ui).
+**Routes**: Keep `src/app/routes/` files route-only. TanStack Router treats files in this folder as route modules, so do not place tests, helpers, or components there.
 
-**Tests**: Place in a `__tests__/` folder next to the code under test. **Exception**: route-level integration tests belong in `src/app/__tests__/routes/` — never inside `src/app/routes/`, because TanStack Router treats every file there as a route module.
+**Pages**: Put page components in `src/app/pages/`. If a page grows, convert it to a folder with the page shell, sibling section components, styles, hooks, and utilities.
 
-**Shared test infrastructure** (MSW handlers, mock data, render helpers): `src/testing/`.
+**Components**: Colocate components with the page or module that owns them. Only promote to `src/components/` when genuinely reused across unrelated domains. Reserve `src/components/ui/` for shared primitive components.
 
-**Complex pages**: When a page grows, convert it to a folder — `pages/page-name/PageName.tsx` as the orchestration shell, sibling `.tsx` files for sections, and `.ts` files for hooks and utilities.
+**Modules**: Product areas live in `src/modules/<module>/`
 
-### Module Structure
+Module shape:
 
-Each module is a self-contained product or domain area:
-
-```
+```text
 src/modules/<module>/
 ├── api/          # TanStack Query hooks and API request functions
 ├── components/   # Components scoped to this module
 ├── hooks/        # Hooks scoped to this module
-├── types/        # TypeScript types for this module's domain
-├── utils/        # Utility functions for this module
-└── index.ts      # Public API — the only sanctioned import surface for code outside this module
+├── types/        # Domain types
+└── utils/        # Module-local utilities
 ```
 
-Import modules through their `index.ts` when a module exposes one. Do not reach into a module's internals from outside its folder unless the module intentionally has no public barrel yet.
+## Convex Backend Structure
+
+`convex/` follows the layering Convex recommends: the public API is a set of thin
+wrappers, and the logic lives in `convex/model/`.
+
+```text
+convex/
+├── schema.ts              # defineSchema: tables and indexes only
+├── auth.config.ts         # Clerk JWT provider configuration
+├── <domain>.ts            # public API — eg: `api.collections.*`
+├── model/                 # all business logic, imported as namespaces
+├── validators/            # resource validators, the single source of truth
+└── *.test.ts              # exercise the public API, not model/ directly
+```
+
+### Mutation Patch Semantics
+
+For optional fields in public Convex mutation patches, use a three-state API:
+
+- An omitted field leaves the stored value unchanged.
+- `null` clears the stored optional field.
+- A non-null value sets or replaces the stored value.
+
+Patch validators should express this using an optional nullable field, such as
+`v.optional(v.union(valueValidator, v.null()))`.
+
+## Testing Rules
+
+Vitest runs two projects (see `vite.config.ts`): `frontend` for `src/` under Happy DOM, and `convex` for `convex/` under `edge-runtime`. `pnpm test` and `pnpm test:ci` run both.
+
+- Place frontend tests in `__tests__/` folders next to the code under test.
+- Route-level and app integration tests belong under `src/app/__tests__/`, not under `src/app/routes/`.
+- Convex function tests are the exception to the `__tests__/` rule: colocate them flat beside the function file as `convex/<name>.test.ts`, following the `convex-test` convention. They import the module map from `convex/test.setup.ts`.
+- Both `convex/*.test.ts` and `convex/test.setup.ts` are kept out of deploys by the Convex bundler's rule that skips filenames containing more than one dot. Preserve that shape when adding files under `convex/` that must not ship.
+- Use Testing Library for behavior-focused assertions.
+- Prefer the smallest useful test scope: pure utilities first, component tests for UI behavior, route integration tests for routing/provider behavior.
+- There is no Playwright setup yet. If E2E coverage is added, follow the root repository guidance for browser authentication and session cleanup.
+
+## Backend and Auth Notes
+
+The app uses Convex for its backend and Clerk for authentication. Validate
+authenticated user flows through the browser.
+
+Local web app configuration uses `VITE_CLERK_PUBLISHABLE_KEY` and
+`VITE_CONVEX_URL` in `apps/web/.env.local`. Worktree setup refreshes these from
+the shared `web.env.local` template beside the repository.
+
+## Date Conventions
+
+- In `src/`, a `DateString` is a calendar date in the user's current local timezone. Use `todayIso()` for the current day and `parseDate()` for local-midnight parsing.
+- In `shared/srs/` and `convex/model/srs/`, date strings are opaque day indexes. Parse them at UTC midnight so replay and elapsed-day calculations do not depend on the process timezone.
+- `date` and `dueDate` are date-only values (`YYYY-MM-DD`). Clients submit the local completion date only when re-rating an already-completed review; a first completion with no date falls back to the review's scheduled day.
+
+## Generated Files
+
+- Do not manually edit `src/app/routeTree.gen.ts`; TanStack Router generates it.
+- Do not commit or depend on generated `coverage/`, `dist/`, or `node_modules/` content.
+
+<!-- convex-ai-start -->
+
+This project uses [Convex](https://convex.dev) as its backend.
+
+When working on Convex code, **always read
+`convex/_generated/ai/guidelines.md` first** for important guidelines on
+how to correctly use Convex APIs and patterns. The file contains rules that
+override what you may have learned about Convex from training data.
+
+Convex agent skills for common tasks can be installed by running
+`npx convex ai-files install`.
+
+<!-- convex-ai-end -->

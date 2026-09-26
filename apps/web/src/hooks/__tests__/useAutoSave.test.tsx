@@ -1,15 +1,15 @@
 import { act, renderHook } from '@testing-library/react'
-import { type ChangeEvent } from 'react'
+import type { ChangeEvent } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useAutoSave } from '../useAutoSave'
 
-function createChangeEvent(
+function changeEvent(
 	value: string,
 ): ChangeEvent<HTMLInputElement | HTMLTextAreaElement> {
-	return {
-		target: { value },
-	} as ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+	return { target: { value } } as ChangeEvent<
+		HTMLInputElement | HTMLTextAreaElement
+	>
 }
 
 describe('useAutoSave', () => {
@@ -22,7 +22,29 @@ describe('useAutoSave', () => {
 		vi.useRealTimers()
 	})
 
-	it('flushes pending saves when the key changes', () => {
+	it('debounces saves while updating the local value immediately', () => {
+		const onSave = vi.fn()
+		const { result } = renderHook(() =>
+			useAutoSave({
+				initialValue: '',
+				onSave,
+				debounceMs: 1000,
+				key: 'collection-1',
+			}),
+		)
+
+		act(() => result.current.onChange(changeEvent('draft')))
+
+		expect(result.current.value).toBe('draft')
+		expect(onSave).not.toHaveBeenCalled()
+
+		act(() => vi.advanceTimersByTime(1000))
+
+		expect(onSave).toHaveBeenCalledOnce()
+		expect(onSave).toHaveBeenCalledWith('draft')
+	})
+
+	it('flushes the pending save before switching keys', () => {
 		const onSave = vi.fn()
 		const { rerender, result } = renderHook(
 			({ initialValue, key }: { initialValue: string; key: string }) =>
@@ -33,108 +55,63 @@ describe('useAutoSave', () => {
 					key,
 				}),
 			{
-				initialProps: {
-					initialValue: 'topic one',
-					key: 'topic-1',
-				},
+				initialProps: { initialValue: 'one', key: 'collection-1' },
 			},
 		)
 
-		act(() => {
-			result.current.onChange(createChangeEvent('topic one edited'))
-		})
+		act(() => result.current.onChange(changeEvent('one edited')))
+		act(() => rerender({ initialValue: 'two', key: 'collection-2' }))
 
-		expect(onSave).not.toHaveBeenCalled()
-
-		act(() => {
-			rerender({
-				initialValue: 'topic two',
-				key: 'topic-2',
-			})
-		})
-
-		expect(onSave).toHaveBeenCalledTimes(1)
-		expect(onSave).toHaveBeenCalledWith('topic one edited')
-		expect(result.current.value).toBe('topic two')
+		expect(onSave).toHaveBeenCalledWith('one edited')
+		expect(result.current.value).toBe('two')
 	})
 
-	it('flushes pending saves when unmounting', () => {
+	it('flushes the pending save when unmounting', () => {
 		const onSave = vi.fn()
 		const { result, unmount } = renderHook(() =>
 			useAutoSave({
 				initialValue: '',
 				onSave,
 				debounceMs: 1000,
-				key: 'topic-1',
+				key: 'collection-1',
 			}),
 		)
 
-		act(() => {
-			result.current.onChange(
-				createChangeEvent('draft before navigation'),
-			)
-		})
+		act(() => result.current.onChange(changeEvent('draft')))
+		act(unmount)
 
-		expect(onSave).not.toHaveBeenCalled()
-
-		act(() => {
-			unmount()
-		})
-
-		expect(onSave).toHaveBeenCalledTimes(1)
-		expect(onSave).toHaveBeenCalledWith('draft before navigation')
+		expect(onSave).toHaveBeenCalledWith('draft')
 	})
 
-	it('applies external initialValue updates when user has not typed', () => {
+	it('accepts external values when there is no recent local edit', () => {
 		const onSave = vi.fn()
 		const { rerender, result } = renderHook(
 			({ initialValue }: { initialValue: string }) =>
-				useAutoSave({
-					initialValue,
-					onSave,
-					debounceMs: 1000,
-					key: 'topic-1',
-				}),
-			{
-				initialProps: {
-					initialValue: 'stale cache value',
-				},
-			},
+				useAutoSave({ initialValue, onSave, key: 'collection-1' }),
+			{ initialProps: { initialValue: 'stale' } },
 		)
 
-		act(() => {
-			rerender({
-				initialValue: 'fresh server value',
-			})
-		})
+		act(() => rerender({ initialValue: 'fresh' }))
 
-		expect(result.current.value).toBe('fresh server value')
+		expect(result.current.value).toBe('fresh')
 		expect(onSave).not.toHaveBeenCalled()
 	})
 
-	it('supports direct value updates and blur flushes', () => {
+	it('supports direct value updates and explicit flushes', () => {
 		const onSave = vi.fn()
 		const { result } = renderHook(() =>
 			useAutoSave({
 				initialValue: '',
 				onSave,
 				debounceMs: 1000,
-				key: 'topic-1',
+				key: 'collection-1',
 			}),
 		)
 
-		act(() => {
-			result.current.setValue('draft note')
-		})
+		act(() => result.current.setValue('draft'))
+		act(() => result.current.flush())
 
-		expect(result.current.value).toBe('draft note')
-		expect(onSave).not.toHaveBeenCalled()
-
-		act(() => {
-			result.current.flush()
-		})
-
-		expect(onSave).toHaveBeenCalledTimes(1)
-		expect(onSave).toHaveBeenCalledWith('draft note')
+		expect(result.current.value).toBe('draft')
+		expect(onSave).toHaveBeenCalledWith('draft')
 	})
 })

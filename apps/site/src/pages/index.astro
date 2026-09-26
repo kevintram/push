@@ -51,13 +51,11 @@ import { Button } from '../components/ui/button'
 		import confetti from 'canvas-confetti'
 		const button = document.body.querySelector('button')
 		const errorText = document.getElementById('login-error')
-		const apiUrl = import.meta.env.PUBLIC_API_URL
 		const appUrl = import.meta.env.PUBLIC_APP_URL
-		const loginUrl = apiUrl ? `${apiUrl.replace(/\/$/, '')}/login/` : appUrl
 
 		if (button) {
 			button.addEventListener('click', () => {
-				if (!loginUrl) {
+				if (!appUrl) {
 					if (errorText) {
 						errorText.classList.remove('hidden')
 					}
@@ -66,7 +64,7 @@ import { Button } from '../components/ui/button'
 
 				confetti()
 				setTimeout(() => {
-					window.location.href = loginUrl
+					window.location.href = appUrl
 				}, 1000)
 			})
 		}

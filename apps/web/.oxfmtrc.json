@@ -13,26 +13,10 @@
 		"coverage",
 		"dist",
 		"node_modules",
-		"playwright-report",
-		"public/mockServiceWorker.js",
+		"public",
 		"src/app/routeTree.gen.ts",
-		"src/types/database.types.ts",
-		"test-results",
+		"convex/_generated",
 		"pnpm-lock.yaml",
 		"*.md"
-	],
-	"overrides": [
-		{
-			"files": ["src/components/ui/**/*.{ts,tsx}"],
-			"options": {
-				"singleQuote": false
-			}
-		},
-		{
-			"files": ["**/*.css"],
-			"options": {
-				"singleQuote": false
-			}
-		}
 	]
 }

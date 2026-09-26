@@ -1,14 +1,9 @@
 import '@testing-library/jest-dom/vitest'
 
-import { server } from '~/testing/msw/server'
+import { vi } from 'vitest'
 
-if (typeof Element !== 'undefined' && !('getAnimations' in Element.prototype)) {
-	Object.defineProperty(Element.prototype, 'getAnimations', {
-		configurable: true,
-		value: () => [],
-	})
-}
-
-beforeAll(() => server.listen())
-afterEach(() => server.resetHandlers())
-afterAll(() => server.close())
+// Tests must be runnable from a clean checkout, where worktree-generated env
+// files are intentionally absent. These values are public client configuration
+// placeholders; individual config tests exercise validation through readConfig.
+vi.stubEnv('VITE_CONVEX_URL', 'https://test.convex.cloud')
+vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_example')
