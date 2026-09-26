@@ -80,7 +80,7 @@ const styles = stylex.create({
 		textAlign: 'center',
 	},
 	skinny: {
-		borderRadius: radii.lg,
+		borderRadius: radii.md,
 		paddingBlock: spacing.xs,
 		fontSize: fontSizes.sm,
 		paddingInlineEnd: spacing.xs,

@@ -14,7 +14,7 @@ export interface TreeItemContentProps extends Omit<
 
 const styles = stylex.create({
 	content: {
-		borderRadius: radii.lg,
+		borderRadius: radii.md,
 		gap: spacing.xs,
 		alignItems: 'center',
 		backgroundColor: {
