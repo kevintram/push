@@ -83,7 +83,8 @@ const styles = stylex.create({
 	skinny: {
 		borderRadius: radii.md,
 		gap: spacing.sm,
-		paddingBlock: spacing.xs,
+		paddingBlock: spacing.none,
+		blockSize: '36px',
 		fontSize: fontSizes.sm,
 		paddingInlineEnd: spacing.xs,
 		paddingInlineStart: spacing.sm, // so indicators align with SidebarHeaderActions

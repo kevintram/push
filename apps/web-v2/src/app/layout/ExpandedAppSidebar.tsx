@@ -140,8 +140,9 @@ const styles = stylex.create({
 		overflowY: 'hidden',
 	},
 	brandRow: {
-		padding: spacing.sm,
 		gap: spacing.sm,
+		paddingBlock: spacing.xs,
+		paddingInline: spacing.md,
 		alignItems: 'center',
 		display: 'flex',
 		minBlockSize: '36px',
@@ -153,6 +154,8 @@ const styles = stylex.create({
 		gridTemplateColumns: `${iconSizes.md} auto`,
 	},
 	brandIcon: {
+		blockSize: '36px',
+		inlineSize: '36px',
 		justifySelf: 'center',
 	},
 	brand: {
@@ -163,6 +166,11 @@ const styles = stylex.create({
 		display: 'flex',
 		fontSize: fontSizes.lg,
 		fontWeight: fontWeights.semibold,
+		marginInlineStart: spacing.xs,
+	},
+	brandText: {
+		// The lowercase descender makes the wordmark look slightly low beside centered icons.
+		transform: 'translateY(-1px)',
 	},
 	actions: {
 		gap: spacing.xs,
@@ -216,7 +224,7 @@ export function ExpandedAppSidebar({ hideMode }: ExpandedAppSidebarProps) {
 						<PanelLeft size={iconSizes.md} />
 					</Button.Icon>
 					<Link to='/review' {...stylex.props(styles.brand)}>
-						<span>3gulp</span>
+						<span {...stylex.props(styles.brandText)}>3gulp</span>
 					</Link>
 				</div>
 				<div {...stylex.props(styles.actions)}>
