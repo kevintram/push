@@ -15,6 +15,11 @@ import { iconSizes, iconWeights } from '~/styles/tokens.stylex'
 import { HIDE_MODE_HOTKEY } from '../hide-mode/hideModeHotkey'
 import { useHideMode } from '../hide-mode/useHideMode'
 
+type HideModeButtonProps = {
+	tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
+	xstyle?: stylex.StyleXStyles
+}
+
 const styles = stylex.create({
 	hideModeOn: {
 		backgroundColor: {
@@ -25,7 +30,10 @@ const styles = stylex.create({
 	},
 })
 
-export function HideModeButton() {
+export function HideModeButton({
+	tooltipSide = 'bottom',
+	xstyle,
+}: HideModeButtonProps) {
 	const { hideMode, toggleHideMode } = useHideMode()
 
 	return (
@@ -39,7 +47,10 @@ export function HideModeButton() {
 						shape='round'
 						size='micro'
 						variant='secondary'
-						xstyle={hideMode === 'on' && styles.hideModeOn}
+						xstyle={[
+							hideMode === 'on' && styles.hideModeOn,
+							xstyle,
+						]}
 					>
 						<Copy
 							aria-hidden='true'
@@ -49,7 +60,7 @@ export function HideModeButton() {
 					</Button.Icon>
 				}
 			/>
-			<TooltipContent>
+			<TooltipContent side={tooltipSide}>
 				{hideMode === 'on'
 					? 'Show answers and notes'
 					: 'Hide answers and notes'}

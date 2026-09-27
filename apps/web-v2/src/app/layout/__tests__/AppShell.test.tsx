@@ -7,7 +7,7 @@ import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { AppShell } from '../AppShell'
 
 vi.mock('../AppSidebar', () => ({
-	AppSidebar: () => <nav aria-label='primary' />,
+	AppSidebar: () => <nav aria-label='primary' data-testid='icon-only-rail' />,
 }))
 
 function HideModeToggle() {
@@ -30,6 +30,7 @@ describe('AppShell', () => {
 
 		const shell = screen.getByRole('main').parentElement
 		expect(shell).toHaveAttribute('data-hide-mode', 'off')
+		expect(screen.getByTestId('icon-only-rail')).toBeInTheDocument()
 
 		fireEvent.click(
 			screen.getByRole('button', { name: 'Toggle hide mode' }),

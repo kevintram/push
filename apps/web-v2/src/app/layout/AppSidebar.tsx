@@ -1,21 +1,31 @@
 import * as stylex from '@stylexjs/stylex'
+import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { PanelLeft, Settings } from 'lucide-react'
+import {
+	BellRing,
+	Calendar,
+	Flag,
+	PanelLeft,
+	Settings,
+	Sparkles,
+} from 'lucide-react'
 
 import { SidebarItem } from '~/components/sidebar'
-import { Button } from '~/components/ui'
-import { LibraryNavigation } from '~/modules/library/components/library-navigation/LibraryNavigation'
+import {
+	Button,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '~/components/ui'
+import { useToday } from '~/hooks/useToday'
+import { cardQueries } from '~/modules/reviews/api/cardQueries'
+import { dueQueries } from '~/modules/reviews/api/dueQueries'
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
-import { ReviewNavigation } from '~/modules/reviews/components/review-navigation/ReviewNavigation'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import {
 	appShellColors,
 	buttonColors,
-	libraryCollectionItemColors,
-	librarySidebarColors,
 	sidebarItemColors,
-	sidebarSectionHeaderColors,
-	treeColors,
 } from '~/styles/colors/components.stylex'
 import {
 	baseColors,
@@ -24,12 +34,9 @@ import {
 	whiteAlpha,
 } from '~/styles/colors/primitives.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
-import {
-	fontSizes,
-	fontWeights,
-	iconSizes,
-	spacing,
-} from '~/styles/tokens.stylex'
+import { iconSizes, spacing } from '~/styles/tokens.stylex'
+
+import { SidebarRailReviewLink } from './SidebarRailReviewLink'
 
 const hideModeOnSemanticTheme = stylex.createTheme(semanticColors, {
 	surfaceSecondary: whiteAlpha.s5,
@@ -40,7 +47,6 @@ const hideModeOnSemanticTheme = stylex.createTheme(semanticColors, {
 	surfaceInteractiveSecondary: whiteAlpha.s10,
 	surfaceInteractiveSecondaryHover: whiteAlpha.s15,
 	surfaceInteractiveSecondaryActive: whiteAlpha.s20,
-
 	textPrimary: whiteAlpha.s95,
 	textSecondary: slate.s300,
 	textTertiary: slate.s400,
@@ -51,7 +57,6 @@ const hideModeOnSemanticTheme = stylex.createTheme(semanticColors, {
 	textInteractiveHover: whiteAlpha.s95,
 	textInteractiveActive: whiteAlpha.s95,
 	textInteractiveDisabled: slate.s400,
-
 	borderPrimary: whiteAlpha.s20,
 	borderSubtle: whiteAlpha.s10,
 	borderStrong: whiteAlpha.s30,
@@ -68,17 +73,9 @@ const hideModeOnItemTheme = stylex.createTheme(sidebarItemColors, {
 	foregroundSelected: whiteAlpha.s95,
 })
 
-const hideModeOnSectionHeaderTheme = stylex.createTheme(
-	sidebarSectionHeaderColors,
-	{
-		foreground: semanticColors.textTertiary,
-	},
-)
-
 const hideModeOnButtonTheme = stylex.createTheme(buttonColors, {
 	focusRingRest: baseColors.transparent,
 	focusRing: blue.s300,
-
 	secondaryBorder: baseColors.transparent,
 	secondaryBackground: whiteAlpha.s10,
 	secondaryBackgroundHover: whiteAlpha.s15,
@@ -86,7 +83,6 @@ const hideModeOnButtonTheme = stylex.createTheme(buttonColors, {
 	secondaryForeground: slate.s200,
 	secondaryForegroundHover: whiteAlpha.s95,
 	secondaryForegroundPressed: whiteAlpha.s95,
-
 	ghostBorder: baseColors.transparent,
 	ghostBackground: baseColors.transparent,
 	ghostBackgroundHover: whiteAlpha.s10,
@@ -99,90 +95,42 @@ const hideModeOnButtonTheme = stylex.createTheme(buttonColors, {
 	ghostDisabledForeground: slate.s500,
 })
 
-const hideModeOnTreeTheme = stylex.createTheme(treeColors, {
-	itemBackgroundHover: whiteAlpha.s10,
-	itemBackgroundSelected: whiteAlpha.s15,
-	itemBackgroundSelectedHover: whiteAlpha.s20,
-	labelBackground: baseColors.transparent,
-	labelForeground: slate.s300,
-	labelForegroundHover: whiteAlpha.s95,
-	labelForegroundSelected: whiteAlpha.s95,
-	labelFocusRingRest: baseColors.transparent,
-	labelFocusRing: blue.s300,
-})
-
-const hideModeOnLibraryTheme = stylex.createTheme(librarySidebarColors, {
-	containerBackgroundDropTarget: whiteAlpha.s10,
-})
-
-const hideModeOnCollectionItemTheme = stylex.createTheme(
-	libraryCollectionItemColors,
-	{
-		containerBackgroundDragging: whiteAlpha.s5,
-		containerBackgroundDropTarget: whiteAlpha.s10,
-	},
-)
-
 const styles = stylex.create({
-	container: {
-		padding: spacing.xs,
-		gap: spacing.xs,
-
+	rail: {
+		gap: spacing.sm,
+		paddingBlock: spacing.sm,
+		paddingInline: spacing.xs,
+		alignItems: 'center',
 		backgroundColor: appShellColors.chromeBackground,
 		color: semanticColors.textPrimary,
-
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 0,
-
-		inlineSize: '240px',
+		inlineSize: '48px',
 		height: '100%',
 		overflowY: 'hidden',
 	},
-	brandRow: {
-		padding: spacing.sm,
-		gap: spacing.sm,
+	controlWrapper: {
 		alignItems: 'center',
+		blockSize: '36px',
 		display: 'flex',
-		minBlockSize: '36px',
+		inlineSize: '36px',
+		justifyContent: 'center',
 	},
-	brandLabel: {
-		gap: spacing.sm,
-		alignItems: 'center',
-		display: 'grid',
-		gridTemplateColumns: `${iconSizes.md} auto`,
+	controlIcon: {
+		blockSize: iconSizes.md,
+		inlineSize: iconSizes.md,
 	},
-	brandIcon: {
-		justifySelf: 'center',
+	railItem: {
+		paddingBlock: 0,
+		paddingInline: 0,
+		blockSize: '36px',
+		inlineSize: '36px',
 	},
-	brand: {
-		gap: spacing.xs,
-		textDecoration: 'none',
-		alignItems: 'center',
-		color: 'inherit',
-		display: 'flex',
-		fontSize: fontSizes.lg,
-		fontWeight: fontWeights.semibold,
-	},
-	actions: {
-		gap: spacing.xs,
-		alignItems: 'center',
-		display: 'flex',
-		marginInlineStart: 'auto',
-	},
-	footer: {
-		gap: spacing.xs,
-		display: 'flex',
-		flexDirection: 'column',
-		flexShrink: 0,
-	},
-	library: {
-		display: 'flex',
+	spacer: {
 		flexBasis: 0,
 		flexGrow: 1,
-		flexShrink: 1,
-		inlineSize: '100%',
-		minBlockSize: 0,
+		minBlockSize: spacing.xs,
 	},
 })
 
@@ -191,53 +139,99 @@ type AppSidebarProps = {
 }
 
 export function AppSidebar({ hideMode }: AppSidebarProps) {
+	const today = useToday()
+	const { data: dueEntries } = useQuery(dueQueries.listDue(today))
+	const { data: newEntries } = useQuery(dueQueries.listNew())
+	const { data: lateEntries } = useQuery(dueQueries.listLate(today))
+	const { data: flaggedCards } = useQuery(cardQueries.listFlagged())
+	const hasDue = (dueEntries?.length ?? 0) > 0
+	const hasNew = (newEntries?.length ?? 0) > 0
+	const hasLate = (lateEntries?.length ?? 0) > 0
+	const hasFlagged = (flaggedCards?.length ?? 0) > 0
+
 	return (
 		<nav
 			aria-label='primary'
 			{...stylex.props(
-				styles.container,
+				styles.rail,
 				hideMode && hideModeOnSemanticTheme,
 				hideMode && hideModeOnItemTheme,
-				hideMode && hideModeOnSectionHeaderTheme,
 				hideMode && hideModeOnButtonTheme,
-				hideMode && hideModeOnTreeTheme,
-				hideMode && hideModeOnLibraryTheme,
-				hideMode && hideModeOnCollectionItemTheme,
 			)}
 		>
-			<div {...stylex.props(styles.brandRow)}>
-				<div {...stylex.props(styles.brandLabel)}>
-					<Button.Icon
-						shape='round'
-						size='micro'
-						variant='ghost'
-						xstyle={styles.brandIcon}
-					>
-						<PanelLeft size={iconSizes.md} />
-					</Button.Icon>
-					<Link to='/review' {...stylex.props(styles.brand)}>
-						<span>3gulp</span>
-					</Link>
-				</div>
-				<div {...stylex.props(styles.actions)}>
-					<HideModeButton />
-					<SearchDialog />
-				</div>
-			</div>
-			<ReviewNavigation />
-			<div {...stylex.props(styles.library)}>
-				<LibraryNavigation />
-			</div>
-			<div {...stylex.props(styles.footer)}>
-				<SidebarItem
-					icon={Settings}
+			<Tooltip>
+				<TooltipTrigger
 					render={
-						<Link activeOptions={{ exact: true }} to='/settings' />
+						<span {...stylex.props(styles.controlWrapper)}>
+							<Button.Icon
+								aria-label='Expand sidebar'
+								disabled
+								shape='round'
+								size='micro'
+								variant='ghost'
+								xstyle={styles.railItem}
+							>
+								<PanelLeft
+									aria-hidden='true'
+									size={iconSizes.md}
+								/>
+							</Button.Icon>
+						</span>
 					}
-				>
-					Settings
-				</SidebarItem>
-			</div>
+				/>
+				<TooltipContent side='right'>Expand sidebar</TooltipContent>
+			</Tooltip>
+			<HideModeButton tooltipSide='right' xstyle={styles.railItem} />
+			<SearchDialog triggerXstyle={styles.railItem} />
+
+			<SidebarRailReviewLink
+				hasCards={hasDue}
+				icon={Calendar}
+				label='Due'
+				to='/review/due'
+			/>
+			<SidebarRailReviewLink
+				hasCards={hasNew}
+				icon={Sparkles}
+				label='New'
+				to='/review/new'
+			/>
+			<SidebarRailReviewLink
+				hasCards={hasLate}
+				icon={BellRing}
+				label='Late'
+				to='/review/late'
+			/>
+			<SidebarRailReviewLink
+				hasCards={hasFlagged}
+				icon={Flag}
+				label='Flagged'
+				to='/review/flagged'
+			/>
+
+			<div aria-hidden='true' {...stylex.props(styles.spacer)} />
+			<Tooltip>
+				<TooltipTrigger
+					render={
+						<SidebarItem.Icon
+							ariaLabel='Settings'
+							xstyle={styles.railItem}
+							render={
+								<Link
+									activeOptions={{ exact: true }}
+									to='/settings'
+								/>
+							}
+						>
+							<Settings
+								aria-hidden='true'
+								{...stylex.props(styles.controlIcon)}
+							/>
+						</SidebarItem.Icon>
+					}
+				/>
+				<TooltipContent side='right'>Settings</TooltipContent>
+			</Tooltip>
 		</nav>
 	)
 }

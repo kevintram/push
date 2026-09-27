@@ -878,7 +878,7 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
-	it('keeps the unified navigation available on the settings route', async () => {
+	it('keeps the icon navigation rail available on the settings route', async () => {
 		renderRoute('/settings')
 
 		await screen.findByRole('heading', { name: 'Account' })
@@ -888,9 +888,9 @@ describe('v2 app setup', () => {
 
 		expect(
 			within(primaryNavigation).getByRole('button', {
-				name: 'Collapse Review',
+				name: 'Expand sidebar',
 			}),
-		).toBeInTheDocument()
+		).toBeDisabled()
 		expect(
 			within(primaryNavigation).getByRole('link', { name: 'Due' }),
 		).toBeInTheDocument()
@@ -898,15 +898,11 @@ describe('v2 app setup', () => {
 			within(primaryNavigation).getByRole('link', { name: 'Flagged' }),
 		).toBeInTheDocument()
 		expect(
-			within(primaryNavigation).getByRole('button', {
-				name: 'Collapse Library',
-			}),
+			within(primaryNavigation).getByRole('link', { name: 'Settings' }),
 		).toBeInTheDocument()
 		expect(
-			within(primaryNavigation).getByRole('navigation', {
-				name: 'Library collections',
-			}),
-		).toBeInTheDocument()
+			within(primaryNavigation).queryByText('Library'),
+		).not.toBeInTheDocument()
 	})
 
 	it('groups hide mode immediately before search in the sidebar header', async () => {
@@ -966,123 +962,9 @@ describe('v2 app setup', () => {
 	it('renders the blank library index route', async () => {
 		renderRoute('/library')
 
+		await screen.findByRole('navigation', { name: 'primary' })
 		expect(
-			await screen.findByRole('navigation', {
-				name: 'Library collections',
-			}),
-		).toBeInTheDocument()
-		expect(
-			screen.queryByRole('heading', { name: 'Library' }),
-		).not.toBeInTheDocument()
-	})
-
-	it('collapses and expands nested library collections', async () => {
-		const user = userEvent.setup()
-		const childCollectionId = 'collection-2' as Id<'collections'>
-		const grandchildCollectionId = 'collection-3' as Id<'collections'>
-
-		renderRoute('/library', {
-			collections: [
-				{ ...collection, title: 'Languages' },
-				{
-					...collection,
-					_id: childCollectionId,
-					parentId: collectionId,
-					title: 'TypeScript',
-				},
-				{
-					...collection,
-					_id: grandchildCollectionId,
-					parentId: childCollectionId,
-					title: 'Generics',
-				},
-			],
-		})
-
-		const parentToggle = await screen.findByRole('button', {
-			name: 'Toggle Languages',
-		})
-		const collapseAllButton = screen.getByRole('button', {
-			name: 'Collapse all collections',
-		})
-		expect(parentToggle).toHaveAttribute('aria-expanded', 'false')
-		expect(collapseAllButton).toBeDisabled()
-		expect(
-			screen.queryByRole('link', { name: 'TypeScript' }),
-		).not.toBeInTheDocument()
-
-		await user.click(parentToggle)
-
-		expect(
-			screen.getByRole('link', { name: 'TypeScript' }),
-		).toBeInTheDocument()
-		expect(
-			screen.getByRole('button', { name: 'Toggle Languages' }),
-		).toHaveAttribute('aria-expanded', 'true')
-		expect(collapseAllButton).toBeEnabled()
-
-		await user.click(
-			screen.getByRole('button', { name: 'Toggle TypeScript' }),
-		)
-		expect(
-			screen.getByRole('link', { name: 'Generics' }),
-		).toBeInTheDocument()
-
-		await user.click(collapseAllButton)
-
-		expect(
-			screen.getByRole('button', { name: 'Toggle Languages' }),
-		).toHaveAttribute('aria-expanded', 'false')
-		expect(collapseAllButton).toBeDisabled()
-		expect(
-			screen.queryByRole('link', { name: 'TypeScript' }),
-		).not.toBeInTheDocument()
-
-		await user.click(
-			screen.getByRole('button', { name: 'Toggle Languages' }),
-		)
-		expect(
-			screen.getByRole('button', { name: 'Toggle TypeScript' }),
-		).toHaveAttribute('aria-expanded', 'false')
-		expect(
-			screen.queryByRole('link', { name: 'Generics' }),
-		).not.toBeInTheDocument()
-
-		await user.click(
-			screen.getByRole('button', { name: 'Toggle Languages' }),
-		)
-
-		expect(
-			screen.queryByRole('link', { name: 'TypeScript' }),
-		).not.toBeInTheDocument()
-
-		await user.click(
-			screen.getByRole('button', { name: 'Toggle Languages' }),
-		)
-
-		expect(
-			screen.getByRole('link', { name: 'TypeScript' }),
-		).toBeInTheDocument()
-
-		await user.click(
-			screen.getByRole('button', { name: 'Toggle TypeScript' }),
-		)
-
-		expect(
-			screen.getByRole('link', { name: 'Generics' }),
-		).toBeInTheDocument()
-	})
-
-	it('does not render a collapse control for leaf collections', async () => {
-		renderRoute('/library', { collections: [collection] })
-
-		expect(
-			await screen.findByRole('link', { name: 'Learning TypeScript' }),
-		).toBeInTheDocument()
-		expect(
-			screen.queryByRole('button', {
-				name: 'Toggle Learning TypeScript',
-			}),
+			screen.queryByRole('navigation', { name: 'Library collections' }),
 		).not.toBeInTheDocument()
 	})
 
@@ -1164,7 +1046,7 @@ describe('v2 app setup', () => {
 		).toHaveAttribute('aria-current', 'page')
 		expect(
 			screen.queryByRole('navigation', { name: 'Library collections' }),
-		).toBeInTheDocument()
+		).not.toBeInTheDocument()
 	})
 
 	it('uses practice-specific card placeholders', async () => {
