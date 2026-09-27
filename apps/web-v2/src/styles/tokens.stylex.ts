@@ -56,6 +56,11 @@ export const iconSizes = stylex.defineVars({
 	'2xl': '3rem',
 })
 
+export const controlSizes = stylex.defineConsts({
+	// Hitbox around the 16px md glyph: 5px inset per side, not alignment spacing.
+	micro: '26px',
+})
+
 export const breakpoints = stylex.defineConsts({
 	tablet: '@media (min-width: 768px)',
 	desktop: '@media (min-width: 1024px)',
