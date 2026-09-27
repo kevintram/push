@@ -53,6 +53,7 @@ export function ReviewQueueToolbar({
 }: ReviewQueueToolbarProps) {
 	return (
 		<header {...stylex.props(styles.header)}>
+			{/* Match the 36px sidebar and collection toolbar control size. */}
 			<div {...stylex.props(styles.headerButtonCluster)}>
 				<Tooltip>
 					<TooltipTrigger
@@ -61,7 +62,7 @@ export function ReviewQueueToolbar({
 								aria-label='Next card'
 								shape='round'
 								variant='secondary'
-								size='small'
+								size='medium'
 								disabled={index >= cardCount - 1}
 								onClick={onNext}
 							>
@@ -81,7 +82,7 @@ export function ReviewQueueToolbar({
 								aria-label='Previous card'
 								shape='round'
 								variant='secondary'
-								size='small'
+								size='medium'
 								disabled={index <= 0}
 								onClick={onPrevious}
 							>
@@ -110,7 +111,7 @@ export function ReviewQueueToolbar({
 								aria-controls={REVIEW_QUEUE_SIDEBAR_ID}
 								shape='round'
 								variant='secondary'
-								size='small'
+								size='medium'
 								onClick={onQueueSidebarToggle}
 							>
 								<Menu size={iconSizes.md} />

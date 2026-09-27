@@ -52,8 +52,8 @@ const styles = stylex.create({
 		backgroundColor: reviewQueueColors.containerBackground,
 	},
 	panels: {
-		padding: spacing.sm,
 		gap: spacing.sm,
+		paddingInline: spacing.sm,
 		display: 'flex',
 		flexBasis: 0,
 		flexDirection: 'row',
@@ -61,6 +61,12 @@ const styles = stylex.create({
 		flexShrink: 1,
 		minBlockSize: 0,
 		minInlineSize: 0,
+		paddingBlockEnd: spacing.sm,
+		// Combined with the shell inset, align review controls to the app toggle.
+		paddingBlockStart: {
+			default: spacing.sm,
+			[breakpoints.tablet]: spacing.xs,
+		},
 	},
 	cardColumn: {
 		gap: spacing.xs,
@@ -97,7 +103,8 @@ const styles = stylex.create({
 		justifyContent: 'center',
 	},
 	toolbarWrapper: {
-		padding: spacing.xs,
+		paddingBlock: spacing.none,
+		paddingInline: spacing.xs,
 	},
 })
 

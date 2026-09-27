@@ -31,6 +31,7 @@ import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { baseColors } from '~/styles/colors/primitives.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
+	breakpoints,
 	fontSizes,
 	fontWeights,
 	iconSizes,
@@ -49,12 +50,17 @@ const styles = stylex.create({
 	},
 	toolbar: {
 		gap: spacing.md,
-		paddingBlock: spacing.sm,
 		paddingInline: spacing.lg,
 		alignItems: 'center',
 		display: 'flex',
 		flexShrink: 0,
 		justifyContent: 'space-between',
+		paddingBlockEnd: spacing.sm,
+		// Combined with the shell inset, align breadcrumbs and actions to the toggle.
+		paddingBlockStart: {
+			default: spacing.sm,
+			[breakpoints.tablet]: spacing.xs,
+		},
 	},
 	breadcrumbs: {
 		flexBasis: 0,

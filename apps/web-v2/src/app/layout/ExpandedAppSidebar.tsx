@@ -26,9 +26,11 @@ import {
 } from '~/styles/colors/primitives.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
+	breakpoints,
 	fontSizes,
 	fontWeights,
 	iconSizes,
+	layout,
 	spacing,
 } from '~/styles/tokens.stylex'
 
@@ -142,11 +144,16 @@ const styles = stylex.create({
 	},
 	brandRow: {
 		gap: spacing.sm,
-		paddingBlock: spacing.xs,
 		paddingInline: spacing.md,
 		alignItems: 'center',
 		display: 'flex',
 		minBlockSize: '36px',
+		paddingBlockEnd: spacing.xs,
+		// Container padding plus the shell inset matches the collapsed toggle axis.
+		paddingBlockStart: {
+			default: spacing.xs,
+			[breakpoints.tablet]: layout.appShellInset,
+		},
 	},
 	brandLabel: {
 		gap: spacing.sm,

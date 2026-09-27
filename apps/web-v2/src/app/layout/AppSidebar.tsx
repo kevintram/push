@@ -34,7 +34,7 @@ import {
 	whiteAlpha,
 } from '~/styles/colors/primitives.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
-import { iconSizes, spacing } from '~/styles/tokens.stylex'
+import { breakpoints, iconSizes, layout, spacing } from '~/styles/tokens.stylex'
 
 import { SidebarRailReviewLink } from './SidebarRailReviewLink'
 
@@ -98,7 +98,6 @@ const hideModeOnButtonTheme = stylex.createTheme(buttonColors, {
 const styles = stylex.create({
 	rail: {
 		gap: spacing.sm,
-		paddingBlock: spacing.sm,
 		paddingInline: spacing.xs,
 		alignItems: 'center',
 		backgroundColor: appShellColors.chromeBackground,
@@ -107,9 +106,16 @@ const styles = stylex.create({
 		flexDirection: 'column',
 		flexShrink: 0,
 		inlineSize: '48px',
+		paddingBlockEnd: spacing.sm,
+		// Add the shell inset so the toggle aligns with page toolbar controls.
+		paddingBlockStart: {
+			default: spacing.sm,
+			[breakpoints.tablet]: `calc(${spacing.xs} + ${layout.appShellInset})`,
+		},
 		height: '100%',
 		overflowY: 'hidden',
 	},
+	// Top-level app controls share this 36px hit area across shell layouts.
 	controlWrapper: {
 		alignItems: 'center',
 		blockSize: '36px',
