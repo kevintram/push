@@ -60,7 +60,7 @@ export const hideModeSidebarItemTheme = stylex.createTheme(sidebarItemColors, {
 export const hideModeSidebarSectionHeaderTheme = stylex.createTheme(
 	sidebarSectionHeaderColors,
 	{
-		foreground: slate.s300,
+		foreground: semanticColors.textTertiary,
 	},
 )
 
