@@ -11,7 +11,6 @@ import {
 } from 'lucide-react'
 import type { Ref } from 'react'
 
-import { SidebarItem } from '~/components/sidebar'
 import {
 	Button,
 	Tooltip,
@@ -128,6 +127,20 @@ const styles = stylex.create({
 		blockSize: '36px',
 		inlineSize: '36px',
 	},
+	railLink: {
+		backgroundColor: {
+			'[data-status=active]': sidebarItemColors.backgroundSelected,
+			default: buttonColors.ghostBackground,
+			':is([data-status=active]:hover)':
+				sidebarItemColors.backgroundSelectedHover,
+			':hover': buttonColors.ghostBackgroundHover,
+		},
+		color: {
+			'[data-status=active]': sidebarItemColors.foregroundSelected,
+			default: buttonColors.ghostForeground,
+			':hover': buttonColors.ghostForegroundHover,
+		},
+	},
 	spacer: {
 		flexBasis: 0,
 		flexGrow: 1,
@@ -228,21 +241,24 @@ export function AppSidebar({
 			<Tooltip>
 				<TooltipTrigger
 					render={
-						<SidebarItem.Icon
-							ariaLabel='Settings'
-							xstyle={styles.railItem}
+						<Button.Icon
+							aria-label='Settings'
 							render={
 								<Link
 									activeOptions={{ exact: true }}
 									to='/settings'
 								/>
 							}
+							shape='round'
+							size='micro'
+							variant='ghost'
+							xstyle={[styles.railItem, styles.railLink]}
 						>
 							<Settings
 								aria-hidden='true'
 								{...stylex.props(styles.controlIcon)}
 							/>
-						</SidebarItem.Icon>
+						</Button.Icon>
 					}
 				/>
 				<TooltipContent side='right'>Settings</TooltipContent>

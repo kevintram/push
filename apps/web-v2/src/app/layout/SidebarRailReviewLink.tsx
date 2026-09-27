@@ -2,20 +2,36 @@ import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 import type { LucideIcon } from 'lucide-react'
 
-import { SidebarItem } from '~/components/sidebar'
 import {
+	Button,
 	StatusDot,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
+import {
+	buttonColors,
+	sidebarItemColors,
+} from '~/styles/colors/components.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	link: {
 		paddingBlock: 0,
 		paddingInline: 0,
+		backgroundColor: {
+			'[data-status=active]': sidebarItemColors.backgroundSelected,
+			default: buttonColors.ghostBackground,
+			':is([data-status=active]:hover)':
+				sidebarItemColors.backgroundSelectedHover,
+			':hover': buttonColors.ghostBackgroundHover,
+		},
 		blockSize: '36px',
+		color: {
+			'[data-status=active]': sidebarItemColors.foregroundSelected,
+			default: buttonColors.ghostForeground,
+			':hover': buttonColors.ghostForegroundHover,
+		},
 		inlineSize: '36px',
 		position: 'relative',
 	},
@@ -47,11 +63,14 @@ export function SidebarRailReviewLink({
 		<Tooltip>
 			<TooltipTrigger
 				render={
-					<SidebarItem.Icon
-						ariaLabel={
+					<Button.Icon
+						aria-label={
 							hasCards ? `${label}, cards available` : label
 						}
 						render={<Link to={to} />}
+						shape='round'
+						size='micro'
+						variant='ghost'
 						xstyle={styles.link}
 					>
 						<Icon
@@ -63,7 +82,7 @@ export function SidebarRailReviewLink({
 								<StatusDot />
 							</span>
 						)}
-					</SidebarItem.Icon>
+					</Button.Icon>
 				}
 			/>
 			<TooltipContent side='right'>{label}</TooltipContent>
