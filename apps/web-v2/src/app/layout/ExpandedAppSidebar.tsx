@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
-import { PanelLeftClose, Settings } from 'lucide-react'
+import { PanelLeft, Settings } from 'lucide-react'
 import type { Ref } from 'react'
 
 import { SidebarItem } from '~/components/sidebar'
@@ -161,7 +161,9 @@ const styles = stylex.create({
 		display: 'grid',
 		gridTemplateColumns: `${appSidebar.iconSize} auto`,
 	},
-	brandIcon: {
+	headerButton: {
+		paddingBlock: 0,
+		paddingInline: 0,
 		blockSize: '36px',
 		inlineSize: '36px',
 		justifySelf: 'center',
@@ -243,9 +245,9 @@ export function ExpandedAppSidebar({
 						shape='round'
 						size='micro'
 						variant='ghost'
-						xstyle={styles.brandIcon}
+						xstyle={styles.headerButton}
 					>
-						<PanelLeftClose
+						<PanelLeft
 							aria-hidden='true'
 							size={appSidebar.iconSize}
 						/>
@@ -255,8 +257,8 @@ export function ExpandedAppSidebar({
 					</Link>
 				</div>
 				<div {...stylex.props(styles.actions)}>
-					<HideModeButton />
-					<SearchDialog />
+					<HideModeButton xstyle={styles.headerButton} />
+					<SearchDialog triggerXstyle={styles.headerButton} />
 				</div>
 			</div>
 			<ReviewNavigation />

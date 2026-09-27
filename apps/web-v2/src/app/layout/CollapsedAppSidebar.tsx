@@ -5,7 +5,7 @@ import {
 	BellRing,
 	Calendar,
 	Flag,
-	PanelLeftOpen,
+	PanelLeft,
 	Settings,
 	Sparkles,
 } from 'lucide-react'
@@ -210,7 +210,7 @@ export function CollapsedAppSidebar({
 								variant='ghost'
 								xstyle={styles.railItem}
 							>
-								<PanelLeftOpen
+								<PanelLeft
 									aria-hidden='true'
 									size={appSidebar.iconSize}
 								/>
