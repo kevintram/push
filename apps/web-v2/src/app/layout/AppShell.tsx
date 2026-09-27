@@ -5,7 +5,7 @@ import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { appShellColors } from '~/styles/colors/components.stylex'
 import { slate } from '~/styles/colors/primitives.stylex'
-import { breakpoints, radii } from '~/styles/tokens.stylex'
+import { breakpoints, layout, radii } from '~/styles/tokens.stylex'
 
 import { AppSidebar } from './AppSidebar'
 import { ExpandedAppSidebar } from './ExpandedAppSidebar'
@@ -40,14 +40,15 @@ const styles = stylex.create({
 		backgroundColor: appShellColors.chromeBackground,
 	},
 	children: {
+		// Establish the desktop inset used by sidebar and page toolbar alignment.
 		marginBlock: {
 			default: 0,
-			[breakpoints.tablet]: 6,
+			[breakpoints.tablet]: layout.appShellInset,
 		},
 		flexGrow: 1,
 		marginInlineEnd: {
 			default: 0,
-			[breakpoints.tablet]: 6,
+			[breakpoints.tablet]: layout.appShellInset,
 		},
 		minHeight: 0,
 		minWidth: 0,

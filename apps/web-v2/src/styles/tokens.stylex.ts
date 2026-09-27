@@ -67,6 +67,8 @@ export const breakpoints = stylex.defineConsts({
 })
 
 export const layout = stylex.defineConsts({
+	// Shared by the shell, sidebars, and page toolbars to keep top controls aligned.
+	appShellInset: '6px',
 	contentColumnMaxWidth: '768px',
 	rowBleed: '8px',
 })
