@@ -4,7 +4,6 @@ import { buttonColors, cardItemColors } from '~/styles/colors/components.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
-import { useHideMode } from '../hide-mode/useHideMode'
 import type { Card as CardModel, CardSrsState } from '../types/review.types'
 import { CardActions } from './CardActions'
 import { CardMetadata } from './CardMetadata'
@@ -108,9 +107,8 @@ export function CardItem({
 	buttonProps,
 }: CardItemProps) {
 	const { type, primaryText, secondaryText } = card
-	const { hideMode } = useHideMode()
-
-	const secondaryShown = type === 'practice' || hideMode === 'off'
+	// Flashcard secondary text is the answer, so never show it in lists.
+	const secondaryShown = type === 'practice'
 
 	return (
 		<div
