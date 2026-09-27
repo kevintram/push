@@ -154,7 +154,7 @@ const styles = stylex.create({
 	},
 })
 
-type AppSidebarProps = {
+type CollapsedAppSidebarProps = {
 	hideMode: boolean
 	id: string
 	expanded: boolean
@@ -162,13 +162,13 @@ type AppSidebarProps = {
 	toggleRef: Ref<HTMLButtonElement>
 }
 
-export function AppSidebar({
+export function CollapsedAppSidebar({
 	hideMode,
 	id,
 	expanded,
 	onToggle,
 	toggleRef,
-}: AppSidebarProps) {
+}: CollapsedAppSidebarProps) {
 	const today = useToday()
 	const { data: dueEntries } = useQuery(dueQueries.listDue(today))
 	const { data: newEntries } = useQuery(dueQueries.listNew())

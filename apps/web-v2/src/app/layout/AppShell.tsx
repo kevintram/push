@@ -7,7 +7,7 @@ import { appShellColors } from '~/styles/colors/components.stylex'
 import { slate } from '~/styles/colors/primitives.stylex'
 import { breakpoints, layout, radii } from '~/styles/tokens.stylex'
 
-import { AppSidebar } from './AppSidebar'
+import { CollapsedAppSidebar } from './CollapsedAppSidebar'
 import { ExpandedAppSidebar } from './ExpandedAppSidebar'
 
 const SIDEBAR_STORAGE_KEY = 'appSidebarExpanded'
@@ -120,7 +120,7 @@ export function AppShell({ children }: AppShellProps) {
 					toggleRef={expandedToggleRef}
 				/>
 			) : (
-				<AppSidebar
+				<CollapsedAppSidebar
 					hideMode={isHideMode}
 					id={SIDEBAR_ID}
 					expanded={isSidebarExpanded}

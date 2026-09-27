@@ -12,7 +12,7 @@ import { HideModeProvider } from '~/modules/reviews/hide-mode/HideModeProvider'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
 import { todayIso } from '~/utils/date'
 
-import { AppSidebar } from '../AppSidebar'
+import { CollapsedAppSidebar } from '../CollapsedAppSidebar'
 
 vi.mock('@tanstack/react-router', async importOriginal => ({
 	...(await importOriginal<typeof import('@tanstack/react-router')>()),
@@ -39,7 +39,7 @@ vi.mock('~/modules/search/components/SearchDialog', () => ({
 	SearchDialog: () => <button aria-label='Search' type='button' />,
 }))
 
-describe('AppSidebar', () => {
+describe('CollapsedAppSidebar', () => {
 	function renderSidebar({ due = false }: { due?: boolean } = {}) {
 		const queryClient = createTestQueryClient()
 		const today = todayIso()
@@ -55,7 +55,7 @@ describe('AppSidebar', () => {
 			<QueryClientProvider client={queryClient}>
 				<TooltipProvider delay={0}>
 					<HideModeProvider>
-						<AppSidebar
+						<CollapsedAppSidebar
 							hideMode={false}
 							id='app-sidebar'
 							expanded={false}

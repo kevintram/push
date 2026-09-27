@@ -68,12 +68,12 @@ conditionals throughout the existing Review and Library navigation trees.
 ```text
 src/app/layout/
   AppShell.tsx
-  AppSidebar.tsx
+  CollapsedAppSidebar.tsx
   ExpandedAppSidebar.tsx
   SidebarRailReviewLink.tsx
   __tests__/
     AppShell.test.tsx
-    AppSidebar.test.tsx
+    CollapsedAppSidebar.test.tsx
 ```
 
 Responsibilities:
@@ -81,16 +81,16 @@ Responsibilities:
 | Component | Responsibility |
 | --- | --- |
 | `AppShell` | Own the persisted expanded state, switch between presentations, and restore focus after a switch. |
-| `AppSidebar` | Render the icon-only rail, its ordering, spacing, themes, and footer placement. |
+| `CollapsedAppSidebar` | Render the icon-only rail, its ordering, spacing, themes, and footer placement. |
 | `ExpandedAppSidebar` | Preserve the current branded sidebar, Review section, Library tree, and footer for the future expanded state. |
 | `SidebarRailReviewLink` | Render one accessible Review route icon, tooltip, active state, and optional availability indicator. |
 
-`ExpandedAppSidebar` should be produced by moving the current `AppSidebar`
+`ExpandedAppSidebar` should be produced by moving the current `CollapsedAppSidebar`
 implementation with minimal behavioral change. It remains exported and
 typechecked even though the shell does not render it yet.
 
 If the Review link abstraction can remain small and clear inside
-`AppSidebar.tsx` without violating the one-component-per-file rule, prefer the
+`CollapsedAppSidebar.tsx` without violating the one-component-per-file rule, prefer the
 separate component shown above. Do not generalize it into a broad navigation
 framework.
 
@@ -186,7 +186,7 @@ remain unchanged.
 
 Add focused tests that verify behavior rather than generated StyleX classes.
 
-### `AppSidebar` tests
+### `CollapsedAppSidebar` tests
 
 - Renders a primary navigation landmark.
 - Renders the enabled `Expand sidebar` control first.
@@ -218,7 +218,7 @@ boundaries used by `ReviewNavigation`, following its current tests.
 
 ## Validation
 
-1. Run targeted tests for `AppSidebar`, `AppShell`, `SidebarItem`,
+1. Run targeted tests for `CollapsedAppSidebar`, `AppShell`, `SidebarItem`,
    `HideModeButton`, and `SearchDialog`.
 2. Run `pnpm lint`.
 3. Run `pnpm test:ci`.

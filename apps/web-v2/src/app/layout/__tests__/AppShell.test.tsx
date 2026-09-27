@@ -7,8 +7,8 @@ import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 
 import { AppShell } from '../AppShell'
 
-vi.mock('../AppSidebar', () => ({
-	AppSidebar: ({
+vi.mock('../CollapsedAppSidebar', () => ({
+	CollapsedAppSidebar: ({
 		id,
 		expanded,
 		onToggle,
