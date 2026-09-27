@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { amber, blue, orange, violet } from './primitives.stylex'
+import { amber, blue, orange, violet, whiteAlpha } from './primitives.stylex'
 import { semanticColors } from './semantic.stylex'
 
 export const breadcrumbColors = stylex.defineVars({
@@ -339,16 +339,16 @@ export const cardDetailErrorColors = stylex.defineVars({
 
 export const hideModeButtonColors = stylex.defineVars({
 	backgroundActive: {
-		default: blue.s200,
-		'@media (prefers-color-scheme: dark)': blue.s950,
+		default: blue.s400,
+		'@media (prefers-color-scheme: dark)': blue.s700,
 	},
 	backgroundActiveHover: {
-		default: blue.s300,
-		'@media (prefers-color-scheme: dark)': blue.s900,
+		default: blue.s500,
+		'@media (prefers-color-scheme: dark)': blue.s600,
 	},
 	foregroundActive: {
-		default: blue.s900,
-		'@media (prefers-color-scheme: dark)': blue.s200,
+		default: whiteAlpha.s95,
+		'@media (prefers-color-scheme: dark)': blue.s100,
 	},
 })
 

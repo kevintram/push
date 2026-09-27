@@ -3,7 +3,6 @@ import * as stylex from '@stylexjs/stylex'
 import {
 	appShellColors,
 	buttonColors,
-	hideModeButtonColors,
 	libraryCollectionItemColors,
 	librarySidebarColors,
 	sidebarItemColors,
@@ -114,18 +113,3 @@ export const hideModeLibraryCollectionItemTheme = stylex.createTheme(
 		containerBackgroundDropTarget: whiteAlpha.s10,
 	},
 )
-
-export const hideModeButtonTheme = stylex.createTheme(hideModeButtonColors, {
-	backgroundActive: {
-		default: blue.s500,
-		'@media (prefers-color-scheme: dark)': blue.s700,
-	},
-	backgroundActiveHover: {
-		default: blue.s400,
-		'@media (prefers-color-scheme: dark)': blue.s600,
-	},
-	foregroundActive: {
-		default: whiteAlpha.s95,
-		'@media (prefers-color-scheme: dark)': blue.s100,
-	},
-})

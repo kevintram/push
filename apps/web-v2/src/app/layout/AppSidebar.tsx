@@ -10,7 +10,6 @@ import { ReviewNavigation } from '~/modules/reviews/components/review-navigation
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import { appShellColors } from '~/styles/colors/components.stylex'
 import {
-	hideModeButtonTheme,
 	hideModeLibraryCollectionItemTheme,
 	hideModeLibrarySidebarTheme,
 	hideModeSidebarButtonTheme,
@@ -107,7 +106,6 @@ export function AppSidebar({ hideMode }: AppSidebarProps) {
 				hideMode && hideModeTreeTheme,
 				hideMode && hideModeLibrarySidebarTheme,
 				hideMode && hideModeLibraryCollectionItemTheme,
-				hideMode && hideModeButtonTheme,
 			)}
 		>
 			<div {...stylex.props(styles.brandRow)}>
