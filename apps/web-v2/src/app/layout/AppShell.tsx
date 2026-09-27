@@ -3,10 +3,17 @@ import type { ReactNode } from 'react'
 
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { appShellColors } from '~/styles/colors/components.stylex'
-import { hideModeAppShellTheme } from '~/styles/colors/hideModeThemes'
+import { slate } from '~/styles/colors/primitives.stylex'
 import { breakpoints, radii } from '~/styles/tokens.stylex'
 
 import { AppSidebar } from './AppSidebar'
+
+const hideModeOnChromeTheme = stylex.createTheme(appShellColors, {
+	chromeBackground: {
+		default: 'oklch(49% 0.044 257.3)',
+		'@media (prefers-color-scheme: dark)': slate.s900,
+	},
+})
 
 const styles = stylex.create({
 	shell: {
@@ -59,7 +66,7 @@ export function AppShell({ children }: AppShellProps) {
 	return (
 		<div
 			data-hide-mode={isHideMode ? 'on' : 'off'}
-			{...stylex.props(styles.shell, isHideMode && hideModeAppShellTheme)}
+			{...stylex.props(styles.shell, isHideMode && hideModeOnChromeTheme)}
 		>
 			<AppSidebar hideMode={isHideMode} />
 			<main {...stylex.props(styles.children)}>{children}</main>
