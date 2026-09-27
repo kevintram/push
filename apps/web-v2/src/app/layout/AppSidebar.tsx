@@ -5,10 +5,11 @@ import {
 	BellRing,
 	Calendar,
 	Flag,
-	PanelLeft,
+	PanelLeftOpen,
 	Settings,
 	Sparkles,
 } from 'lucide-react'
+import type { Ref } from 'react'
 
 import { SidebarItem } from '~/components/sidebar'
 import {
@@ -136,9 +137,19 @@ const styles = stylex.create({
 
 type AppSidebarProps = {
 	hideMode: boolean
+	id: string
+	expanded: boolean
+	onToggle: () => void
+	toggleRef: Ref<HTMLButtonElement>
 }
 
-export function AppSidebar({ hideMode }: AppSidebarProps) {
+export function AppSidebar({
+	hideMode,
+	id,
+	expanded,
+	onToggle,
+	toggleRef,
+}: AppSidebarProps) {
 	const today = useToday()
 	const { data: dueEntries } = useQuery(dueQueries.listDue(today))
 	const { data: newEntries } = useQuery(dueQueries.listNew())
@@ -151,6 +162,7 @@ export function AppSidebar({ hideMode }: AppSidebarProps) {
 
 	return (
 		<nav
+			id={id}
 			aria-label='primary'
 			{...stylex.props(
 				styles.rail,
@@ -165,13 +177,16 @@ export function AppSidebar({ hideMode }: AppSidebarProps) {
 						<span {...stylex.props(styles.controlWrapper)}>
 							<Button.Icon
 								aria-label='Expand sidebar'
-								disabled
+								aria-expanded={expanded}
+								aria-controls={id}
+								onClick={onToggle}
+								ref={toggleRef}
 								shape='round'
 								size='micro'
 								variant='ghost'
 								xstyle={styles.railItem}
 							>
-								<PanelLeft
+								<PanelLeftOpen
 									aria-hidden='true'
 									size={iconSizes.md}
 								/>

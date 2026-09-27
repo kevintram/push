@@ -55,7 +55,13 @@ describe('AppSidebar', () => {
 			<QueryClientProvider client={queryClient}>
 				<TooltipProvider delay={0}>
 					<HideModeProvider>
-						<AppSidebar hideMode={false} />
+						<AppSidebar
+							hideMode={false}
+							id='app-sidebar'
+							expanded={false}
+							onToggle={() => {}}
+							toggleRef={null}
+						/>
 					</HideModeProvider>
 				</TooltipProvider>
 			</QueryClientProvider>,
@@ -75,7 +81,9 @@ describe('AppSidebar', () => {
 		const flagged = screen.getByRole('link', { name: 'Flagged' })
 		const settings = screen.getByRole('link', { name: 'Settings' })
 
-		expect(toggle).toBeDisabled()
+		expect(toggle).toBeEnabled()
+		expect(toggle).toHaveAttribute('aria-expanded', 'false')
+		expect(toggle).toHaveAttribute('aria-controls', 'app-sidebar')
 		expect(
 			toggle.compareDocumentPosition(hideMode) &
 				Node.DOCUMENT_POSITION_FOLLOWING,

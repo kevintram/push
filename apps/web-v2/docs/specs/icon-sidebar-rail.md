@@ -1,23 +1,23 @@
 # Icon-only application sidebar
 
-Status: implemented.
+Status: implemented, including the persisted expand/collapse toggle.
 
 ## Outcome
 
 Replace the currently rendered 240px application sidebar with a narrow,
-icon-only navigation rail. This is the first stage of the application sidebar
-toggle: the rail is rendered unconditionally for now, while the existing
-expanded sidebar is retained as a separate presentation that can be wired to
-the same toggle in a follow-up change.
+icon-only navigation rail. `AppShell` switches between the rail and the
+existing expanded sidebar, remembers the preference in `localStorage`, and
+starts collapsed when no preference has been saved.
 
 The rail provides direct access to the existing Review queues, Hide Mode,
-Search, and Settings. It does not show Library or collections in this stage.
+Search, and Settings. The expanded presentation includes Library and
+collections; Library does not appear in the collapsed rail.
 
 ## Agreed rail order
 
 From top to bottom:
 
-1. Sidebar toggle placeholder
+1. Expand sidebar toggle
 2. Hide Mode
 3. Search
 4. Due
@@ -35,9 +35,12 @@ bottom of the application frame.
 ### Included
 
 - Add a narrow icon-only rail and render it in the application shell.
-- Retain the existing expanded sidebar implementation in a separately named
-  component for the future expanded state.
-- Keep the existing `PanelLeft` control as the top rail control.
+- Keep the expanded sidebar implementation in a separately named component.
+- Use `PanelLeftOpen` and `PanelLeftClose` for the expand and collapse controls.
+- Persist expanded state in `localStorage`; default to collapsed without a
+  saved preference.
+- Render only one sidebar presentation at a time and restore focus to its
+  toggle after switching.
 - Render direct icon links for Due, New, Late, Flagged, and Settings.
 - Reuse the existing Hide Mode and Search icon controls.
 - Show right-side tooltips for controls and navigation links whose meaning is
@@ -51,9 +54,6 @@ bottom of the application frame.
 
 - Do not render a Library icon, collection tree, collection flyout, or Library
   actions in the rail.
-- Do not add collapsed/expanded state or make the top control switch between
-  sidebar presentations yet.
-- Do not persist sidebar state.
 - Do not add a keyboard shortcut for the sidebar.
 - Do not change Review queries, routes, Hide Mode behavior, Search behavior, or
   Settings behavior.
@@ -80,7 +80,7 @@ Responsibilities:
 
 | Component | Responsibility |
 | --- | --- |
-| `AppShell` | Continue composing the app frame and render `AppSidebar`. It does not own collapse state in this stage. |
+| `AppShell` | Own the persisted expanded state, switch between presentations, and restore focus after a switch. |
 | `AppSidebar` | Render the icon-only rail, its ordering, spacing, themes, and footer placement. |
 | `ExpandedAppSidebar` | Preserve the current branded sidebar, Review section, Library tree, and footer for the future expanded state. |
 | `SidebarRailReviewLink` | Render one accessible Review route icon, tooltip, active state, and optional availability indicator. |
@@ -96,8 +96,8 @@ framework.
 
 ## Rail presentation
 
-- Use an approximately 48px-wide rail, then tune against the existing 26px
-  micro controls and 16px navigation glyphs during visual validation.
+- Use an approximately 48px-wide rail with consistent 36px toggle and
+  navigation hit areas around 16px glyphs.
 - Keep the rail full-height and nonshrinking.
 - Center every control on one shared vertical axis.
 - Use consistent square hit areas for rail navigation items.
@@ -109,11 +109,9 @@ framework.
 - Use StyleX for all new styles, defined inline with their owning components.
 - Continue using shared spacing, icon-size, radius, and color tokens.
 
-The top control remains visually recognizable as the sidebar control. Because
-it does not toggle anything in this stage, give it the accessible name
-`Expand sidebar` and leave it disabled. This avoids exposing an operable
-control that silently does nothing. The follow-up toggle change will enable it
-and add the appropriate expanded-state semantics.
+The rail control is named `Expand sidebar`; the expanded control is named
+`Collapse sidebar`. Both expose `aria-expanded` and `aria-controls` for the
+stable `app-sidebar` navigation region.
 
 ## Navigation and active states
 
@@ -166,13 +164,12 @@ remain unchanged.
 
 ### Sidebar control
 
-Reuse the `PanelLeft` visual treatment from the current header. In this stage:
-
-- Render it first.
-- Add `aria-label='Expand sidebar'`.
-- Render it disabled because no state transition exists yet.
-- Do not add `aria-expanded` until the control actually owns a collapsible
-  region.
+- Render the enabled `Expand sidebar` control first in the rail.
+- Render an enabled `Collapse sidebar` control in the expanded header.
+- Keep `aria-expanded` and `aria-controls='app-sidebar'` in sync with the
+  current presentation.
+- Return keyboard focus to the corresponding replacement control after each
+  switch.
 
 ## Accessibility
 
@@ -180,8 +177,7 @@ Reuse the `PanelLeft` visual treatment from the current header. In this stage:
 - Every icon-only link or button has an accessible name.
 - Decorative SVGs use `aria-hidden='true'`.
 - Tooltips supplement, but do not provide, accessible names.
-- Disabled placeholder behavior is communicated through the native `disabled`
-  state.
+- Expanded/collapsed state is communicated through `aria-expanded`.
 - Active route semantics continue to come from TanStack Router links.
 - Availability dots do not become independent focus targets.
 - Keyboard tab order follows the visual top-to-bottom order.
@@ -193,7 +189,7 @@ Add focused tests that verify behavior rather than generated StyleX classes.
 ### `AppSidebar` tests
 
 - Renders a primary navigation landmark.
-- Renders the disabled `Expand sidebar` control first.
+- Renders the enabled `Expand sidebar` control first.
 - Places Hide Mode before Search in DOM/tab order.
 - Renders Due, New, Late, Flagged, and Settings links with correct destinations.
 - Does not render Library or Library collections.
@@ -240,20 +236,13 @@ boundaries used by `ReviewNavigation`, following its current tests.
    - main content receives the width reclaimed from the expanded sidebar.
 7. Clean up the dedicated browser session after validation.
 
-## Follow-up toggle stage
+## Follow-up
 
-The next change can add sidebar state to `AppShell` and choose between
-`AppSidebar` and `ExpandedAppSidebar`. At that point:
-
-- Enable the rail control and wire it to the expanded presentation.
-- Add the corresponding collapse control to `ExpandedAppSidebar`.
-- Add `aria-expanded` and a stable controlled-region relationship where the
-  resulting DOM structure supports it.
-- Decide whether the preference is session-only or persisted across sessions.
-- Consider a keyboard shortcut separately.
-- Decide how Library should behave when the collapsed rail eventually needs to
-  preserve access to it; this plan intentionally makes no Library UI decision
-  beyond omitting it for now.
+The basic toggle is implemented. Collapsing unmounts the expanded sidebar, so
+open Library branches reset when it is expanded again; selected collection
+ancestors continue to be restored by the Library navigation. A keyboard
+shortcut and a Library entry point in the rail remain separate product
+decisions.
 
 ## Acceptance criteria
 
@@ -265,9 +254,10 @@ The next change can add sidebar state to `AppShell` and choose between
 - Review availability remains visible and accessible.
 - All icon-only items are keyboard accessible and named independently of their
   tooltips.
-- The sidebar placeholder cannot be activated until actual toggle state is
-  implemented.
-- The existing expanded sidebar remains available as a separate, typechecked
-  component for the follow-up toggle.
+- The rail and expanded sidebar switch through the enabled controls, with one
+  presentation mounted at a time.
+- The preference persists in `localStorage`, and focus follows the control
+  after switching.
+- The expanded sidebar remains a separate component with its Library tree.
 - Validation and authenticated visual checks pass without changing unrelated
   application behavior.

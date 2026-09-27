@@ -18,7 +18,7 @@ import {
 import userEvent from '@testing-library/user-event'
 import { ConvexProvider } from 'convex/react'
 import type { ReactNode } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
 import { collectionQueries } from '~/modules/library/api/collectionQueries'
@@ -239,6 +239,10 @@ function renderRoute(
 }
 
 describe('v2 app setup', () => {
+	beforeEach(() => {
+		window.localStorage.clear()
+	})
+
 	it('redirects the index route to the due review page', async () => {
 		const { router } = renderRoute('/')
 
@@ -878,7 +882,8 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
-	it('keeps the icon navigation rail available on the settings route', async () => {
+	it('toggles the sidebar presentation on the settings route', async () => {
+		const user = userEvent.setup()
 		renderRoute('/settings')
 
 		await screen.findByRole('heading', { name: 'Account' })
@@ -890,7 +895,7 @@ describe('v2 app setup', () => {
 			within(primaryNavigation).getByRole('button', {
 				name: 'Expand sidebar',
 			}),
-		).toBeDisabled()
+		).toBeEnabled()
 		expect(
 			within(primaryNavigation).getByRole('link', { name: 'Due' }),
 		).toBeInTheDocument()
@@ -902,6 +907,35 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 		expect(
 			within(primaryNavigation).queryByText('Library'),
+		).not.toBeInTheDocument()
+
+		await user.click(
+			within(primaryNavigation).getByRole('button', {
+				name: 'Expand sidebar',
+			}),
+		)
+
+		const expandedNavigation = screen.getByRole('navigation', {
+			name: 'primary',
+		})
+		const collapseToggle = within(expandedNavigation).getByRole('button', {
+			name: 'Collapse sidebar',
+		})
+		expect(collapseToggle).toHaveFocus()
+		expect(
+			within(expandedNavigation).getByRole('navigation', {
+				name: 'Library collections',
+			}),
+		).toBeInTheDocument()
+		expect(window.localStorage.getItem('appSidebarExpanded')).toBe('true')
+
+		await user.click(collapseToggle)
+
+		expect(
+			screen.getByRole('button', { name: 'Expand sidebar' }),
+		).toHaveFocus()
+		expect(
+			screen.queryByRole('navigation', { name: 'Library collections' }),
 		).not.toBeInTheDocument()
 	})
 

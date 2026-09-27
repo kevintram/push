@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
-import { PanelLeft, Settings } from 'lucide-react'
+import { PanelLeftClose, Settings } from 'lucide-react'
+import type { Ref } from 'react'
 
 import { SidebarItem } from '~/components/sidebar'
 import { Button } from '~/components/ui'
@@ -196,11 +197,22 @@ const styles = stylex.create({
 
 type ExpandedAppSidebarProps = {
 	hideMode: boolean
+	id: string
+	expanded: boolean
+	onToggle: () => void
+	toggleRef: Ref<HTMLButtonElement>
 }
 
-export function ExpandedAppSidebar({ hideMode }: ExpandedAppSidebarProps) {
+export function ExpandedAppSidebar({
+	hideMode,
+	id,
+	expanded,
+	onToggle,
+	toggleRef,
+}: ExpandedAppSidebarProps) {
 	return (
 		<nav
+			id={id}
 			aria-label='primary'
 			{...stylex.props(
 				styles.container,
@@ -216,12 +228,20 @@ export function ExpandedAppSidebar({ hideMode }: ExpandedAppSidebarProps) {
 			<div {...stylex.props(styles.brandRow)}>
 				<div {...stylex.props(styles.brandLabel)}>
 					<Button.Icon
+						aria-label='Collapse sidebar'
+						aria-expanded={expanded}
+						aria-controls={id}
+						onClick={onToggle}
+						ref={toggleRef}
 						shape='round'
 						size='micro'
 						variant='ghost'
 						xstyle={styles.brandIcon}
 					>
-						<PanelLeft size={iconSizes.md} />
+						<PanelLeftClose
+							aria-hidden='true'
+							size={iconSizes.md}
+						/>
 					</Button.Icon>
 					<Link to='/review' {...stylex.props(styles.brand)}>
 						<span {...stylex.props(styles.brandText)}>3gulp</span>
