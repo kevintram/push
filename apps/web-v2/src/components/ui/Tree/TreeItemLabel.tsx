@@ -16,8 +16,8 @@ export interface TreeItemLabelProps extends Omit<
 
 const styles = stylex.create({
 	label: {
-		padding: spacing.xs,
 		borderWidth: 0,
+		paddingBlock: spacing.xs,
 		textDecoration: 'none',
 		alignItems: 'center',
 		backgroundColor: treeColors.labelBackground,
@@ -36,6 +36,8 @@ const styles = stylex.create({
 		outlineOffset: '-2px',
 		outlineStyle: 'solid',
 		outlineWidth: '2px',
+		paddingInlineEnd: spacing.xs,
+		paddingInlineStart: spacing.none,
 		textAlign: 'start',
 	},
 	selected: {

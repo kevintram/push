@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 
 import { treeColors } from '~/styles/colors/components.stylex'
-import { radii, spacing } from '~/styles/tokens.stylex'
+import { controlSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { useTreeItemContext } from './TreeItemContext'
 
@@ -15,14 +15,16 @@ export interface TreeItemContentProps extends Omit<
 const styles = stylex.create({
 	content: {
 		borderRadius: radii.md,
-		gap: spacing.xs,
+		gap: spacing.sm,
 		alignItems: 'center',
 		backgroundColor: {
 			default: 'inherit',
 			':hover': treeColors.itemBackgroundHover,
 		},
 		display: 'grid',
-		gridTemplateColumns: '26px minmax(0, 1fr)',
+		gridTemplateColumns: `${iconSizes.md} minmax(0, 1fr)`,
+		minBlockSize: controlSizes.micro,
+		paddingInlineStart: spacing.sm,
 	},
 	selected: {
 		backgroundColor: {

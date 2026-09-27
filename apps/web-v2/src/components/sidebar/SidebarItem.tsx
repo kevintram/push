@@ -70,6 +70,7 @@ const styles = stylex.create({
 		},
 	},
 	fat: {
+		gap: spacing.xs,
 		paddingBlock: spacing.md,
 		paddingInline: spacing.sm,
 
@@ -81,18 +82,11 @@ const styles = stylex.create({
 	},
 	skinny: {
 		borderRadius: radii.md,
+		gap: spacing.sm,
 		paddingBlock: spacing.xs,
 		fontSize: fontSizes.sm,
 		paddingInlineEnd: spacing.xs,
 		paddingInlineStart: spacing.sm, // so indicators align with SidebarHeaderActions
-	},
-	icon: {
-		display: 'block',
-		flexShrink: 0,
-	},
-	skinnyIcon: {
-		blockSize: iconSizes.md,
-		inlineSize: iconSizes.md,
 	},
 	iconOnly: {
 		paddingInline: spacing.none,
@@ -104,6 +98,10 @@ const styles = stylex.create({
 		display: 'inline-flex',
 		flexShrink: 0,
 		justifyContent: 'center',
+	},
+	sidebarIcon: {
+		display: 'block',
+		flexShrink: 0,
 	},
 	secondary: {
 		borderColor: buttonColors.secondaryBorder,
@@ -173,10 +171,7 @@ export function SidebarItem({
 						{Icon && (
 							<Icon
 								size={iconSizes.md}
-								{...stylex.props(
-									styles.icon,
-									layout === 'skinny' && styles.skinnyIcon,
-								)}
+								{...stylex.props(styles.sidebarIcon)}
 							/>
 						)}
 						{children}
