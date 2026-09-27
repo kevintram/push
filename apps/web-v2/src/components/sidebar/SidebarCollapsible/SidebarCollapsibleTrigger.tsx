@@ -4,9 +4,9 @@ import { ChevronDown } from 'lucide-react'
 import { CollapsibleTrigger } from '~/components/ui'
 import { sidebarSectionHeaderColors } from '~/styles/colors/components.stylex'
 import {
+	appSidebar,
 	fontSizes,
 	fontWeights,
-	iconSizes,
 	iconWeights,
 	radii,
 	spacing,
@@ -34,9 +34,9 @@ const styles = stylex.create({
 		textAlign: 'start',
 	},
 	chevron: {
-		blockSize: iconSizes.sm,
+		blockSize: appSidebar.iconSize,
 		flexShrink: 0,
-		inlineSize: iconSizes.sm,
+		inlineSize: appSidebar.iconSize,
 		opacity: {
 			default: 0,
 			[stylex.when.ancestor(':focus-within')]: 1,

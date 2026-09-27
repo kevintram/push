@@ -26,10 +26,10 @@ import {
 } from '~/styles/colors/primitives.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
+	appSidebar,
 	breakpoints,
 	fontSizes,
 	fontWeights,
-	iconSizes,
 	layout,
 	spacing,
 } from '~/styles/tokens.stylex'
@@ -159,7 +159,7 @@ const styles = stylex.create({
 		gap: spacing.sm,
 		alignItems: 'center',
 		display: 'grid',
-		gridTemplateColumns: `${iconSizes.md} auto`,
+		gridTemplateColumns: `${appSidebar.iconSize} auto`,
 	},
 	brandIcon: {
 		blockSize: '36px',
@@ -247,7 +247,7 @@ export function ExpandedAppSidebar({
 					>
 						<PanelLeftClose
 							aria-hidden='true'
-							size={iconSizes.md}
+							size={appSidebar.iconSize}
 						/>
 					</Button.Icon>
 					<Link to='/review' {...stylex.props(styles.brand)}>

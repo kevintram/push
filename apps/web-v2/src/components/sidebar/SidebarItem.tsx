@@ -9,9 +9,9 @@ import {
 	sidebarItemColors,
 } from '~/styles/colors/components.stylex'
 import {
+	appSidebar,
 	fontSizes,
 	fontWeights,
-	iconSizes,
 	radii,
 	spacing,
 } from '~/styles/tokens.stylex'
@@ -171,7 +171,7 @@ export function SidebarItem({
 					<>
 						{Icon && (
 							<Icon
-								size={iconSizes.md}
+								size={appSidebar.iconSize}
 								{...stylex.props(styles.sidebarIcon)}
 							/>
 						)}

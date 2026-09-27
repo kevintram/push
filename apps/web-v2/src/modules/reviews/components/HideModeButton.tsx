@@ -10,7 +10,7 @@ import {
 	TooltipTrigger,
 } from '~/components/ui'
 import { hideModeButtonColors } from '~/styles/colors/components.stylex'
-import { iconSizes, iconWeights } from '~/styles/tokens.stylex'
+import { appSidebar, iconWeights } from '~/styles/tokens.stylex'
 
 import { HIDE_MODE_HOTKEY } from '../hide-mode/hideModeHotkey'
 import { useHideMode } from '../hide-mode/useHideMode'
@@ -54,7 +54,7 @@ export function HideModeButton({
 					>
 						<Copy
 							aria-hidden='true'
-							size={iconSizes.sm}
+							size={appSidebar.iconSize}
 							strokeWidth={iconWeights.medium}
 						/>
 					</Button.Icon>

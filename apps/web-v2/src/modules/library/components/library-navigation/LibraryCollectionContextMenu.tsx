@@ -8,7 +8,7 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from '~/components/ui'
-import { iconSizes } from '~/styles/tokens.stylex'
+import { appSidebar } from '~/styles/tokens.stylex'
 
 type LibraryCollectionContextMenuProps = {
 	trigger: ReactElement
@@ -28,16 +28,19 @@ export function LibraryCollectionContextMenu({
 			<ContextMenuTrigger render={trigger} />
 			<ContextMenuContent>
 				<ContextMenuItem onClick={onCreateSubcollection}>
-					<Plus aria-hidden='true' size={iconSizes.md} />
+					<Plus aria-hidden='true' size={appSidebar.iconSize} />
 					Add subcollection
 				</ContextMenuItem>
 				<ContextMenuItem onClick={onMove}>
-					<FolderInput aria-hidden='true' size={iconSizes.md} />
+					<FolderInput
+						aria-hidden='true'
+						size={appSidebar.iconSize}
+					/>
 					Move
 				</ContextMenuItem>
 				<ContextMenuSeparator />
 				<ContextMenuItem onClick={onDelete}>
-					<Trash2 aria-hidden='true' size={iconSizes.md} />
+					<Trash2 aria-hidden='true' size={appSidebar.iconSize} />
 					Delete
 				</ContextMenuItem>
 			</ContextMenuContent>

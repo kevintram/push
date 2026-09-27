@@ -34,7 +34,12 @@ import {
 	whiteAlpha,
 } from '~/styles/colors/primitives.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
-import { breakpoints, iconSizes, layout, spacing } from '~/styles/tokens.stylex'
+import {
+	appSidebar,
+	breakpoints,
+	layout,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 import { SidebarRailReviewLink } from './SidebarRailReviewLink'
 
@@ -124,8 +129,8 @@ const styles = stylex.create({
 		justifyContent: 'center',
 	},
 	controlIcon: {
-		blockSize: iconSizes.md,
-		inlineSize: iconSizes.md,
+		blockSize: appSidebar.iconSize,
+		inlineSize: appSidebar.iconSize,
 	},
 	railItem: {
 		paddingBlock: 0,
@@ -207,7 +212,7 @@ export function CollapsedAppSidebar({
 							>
 								<PanelLeftOpen
 									aria-hidden='true'
-									size={iconSizes.md}
+									size={appSidebar.iconSize}
 								/>
 							</Button.Icon>
 						</span>

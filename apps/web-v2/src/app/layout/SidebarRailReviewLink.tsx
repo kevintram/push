@@ -13,7 +13,7 @@ import {
 	buttonColors,
 	sidebarItemColors,
 } from '~/styles/colors/components.stylex'
-import { iconSizes, spacing } from '~/styles/tokens.stylex'
+import { appSidebar, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	link: {
@@ -36,8 +36,8 @@ const styles = stylex.create({
 		position: 'relative',
 	},
 	icon: {
-		blockSize: iconSizes.md,
-		inlineSize: iconSizes.md,
+		blockSize: appSidebar.iconSize,
+		inlineSize: appSidebar.iconSize,
 	},
 	statusDot: {
 		insetBlockStart: spacing.xs,

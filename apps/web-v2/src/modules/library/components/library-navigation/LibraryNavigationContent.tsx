@@ -14,7 +14,7 @@ import {
 } from '~/components/sidebar'
 import { Button, Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
-import { iconSizes, iconWeights, spacing } from '~/styles/tokens.stylex'
+import { appSidebar, iconWeights, spacing } from '~/styles/tokens.stylex'
 
 import { useCreateCollection } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
@@ -127,7 +127,7 @@ export function LibraryNavigationContent({
 					>
 						<ChevronsDownUp
 							aria-hidden='true'
-							size={iconSizes.sm}
+							size={appSidebar.iconSize}
 							strokeWidth={iconWeights.medium}
 						/>
 					</Button.Icon>
@@ -140,7 +140,7 @@ export function LibraryNavigationContent({
 					>
 						<Plus
 							aria-hidden='true'
-							size={iconSizes.sm}
+							size={appSidebar.iconSize}
 							strokeWidth={iconWeights.medium}
 						/>
 					</Button.Icon>
