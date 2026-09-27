@@ -1,8 +1,9 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
-import { Settings } from 'lucide-react'
+import { PanelLeft, Settings } from 'lucide-react'
 
 import { SidebarItem } from '~/components/sidebar'
+import { Button } from '~/components/ui'
 import { LibraryNavigation } from '~/modules/library/components/library-navigation/LibraryNavigation'
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { ReviewNavigation } from '~/modules/reviews/components/review-navigation/ReviewNavigation'
@@ -19,7 +20,12 @@ import {
 	hideModeTreeTheme,
 } from '~/styles/colors/hideModeThemes'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
-import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+import {
+	fontSizes,
+	fontWeights,
+	iconSizes,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	container: {
@@ -43,6 +49,15 @@ const styles = stylex.create({
 		alignItems: 'center',
 		display: 'flex',
 		minBlockSize: '36px',
+	},
+	brandLabel: {
+		gap: spacing.sm,
+		alignItems: 'center',
+		display: 'grid',
+		gridTemplateColumns: `${iconSizes.md} auto`,
+	},
+	brandIcon: {
+		justifySelf: 'center',
 	},
 	brand: {
 		gap: spacing.xs,
@@ -96,9 +111,19 @@ export function AppSidebar({ hideMode }: AppSidebarProps) {
 			)}
 		>
 			<div {...stylex.props(styles.brandRow)}>
-				<Link to='/review' {...stylex.props(styles.brand)}>
-					<span>3gulp</span>
-				</Link>
+				<div {...stylex.props(styles.brandLabel)}>
+					<Button.Icon
+						shape='round'
+						size='micro'
+						variant='ghost'
+						xstyle={styles.brandIcon}
+					>
+						<PanelLeft size={iconSizes.md} />
+					</Button.Icon>
+					<Link to='/review' {...stylex.props(styles.brand)}>
+						<span>3gulp</span>
+					</Link>
+				</div>
 				<div {...stylex.props(styles.actions)}>
 					<HideModeButton />
 					<SearchDialog />
