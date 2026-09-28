@@ -26,36 +26,41 @@ vi.mock('@tanstack/react-router', async importOriginal => ({
 	),
 }))
 
+const entryFor = (id: string) => ({ card: { _id: id } }) as DueEntry
+
 describe('ReviewNavigation', () => {
 	function renderNavigation({
-		due = false,
-		newCards = false,
-		late = false,
-		flagged = false,
+		due = 0,
+		newCards = 0,
+		lateEntries = [],
+		flagged = 0,
 	}: {
-		due?: boolean
-		newCards?: boolean
-		late?: boolean
-		flagged?: boolean
+		due?: number
+		newCards?: number
+		lateEntries?: Array<DueEntry>
+		flagged?: number
 	} = {}) {
 		const queryClient = createTestQueryClient()
 		const today = todayIso()
-		const entry = {} as DueEntry
 		queryClient.setQueryData(
 			dueQueries.listDue(today).queryKey,
-			due ? [entry] : [],
+			Array.from({ length: due }, (_, index) => entryFor(`due-${index}`)),
 		)
 		queryClient.setQueryData(
 			dueQueries.listNew().queryKey,
-			newCards ? [entry] : [],
+			Array.from({ length: newCards }, (_, index) =>
+				entryFor(`new-${index}`),
+			),
 		)
 		queryClient.setQueryData(
 			dueQueries.listLate(today).queryKey,
-			late ? [entry] : [],
+			lateEntries,
 		)
 		queryClient.setQueryData(
 			cardQueries.listFlagged().queryKey,
-			flagged ? [{} as Card] : [],
+			Array.from({ length: flagged }, (_, index) => ({
+				_id: `flagged-${index}`,
+			})) as Array<Card>,
 		)
 
 		return {
@@ -69,36 +74,54 @@ describe('ReviewNavigation', () => {
 		}
 	}
 
-	it('shows an accessible indicator for each nonempty queue', () => {
+	it('uses matching singular count labels and dots for each nonempty queue', () => {
 		renderNavigation({
-			due: true,
-			late: true,
-			newCards: true,
-			flagged: true,
+			due: 1,
+			lateEntries: [entryFor('late-1')],
+			newCards: 1,
+			flagged: 1,
 		})
 
-		expect(
-			screen.getByRole('link', { name: 'Due, cards available' }),
-		).toBeInTheDocument()
-		expect(
-			screen.getByRole('link', { name: 'New, cards available' }),
-		).toBeInTheDocument()
-		expect(
-			screen.getByRole('link', { name: 'Late, cards available' }),
-		).toBeInTheDocument()
-		expect(
-			screen.getByRole('link', { name: 'Flagged, cards available' }),
-		).toHaveAttribute('href', '/review/flagged')
+		for (const name of [
+			'1 card due',
+			'1 new card',
+			'1 late card',
+			'1 flagged card',
+		]) {
+			expect(screen.getByRole('link', { name })).toBeInTheDocument()
+		}
 		expect(
 			document.querySelectorAll('[data-slot="status-dot"]'),
 		).toHaveLength(4)
 	})
 
+	it('uses plural count labels and deduplicates late cards for its label', () => {
+		renderNavigation({
+			due: 2,
+			newCards: 3,
+			lateEntries: [
+				entryFor('late-1'),
+				entryFor('late-1'),
+				entryFor('late-2'),
+			],
+			flagged: 4,
+		})
+
+		for (const name of [
+			'2 cards due',
+			'3 new cards',
+			'2 late cards',
+			'4 flagged cards',
+		]) {
+			expect(screen.getByRole('link', { name })).toBeInTheDocument()
+		}
+	})
+
 	it('hides indicators for empty queues and reflects updated queue state', async () => {
-		const { queryClient, rerender, today } = renderNavigation({ due: true })
+		const { queryClient, rerender, today } = renderNavigation({ due: 1 })
 
 		expect(
-			screen.getByRole('link', { name: 'Due, cards available' }),
+			screen.getByRole('link', { name: '1 card due' }),
 		).toBeInTheDocument()
 		expect(screen.getByRole('link', { name: 'New' })).toBeInTheDocument()
 		expect(
@@ -107,13 +130,13 @@ describe('ReviewNavigation', () => {
 
 		queryClient.setQueryData(dueQueries.listDue(today).queryKey, [])
 		queryClient.setQueryData(dueQueries.listNew().queryKey, [
-			{} as DueEntry,
+			{ card: { _id: 'new-1' } } as DueEntry,
 		])
 		queryClient.setQueryData(dueQueries.listLate(today).queryKey, [
-			{} as DueEntry,
+			{ card: { _id: 'late-1' } } as DueEntry,
 		])
 		queryClient.setQueryData(cardQueries.listFlagged().queryKey, [
-			{} as Card,
+			{ _id: 'flagged-1' } as Card,
 		])
 		rerender(
 			<QueryClientProvider client={queryClient}>
@@ -126,13 +149,13 @@ describe('ReviewNavigation', () => {
 				screen.getByRole('link', { name: 'Due' }),
 			).toBeInTheDocument()
 			expect(
-				screen.getByRole('link', { name: 'New, cards available' }),
+				screen.getByRole('link', { name: '1 new card' }),
 			).toBeInTheDocument()
 			expect(
-				screen.getByRole('link', { name: 'Late, cards available' }),
+				screen.getByRole('link', { name: '1 late card' }),
 			).toBeInTheDocument()
 			expect(
-				screen.getByRole('link', { name: 'Flagged, cards available' }),
+				screen.getByRole('link', { name: '1 flagged card' }),
 			).toBeInTheDocument()
 			expect(
 				document.querySelectorAll('[data-slot="status-dot"]'),

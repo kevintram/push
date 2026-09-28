@@ -1,3 +1,4 @@
+import type { Card } from '@convex/validators/cards'
 import type { DueEntry } from '@convex/validators/due'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
@@ -40,16 +41,42 @@ vi.mock('~/modules/search/components/SearchDialog', () => ({
 }))
 
 describe('CollapsedAppSidebar', () => {
-	function renderSidebar({ due = false }: { due?: boolean } = {}) {
+	function renderSidebar({
+		due = 0,
+		newCards = 0,
+		late = 0,
+		lateEntries,
+		flagged = 0,
+	}: {
+		due?: number
+		newCards?: number
+		late?: number
+		lateEntries?: Array<DueEntry>
+		flagged?: number
+	} = {}) {
 		const queryClient = createTestQueryClient()
 		const today = todayIso()
 		queryClient.setQueryData(
 			dueQueries.listDue(today).queryKey,
-			due ? ([{} as DueEntry] as Array<DueEntry>) : [],
+			Array.from({ length: due }, () => ({}) as DueEntry),
 		)
-		queryClient.setQueryData(dueQueries.listNew().queryKey, [])
-		queryClient.setQueryData(dueQueries.listLate(today).queryKey, [])
-		queryClient.setQueryData(cardQueries.listFlagged().queryKey, [])
+		queryClient.setQueryData(
+			dueQueries.listNew().queryKey,
+			Array.from({ length: newCards }, () => ({}) as DueEntry),
+		)
+		queryClient.setQueryData(
+			dueQueries.listLate(today).queryKey,
+			lateEntries ??
+				Array.from(
+					{ length: late },
+					(_, index) =>
+						({ card: { _id: `late-${index}` } }) as DueEntry,
+				),
+		)
+		queryClient.setQueryData(
+			cardQueries.listFlagged().queryKey,
+			Array.from({ length: flagged }, () => ({}) as Card),
+		)
 
 		return render(
 			<QueryClientProvider client={queryClient}>
@@ -108,19 +135,80 @@ describe('CollapsedAppSidebar', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('announces available cards without making the status dot focusable', () => {
-		renderSidebar({ due: true })
+	it('uses base labels and hides dots for empty queues', () => {
+		renderSidebar()
 
-		expect(
-			screen.getByRole('link', { name: 'Due, cards available' }),
-		).toHaveAttribute('href', '/review/due')
+		for (const label of ['Due', 'New', 'Late', 'Flagged']) {
+			expect(
+				screen.getByRole('link', { name: label }),
+			).toBeInTheDocument()
+		}
 		expect(
 			document.querySelectorAll('[data-slot="status-dot"]'),
-		).toHaveLength(1)
+		).toHaveLength(0)
+	})
+
+	it('maps singular queue counts to tooltip, accessible label, and status dot', async () => {
+		const user = userEvent.setup()
+		renderSidebar({ due: 1, newCards: 1, late: 1, flagged: 1 })
+
+		const labels = [
+			'1 card due',
+			'1 new card',
+			'1 late card',
+			'1 flagged card',
+		]
+		const links = labels.map(label =>
+			screen.getByRole('link', { name: label }),
+		)
 		expect(
-			document.querySelector('[data-slot="status-dot"]'),
-		).toHaveAttribute('aria-hidden', 'true')
-		expect(screen.getByRole('link', { name: 'New' })).toBeInTheDocument()
+			document.querySelectorAll('[data-slot="status-dot"]'),
+		).toHaveLength(4)
+		for (const [index, link] of links.entries()) {
+			const label = labels[index] ?? ''
+			expect(link).toHaveAttribute('aria-label', label)
+			expect(
+				link.querySelector('[data-slot="status-dot"]'),
+			).toHaveAttribute('aria-hidden', 'true')
+			await user.hover(link)
+			expect(await screen.findByRole('tooltip')).toHaveTextContent(label)
+			await user.unhover(link)
+		}
+	})
+
+	it('uses plural counts and deduplicates late cards for its count', async () => {
+		const user = userEvent.setup()
+		renderSidebar({
+			due: 2,
+			newCards: 3,
+			lateEntries: [
+				{ card: { _id: 'late-1' } } as DueEntry,
+				{ card: { _id: 'late-1' } } as DueEntry,
+				{ card: { _id: 'late-2' } } as DueEntry,
+				{ card: { _id: 'late-2' } } as DueEntry,
+			],
+			flagged: 5,
+		})
+
+		const labels = [
+			'2 cards due',
+			'3 new cards',
+			'2 late cards',
+			'5 flagged cards',
+		]
+		const links = labels.map(label =>
+			screen.getByRole('link', { name: label }),
+		)
+		expect(
+			document.querySelectorAll('[data-slot="status-dot"]'),
+		).toHaveLength(4)
+		for (const [index, link] of links.entries()) {
+			const label = labels[index] ?? ''
+			expect(link).toHaveAttribute('aria-label', label)
+			await user.hover(link)
+			expect(await screen.findByRole('tooltip')).toHaveTextContent(label)
+			await user.unhover(link)
+		}
 	})
 
 	it('shows right-side tooltip content for icon-only route links', async () => {

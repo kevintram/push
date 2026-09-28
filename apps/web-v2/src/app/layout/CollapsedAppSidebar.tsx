@@ -1,5 +1,4 @@
 import * as stylex from '@stylexjs/stylex'
-import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import {
 	BellRing,
@@ -17,10 +16,8 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { useToday } from '~/hooks/useToday'
-import { cardQueries } from '~/modules/reviews/api/cardQueries'
-import { dueQueries } from '~/modules/reviews/api/dueQueries'
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
+import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import {
 	appShellColors,
@@ -174,15 +171,7 @@ export function CollapsedAppSidebar({
 	onToggle,
 	toggleRef,
 }: CollapsedAppSidebarProps) {
-	const today = useToday()
-	const { data: dueEntries } = useQuery(dueQueries.listDue(today))
-	const { data: newEntries } = useQuery(dueQueries.listNew())
-	const { data: lateEntries } = useQuery(dueQueries.listLate(today))
-	const { data: flaggedCards } = useQuery(cardQueries.listFlagged())
-	const hasDue = (dueEntries?.length ?? 0) > 0
-	const hasNew = (newEntries?.length ?? 0) > 0
-	const hasLate = (lateEntries?.length ?? 0) > 0
-	const hasFlagged = (flaggedCards?.length ?? 0) > 0
+	const queues = useReviewQueueCounts()
 
 	return (
 		<nav
@@ -224,27 +213,27 @@ export function CollapsedAppSidebar({
 			<SearchDialog triggerXstyle={styles.railItem} />
 
 			<SidebarRailReviewLink
-				hasCards={hasDue}
 				icon={Calendar}
 				label='Due'
+				queue={queues.due}
 				to='/review/due'
 			/>
 			<SidebarRailReviewLink
-				hasCards={hasNew}
 				icon={Sparkles}
 				label='New'
+				queue={queues.new}
 				to='/review/new'
 			/>
 			<SidebarRailReviewLink
-				hasCards={hasLate}
 				icon={BellRing}
 				label='Late'
+				queue={queues.late}
 				to='/review/late'
 			/>
 			<SidebarRailReviewLink
-				hasCards={hasFlagged}
 				icon={Flag}
 				label='Flagged'
+				queue={queues.flagged}
 				to='/review/flagged'
 			/>
 

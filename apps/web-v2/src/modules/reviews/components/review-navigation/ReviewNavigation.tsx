@@ -1,5 +1,4 @@
 import * as stylex from '@stylexjs/stylex'
-import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { BellRing, Calendar, Flag, Sparkles } from 'lucide-react'
 
@@ -11,9 +10,7 @@ import {
 	SidebarItem,
 } from '~/components/sidebar'
 import { StatusDot } from '~/components/ui'
-import { useToday } from '~/hooks/useToday'
-import { cardQueries } from '~/modules/reviews/api/cardQueries'
-import { dueQueries } from '~/modules/reviews/api/dueQueries'
+import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -30,18 +27,7 @@ const styles = stylex.create({
 })
 
 export function ReviewNavigation() {
-	const today = useToday()
-	// TODO(3): Replace these full-list subscriptions with count or exists queries.
-	// TODO(2): Handle query errors instead of showing missing status dots as empty queues.
-	const { data: dueEntries } = useQuery(dueQueries.listDue(today))
-	const { data: newEntries } = useQuery(dueQueries.listNew())
-	const { data: lateEntries } = useQuery(dueQueries.listLate(today))
-	const { data: flaggedCards } = useQuery(cardQueries.listFlagged())
-
-	const hasDue = (dueEntries?.length ?? 0) > 0
-	const hasNew = (newEntries?.length ?? 0) > 0
-	const hasLate = (lateEntries?.length ?? 0) > 0
-	const hasFlagged = (flaggedCards?.length ?? 0) > 0
+	const queues = useReviewQueueCounts()
 
 	return (
 		<SidebarCollapsibleItem defaultOpen aria-label='Review'>
@@ -53,50 +39,48 @@ export function ReviewNavigation() {
 				xstyle={styles.items}
 			>
 				<SidebarItem
-					ariaLabel={hasDue ? 'Due, cards available' : undefined}
+					ariaLabel={queues.due.countLabel}
 					icon={Calendar}
 					render={<Link to='/review/due' />}
 				>
 					Due
-					{hasDue && (
+					{queues.due.count > 0 && (
 						<span {...stylex.props(styles.statusDotWrapper)}>
 							<StatusDot />
 						</span>
 					)}
 				</SidebarItem>
 				<SidebarItem
-					ariaLabel={hasNew ? 'New, cards available' : undefined}
+					ariaLabel={queues.new.countLabel}
 					icon={Sparkles}
 					render={<Link to='/review/new' />}
 				>
 					New
-					{hasNew && (
+					{queues.new.count > 0 && (
 						<span {...stylex.props(styles.statusDotWrapper)}>
 							<StatusDot />
 						</span>
 					)}
 				</SidebarItem>
 				<SidebarItem
-					ariaLabel={hasLate ? 'Late, cards available' : undefined}
+					ariaLabel={queues.late.countLabel}
 					icon={BellRing}
 					render={<Link to='/review/late' />}
 				>
 					Late
-					{hasLate && (
+					{queues.late.count > 0 && (
 						<span {...stylex.props(styles.statusDotWrapper)}>
 							<StatusDot />
 						</span>
 					)}
 				</SidebarItem>
 				<SidebarItem
-					ariaLabel={
-						hasFlagged ? 'Flagged, cards available' : undefined
-					}
+					ariaLabel={queues.flagged.countLabel}
 					icon={Flag}
 					render={<Link to='/review/flagged' />}
 				>
 					Flagged
-					{hasFlagged && (
+					{queues.flagged.count > 0 && (
 						<span {...stylex.props(styles.statusDotWrapper)}>
 							<StatusDot />
 						</span>

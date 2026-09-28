@@ -9,6 +9,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
+import type { ReviewQueueCount } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import {
 	buttonColors,
 	sidebarItemColors,
@@ -49,24 +50,24 @@ const styles = stylex.create({
 type SidebarRailReviewLinkProps = {
 	icon: LucideIcon
 	label: string
+	queue: ReviewQueueCount
 	to: '/review/due' | '/review/new' | '/review/late' | '/review/flagged'
-	hasCards: boolean
 }
 
 export function SidebarRailReviewLink({
 	icon: Icon,
 	label,
+	queue,
 	to,
-	hasCards,
 }: SidebarRailReviewLinkProps) {
+	const name = queue.countLabel ?? label
+
 	return (
 		<Tooltip>
 			<TooltipTrigger
 				render={
 					<Button.Icon
-						aria-label={
-							hasCards ? `${label}, cards available` : label
-						}
+						aria-label={name}
 						render={<Link to={to} />}
 						shape='round'
 						size='micro'
@@ -77,15 +78,13 @@ export function SidebarRailReviewLink({
 							aria-hidden='true'
 							{...stylex.props(styles.icon)}
 						/>
-						{hasCards && (
-							<span {...stylex.props(styles.statusDot)}>
-								<StatusDot />
-							</span>
+						{queue.count > 0 && (
+							<StatusDot xstyle={styles.statusDot} />
 						)}
 					</Button.Icon>
 				}
 			/>
-			<TooltipContent side='right'>{label}</TooltipContent>
+			<TooltipContent side='right'>{name}</TooltipContent>
 		</Tooltip>
 	)
 }
