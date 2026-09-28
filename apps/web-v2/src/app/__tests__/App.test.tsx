@@ -307,8 +307,11 @@ describe('v2 app setup', () => {
 			],
 		})
 
+		const lateQueue = await screen.findByRole('complementary', {
+			name: 'Late cards',
+		})
 		expect(
-			await screen.findAllByRole('button', {
+			within(lateQueue).getAllByRole('button', {
 				name: 'Select What problem do generics solve?',
 			}),
 		).toHaveLength(1)
