@@ -10,12 +10,16 @@ import type { Card as CardModel, CardSrsState } from '../types/review.types'
 import { CardActions } from './CardActions'
 import { CardMetadata } from './CardMetadata'
 
+// TODO(3): Consider merging with CardItem; the two differ only in their
+// interaction target (stretched link vs. overlay button).
 const styles = stylex.create({
 	outer: {
 		position: 'relative',
 
 		marginInline: `calc(${spacing.lg} * -1)`,
+		paddingBlock: spacing.lg,
 		paddingInline: spacing.lg,
+		fontSize: fontSizes.lg,
 
 		borderRadius: radii.lg,
 
@@ -32,14 +36,12 @@ const styles = stylex.create({
 		},
 	},
 	inner: {
-		paddingBlock: spacing.lg,
-
 		gap: spacing.xs,
 		display: 'flex',
 		flexDirection: 'column',
 	},
 	title: {
-		fontSize: fontSizes.lg,
+		fontSize: 'inherit',
 		fontWeight: fontWeights.semibold,
 
 		textDecoration: 'none',

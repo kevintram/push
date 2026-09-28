@@ -9,12 +9,24 @@ import type { Card as CardModel, CardSrsState } from '../types/review.types'
 import { CardActions } from './CardActions'
 import { CardMetadata } from './CardMetadata'
 
+const densityVariants = stylex.create({
+	comfortable: {
+		marginInline: `calc(${spacing.lg} * -1)`,
+		paddingBlock: spacing.lg,
+		paddingInline: spacing.lg,
+		fontSize: fontSizes.lg,
+	},
+	compact: {
+		marginInline: `calc(${spacing.md} * -1)`,
+		paddingBlock: spacing.sm,
+		paddingInline: spacing.md,
+		fontSize: fontSizes.md,
+	},
+})
+
 const styles = stylex.create({
 	outer: {
 		position: 'relative',
-
-		marginInline: `calc(${spacing.lg} * -1)`,
-		paddingInline: spacing.lg,
 
 		borderRadius: radii.lg,
 
@@ -31,23 +43,15 @@ const styles = stylex.create({
 		},
 	},
 	inner: {
-		paddingBlock: spacing.lg,
-
 		gap: spacing.xs,
 		display: 'flex',
 		flexDirection: 'column',
 	},
-	innerCompact: {
-		paddingBlock: spacing.md,
-	},
 	title: {
-		fontSize: fontSizes.lg,
+		fontSize: 'inherit',
 		fontWeight: fontWeights.semibold,
 
 		color: cardItemColors.titleForeground,
-	},
-	titleCompact: {
-		fontSize: fontSizes.md,
 	},
 	raised: {
 		// Create seperate z-index context so overlay button
@@ -89,7 +93,7 @@ type CardItemProps = {
 	card: CardModel
 	srs: CardSrsState
 	today: DateString
-	density?: 'comfortable' | 'compact'
+	density?: keyof typeof densityVariants
 	active?: boolean
 	onClick: () => void
 	buttonProps?: Omit<
@@ -115,7 +119,11 @@ export function CardItem({
 	return (
 		<div
 			data-active={active ? '' : undefined}
-			{...stylex.props(styles.outer, active && styles.active)}
+			{...stylex.props(
+				styles.outer,
+				densityVariants[density],
+				active && styles.active,
+			)}
 		>
 			<button
 				type='button'
@@ -124,18 +132,8 @@ export function CardItem({
 				{...buttonProps}
 			/>
 
-			<div
-				{...stylex.props(
-					styles.inner,
-					density === 'compact' && styles.innerCompact,
-				)}
-			>
-				<h3
-					{...stylex.props(
-						styles.title,
-						density === 'compact' && styles.titleCompact,
-					)}
-				>
+			<div {...stylex.props(styles.inner)}>
+				<h3 {...stylex.props(styles.title)}>
 					{primaryText.trim() || 'Untitled'}
 				</h3>
 

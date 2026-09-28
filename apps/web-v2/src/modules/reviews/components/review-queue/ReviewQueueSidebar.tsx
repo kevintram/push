@@ -55,7 +55,7 @@ const styles = stylex.create({
 	},
 	header: {
 		gap: spacing.xs,
-		paddingInline: spacing.lg,
+		paddingInline: spacing.md,
 		alignItems: 'stretch',
 		display: 'flex',
 		flexDirection: 'column',
@@ -79,6 +79,7 @@ const styles = stylex.create({
 	},
 	closeButton: {
 		flexShrink: 0,
+		marginInlineEnd: `calc(${spacing.sm} * -1)`,
 	},
 	titleLabel: {
 		overflow: 'hidden',
@@ -95,7 +96,7 @@ const styles = stylex.create({
 		position: 'relative',
 	},
 	list: {
-		paddingInline: spacing.lg,
+		paddingInline: spacing.md,
 		flexBasis: 0,
 		flexGrow: 1,
 		minBlockSize: 0,
