@@ -2,7 +2,13 @@ import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import * as stylex from '@stylexjs/stylex'
 
 import { buttonColors } from '~/styles/colors/components.stylex'
-import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
+import {
+	controlSizes,
+	fontSizes,
+	fontWeights,
+	radii,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 import { ButtonIcon } from './ButtonIcon'
 
@@ -188,7 +194,7 @@ const sizeVariants = stylex.create({
 		borderRadius: radii.sm,
 		gap: spacing.xs,
 		paddingInline: spacing.sm,
-		blockSize: '26px',
+		blockSize: controlSizes.micro,
 		fontSize: fontSizes.sm,
 	},
 	tiny: {

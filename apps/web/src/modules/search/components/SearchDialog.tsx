@@ -4,7 +4,6 @@ import { Search, X } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
-import { SidebarItem } from '~/components/sidebar-item'
 import {
 	Button,
 	Dialog,
@@ -20,9 +19,11 @@ import {
 } from '~/components/ui'
 import { searchDialogColors } from '~/styles/colors/components.stylex'
 import {
+	appSidebar,
 	breakpoints,
 	fontSizes,
 	iconSizes,
+	iconWeights,
 	spacing,
 } from '~/styles/tokens.stylex'
 
@@ -154,7 +155,11 @@ const styles = stylex.create({
 
 type ExpandedGroup = 'cards' | 'collections' | null
 
-export function SearchDialog() {
+type SearchDialogProps = {
+	triggerXstyle?: stylex.StyleXStyles
+}
+
+export function SearchDialog({ triggerXstyle }: SearchDialogProps = {}) {
 	const [isOpen, setIsOpen] = useState(false)
 	const { isError, isLoading, query, cards, setQuery, collections } =
 		useSearchResults()
@@ -210,7 +215,19 @@ export function SearchDialog() {
 					render={
 						<DialogTrigger
 							render={
-								<SidebarItem icon={Search}>Search</SidebarItem>
+								<Button.Icon
+									aria-label='Search'
+									shape='round'
+									size='micro'
+									variant='ghost'
+									xstyle={triggerXstyle}
+								>
+									<Search
+										aria-hidden='true'
+										size={appSidebar.iconSize}
+										strokeWidth={iconWeights.medium}
+									/>
+								</Button.Icon>
 							}
 						/>
 					}

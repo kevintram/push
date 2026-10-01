@@ -14,6 +14,7 @@ import type { Card } from '~/modules/reviews/types/review.types'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { reviewQueueColors } from '~/styles/colors/components.stylex'
 import {
+	breakpoints,
 	fontSizes,
 	fontWeights,
 	iconSizes,
@@ -41,6 +42,10 @@ const styles = stylex.create({
 		overflow: 'hidden',
 		backgroundColor: reviewQueueColors.sidebarBackground,
 		blockSize: '100%',
+		boxShadow: {
+			default: 'none',
+			[breakpoints.desktop]: `0 0 4px ${reviewQueueColors.panelShadow}`,
+		},
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 0,
@@ -50,7 +55,7 @@ const styles = stylex.create({
 	},
 	header: {
 		gap: spacing.xs,
-		paddingInline: spacing.lg,
+		paddingInline: spacing.md,
 		alignItems: 'stretch',
 		display: 'flex',
 		flexDirection: 'column',
@@ -74,6 +79,7 @@ const styles = stylex.create({
 	},
 	closeButton: {
 		flexShrink: 0,
+		marginInlineEnd: `calc(${spacing.sm} * -1)`,
 	},
 	titleLabel: {
 		overflow: 'hidden',
@@ -90,7 +96,7 @@ const styles = stylex.create({
 		position: 'relative',
 	},
 	list: {
-		paddingInline: spacing.lg,
+		paddingInline: spacing.md,
 		flexBasis: 0,
 		flexGrow: 1,
 		minBlockSize: 0,

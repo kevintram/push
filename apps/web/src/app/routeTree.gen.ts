@@ -19,6 +19,7 @@ import { Route as ReviewIndexRouteImport } from './routes/review/index'
 import { Route as LibraryIndexRouteImport } from './routes/library/index'
 import { Route as ReviewNewRouteImport } from './routes/review/new'
 import { Route as ReviewLateRouteImport } from './routes/review/late'
+import { Route as ReviewFlaggedRouteImport } from './routes/review/flagged'
 import { Route as ReviewDueRouteImport } from './routes/review/due'
 import { Route as LibraryCollectionIdRouteImport } from './routes/library/$collectionId'
 import { Route as CardsCardIdRouteRouteImport } from './routes/cards/$cardId/route'
@@ -75,6 +76,11 @@ const ReviewLateRoute = ReviewLateRouteImport.update({
   path: '/late',
   getParentRoute: () => ReviewRouteRoute,
 } as any)
+const ReviewFlaggedRoute = ReviewFlaggedRouteImport.update({
+  id: '/flagged',
+  path: '/flagged',
+  getParentRoute: () => ReviewRouteRoute,
+} as any)
 const ReviewDueRoute = ReviewDueRouteImport.update({
   id: '/due',
   path: '/due',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/cards/$cardId': typeof CardsCardIdRouteRouteWithChildren
   '/library/$collectionId': typeof LibraryCollectionIdRoute
   '/review/due': typeof ReviewDueRoute
+  '/review/flagged': typeof ReviewFlaggedRoute
   '/review/late': typeof ReviewLateRoute
   '/review/new': typeof ReviewNewRoute
   '/library/': typeof LibraryIndexRoute
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/library/$collectionId': typeof LibraryCollectionIdRoute
   '/review/due': typeof ReviewDueRoute
+  '/review/flagged': typeof ReviewFlaggedRoute
   '/review/late': typeof ReviewLateRoute
   '/review/new': typeof ReviewNewRoute
   '/library': typeof LibraryIndexRoute
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/cards/$cardId': typeof CardsCardIdRouteRouteWithChildren
   '/library/$collectionId': typeof LibraryCollectionIdRoute
   '/review/due': typeof ReviewDueRoute
+  '/review/flagged': typeof ReviewFlaggedRoute
   '/review/late': typeof ReviewLateRoute
   '/review/new': typeof ReviewNewRoute
   '/library/': typeof LibraryIndexRoute
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/cards/$cardId'
     | '/library/$collectionId'
     | '/review/due'
+    | '/review/flagged'
     | '/review/late'
     | '/review/new'
     | '/library/'
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/library/$collectionId'
     | '/review/due'
+    | '/review/flagged'
     | '/review/late'
     | '/review/new'
     | '/library'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/cards/$cardId'
     | '/library/$collectionId'
     | '/review/due'
+    | '/review/flagged'
     | '/review/late'
     | '/review/new'
     | '/library/'
@@ -283,6 +295,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReviewLateRouteImport
       parentRoute: typeof ReviewRouteRoute
     }
+    '/review/flagged': {
+      id: '/review/flagged'
+      path: '/flagged'
+      fullPath: '/review/flagged'
+      preLoaderRoute: typeof ReviewFlaggedRouteImport
+      parentRoute: typeof ReviewRouteRoute
+    }
     '/review/due': {
       id: '/review/due'
       path: '/due'
@@ -337,6 +356,7 @@ const LibraryRouteRouteWithChildren = LibraryRouteRoute._addFileChildren(
 
 interface ReviewRouteRouteChildren {
   ReviewDueRoute: typeof ReviewDueRoute
+  ReviewFlaggedRoute: typeof ReviewFlaggedRoute
   ReviewLateRoute: typeof ReviewLateRoute
   ReviewNewRoute: typeof ReviewNewRoute
   ReviewIndexRoute: typeof ReviewIndexRoute
@@ -344,6 +364,7 @@ interface ReviewRouteRouteChildren {
 
 const ReviewRouteRouteChildren: ReviewRouteRouteChildren = {
   ReviewDueRoute: ReviewDueRoute,
+  ReviewFlaggedRoute: ReviewFlaggedRoute,
   ReviewLateRoute: ReviewLateRoute,
   ReviewNewRoute: ReviewNewRoute,
   ReviewIndexRoute: ReviewIndexRoute,

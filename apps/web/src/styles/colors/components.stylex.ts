@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { amber, blue, orange, violet } from './primitives.stylex'
+import { amber, blue, orange, violet, whiteAlpha } from './primitives.stylex'
 import { semanticColors } from './semantic.stylex'
 
 export const breadcrumbColors = stylex.defineVars({
@@ -270,11 +270,12 @@ export const treeColors = stylex.defineVars({
 	labelFocusRing: semanticColors.borderFocus,
 })
 
-export const appRailColors = stylex.defineVars({
-	background: semanticColors.surfaceSunken,
+export const sidebarSectionHeaderColors = stylex.defineVars({
+	foreground: semanticColors.textTertiary,
 })
 
 export const appShellColors = stylex.defineVars({
+	chromeBackground: semanticColors.surfaceSunken,
 	surfaceBackground: semanticColors.surfacePrimary,
 	surfaceShadow: semanticColors.shadowSubtle,
 })
@@ -283,7 +284,7 @@ export const loadingIndicatorColors = stylex.defineVars({
 	foreground: semanticColors.textSecondary,
 })
 
-export const appRailItemColors = stylex.defineVars({
+export const sidebarItemColors = stylex.defineVars({
 	background: semanticColors.surfaceTransparent,
 	backgroundHover: semanticColors.surfaceTransparentHover,
 	backgroundSelected: semanticColors.surfaceTransparentActive,
@@ -299,7 +300,6 @@ export const notAuthenticatedPageColors = stylex.defineVars({
 })
 
 export const librarySidebarColors = stylex.defineVars({
-	background: semanticColors.surfaceSecondary,
 	containerBackgroundDropTarget: semanticColors.surfaceTransparentHover,
 })
 
@@ -327,6 +327,7 @@ export const reviewQueueColors = stylex.defineVars({
 	containerBackground: semanticColors.surfaceRaised,
 	contentBackground: semanticColors.surfacePrimary,
 	sidebarBackground: semanticColors.surfacePrimary,
+	panelShadow: semanticColors.shadowSubtle,
 
 	positionForeground: semanticColors.textSecondary,
 	emptyForeground: semanticColors.textSecondary,
@@ -336,26 +337,18 @@ export const cardDetailErrorColors = stylex.defineVars({
 	messageForeground: semanticColors.textSecondary,
 })
 
-export const flaggedCardFocusColors = stylex.defineVars({
-	containerBackground: semanticColors.surfaceRaised,
-	cardBackground: semanticColors.surfacePrimary,
-
-	positionForeground: semanticColors.textSecondary,
-	emptyForeground: semanticColors.textSecondary,
-})
-
 export const hideModeButtonColors = stylex.defineVars({
 	backgroundActive: {
-		default: blue.s200,
-		'@media (prefers-color-scheme: dark)': blue.s950,
+		default: blue.s400,
+		'@media (prefers-color-scheme: dark)': blue.s800,
 	},
 	backgroundActiveHover: {
-		default: blue.s300,
-		'@media (prefers-color-scheme: dark)': blue.s900,
+		default: blue.s500,
+		'@media (prefers-color-scheme: dark)': blue.s700,
 	},
 	foregroundActive: {
-		default: blue.s900,
-		'@media (prefers-color-scheme: dark)': blue.s200,
+		default: whiteAlpha.s95,
+		'@media (prefers-color-scheme: dark)': blue.s100,
 	},
 })
 
@@ -425,10 +418,6 @@ export const cardPropertiesColors = stylex.defineVars({
 export const reviewDatePickerColors = stylex.defineVars({
 	triggerForegroundToday: semanticColors.textToday,
 	triggerForegroundOverdue: semanticColors.textDanger,
-})
-
-export const reviewSectionNavigationColors = stylex.defineVars({
-	background: semanticColors.surfaceSecondary,
 })
 
 export const reviewsSidebarColors = stylex.defineVars({

@@ -2,12 +2,23 @@ import * as stylex from '@stylexjs/stylex'
 import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { Copy } from 'lucide-react'
 
-import { SidebarItem } from '~/components/sidebar-item'
-import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
+import {
+	Button,
+	Kbd,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '~/components/ui'
 import { hideModeButtonColors } from '~/styles/colors/components.stylex'
+import { appSidebar, iconWeights } from '~/styles/tokens.stylex'
 
 import { HIDE_MODE_HOTKEY } from '../hide-mode/hideModeHotkey'
 import { useHideMode } from '../hide-mode/useHideMode'
+
+type HideModeButtonProps = {
+	tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
+	xstyle?: stylex.StyleXStyles
+}
 
 const styles = stylex.create({
 	hideModeOn: {
@@ -19,25 +30,37 @@ const styles = stylex.create({
 	},
 })
 
-export function HideModeButton() {
+export function HideModeButton({
+	tooltipSide = 'bottom',
+	xstyle,
+}: HideModeButtonProps) {
 	const { hideMode, toggleHideMode } = useHideMode()
 
 	return (
 		<Tooltip>
 			<TooltipTrigger
 				render={
-					<SidebarItem
+					<Button.Icon
+						aria-label='Hide mode'
 						aria-pressed={hideMode === 'on'}
-						icon={Copy}
 						onClick={toggleHideMode}
-						variant='outline'
-						xstyle={hideMode === 'on' && styles.hideModeOn}
+						shape='round'
+						size='micro'
+						variant='secondary'
+						xstyle={[
+							hideMode === 'on' && styles.hideModeOn,
+							xstyle,
+						]}
 					>
-						Hide
-					</SidebarItem>
+						<Copy
+							aria-hidden='true'
+							size={appSidebar.iconSize}
+							strokeWidth={iconWeights.medium}
+						/>
+					</Button.Icon>
 				}
 			/>
-			<TooltipContent side='right'>
+			<TooltipContent side={tooltipSide}>
 				{hideMode === 'on'
 					? 'Show answers and notes'
 					: 'Hide answers and notes'}

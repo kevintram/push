@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@tanstack/react-query', () => ({
-	useSuspenseQuery: () => ({ data: mocks.collections }),
+	useQuery: () => ({ data: mocks.collections }),
 }))
 
 vi.mock('@tanstack/react-router', () => ({

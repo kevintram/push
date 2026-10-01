@@ -18,7 +18,7 @@ import {
 import userEvent from '@testing-library/user-event'
 import { ConvexProvider } from 'convex/react'
 import type { ReactNode } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
 import { collectionQueries } from '~/modules/library/api/collectionQueries'
@@ -238,7 +238,11 @@ function renderRoute(
 	return { ...rendered, queryClient, router }
 }
 
-describe('app setup', () => {
+describe('v2 app setup', () => {
+	beforeEach(() => {
+		window.localStorage.clear()
+	})
+
 	it('redirects the index route to the due review page', async () => {
 		const { router } = renderRoute('/')
 
@@ -303,8 +307,11 @@ describe('app setup', () => {
 			],
 		})
 
+		const lateQueue = await screen.findByRole('complementary', {
+			name: 'Late cards',
+		})
 		expect(
-			await screen.findAllByRole('button', {
+			within(lateQueue).getAllByRole('button', {
 				name: 'Select What problem do generics solve?',
 			}),
 		).toHaveLength(1)
@@ -367,7 +374,7 @@ describe('app setup', () => {
 		expect(within(sidebar).getByText('1')).toBeInTheDocument()
 	})
 
-	it('filters the flagged card list by card type', async () => {
+	it('filters the flagged review queue by card type', async () => {
 		const user = userEvent.setup()
 		const practiceCard: Card = {
 			...card,
@@ -382,66 +389,41 @@ describe('app setup', () => {
 			flaggedAt: 2,
 			primaryText: 'Flashcard prompt',
 		}
-		renderRoute('/flagged', {
+		renderRoute('/review/flagged', {
 			flaggedCards: [flashcard, practiceCard],
 		})
 
-		await screen.findByRole('link', { name: 'Flashcard prompt' })
-		expect(
-			screen.getByRole('link', { name: 'Practice prompt' }),
-		).toBeInTheDocument()
-
-		await user.click(screen.getByRole('radio', { name: 'Not flashcards' }))
-
-		expect(
-			screen.getByRole('link', { name: 'Practice prompt' }),
-		).toBeInTheDocument()
-		expect(
-			screen.queryByRole('link', { name: 'Flashcard prompt' }),
-		).not.toBeInTheDocument()
-	})
-
-	it('renders all flagged cards', async () => {
-		const practiceCard: Card = {
-			...card,
-			_id: 'practice-card' as Id<'cards'>,
-			flaggedAt: 1,
-			primaryText: 'Practice prompt',
-			type: 'practice',
-		}
-		const flashcard: Card = {
-			...card,
-			_id: 'flashcard-card' as Id<'cards'>,
-			flaggedAt: 2,
-			primaryText: 'Flashcard prompt',
-		}
-		renderRoute('/flagged', {
-			flaggedCards: [flashcard, practiceCard],
+		const sidebar = await screen.findByRole('complementary', {
+			name: 'Flagged cards',
 		})
-
 		expect(
-			await screen.findByRole('heading', {
-				level: 1,
-				name: 'Flagged',
+			within(sidebar).getByRole('button', {
+				name: 'Select Flashcard prompt',
 			}),
 		).toBeInTheDocument()
 		expect(
-			screen.getByRole('link', { name: 'Flashcard prompt' }),
+			within(sidebar).getByRole('button', {
+				name: 'Select Practice prompt',
+			}),
+		).toBeInTheDocument()
+
+		await user.click(
+			within(sidebar).getByRole('radio', { name: 'Not flashcards' }),
+		)
+
+		expect(
+			within(sidebar).getByRole('button', {
+				name: 'Select Practice prompt',
+			}),
 		).toBeInTheDocument()
 		expect(
-			screen.getByRole('link', { name: 'Practice prompt' }),
-		).toBeInTheDocument()
+			within(sidebar).queryByRole('button', {
+				name: 'Select Flashcard prompt',
+			}),
+		).not.toBeInTheDocument()
 	})
 
-	it('shows the flagged empty state and disables focus', async () => {
-		renderRoute('/flagged')
-
-		expect(await screen.findByText('No cards.')).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: 'Focus' })).toBeDisabled()
-	})
-
-	it('passes all flagged cards into focus mode', async () => {
-		const user = userEvent.setup()
+	it('renders flagged cards in the review workspace', async () => {
 		const practiceCard: Card = {
 			...card,
 			_id: 'practice-card' as Id<'cards'>,
@@ -455,31 +437,44 @@ describe('app setup', () => {
 			flaggedAt: 2,
 			primaryText: 'Flashcard prompt',
 		}
-		renderRoute('/flagged', {
+		renderRoute('/review/flagged', {
 			flaggedCards: [flashcard, practiceCard],
 		})
 
-		await user.click(await screen.findByRole('button', { name: 'Focus' }))
 		expect(
-			await screen.findByDisplayValue('Flashcard prompt'),
+			await screen.findByRole('region', {
+				name: 'Flagged review workspace',
+			}),
 		).toBeInTheDocument()
-		expect(screen.getByText('1 of 2')).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Select Flashcard prompt' }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Select Practice prompt' }),
+		).toBeInTheDocument()
+	})
 
-		const focusDialog = screen.getByRole('dialog', { name: 'Focus cards' })
-		within(focusDialog).getByRole('button', { name: 'Next card' }).focus()
-		await user.keyboard('{ArrowRight}')
-		expect(
-			await screen.findByDisplayValue('Practice prompt'),
-		).toBeInTheDocument()
-		expect(screen.getByText('2 of 2')).toBeInTheDocument()
+	it('shows the flagged review workspace empty state', async () => {
+		renderRoute('/review/flagged')
 
-		within(focusDialog)
-			.getByRole('button', { name: 'Previous card' })
-			.focus()
-		await user.keyboard('{ArrowLeft}')
 		expect(
-			await screen.findByDisplayValue('Flashcard prompt'),
+			await screen.findByRole('region', {
+				name: 'Flagged review workspace',
+			}),
 		).toBeInTheDocument()
+		expect(screen.getByText('No cards to review.')).toBeInTheDocument()
+		expect(screen.getByText('No cards.')).toBeInTheDocument()
+	})
+
+	it('redirects the legacy flagged route into Review', async () => {
+		const { router } = renderRoute('/flagged')
+
+		expect(
+			await screen.findByRole('region', {
+				name: 'Flagged review workspace',
+			}),
+		).toBeInTheDocument()
+		expect(router.state.location.pathname).toBe('/review/flagged')
 	})
 
 	it('renders the selected card in the static review workspace', async () => {
@@ -869,7 +864,7 @@ describe('app setup', () => {
 	})
 
 	it.each([
-		['/flagged', 'Flagged'],
+		['/review/flagged', 'Flagged'],
 		['/settings', 'Settings'],
 	])('renders the %s route', async (path, heading) => {
 		renderRoute(path)
@@ -888,6 +883,81 @@ describe('app setup', () => {
 		expect(
 			screen.getByRole('button', { name: 'Sign out' }),
 		).toBeInTheDocument()
+	})
+
+	it('toggles the sidebar presentation on the settings route', async () => {
+		const user = userEvent.setup()
+		renderRoute('/settings')
+
+		await screen.findByRole('heading', { name: 'Account' })
+		const primaryNavigation = screen.getByRole('navigation', {
+			name: 'primary',
+		})
+
+		expect(
+			within(primaryNavigation).getByRole('button', {
+				name: 'Expand sidebar',
+			}),
+		).toBeEnabled()
+		expect(
+			within(primaryNavigation).getByRole('link', { name: 'Due' }),
+		).toBeInTheDocument()
+		expect(
+			within(primaryNavigation).getByRole('link', { name: 'Flagged' }),
+		).toBeInTheDocument()
+		expect(
+			within(primaryNavigation).getByRole('link', { name: 'Settings' }),
+		).toBeInTheDocument()
+		expect(
+			within(primaryNavigation).queryByText('Library'),
+		).not.toBeInTheDocument()
+
+		await user.click(
+			within(primaryNavigation).getByRole('button', {
+				name: 'Expand sidebar',
+			}),
+		)
+
+		const expandedNavigation = screen.getByRole('navigation', {
+			name: 'primary',
+		})
+		const collapseToggle = within(expandedNavigation).getByRole('button', {
+			name: 'Collapse sidebar',
+		})
+		expect(collapseToggle).toHaveFocus()
+		expect(
+			within(expandedNavigation).getByRole('navigation', {
+				name: 'Library collections',
+			}),
+		).toBeInTheDocument()
+		expect(window.localStorage.getItem('appSidebarExpanded')).toBe('true')
+
+		await user.click(collapseToggle)
+
+		expect(
+			screen.getByRole('button', { name: 'Expand sidebar' }),
+		).toHaveFocus()
+		expect(
+			screen.queryByRole('navigation', { name: 'Library collections' }),
+		).not.toBeInTheDocument()
+	})
+
+	it('groups hide mode immediately before search in the sidebar header', async () => {
+		renderRoute('/settings')
+
+		await screen.findByRole('heading', { name: 'Account' })
+		const primaryNavigation = screen.getByRole('navigation', {
+			name: 'primary',
+		})
+		const hideModeButton = within(primaryNavigation).getByRole('button', {
+			name: 'Hide mode',
+		})
+		const searchButton = within(primaryNavigation).getByRole('button', {
+			name: 'Search',
+		})
+
+		expect(hideModeButton.parentElement).toBe(searchButton.parentElement)
+		expect(hideModeButton.nextElementSibling).toBe(searchButton)
 	})
 
 	it('opens search over the current page without navigating away', async () => {
@@ -929,123 +999,9 @@ describe('app setup', () => {
 	it('renders the blank library index route', async () => {
 		renderRoute('/library')
 
+		await screen.findByRole('navigation', { name: 'primary' })
 		expect(
-			await screen.findByRole('navigation', {
-				name: 'Library collections',
-			}),
-		).toBeInTheDocument()
-		expect(
-			screen.queryByRole('heading', { name: 'Library' }),
-		).not.toBeInTheDocument()
-	})
-
-	it('collapses and expands nested library collections', async () => {
-		const user = userEvent.setup()
-		const childCollectionId = 'collection-2' as Id<'collections'>
-		const grandchildCollectionId = 'collection-3' as Id<'collections'>
-
-		renderRoute('/library', {
-			collections: [
-				{ ...collection, title: 'Languages' },
-				{
-					...collection,
-					_id: childCollectionId,
-					parentId: collectionId,
-					title: 'TypeScript',
-				},
-				{
-					...collection,
-					_id: grandchildCollectionId,
-					parentId: childCollectionId,
-					title: 'Generics',
-				},
-			],
-		})
-
-		const parentToggle = await screen.findByRole('button', {
-			name: 'Toggle Languages',
-		})
-		const collapseAllButton = screen.getByRole('button', {
-			name: 'Collapse all collections',
-		})
-		expect(parentToggle).toHaveAttribute('aria-expanded', 'false')
-		expect(collapseAllButton).toBeDisabled()
-		expect(
-			screen.queryByRole('link', { name: 'TypeScript' }),
-		).not.toBeInTheDocument()
-
-		await user.click(parentToggle)
-
-		expect(
-			screen.getByRole('link', { name: 'TypeScript' }),
-		).toBeInTheDocument()
-		expect(
-			screen.getByRole('button', { name: 'Toggle Languages' }),
-		).toHaveAttribute('aria-expanded', 'true')
-		expect(collapseAllButton).toBeEnabled()
-
-		await user.click(
-			screen.getByRole('button', { name: 'Toggle TypeScript' }),
-		)
-		expect(
-			screen.getByRole('link', { name: 'Generics' }),
-		).toBeInTheDocument()
-
-		await user.click(collapseAllButton)
-
-		expect(
-			screen.getByRole('button', { name: 'Toggle Languages' }),
-		).toHaveAttribute('aria-expanded', 'false')
-		expect(collapseAllButton).toBeDisabled()
-		expect(
-			screen.queryByRole('link', { name: 'TypeScript' }),
-		).not.toBeInTheDocument()
-
-		await user.click(
-			screen.getByRole('button', { name: 'Toggle Languages' }),
-		)
-		expect(
-			screen.getByRole('button', { name: 'Toggle TypeScript' }),
-		).toHaveAttribute('aria-expanded', 'false')
-		expect(
-			screen.queryByRole('link', { name: 'Generics' }),
-		).not.toBeInTheDocument()
-
-		await user.click(
-			screen.getByRole('button', { name: 'Toggle Languages' }),
-		)
-
-		expect(
-			screen.queryByRole('link', { name: 'TypeScript' }),
-		).not.toBeInTheDocument()
-
-		await user.click(
-			screen.getByRole('button', { name: 'Toggle Languages' }),
-		)
-
-		expect(
-			screen.getByRole('link', { name: 'TypeScript' }),
-		).toBeInTheDocument()
-
-		await user.click(
-			screen.getByRole('button', { name: 'Toggle TypeScript' }),
-		)
-
-		expect(
-			screen.getByRole('link', { name: 'Generics' }),
-		).toBeInTheDocument()
-	})
-
-	it('does not render a collapse control for leaf collections', async () => {
-		renderRoute('/library', { collections: [collection] })
-
-		expect(
-			await screen.findByRole('link', { name: 'Learning TypeScript' }),
-		).toBeInTheDocument()
-		expect(
-			screen.queryByRole('button', {
-				name: 'Toggle Learning TypeScript',
-			}),
+			screen.queryByRole('navigation', { name: 'Library collections' }),
 		).not.toBeInTheDocument()
 	})
 

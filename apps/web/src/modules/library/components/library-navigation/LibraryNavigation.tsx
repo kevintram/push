@@ -2,14 +2,14 @@ import type { Id } from '@convex/_generated/dataModel'
 import { DragDropProvider } from '@dnd-kit/react'
 
 import { useUpdateCollection } from '../../api/collectionQueries'
-import { LibrarySidebarContent } from './LibrarySidebarContent'
+import { LibraryNavigationContent } from './LibraryNavigationContent'
 import { useCollectionTree } from './useCollectionTree'
 
 /**
  * Owns the library tree and the drag-and-drop provider boundary. The content
  * remains a child so its droppable hook runs beneath this provider.
  */
-export function LibrarySidebar() {
+export function LibraryNavigation() {
 	const {
 		rootCollections,
 		openCollectionIds,
@@ -46,7 +46,7 @@ export function LibrarySidebar() {
 				}
 			}}
 		>
-			<LibrarySidebarContent
+			<LibraryNavigationContent
 				collections={rootCollections}
 				openCollectionIds={openCollectionIds}
 				onCollectionOpenChange={setCollectionOpen}

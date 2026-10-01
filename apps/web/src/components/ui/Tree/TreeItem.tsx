@@ -16,7 +16,7 @@ export interface TreeItemProps extends Omit<
 
 const styles = stylex.create({
 	root: {
-		borderRadius: radii.lg,
+		borderRadius: radii.md,
 		gap: spacing.xs,
 		display: 'flex',
 		flexDirection: 'column',

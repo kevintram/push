@@ -5,37 +5,40 @@ import { type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import {
-	appRailItemColors,
 	buttonColors,
+	sidebarItemColors,
 } from '~/styles/colors/components.stylex'
 import {
+	appSidebar,
 	fontSizes,
 	fontWeights,
-	iconSizes,
 	radii,
 	spacing,
 } from '~/styles/tokens.stylex'
+
+import { SidebarItemIcon } from './SidebarItemIcon'
 
 export interface SidebarItemProps extends Omit<
 	useRender.ComponentProps<'button'>,
 	'children' | 'className' | 'style'
 > {
-	children: ReactNode
-	icon: LucideIcon
+	children?: ReactNode
+	icon?: LucideIcon
 	ariaLabel?: string
 	/**
-	 * `fat` stacks the icon above the label for the primary rail, `skinny` puts
-	 * them on one line for nested section navs.
+	 * `fat` stacks the icon above the label; `skinny` puts them on one line.
+	 * Defaults to `skinny`.
 	 */
 	layout?: 'fat' | 'skinny'
+	iconOnly?: boolean
 	/**
 	 * Marks non-link items as current. Links get `data-status` from TanStack
 	 * Router, so they never need to pass this.
 	 */
 	active?: boolean
 	/**
-	 * `primary` uses the rail item colors, `secondary` mirrors the Button
-	 * secondary variant.
+	 * `ghost` uses sidebar item colors; `secondary` and `outline` mirror the
+	 * corresponding Button variants.
 	 */
 	variant?: 'ghost' | 'secondary' | 'outline'
 	xstyle?: stylex.StyleXStyles
@@ -54,19 +57,20 @@ const styles = stylex.create({
 		fontFamily: 'inherit',
 
 		backgroundColor: {
-			'[data-status=active]': appRailItemColors.backgroundSelected,
-			default: appRailItemColors.background,
+			'[data-status=active]': sidebarItemColors.backgroundSelected,
+			default: sidebarItemColors.background,
 			':is([data-status=active]:hover)':
-				appRailItemColors.backgroundSelectedHover,
-			':hover': appRailItemColors.backgroundHover,
+				sidebarItemColors.backgroundSelectedHover,
+			':hover': sidebarItemColors.backgroundHover,
 		},
 		color: {
-			'[data-status=active]': appRailItemColors.foregroundSelected,
-			default: appRailItemColors.foreground,
-			':hover': appRailItemColors.foregroundHover,
+			'[data-status=active]': sidebarItemColors.foregroundSelected,
+			default: sidebarItemColors.foreground,
+			':hover': sidebarItemColors.foregroundHover,
 		},
 	},
 	fat: {
+		gap: spacing.xs,
 		paddingBlock: spacing.md,
 		paddingInline: spacing.sm,
 
@@ -77,17 +81,28 @@ const styles = stylex.create({
 		textAlign: 'center',
 	},
 	skinny: {
-		padding: spacing.sm,
-		borderRadius: radii.lg,
+		borderRadius: radii.md,
+		gap: spacing.sm,
+		paddingBlock: spacing.none,
+		blockSize: '36px',
 		fontSize: fontSizes.sm,
+		paddingInlineEnd: spacing.xs,
+		paddingInlineStart: spacing.sm, // so indicators align with SidebarHeaderActions
 	},
-	icon: {
+	iconOnly: {
+		paddingInline: spacing.none,
+		aspectRatio: '1 / 1',
+		justifyContent: 'center',
+	},
+	slot: {
+		alignItems: 'center',
+		display: 'inline-flex',
+		flexShrink: 0,
+		justifyContent: 'center',
+	},
+	sidebarIcon: {
 		display: 'block',
 		flexShrink: 0,
-	},
-	skinnyIcon: {
-		blockSize: iconSizes.md,
-		inlineSize: iconSizes.md,
 	},
 	secondary: {
 		borderColor: buttonColors.secondaryBorder,
@@ -124,7 +139,8 @@ export function SidebarItem({
 	ariaLabel,
 	children,
 	icon: Icon,
-	layout = 'fat',
+	iconOnly = false,
+	layout = 'skinny',
 	render,
 	variant = 'ghost',
 	xstyle,
@@ -142,21 +158,23 @@ export function SidebarItem({
 			stylex.props(
 				styles.item,
 				layout === 'fat' ? styles.fat : styles.skinny,
+				iconOnly && styles.iconOnly,
 				variant === 'secondary' && styles.secondary,
 				variant === 'outline' && styles.outline,
 				xstyle,
 			),
 			props,
 			{
-				children: (
+				children: iconOnly ? (
+					<span {...stylex.props(styles.slot)}>{children}</span>
+				) : (
 					<>
-						<Icon
-							size={iconSizes.md}
-							{...stylex.props(
-								styles.icon,
-								layout === 'skinny' && styles.skinnyIcon,
-							)}
-						/>
+						{Icon && (
+							<Icon
+								size={appSidebar.iconSize}
+								{...stylex.props(styles.sidebarIcon)}
+							/>
+						)}
 						{children}
 					</>
 				),
@@ -168,3 +186,5 @@ export function SidebarItem({
 		state: { slot: 'sidebar-item', status: active ? 'active' : undefined },
 	})
 }
+
+SidebarItem.Icon = SidebarItemIcon

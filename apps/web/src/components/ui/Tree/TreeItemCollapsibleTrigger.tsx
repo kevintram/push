@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { ChevronRight } from 'lucide-react'
 
-import { iconSizes } from '~/styles/tokens.stylex'
+import { appSidebar } from '~/styles/tokens.stylex'
 
 import { Button } from '../Button/Button'
 import {
@@ -21,8 +21,11 @@ export type TreeItemCollapsibleTriggerProps = Omit<
 
 const styles = stylex.create({
 	placeholder: {
-		blockSize: '26px',
-		inlineSize: '26px',
+		blockSize: appSidebar.iconSize,
+		inlineSize: appSidebar.iconSize,
+	},
+	chevronButton: {
+		justifySelf: 'center',
 	},
 	chevron: {
 		transform: 'rotate(0deg)',
@@ -63,11 +66,11 @@ export function TreeItemCollapsibleTrigger({
 					shape='round'
 					size='micro'
 					variant='ghost'
-					xstyle={xstyle}
+					xstyle={[styles.chevronButton, xstyle]}
 				>
 					<ChevronRight
 						aria-hidden='true'
-						size={iconSizes.md}
+						size={appSidebar.iconSize}
 						{...stylex.props(
 							styles.chevron,
 							open && styles.chevronOpen,

@@ -19,6 +19,11 @@ export const fontWeights = stylex.defineVars({
 	bold: '750',
 })
 
+export const iconWeights = stylex.defineVars({
+	regular: '2',
+	medium: '2.5',
+})
+
 export const radii = stylex.defineVars({
 	xs: '6px',
 	sm: '8px',
@@ -43,12 +48,21 @@ export const spacing = stylex.defineVars({
 })
 
 export const iconSizes = stylex.defineVars({
-	xs: '0.5rem',
-	sm: '0.75rem',
+	xs: '0.75rem',
+	sm: '0.85rem',
 	md: '1rem',
 	lg: '1.5rem',
 	xl: '2rem',
 	'2xl': '3rem',
+})
+
+export const appSidebar = stylex.defineConsts({
+	iconSize: '1rem',
+})
+
+export const controlSizes = stylex.defineConsts({
+	// Hitbox around the 16px md glyph: 5px inset per side, not alignment spacing.
+	micro: '26px',
 })
 
 export const breakpoints = stylex.defineConsts({
@@ -57,6 +71,8 @@ export const breakpoints = stylex.defineConsts({
 })
 
 export const layout = stylex.defineConsts({
+	// Shared by the shell, sidebars, and page toolbars to keep top controls aligned.
+	appShellInset: '6px',
 	contentColumnMaxWidth: '768px',
 	rowBleed: '8px',
 })

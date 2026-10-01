@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { Route as FlaggedRoute } from '~/app/routes/flagged'
 import { Route as ReviewRoute } from '~/app/routes/review/route'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { dueQueries } from '~/modules/reviews/api/dueQueries'
@@ -25,33 +24,25 @@ function context(isAuthenticated: boolean): LoaderContext {
 	}
 }
 
-const loaders = {
-	flagged: FlaggedRoute.options.loader as unknown as Loader,
-	review: ReviewRoute.options.loader as unknown as Loader,
-}
+const reviewLoader = ReviewRoute.options.loader as unknown as Loader
 
 describe('review queue loaders', () => {
-	it.each(Object.entries(loaders))(
-		'does not preload %s before Convex authenticates',
-		async (_name, loader) => {
-			const loaderContext = context(false)
+	it('does not preload review queues before Convex authenticates', async () => {
+		const loaderContext = context(false)
 
-			await loader({ context: loaderContext })
+		await reviewLoader({ context: loaderContext })
 
-			expect(
-				loaderContext.queryClient.ensureQueryData,
-			).not.toHaveBeenCalled()
-		},
-	)
+		expect(loaderContext.queryClient.ensureQueryData).not.toHaveBeenCalled()
+	})
 
 	it('preloads all review queues for the current day', async () => {
 		const loaderContext = context(true)
 		const today = todayIso()
 
-		await loaders.review({ context: loaderContext })
+		await reviewLoader({ context: loaderContext })
 
 		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledTimes(
-			3,
+			4,
 		)
 		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledWith(
 			dueQueries.listDue(today),
@@ -62,13 +53,6 @@ describe('review queue loaders', () => {
 		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledWith(
 			dueQueries.listLate(today),
 		)
-	})
-
-	it('preloads flagged cards', async () => {
-		const loaderContext = context(true)
-
-		await loaders.flagged({ context: loaderContext })
-
 		expect(loaderContext.queryClient.ensureQueryData).toHaveBeenCalledWith(
 			cardQueries.listFlagged(),
 		)
