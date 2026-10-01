@@ -9,50 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TopicsRouteImport } from './routes/topics'
-import { Route as RecentRouteImport } from './routes/recent'
-import { Route as PracticeRouteImport } from './routes/practice'
-import { Route as LogbookRouteImport } from './routes/logbook'
-import { Route as LibraryRouteImport } from './routes/library'
-import { Route as FlashcardsRouteImport } from './routes/flashcards'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as FlaggedRouteImport } from './routes/flagged'
-import { Route as DueRouteImport } from './routes/due'
+import { Route as DesignSystemRouteImport } from './routes/design-system'
+import { Route as ReviewRouteRouteImport } from './routes/review/route'
+import { Route as LibraryRouteRouteImport } from './routes/library/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TopicsTopicIdRouteImport } from './routes/topics_.$topicId'
-import { Route as ReviewCardsReviewCardIdRouteImport } from './routes/review-cards_.$reviewCardId'
-import { Route as PracticeReviewCardIdRouteImport } from './routes/practice_.$reviewCardId'
-import { Route as FlashcardsReviewCardIdRouteImport } from './routes/flashcards_.$reviewCardId'
-import { Route as DueFocusRouteImport } from './routes/due.focus'
-import { Route as DueFocusReviewCardIdRouteImport } from './routes/due.focus_.$reviewCardId'
+import { Route as ReviewIndexRouteImport } from './routes/review/index'
+import { Route as LibraryIndexRouteImport } from './routes/library/index'
+import { Route as ReviewNewRouteImport } from './routes/review/new'
+import { Route as ReviewLateRouteImport } from './routes/review/late'
+import { Route as ReviewFlaggedRouteImport } from './routes/review/flagged'
+import { Route as ReviewDueRouteImport } from './routes/review/due'
+import { Route as LibraryCollectionIdRouteImport } from './routes/library/$collectionId'
+import { Route as CardsCardIdRouteRouteImport } from './routes/cards/$cardId/route'
+import { Route as CardsCardIdIndexRouteImport } from './routes/cards/$cardId/index'
+import { Route as CardsCardIdReviewsRouteImport } from './routes/cards/$cardId/reviews'
 
-const TopicsRoute = TopicsRouteImport.update({
-  id: '/topics',
-  path: '/topics',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RecentRoute = RecentRouteImport.update({
-  id: '/recent',
-  path: '/recent',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PracticeRoute = PracticeRouteImport.update({
-  id: '/practice',
-  path: '/practice',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LogbookRoute = LogbookRouteImport.update({
-  id: '/logbook',
-  path: '/logbook',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LibraryRoute = LibraryRouteImport.update({
-  id: '/library',
-  path: '/library',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FlashcardsRoute = FlashcardsRouteImport.update({
-  id: '/flashcards',
-  path: '/flashcards',
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FlaggedRoute = FlaggedRouteImport.update({
@@ -60,9 +36,19 @@ const FlaggedRoute = FlaggedRouteImport.update({
   path: '/flagged',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DueRoute = DueRouteImport.update({
-  id: '/due',
-  path: '/due',
+const DesignSystemRoute = DesignSystemRouteImport.update({
+  id: '/design-system',
+  path: '/design-system',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewRouteRoute = ReviewRouteRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LibraryRouteRoute = LibraryRouteRouteImport.update({
+  id: '/library',
+  path: '/library',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -70,201 +56,180 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TopicsTopicIdRoute = TopicsTopicIdRouteImport.update({
-  id: '/topics_/$topicId',
-  path: '/topics/$topicId',
+const ReviewIndexRoute = ReviewIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ReviewRouteRoute,
+} as any)
+const LibraryIndexRoute = LibraryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LibraryRouteRoute,
+} as any)
+const ReviewNewRoute = ReviewNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => ReviewRouteRoute,
+} as any)
+const ReviewLateRoute = ReviewLateRouteImport.update({
+  id: '/late',
+  path: '/late',
+  getParentRoute: () => ReviewRouteRoute,
+} as any)
+const ReviewFlaggedRoute = ReviewFlaggedRouteImport.update({
+  id: '/flagged',
+  path: '/flagged',
+  getParentRoute: () => ReviewRouteRoute,
+} as any)
+const ReviewDueRoute = ReviewDueRouteImport.update({
+  id: '/due',
+  path: '/due',
+  getParentRoute: () => ReviewRouteRoute,
+} as any)
+const LibraryCollectionIdRoute = LibraryCollectionIdRouteImport.update({
+  id: '/$collectionId',
+  path: '/$collectionId',
+  getParentRoute: () => LibraryRouteRoute,
+} as any)
+const CardsCardIdRouteRoute = CardsCardIdRouteRouteImport.update({
+  id: '/cards/$cardId',
+  path: '/cards/$cardId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ReviewCardsReviewCardIdRoute = ReviewCardsReviewCardIdRouteImport.update({
-  id: '/review-cards_/$reviewCardId',
-  path: '/review-cards/$reviewCardId',
-  getParentRoute: () => rootRouteImport,
+const CardsCardIdIndexRoute = CardsCardIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CardsCardIdRouteRoute,
 } as any)
-const PracticeReviewCardIdRoute = PracticeReviewCardIdRouteImport.update({
-  id: '/practice_/$reviewCardId',
-  path: '/practice/$reviewCardId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FlashcardsReviewCardIdRoute = FlashcardsReviewCardIdRouteImport.update({
-  id: '/flashcards_/$reviewCardId',
-  path: '/flashcards/$reviewCardId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DueFocusRoute = DueFocusRouteImport.update({
-  id: '/focus',
-  path: '/focus',
-  getParentRoute: () => DueRoute,
-} as any)
-const DueFocusReviewCardIdRoute = DueFocusReviewCardIdRouteImport.update({
-  id: '/focus_/$reviewCardId',
-  path: '/focus/$reviewCardId',
-  getParentRoute: () => DueRoute,
+const CardsCardIdReviewsRoute = CardsCardIdReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => CardsCardIdRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/due': typeof DueRouteWithChildren
+  '/library': typeof LibraryRouteRouteWithChildren
+  '/review': typeof ReviewRouteRouteWithChildren
+  '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
-  '/flashcards': typeof FlashcardsRoute
-  '/library': typeof LibraryRoute
-  '/logbook': typeof LogbookRoute
-  '/practice': typeof PracticeRoute
-  '/recent': typeof RecentRoute
-  '/topics': typeof TopicsRoute
-  '/due/focus': typeof DueFocusRoute
-  '/flashcards/$reviewCardId': typeof FlashcardsReviewCardIdRoute
-  '/practice/$reviewCardId': typeof PracticeReviewCardIdRoute
-  '/review-cards/$reviewCardId': typeof ReviewCardsReviewCardIdRoute
-  '/topics/$topicId': typeof TopicsTopicIdRoute
-  '/due/focus/$reviewCardId': typeof DueFocusReviewCardIdRoute
+  '/settings': typeof SettingsRoute
+  '/cards/$cardId': typeof CardsCardIdRouteRouteWithChildren
+  '/library/$collectionId': typeof LibraryCollectionIdRoute
+  '/review/due': typeof ReviewDueRoute
+  '/review/flagged': typeof ReviewFlaggedRoute
+  '/review/late': typeof ReviewLateRoute
+  '/review/new': typeof ReviewNewRoute
+  '/library/': typeof LibraryIndexRoute
+  '/review/': typeof ReviewIndexRoute
+  '/cards/$cardId/reviews': typeof CardsCardIdReviewsRoute
+  '/cards/$cardId/': typeof CardsCardIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/due': typeof DueRouteWithChildren
+  '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
-  '/flashcards': typeof FlashcardsRoute
-  '/library': typeof LibraryRoute
-  '/logbook': typeof LogbookRoute
-  '/practice': typeof PracticeRoute
-  '/recent': typeof RecentRoute
-  '/topics': typeof TopicsRoute
-  '/due/focus': typeof DueFocusRoute
-  '/flashcards/$reviewCardId': typeof FlashcardsReviewCardIdRoute
-  '/practice/$reviewCardId': typeof PracticeReviewCardIdRoute
-  '/review-cards/$reviewCardId': typeof ReviewCardsReviewCardIdRoute
-  '/topics/$topicId': typeof TopicsTopicIdRoute
-  '/due/focus/$reviewCardId': typeof DueFocusReviewCardIdRoute
+  '/settings': typeof SettingsRoute
+  '/library/$collectionId': typeof LibraryCollectionIdRoute
+  '/review/due': typeof ReviewDueRoute
+  '/review/flagged': typeof ReviewFlaggedRoute
+  '/review/late': typeof ReviewLateRoute
+  '/review/new': typeof ReviewNewRoute
+  '/library': typeof LibraryIndexRoute
+  '/review': typeof ReviewIndexRoute
+  '/cards/$cardId/reviews': typeof CardsCardIdReviewsRoute
+  '/cards/$cardId': typeof CardsCardIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/due': typeof DueRouteWithChildren
+  '/library': typeof LibraryRouteRouteWithChildren
+  '/review': typeof ReviewRouteRouteWithChildren
+  '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
-  '/flashcards': typeof FlashcardsRoute
-  '/library': typeof LibraryRoute
-  '/logbook': typeof LogbookRoute
-  '/practice': typeof PracticeRoute
-  '/recent': typeof RecentRoute
-  '/topics': typeof TopicsRoute
-  '/due/focus': typeof DueFocusRoute
-  '/flashcards_/$reviewCardId': typeof FlashcardsReviewCardIdRoute
-  '/practice_/$reviewCardId': typeof PracticeReviewCardIdRoute
-  '/review-cards_/$reviewCardId': typeof ReviewCardsReviewCardIdRoute
-  '/topics_/$topicId': typeof TopicsTopicIdRoute
-  '/due/focus_/$reviewCardId': typeof DueFocusReviewCardIdRoute
+  '/settings': typeof SettingsRoute
+  '/cards/$cardId': typeof CardsCardIdRouteRouteWithChildren
+  '/library/$collectionId': typeof LibraryCollectionIdRoute
+  '/review/due': typeof ReviewDueRoute
+  '/review/flagged': typeof ReviewFlaggedRoute
+  '/review/late': typeof ReviewLateRoute
+  '/review/new': typeof ReviewNewRoute
+  '/library/': typeof LibraryIndexRoute
+  '/review/': typeof ReviewIndexRoute
+  '/cards/$cardId/reviews': typeof CardsCardIdReviewsRoute
+  '/cards/$cardId/': typeof CardsCardIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/due'
-    | '/flagged'
-    | '/flashcards'
     | '/library'
-    | '/logbook'
-    | '/practice'
-    | '/recent'
-    | '/topics'
-    | '/due/focus'
-    | '/flashcards/$reviewCardId'
-    | '/practice/$reviewCardId'
-    | '/review-cards/$reviewCardId'
-    | '/topics/$topicId'
-    | '/due/focus/$reviewCardId'
+    | '/review'
+    | '/design-system'
+    | '/flagged'
+    | '/settings'
+    | '/cards/$cardId'
+    | '/library/$collectionId'
+    | '/review/due'
+    | '/review/flagged'
+    | '/review/late'
+    | '/review/new'
+    | '/library/'
+    | '/review/'
+    | '/cards/$cardId/reviews'
+    | '/cards/$cardId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/due'
+    | '/design-system'
     | '/flagged'
-    | '/flashcards'
+    | '/settings'
+    | '/library/$collectionId'
+    | '/review/due'
+    | '/review/flagged'
+    | '/review/late'
+    | '/review/new'
     | '/library'
-    | '/logbook'
-    | '/practice'
-    | '/recent'
-    | '/topics'
-    | '/due/focus'
-    | '/flashcards/$reviewCardId'
-    | '/practice/$reviewCardId'
-    | '/review-cards/$reviewCardId'
-    | '/topics/$topicId'
-    | '/due/focus/$reviewCardId'
+    | '/review'
+    | '/cards/$cardId/reviews'
+    | '/cards/$cardId'
   id:
     | '__root__'
     | '/'
-    | '/due'
-    | '/flagged'
-    | '/flashcards'
     | '/library'
-    | '/logbook'
-    | '/practice'
-    | '/recent'
-    | '/topics'
-    | '/due/focus'
-    | '/flashcards_/$reviewCardId'
-    | '/practice_/$reviewCardId'
-    | '/review-cards_/$reviewCardId'
-    | '/topics_/$topicId'
-    | '/due/focus_/$reviewCardId'
+    | '/review'
+    | '/design-system'
+    | '/flagged'
+    | '/settings'
+    | '/cards/$cardId'
+    | '/library/$collectionId'
+    | '/review/due'
+    | '/review/flagged'
+    | '/review/late'
+    | '/review/new'
+    | '/library/'
+    | '/review/'
+    | '/cards/$cardId/reviews'
+    | '/cards/$cardId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DueRoute: typeof DueRouteWithChildren
+  LibraryRouteRoute: typeof LibraryRouteRouteWithChildren
+  ReviewRouteRoute: typeof ReviewRouteRouteWithChildren
+  DesignSystemRoute: typeof DesignSystemRoute
   FlaggedRoute: typeof FlaggedRoute
-  FlashcardsRoute: typeof FlashcardsRoute
-  LibraryRoute: typeof LibraryRoute
-  LogbookRoute: typeof LogbookRoute
-  PracticeRoute: typeof PracticeRoute
-  RecentRoute: typeof RecentRoute
-  TopicsRoute: typeof TopicsRoute
-  FlashcardsReviewCardIdRoute: typeof FlashcardsReviewCardIdRoute
-  PracticeReviewCardIdRoute: typeof PracticeReviewCardIdRoute
-  ReviewCardsReviewCardIdRoute: typeof ReviewCardsReviewCardIdRoute
-  TopicsTopicIdRoute: typeof TopicsTopicIdRoute
+  SettingsRoute: typeof SettingsRoute
+  CardsCardIdRouteRoute: typeof CardsCardIdRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/topics': {
-      id: '/topics'
-      path: '/topics'
-      fullPath: '/topics'
-      preLoaderRoute: typeof TopicsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/recent': {
-      id: '/recent'
-      path: '/recent'
-      fullPath: '/recent'
-      preLoaderRoute: typeof RecentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/practice': {
-      id: '/practice'
-      path: '/practice'
-      fullPath: '/practice'
-      preLoaderRoute: typeof PracticeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/logbook': {
-      id: '/logbook'
-      path: '/logbook'
-      fullPath: '/logbook'
-      preLoaderRoute: typeof LogbookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/library': {
-      id: '/library'
-      path: '/library'
-      fullPath: '/library'
-      preLoaderRoute: typeof LibraryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/flashcards': {
-      id: '/flashcards'
-      path: '/flashcards'
-      fullPath: '/flashcards'
-      preLoaderRoute: typeof FlashcardsRouteImport
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/flagged': {
@@ -274,11 +239,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FlaggedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/due': {
-      id: '/due'
-      path: '/due'
-      fullPath: '/due'
-      preLoaderRoute: typeof DueRouteImport
+    '/design-system': {
+      id: '/design-system'
+      path: '/design-system'
+      fullPath: '/design-system'
+      preLoaderRoute: typeof DesignSystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/review': {
+      id: '/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof ReviewRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -288,77 +267,134 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/topics_/$topicId': {
-      id: '/topics_/$topicId'
-      path: '/topics/$topicId'
-      fullPath: '/topics/$topicId'
-      preLoaderRoute: typeof TopicsTopicIdRouteImport
+    '/review/': {
+      id: '/review/'
+      path: '/'
+      fullPath: '/review/'
+      preLoaderRoute: typeof ReviewIndexRouteImport
+      parentRoute: typeof ReviewRouteRoute
+    }
+    '/library/': {
+      id: '/library/'
+      path: '/'
+      fullPath: '/library/'
+      preLoaderRoute: typeof LibraryIndexRouteImport
+      parentRoute: typeof LibraryRouteRoute
+    }
+    '/review/new': {
+      id: '/review/new'
+      path: '/new'
+      fullPath: '/review/new'
+      preLoaderRoute: typeof ReviewNewRouteImport
+      parentRoute: typeof ReviewRouteRoute
+    }
+    '/review/late': {
+      id: '/review/late'
+      path: '/late'
+      fullPath: '/review/late'
+      preLoaderRoute: typeof ReviewLateRouteImport
+      parentRoute: typeof ReviewRouteRoute
+    }
+    '/review/flagged': {
+      id: '/review/flagged'
+      path: '/flagged'
+      fullPath: '/review/flagged'
+      preLoaderRoute: typeof ReviewFlaggedRouteImport
+      parentRoute: typeof ReviewRouteRoute
+    }
+    '/review/due': {
+      id: '/review/due'
+      path: '/due'
+      fullPath: '/review/due'
+      preLoaderRoute: typeof ReviewDueRouteImport
+      parentRoute: typeof ReviewRouteRoute
+    }
+    '/library/$collectionId': {
+      id: '/library/$collectionId'
+      path: '/$collectionId'
+      fullPath: '/library/$collectionId'
+      preLoaderRoute: typeof LibraryCollectionIdRouteImport
+      parentRoute: typeof LibraryRouteRoute
+    }
+    '/cards/$cardId': {
+      id: '/cards/$cardId'
+      path: '/cards/$cardId'
+      fullPath: '/cards/$cardId'
+      preLoaderRoute: typeof CardsCardIdRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/review-cards_/$reviewCardId': {
-      id: '/review-cards_/$reviewCardId'
-      path: '/review-cards/$reviewCardId'
-      fullPath: '/review-cards/$reviewCardId'
-      preLoaderRoute: typeof ReviewCardsReviewCardIdRouteImport
-      parentRoute: typeof rootRouteImport
+    '/cards/$cardId/': {
+      id: '/cards/$cardId/'
+      path: '/'
+      fullPath: '/cards/$cardId/'
+      preLoaderRoute: typeof CardsCardIdIndexRouteImport
+      parentRoute: typeof CardsCardIdRouteRoute
     }
-    '/practice_/$reviewCardId': {
-      id: '/practice_/$reviewCardId'
-      path: '/practice/$reviewCardId'
-      fullPath: '/practice/$reviewCardId'
-      preLoaderRoute: typeof PracticeReviewCardIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/flashcards_/$reviewCardId': {
-      id: '/flashcards_/$reviewCardId'
-      path: '/flashcards/$reviewCardId'
-      fullPath: '/flashcards/$reviewCardId'
-      preLoaderRoute: typeof FlashcardsReviewCardIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/due/focus': {
-      id: '/due/focus'
-      path: '/focus'
-      fullPath: '/due/focus'
-      preLoaderRoute: typeof DueFocusRouteImport
-      parentRoute: typeof DueRoute
-    }
-    '/due/focus_/$reviewCardId': {
-      id: '/due/focus_/$reviewCardId'
-      path: '/focus/$reviewCardId'
-      fullPath: '/due/focus/$reviewCardId'
-      preLoaderRoute: typeof DueFocusReviewCardIdRouteImport
-      parentRoute: typeof DueRoute
+    '/cards/$cardId/reviews': {
+      id: '/cards/$cardId/reviews'
+      path: '/reviews'
+      fullPath: '/cards/$cardId/reviews'
+      preLoaderRoute: typeof CardsCardIdReviewsRouteImport
+      parentRoute: typeof CardsCardIdRouteRoute
     }
   }
 }
 
-interface DueRouteChildren {
-  DueFocusRoute: typeof DueFocusRoute
-  DueFocusReviewCardIdRoute: typeof DueFocusReviewCardIdRoute
+interface LibraryRouteRouteChildren {
+  LibraryCollectionIdRoute: typeof LibraryCollectionIdRoute
+  LibraryIndexRoute: typeof LibraryIndexRoute
 }
 
-const DueRouteChildren: DueRouteChildren = {
-  DueFocusRoute: DueFocusRoute,
-  DueFocusReviewCardIdRoute: DueFocusReviewCardIdRoute,
+const LibraryRouteRouteChildren: LibraryRouteRouteChildren = {
+  LibraryCollectionIdRoute: LibraryCollectionIdRoute,
+  LibraryIndexRoute: LibraryIndexRoute,
 }
 
-const DueRouteWithChildren = DueRoute._addFileChildren(DueRouteChildren)
+const LibraryRouteRouteWithChildren = LibraryRouteRoute._addFileChildren(
+  LibraryRouteRouteChildren,
+)
+
+interface ReviewRouteRouteChildren {
+  ReviewDueRoute: typeof ReviewDueRoute
+  ReviewFlaggedRoute: typeof ReviewFlaggedRoute
+  ReviewLateRoute: typeof ReviewLateRoute
+  ReviewNewRoute: typeof ReviewNewRoute
+  ReviewIndexRoute: typeof ReviewIndexRoute
+}
+
+const ReviewRouteRouteChildren: ReviewRouteRouteChildren = {
+  ReviewDueRoute: ReviewDueRoute,
+  ReviewFlaggedRoute: ReviewFlaggedRoute,
+  ReviewLateRoute: ReviewLateRoute,
+  ReviewNewRoute: ReviewNewRoute,
+  ReviewIndexRoute: ReviewIndexRoute,
+}
+
+const ReviewRouteRouteWithChildren = ReviewRouteRoute._addFileChildren(
+  ReviewRouteRouteChildren,
+)
+
+interface CardsCardIdRouteRouteChildren {
+  CardsCardIdReviewsRoute: typeof CardsCardIdReviewsRoute
+  CardsCardIdIndexRoute: typeof CardsCardIdIndexRoute
+}
+
+const CardsCardIdRouteRouteChildren: CardsCardIdRouteRouteChildren = {
+  CardsCardIdReviewsRoute: CardsCardIdReviewsRoute,
+  CardsCardIdIndexRoute: CardsCardIdIndexRoute,
+}
+
+const CardsCardIdRouteRouteWithChildren =
+  CardsCardIdRouteRoute._addFileChildren(CardsCardIdRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DueRoute: DueRouteWithChildren,
+  LibraryRouteRoute: LibraryRouteRouteWithChildren,
+  ReviewRouteRoute: ReviewRouteRouteWithChildren,
+  DesignSystemRoute: DesignSystemRoute,
   FlaggedRoute: FlaggedRoute,
-  FlashcardsRoute: FlashcardsRoute,
-  LibraryRoute: LibraryRoute,
-  LogbookRoute: LogbookRoute,
-  PracticeRoute: PracticeRoute,
-  RecentRoute: RecentRoute,
-  TopicsRoute: TopicsRoute,
-  FlashcardsReviewCardIdRoute: FlashcardsReviewCardIdRoute,
-  PracticeReviewCardIdRoute: PracticeReviewCardIdRoute,
-  ReviewCardsReviewCardIdRoute: ReviewCardsReviewCardIdRoute,
-  TopicsTopicIdRoute: TopicsTopicIdRoute,
+  SettingsRoute: SettingsRoute,
+  CardsCardIdRouteRoute: CardsCardIdRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

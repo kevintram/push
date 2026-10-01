@@ -1,7 +1,6 @@
 {
 	"auto_install_extensions": {
-		"oxc": true,
-		"tailwindcss": true
+		"oxc": true
 	},
 	"lsp": {
 		"oxlint": {

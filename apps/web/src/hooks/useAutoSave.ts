@@ -1,5 +1,6 @@
 import debounce from 'lodash.debounce'
 import {
+	type ChangeEvent,
 	useCallback,
 	useEffect,
 	useLayoutEffect,
@@ -8,77 +9,29 @@ import {
 } from 'react'
 
 interface UseAutoSaveOptions {
-	/** The initial value to display in the input */
+	/** The latest persisted value received from the owner. */
 	initialValue: string
-	/** Callback invoked after the debounce delay when the value changes */
-	onSave: (value: string) => void
-	/** Debounce delay in milliseconds. Defaults to 5000ms (5 seconds) */
+	/** Persists a locally edited value. */
+	onSave: (value: string) => Promise<void> | void
 	debounceMs?: number
-	/**
-	 * Optional key to identify this auto-save instance. When the key changes,
-	 * the local value is reset to initialValue. Useful for resetting state
-	 * when switching between different entities (e.g., different topic IDs).
-	 */
+	/** Identifies which record `initialValue` belongs to. */
 	key?: string
 }
 
 interface UseAutoSaveReturn {
-	/** The current local value (updated immediately on user input) */
 	value: string
-	/** Change handler to attach to input/textarea elements */
 	onChange: (
-		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+		event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 	) => void
-	/** Direct setter for components that don't expose DOM change events */
-	setValue: (newValue: string) => void
-	/** Immediately run the pending debounced save, if any */
+	/** Updates the local value and schedules it to be saved. */
+	setValue: (value: string) => void
+	/** Immediately runs any save still waiting in the debounce queue. */
 	flush: () => void
 }
 
 /**
- * A hook for auto-saving user input with debouncing.
- *
- * This hook manages local state for immediate UI updates while debouncing
- * the actual save operation. It handles the common pattern of editing text
- * fields that auto-save to a backend.
- *
- * ## Features
- * - **Immediate UI updates**: Local state updates instantly for responsive UX
- * - **Debounced saves**: Only calls `onSave` after user stops typing
- * - **Smart resets**: Prevents local changes from being overwritten by external updates
- * - **Stable debouncing**: Works correctly even with unstable `onSave` callbacks
- * - **Key-based reset**: Automatically resets when switching entities
- *
- * ## How it works
- * 1. User types → local `value` updates immediately
- * 2. After debounce delay → `onSave` is called with the latest value
- * 3. External `initialValue` updates are ignored during recent user activity
- * 4. When `key` changes → local value resets to new `initialValue`
- *
- * ## Example usage
- * ```tsx
- * const { mutateAsync: updateNote } = useUpdateNote()
- *
- * const updateNoteContent = useCallback(
- *   (newContent: string) => {
- *     if (!noteId) return
- *     updateNote({ id: noteId, content: newContent })
- *   },
- *   [updateNote, noteId]
- * )
- *
- * const { value, onChange } = useAutoSave({
- *   initialValue: note?.content ?? '',
- *   onSave: updateNoteContent,
- *   debounceMs: 3000,
- *   key: `note-${noteId}`
- * })
- *
- * return <textarea value={value} onChange={onChange} />
- * ```
- *
- * @param options - Configuration options
- * @returns Object with current value and onChange handler
+ * Keeps an editable local value synchronized with a persisted value without
+ * allowing a delayed server response to overwrite an edit in progress.
  */
 export function useAutoSave({
 	initialValue,
@@ -87,85 +40,86 @@ export function useAutoSave({
 	key,
 }: UseAutoSaveOptions): UseAutoSaveReturn {
 	const [value, setValue] = useState(initialValue)
-	const keyRef = useRef<string | undefined>(key)
+
+	// `value` belongs to this key. Keeping that association in a ref lets the
+	// effects distinguish a new record from a refresh of the current record.
+	const keyRef = useRef(key)
+
+	// Server state may echo an older value while a save is in flight. Remember
+	// when the user last edited so that echo cannot replace newer local input.
 	const lastUserActionRef = useRef<number | null>(null)
 
-	// Create debounced save function once and reuse it
-	// The save callback is provided per change event so pending saves can
-	// still target the correct entity after navigation.
+	// Keep one debouncer for the lifetime of the hook so renders do not discard
+	// its pending timer. The save callback is an argument for the same reason: a
+	// queued value uses the callback from the render that scheduled it. As a
+	// consequence, debounceMs is configuration and is expected to remain stable.
 	const debouncedSave = useRef(
-		debounce((newValue: string, saveFn: (value: string) => void) => {
-			saveFn(newValue)
-		}, debounceMs),
+		debounce(
+			(
+				newValue: string,
+				save: (value: string) => Promise<void> | void,
+			) => {
+				void save(newValue)
+			},
+			debounceMs,
+		),
 	).current
 
-	// Flush pending saves during unmount before paint. Using layout cleanup
-	// avoids losing edits when users navigate away immediately after typing.
-	useLayoutEffect(() => {
-		return () => {
-			// flush() immediately executes the most recent pending debounced save.
+	// React may remove the component while a save is still waiting in the queue.
+	// Flush it so an edit is not lost just because the editor disappeared.
+	useLayoutEffect(
+		() => () => {
 			debouncedSave.flush()
-		}
-	}, [debouncedSave])
+		},
+		[debouncedSave],
+	)
 
-	// Flush pending saves synchronously when key changes, BEFORE paint.
-	// This prevents a race condition where the user could type on the new entity
-	// before the old entity's edit is saved, which would overwrite the pending save.
+	// A key identifies the record being edited. Finish the old record's pending
+	// save before replacing the local value with the new record's initial value.
 	useLayoutEffect(() => {
-		if (keyRef.current !== key) {
-			debouncedSave.flush()
-			keyRef.current = key
-			lastUserActionRef.current = null
-			setValue(initialValue)
-		}
-	}, [key, debouncedSave, initialValue])
+		if (keyRef.current === key) return
 
-	// Handle external initialValue updates intelligently (after paint is fine)
-	useEffect(() => {
-		// Skip if key just changed - useLayoutEffect already handled it
-		if (keyRef.current !== key) {
-			return
-		}
-
-		// Prevent external updates from overwriting recent user changes
-		const isRecentUserActivity =
-			lastUserActionRef.current !== null &&
-			Date.now() - lastUserActionRef.current < debounceMs + 500
-		if (isRecentUserActivity) {
-			return
-		}
-
-		// Safe to update from external source if user hasn't typed recently
+		debouncedSave.flush()
+		keyRef.current = key
+		lastUserActionRef.current = null
 		setValue(initialValue)
-	}, [initialValue, debounceMs, key])
+	}, [debouncedSave, initialValue, key])
 
-	const handleChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-			const newValue = e.target.value
-			lastUserActionRef.current = Date.now()
+	// Server updates can arrive shortly after a local edit. Do not let a stale
+	// update overwrite what the user is currently typing.
+	useEffect(() => {
+		if (keyRef.current !== key) return
+
+		// Allow a small grace period beyond the debounce interval for the save and
+		// its resulting server refresh to complete.
+		const hasRecentUserActivity =
+			lastUserActionRef.current !== null &&
+			performance.now() - lastUserActionRef.current < debounceMs + 500
+
+		if (!hasRecentUserActivity) setValue(initialValue)
+	}, [debounceMs, initialValue, key])
+
+	// This is also exposed as setValue for controls that do not emit a standard
+	// input change event. Unlike React's setter, calling it always schedules a save.
+	const handleValueChange = useCallback(
+		(newValue: string) => {
+			lastUserActionRef.current = performance.now()
 			setValue(newValue)
 			debouncedSave(newValue, onSave)
 		},
 		[debouncedSave, onSave],
 	)
 
-	const handleValueChange = useCallback(
-		(newValue: string) => {
-			lastUserActionRef.current = Date.now()
-			setValue(newValue)
-			debouncedSave(newValue, onSave)
+	const handleChange = useCallback(
+		(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+			handleValueChange(event.target.value)
 		},
-		[debouncedSave, onSave],
+		[handleValueChange],
 	)
 
 	const flush = useCallback(() => {
 		debouncedSave.flush()
 	}, [debouncedSave])
 
-	return {
-		value,
-		onChange: handleChange,
-		setValue: handleValueChange,
-		flush,
-	}
+	return { value, onChange: handleChange, setValue: handleValueChange, flush }
 }

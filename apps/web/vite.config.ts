@@ -3,7 +3,7 @@
 import { execSync } from 'node:child_process'
 import path from 'node:path'
 
-import tailwindcss from '@tailwindcss/vite'
+import stylex from '@stylexjs/unplugin'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
@@ -29,39 +29,82 @@ export default defineConfig(() => ({
 				'// noinspection JSUnusedGlobalSymbols',
 			],
 		}),
+		stylex.vite({
+			useCSSLayers: {
+				before: ['reset', 'vendor'],
+			},
+			aliases: {
+				'~/*': [path.resolve(import.meta.dirname, './src/*')],
+			},
+		}),
 		react(),
-		tailwindcss(),
 	],
 	define: {
 		__APP_BRANCH__: JSON.stringify(branchName ?? ''),
 	},
 	resolve: {
 		alias: {
+			'@convex': path.resolve(import.meta.dirname, './convex'),
+			'@shared': path.resolve(import.meta.dirname, './shared'),
 			'~': path.resolve(import.meta.dirname, './src'),
 		},
 		tsconfigPaths: true,
 	},
 	test: {
 		bail: 1,
+		// vite#18224: a plugin re-arms a file watcher after server.close() during
+		// late async transforms (e.g. lazy route chunks), leaking a native handle
+		// that keeps the process alive. Tests pass, so force-exit after 1s instead
+		// of waiting out the 10s default.
+		teardownTimeout: 1000,
 		clearMocks: true,
 		coverage: {
 			enabled: true,
-			exclude: ['src/main.tsx', 'src/testing/**', 'src/components/ui/**'],
-			include: ['src/**/*'],
+			exclude: [
+				'convex/_generated/**',
+				'convex/**/*.test.ts',
+				'convex/test.setup.ts',
+				'src/**/*.stylex.ts',
+				'src/**/*.d.ts',
+				'src/lib/convex.ts',
+				'src/main.tsx',
+				'src/testing/**',
+				'src/app/routeTree.gen.ts',
+			],
+			include: ['convex/**/*.ts', 'shared/**/*.ts', 'src/**/*'],
 			reporter: ['text', 'lcov'],
 			reportsDirectory: 'coverage',
-			thresholds: {
-				// TODO: deal with this later
-				// lines: 85,
-				// functions: 85,
-				// branches: 85,
-				// statements: 85
-			},
 		},
 		css: false,
-		environment: 'happy-dom',
 		globals: true,
-		include: ['src/**/__tests__/**/*.test.ts?(x)'],
-		setupFiles: 'src/testing/setup-tests.ts',
+		projects: [
+			{
+				// `as const` keeps this from widening to `boolean`, which vitest
+				// rejects: `extends` is typed `string | true`.
+				extends: true as const,
+				test: {
+					environment: 'happy-dom',
+					include: ['src/**/__tests__/**/*.test.ts?(x)'],
+					name: 'frontend',
+					setupFiles: 'src/testing/setup-tests.ts',
+				},
+			},
+			{
+				extends: true as const,
+				test: {
+					environment: 'edge-runtime',
+					include: ['convex/**/*.test.ts'],
+					name: 'convex',
+				},
+			},
+			{
+				extends: true as const,
+				test: {
+					environment: 'node',
+					include: ['shared/**/*.test.ts'],
+					name: 'shared',
+				},
+			},
+		],
 	},
 }))

@@ -1,56 +1,28 @@
-import { type QueryClient } from '@tanstack/react-query'
+import type { QueryClient } from '@tanstack/react-query'
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
-import { Suspense } from 'react'
-import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
+import { ErrorBoundary } from 'react-error-boundary'
 
-import { LoadingOrError } from '~/components/LoadingOrError'
-import { Toaster } from '~/components/ui/sonner'
-import { ReviewDialogProvider } from '~/modules/reviews/providers/ReviewDialogProvider'
-import { AppShell } from '~/modules/shell/AppShell'
-import { ReviewModeProvider } from '~/stores/ReviewModeContext'
+import { AppShell } from '~/app/layout/AppShell'
+import { ErrorPage } from '~/app/pages/ErrorPage'
+import { NotFoundPage } from '~/app/pages/NotFoundPage'
+import { AuthGate } from '~/modules/auth/components/AuthGate'
 
 export type RouterContext = {
+	auth: {
+		isAuthenticated: boolean
+		isLoading: boolean
+	}
 	queryClient: QueryClient
 }
-
-function isNotFoundError(error: unknown): error is { isNotFound: true } {
-	return (
-		typeof error === 'object' &&
-		error !== null &&
-		'isNotFound' in error &&
-		(error as { isNotFound?: unknown }).isNotFound === true
-	)
-}
-
-function renderError({ error }: FallbackProps) {
-	if (isNotFoundError(error)) {
-		return <NotFoundView />
-	}
-	return <LoadingOrError error={error} />
-}
-
-function NotFoundView() {
-	return (
-		<div className='flex min-h-screen items-center justify-center'>
-			<h1 className='text-xl'>Page not found</h1>
-		</div>
-	)
-}
-
 export const Route = createRootRouteWithContext<RouterContext>()({
-	notFoundComponent: NotFoundView,
+	notFoundComponent: NotFoundPage,
 	component: () => (
-		<ErrorBoundary fallbackRender={renderError}>
-			<ReviewModeProvider>
-				<ReviewDialogProvider>
-					<Suspense fallback={<LoadingOrError />}>
-						<AppShell>
-							<Outlet />
-						</AppShell>
-					</Suspense>
-					<Toaster />
-				</ReviewDialogProvider>
-			</ReviewModeProvider>
-		</ErrorBoundary>
+		<AuthGate>
+			<AppShell>
+				<ErrorBoundary FallbackComponent={ErrorPage}>
+					<Outlet />
+				</ErrorBoundary>
+			</AppShell>
+		</AuthGate>
 	),
 })

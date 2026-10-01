@@ -1,431 +1,478 @@
-import { useNavigate } from '@tanstack/react-router'
-import dayjs from 'dayjs'
-import {
-	Anvil,
-	CalendarIcon,
-	Maximize2,
-	Minimize2,
-	MoreHorizontal,
-	X,
-} from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { Id } from '@convex/_generated/dataModel'
+import * as stylex from '@stylexjs/stylex'
+import { useQuery } from '@tanstack/react-query'
+import { Ellipsis, Maximize2, Minimize2, Trash2, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
-import { Button } from '~/components/ui/button'
-import { Dialog, DialogContent } from '~/components/ui/dialog'
 import {
+	Button,
+	DialogClose,
+	DialogContent,
+	DialogTitle,
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from '~/components/ui/dropdown-menu'
-import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { ScrollArea } from '~/components/ui/scroll-area'
-import { Textarea } from '~/components/ui/textarea'
-import { useAutoSave } from '~/hooks/useAutoSave'
-import { cn } from '~/lib/utils'
-import { getReviewCardDisplayTitle } from '~/modules/review-cards/utils/reviewCardCopy'
-import { formatRelativeDate } from '~/utils/formatRelativeDate'
-
-import { useDeleteReview } from '../api/deleteReview'
-import { useReview } from '../api/getReviews'
-import { useUpdateReview } from '../api/updateReview'
-import { isOverdue } from '../utils/isOverdue'
-import { DatePickerDropdown } from './DatePickerDropdown'
+	Textarea,
+} from '~/components/ui'
+import { collectionQueries } from '~/modules/library/api/collectionQueries'
+import { cardQueries } from '~/modules/reviews/api/cardQueries'
+import { dialogColors, reviewColors } from '~/styles/colors/components.stylex'
 import {
-	ReviewRatingCheckbox,
-	type ReviewRatingState,
-} from './ReviewRatingCheckbox'
+	breakpoints,
+	fontSizes,
+	fontWeights,
+	iconSizes,
+	radii,
+	spacing,
+} from '~/styles/tokens.stylex'
+import type { DateString } from '~/types/date'
 
-interface ReviewDialogProps {
-	reviewId: number | null
-	open: boolean
-	onOpenChange: (open: boolean) => void
+import type { useReviewField } from '../hooks/useReviewField'
+import type { Rating, Review } from '../types/review.types'
+import { RatingPicker } from './RatingPicker'
+import { ReviewDatePicker } from './ReviewDatePicker'
+import { ReviewDialogBreadcrumbs } from './ReviewDialogBreadcrumbs'
+import { ReviewDurability } from './ReviewDurability'
+
+const styles = stylex.create({
+	viewport: {
+		alignItems: 'flex-start',
+		blockSize: '100dvh',
+		display: 'flex',
+		justifyContent: 'center',
+		paddingBlockEnd: {
+			default: `max(${spacing.sm}, env(safe-area-inset-bottom))`,
+			[breakpoints.tablet]: '13dvh',
+		},
+		paddingBlockStart: {
+			default: `max(${spacing.sm}, env(safe-area-inset-top))`,
+			[breakpoints.tablet]: '13dvh',
+		},
+		paddingInlineEnd: {
+			default: `max(${spacing.sm}, env(safe-area-inset-right))`,
+			[breakpoints.tablet]: spacing.md,
+		},
+		paddingInlineStart: {
+			default: `max(${spacing.sm}, env(safe-area-inset-left))`,
+			[breakpoints.tablet]: spacing.md,
+		},
+		overflowX: 'hidden',
+		overflowY: 'hidden',
+
+		transitionDuration: {
+			default: '300ms',
+			'@media (prefers-reduced-motion: reduce)': '0ms',
+		},
+		transitionProperty: 'padding-block-start, padding-block-end',
+		transitionTimingFunction: 'cubic-bezier(0.43, 0.07, 0.59, 0.94)',
+	},
+	expandedViewport: {
+		paddingBlockEnd: {
+			default: `max(${spacing.sm}, env(safe-area-inset-bottom))`,
+			[breakpoints.tablet]: '6dvh',
+		},
+		paddingBlockStart: {
+			default: `max(${spacing.sm}, env(safe-area-inset-top))`,
+			[breakpoints.tablet]: '6dvh',
+		},
+	},
+	popup: {
+		gap: spacing.sm,
+		overflow: 'hidden',
+		paddingBlock: spacing.md,
+		paddingInline: spacing.md,
+		backgroundColor: dialogColors.fullscreenBackground,
+		display: 'flex',
+		flexDirection: 'column',
+		inlineSize: '100%',
+		maxBlockSize: {
+			default: '100%',
+			[breakpoints.tablet]: '74dvh',
+		},
+		maxInlineSize: {
+			default: 'none',
+			[breakpoints.tablet]: '750px',
+		},
+		minBlockSize: 0,
+		minInlineSize: 0,
+
+		blockSize: {
+			default: '100%',
+			[breakpoints.tablet]: 'auto',
+		},
+		transitionDuration: {
+			default: '300ms, 220ms, 300ms',
+			'@media (prefers-reduced-motion: reduce)': '0ms',
+		},
+		transitionProperty: 'block-size, max-inline-size, min-block-size',
+		transitionTimingFunction: 'cubic-bezier(0.43, 0.07, 0.59, 0.94)',
+	},
+	expandedPopup: {
+		blockSize: {
+			default: '100%',
+			[breakpoints.tablet]: '88dvh',
+		},
+		maxBlockSize: {
+			default: '100%',
+			[breakpoints.tablet]: '88dvh',
+		},
+		maxInlineSize: {
+			default: 'none',
+			[breakpoints.tablet]: '820px',
+		},
+		minBlockSize: {
+			default: 0,
+			[breakpoints.tablet]: '88dvh',
+		},
+	},
+	header: {
+		gap: spacing.sm,
+		alignItems: 'center',
+		justifyContent: 'space-between',
+
+		display: 'flex',
+		flexShrink: 0,
+		minInlineSize: 0,
+	},
+	headerActions: {
+		gap: spacing.xs,
+		alignItems: 'center',
+		display: 'flex',
+		flexShrink: 0,
+	},
+	windowControl: {
+		display: {
+			default: 'none',
+			[breakpoints.tablet]: 'inline-flex',
+		},
+	},
+	content: {
+		gridTemplateAreas: `
+			'rail editor'
+			'rail footer'
+		`,
+		columnGap: spacing.md,
+		gridTemplateColumns: 'max-content minmax(0, 1fr)',
+		gridTemplateRows: {
+			default: 'minmax(0, 1fr) auto',
+			[breakpoints.tablet]: 'minmax(0, auto) auto',
+		},
+
+		overflow: 'hidden',
+		display: 'grid',
+		flexBasis: {
+			default: 0,
+			[breakpoints.tablet]: 'auto',
+		},
+		flexGrow: {
+			default: 1,
+			[breakpoints.tablet]: 0,
+		},
+		flexShrink: 1,
+		minBlockSize: 0,
+		minInlineSize: 0,
+	},
+	expandedContent: {
+		flexBasis: 0,
+		flexGrow: 1,
+		gridTemplateRows: 'minmax(0, 1fr) auto',
+	},
+	rail: {
+		alignItems: 'flex-start',
+		display: 'flex',
+		flexDirection: 'column',
+		gridColumnEnd: '2',
+		gridColumnStart: '1',
+		gridRowEnd: '-1',
+		gridRowStart: '1',
+		minBlockSize: 0,
+		minInlineSize: 0,
+	},
+	ratingControl: {
+		borderRadius: radii.md,
+		alignSelf: 'flex-start',
+		backgroundColor: reviewColors.rowBackground,
+	},
+	editor: {
+		gap: spacing.sm,
+		overflow: 'hidden',
+		display: 'flex',
+		flexBasis: {
+			default: 0,
+			[breakpoints.tablet]: 'auto',
+		},
+		flexDirection: 'column',
+		flexGrow: {
+			default: 1,
+			[breakpoints.tablet]: 0,
+		},
+		flexShrink: 1,
+		gridColumnEnd: '3',
+		gridColumnStart: '2',
+		gridRowEnd: '2',
+		gridRowStart: '1',
+		minBlockSize: 0,
+		minInlineSize: 0,
+	},
+	expandedEditor: {
+		flexBasis: 0,
+		flexGrow: 1,
+	},
+	description: {
+		borderRadius: radii.xs,
+		borderStyle: 'none',
+		blockSize: 'auto',
+		fontSize: fontSizes.sm,
+		fontWeight: fontWeights.medium,
+		lineHeight: 1.4,
+		marginBlockStart: '4px', // magic number because it *is* a magic number
+		maxBlockSize: 'calc(1.4em * 6)',
+		overflowWrap: 'anywhere',
+		overflowX: 'hidden',
+		overflowY: 'auto',
+	},
+	notes: {
+		borderRadius: radii.xs,
+		borderStyle: 'none',
+		blockSize: 'auto',
+		flexBasis: {
+			default: 0,
+			[breakpoints.tablet]: 'auto',
+		},
+		flexGrow: {
+			default: 1,
+			[breakpoints.tablet]: 0,
+		},
+		flexShrink: 1,
+		fontSize: fontSizes.sm,
+		fontWeight: fontWeights.medium,
+		lineHeight: 1.4,
+		minBlockSize: {
+			default: 0,
+			[breakpoints.tablet]: '5rem',
+		},
+		overflowWrap: 'anywhere',
+		overflowX: 'hidden',
+		overflowY: 'auto',
+	},
+	expandedNotes: {
+		flexBasis: 0,
+		flexGrow: 1,
+		minBlockSize: 0,
+	},
+	footer: {
+		alignItems: 'center',
+		columnGap: spacing.sm,
+		display: 'flex',
+		flexShrink: 0,
+		gridColumnEnd: '3',
+		gridColumnStart: '2',
+		gridRowEnd: '3',
+		gridRowStart: '2',
+		justifyContent: 'space-between',
+		minBlockSize: spacing.xl,
+		minInlineSize: 0,
+	},
+	footerMetadata: {
+		alignItems: 'center',
+		columnGap: spacing.md,
+		display: 'flex',
+		flexGrow: 1,
+		flexShrink: 1,
+		flexWrap: 'wrap',
+		minInlineSize: 0,
+		rowGap: spacing.xs,
+	},
+	footerActions: {
+		flexShrink: 0,
+		marginInlineStart: 'auto',
+	},
+	visuallyHidden: {
+		margin: '-1px',
+		padding: 0,
+		overflow: 'hidden',
+		blockSize: '1px',
+		clip: 'rect(0, 0, 0, 0)',
+		inlineSize: '1px',
+		position: 'absolute',
+		whiteSpace: 'nowrap',
+	},
+})
+
+type EditableField = ReturnType<typeof useReviewField>
+
+type ReviewDialogProps = {
+	descriptionField: EditableField
+	isOpen: boolean
+	notesField: EditableField
+	onDelete: () => void
+	onSetDate: (value: DateString | null) => void
+	onSetRating: (rating: Rating | null) => void
+	review: Review
 }
 
-// TODO: add tanstack routing to this?
 export function ReviewDialog({
-	reviewId,
-	open,
-	onOpenChange,
+	descriptionField,
+	isOpen,
+	notesField,
+	onDelete,
+	onSetDate,
+	onSetRating,
+	review,
 }: ReviewDialogProps) {
-	const { data: review, isLoading } = useReview(reviewId ?? undefined)
-	const updateReviewMutation = useUpdateReview()
-	const deleteReviewMutation = useDeleteReview()
-
-	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 	const [isExpanded, setIsExpanded] = useState(false)
 
 	useEffect(() => {
-		if (open) return
-		setIsExpanded(false)
-		setIsDatePopoverOpen(false)
-	}, [open])
+		if (!isOpen) setIsExpanded(false)
+	}, [isOpen])
 
-	// Computed date values
-	const selectedDate = (() => {
-		if (review?.completed_at) {
-			return dayjs(review.completed_at).toDate()
-		}
-		if (review?.scheduled_at) {
-			return dayjs(review.scheduled_at).toDate()
-		}
-		return null
-	})()
-
-	const effectiveDate = review?.effective_date
-		? dayjs(review.effective_date).toDate()
-		: null
-
-	const relativeDate = formatRelativeDate(effectiveDate)
-
-	const isOverdueValue: boolean = useMemo(
-		() =>
-			isOverdue({
-				scheduled_at: review?.scheduled_at ?? null,
-				isCompleted: review?.completed_at !== null,
-			}),
-		[review?.scheduled_at, review?.completed_at],
-	)
-
-	const updateDescriptionMutation = useCallback(
-		(newDescription: string) => {
-			if (review?.id) {
-				updateReviewMutation.mutate({
-					id: review.id,
-					description: newDescription,
-				})
-			}
-		},
-		[updateReviewMutation, review?.id],
-	)
-
-	const { value: description, onChange: onDescriptionChange } = useAutoSave({
-		initialValue: review?.description ?? '',
-		onSave: updateDescriptionMutation,
-		key: `review-dialog-${review?.id}`,
+	const { data: card } = useQuery({
+		...cardQueries.detail(review.cardId),
+		enabled: isOpen,
 	})
-
-	const updateNotesMutation = useCallback(
-		(newNotes: string) => {
-			if (review?.id) {
-				updateReviewMutation.mutate({
-					id: review.id,
-					notes: newNotes,
-				})
-			}
-		},
-		[updateReviewMutation, review?.id],
-	)
-
-	const { value: notes, onChange: onNotesChange } = useAutoSave({
-		initialValue: review?.notes ?? '',
-		onSave: updateNotesMutation,
-		key: `review-dialog-notes-${review?.id}`,
+	const collectionId = card?.collectionId
+	const { data: collection } = useQuery({
+		...collectionQueries.detail(collectionId ?? ('' as Id<'collections'>), {
+			expandPath: true,
+		}),
+		enabled: isOpen && collectionId !== undefined,
 	})
-
-	const reviewStatus: ReviewRatingState = useMemo(() => {
-		if (!review?.completed_at) return 'uncompleted'
-		return review.rating ?? 'good'
-	}, [review?.completed_at, review?.rating])
-
-	const stabilityChangeColorClass = useMemo(() => {
-		if (review?.stability_after == null) {
-			return ''
-		}
-		if (review?.stability_before == null) {
-			return 'text-green-600 dark:text-green-400'
-		}
-		const roundedDelta = Math.round(
-			review.stability_after - review.stability_before,
-		)
-		if (roundedDelta >= 0) {
-			return 'text-green-600 dark:text-green-400'
-		}
-		return 'text-red-600 dark:text-red-400'
-	}, [review?.stability_after, review?.stability_before])
-	const hasStability = review?.stability_after != null
-	const hasDelta =
-		review?.stability_after != null && review?.stability_before != null
-	const stabilityAfterRounded = hasStability
-		? Math.round(review.stability_after ?? 0)
-		: 0
-	const stabilityDeltaRounded = hasDelta
-		? Math.round(
-				(review.stability_after ?? 0) - (review.stability_before ?? 0),
-			)
-		: 0
-
-	const getCardName = useCallback((): string => {
-		if (review?.review_card) {
-			return getReviewCardDisplayTitle(review.review_card)
-		}
-		return 'Unknown card'
-	}, [review?.review_card])
-
-	const handleStatusChange = useCallback(
-		(status: ReviewRatingState) => {
-			if (!review?.id) return
-			if (status === 'uncompleted') {
-				updateReviewMutation.mutate({
-					id: review.id,
-					rating: null,
-					completed_at: null,
-				})
-				return
-			}
-			updateReviewMutation.mutate({
-				id: review.id,
-				rating: status,
-				completed_at:
-					review.completed_at ?? dayjs().format('YYYY-MM-DD'),
-			})
-		},
-		[review?.id, review?.completed_at, updateReviewMutation],
-	)
-
-	const handleDateChange = useCallback(
-		(newDate: Date | null) => {
-			if (review?.id) {
-				const newDateString = newDate
-					? dayjs(newDate).format('YYYY-MM-DD')
-					: null
-				if (review.completed_at) {
-					updateReviewMutation.mutate({
-						id: review.id,
-						completed_at: newDateString,
-					})
-				} else {
-					updateReviewMutation.mutate({
-						id: review.id,
-						scheduled_at: newDateString,
-					})
-				}
-			}
-			setIsDatePopoverOpen(false)
-		},
-		[review?.id, review?.completed_at, updateReviewMutation],
-	)
-
-	const handleDelete = useCallback(() => {
-		if (review?.id) {
-			onOpenChange(false)
-			deleteReviewMutation.mutate(review.id)
-		}
-	}, [review?.id, deleteReviewMutation, onOpenChange])
-
-	const navigate = useNavigate()
-
-	const handleOpenLinkedCard = useCallback(() => {
-		if (!review?.review_card) return
-		onOpenChange(false)
-		navigate({
-			to: '/review-cards/$reviewCardId',
-			params: { reviewCardId: review.review_card.id.toString() },
-			search: { tab: 'reviews' },
-		})
-	}, [navigate, review?.review_card, onOpenChange])
-
-	const handleDialogOpenChange = useCallback(
-		(nextOpen: boolean) => {
-			onOpenChange(nextOpen)
-		},
-		[onOpenChange],
-	)
-
-	const dialogContentClassName = useMemo(
-		() =>
-			cn(
-				'-translate-x-1/2 fixed left-1/2 top-0 flex h-[100dvh] max-h-[100dvh] w-full max-w-full translate-y-0 flex-col rounded-none p-0 sm:rounded-xl',
-				isExpanded
-					? 'sm:top-[5vh] sm:h-[90vh] sm:max-h-[90vh] sm:max-w-5xl lg:max-w-6xl'
-					: 'sm:top-[10vh] sm:h-[400px] sm:max-h-[400px] sm:max-w-[540px] lg:max-w-[680px]',
-			),
-		[isExpanded],
-	)
-
-	const headerActions = useMemo(
-		() => (
-			<>
-				<Button
-					aria-label={
-						isExpanded
-							? 'Collapse review dialog'
-							: 'Expand review dialog'
-					}
-					className='hidden text-muted-foreground sm:inline-flex'
-					onClick={() => setIsExpanded(previous => !previous)}
-					size='icon-xs'
-					title={isExpanded ? 'Collapse dialog' : 'Expand dialog'}
-					variant='ghost'
-				>
-					{isExpanded ? <Minimize2 /> : <Maximize2 />}
-				</Button>
-				<Button
-					aria-label='Close review dialog'
-					className='text-muted-foreground'
-					onClick={() => onOpenChange(false)}
-					size='icon-xs'
-					title='Close dialog'
-					variant='ghost'
-				>
-					<X />
-				</Button>
-			</>
-		),
-		[isExpanded, onOpenChange],
-	)
-
-	if (isLoading) {
-		return (
-			<Dialog onOpenChange={handleDialogOpenChange} open={open}>
-				<DialogContent
-					className={dialogContentClassName}
-					showCloseButton={false}
-				>
-					<LoadingSpinner containerClassName='h-full min-h-48' />
-				</DialogContent>
-			</Dialog>
-		)
-	}
-
-	if (!review) {
-		return null
-	}
 
 	return (
-		<Dialog onOpenChange={handleDialogOpenChange} open={open}>
-			<DialogContent
-				className={dialogContentClassName}
-				showCloseButton={false}
-			>
-				<div className='flex h-full min-h-0 flex-col'>
-					<div className='flex items-center justify-between border-b px-2 py-1'>
-						<Button
-							className='max-w-48'
-							disabled={updateReviewMutation.isPending}
-							onClick={handleOpenLinkedCard}
-							size='sm'
-							title='Open card'
-							variant='ghost'
-						>
-							<span className='truncate'>{getCardName()}</span>
-						</Button>
-						<div className='flex items-center gap-2'>
-							<DropdownMenu>
-								<DropdownMenuTrigger
-									render={
-										<Button
-											size='icon-xs'
-											title='More options'
-											variant='ghost'
-										>
-											<MoreHorizontal />
-										</Button>
-									}
-								/>
-								<DropdownMenuContent>
-									<DropdownMenuItem
-										onClick={handleDelete}
-										variant='destructive'
-									>
-										Delete
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-							{headerActions}
-						</div>
-					</div>
-
-					<ScrollArea
-						className='min-h-0 flex-1'
-						scrollbarClassName='p-px data-[orientation=horizontal]:h-2.5 data-[orientation=vertical]:w-2.5'
+		<DialogContent
+			showCloseButton={false}
+			viewportXstyle={[
+				styles.viewport,
+				isExpanded && styles.expandedViewport,
+			]}
+			xstyle={[styles.popup, isExpanded && styles.expandedPopup]}
+		>
+			<DialogTitle xstyle={styles.visuallyHidden}>
+				Review editor
+			</DialogTitle>
+			<header {...stylex.props(styles.header)}>
+				<ReviewDialogBreadcrumbs
+					card={card}
+					cardId={review.cardId}
+					collection={collection}
+				/>
+				<div {...stylex.props(styles.headerActions)}>
+					<Button.Icon
+						aria-expanded={isExpanded}
+						aria-label={
+							isExpanded ? 'Collapse review' : 'Expand review'
+						}
+						onClick={() => setIsExpanded(expanded => !expanded)}
+						xstyle={styles.windowControl}
+						shape='round'
+						size='micro'
+						variant='ghost'
 					>
-						<div className='flex min-h-full min-w-0 flex-col gap-y-2 px-4 py-4'>
-							{hasStability && (
-								<div className='flex items-center text-muted-foreground text-xs'>
-									<Anvil className='mr-1 h-3 w-3' />
-									<span>{stabilityAfterRounded}d</span>
-									{hasDelta ? (
-										<span
-											className={cn(
-												'ml-1',
-												stabilityChangeColorClass,
-											)}
-										>
-											(
-											{stabilityDeltaRounded >= 0
-												? '+'
-												: ''}
-											{stabilityDeltaRounded})
-										</span>
-									) : (
-										<span
-											className={cn(
-												'ml-1',
-												stabilityChangeColorClass,
-											)}
-										>
-											(new)
-										</span>
-									)}
-								</div>
-							)}
-							<div className='grid min-h-0 flex-1 grid-cols-[auto_1fr_auto] grid-rows-[auto_1fr] content-start items-center gap-x-2'>
-								<ReviewRatingCheckbox
-									className={cn(
-										'ml-2',
-										isOverdueValue &&
-											'border-red-600 dark:border-red-700 dark:bg-red-700',
-									)}
-									disabled={
-										isLoading ||
-										updateReviewMutation.isPending
-									}
-									onChange={handleStatusChange}
-									value={reviewStatus}
-								/>
-								<Textarea
-									className='!bg-transparent m-0 min-h-0 min-w-0 resize-none overflow-hidden rounded-none border-none p-0 font-bold shadow-none [overflow-wrap:anywhere] focus:outline-none focus-visible:border-none focus-visible:ring-0'
-									onChange={onDescriptionChange}
-									placeholder='Description'
-									spellCheck={false}
-									value={description}
-								/>
-								<DatePickerDropdown
-									isOpen={isDatePopoverOpen}
-									onDateChange={handleDateChange}
-									onOpenChange={setIsDatePopoverOpen}
-									selectedDate={selectedDate}
-									trigger={
-										<Button
-											className={cn(
-												'shrink-0 text-xs',
-												isOverdueValue &&
-													'text-red-600 dark:text-red-400',
-												relativeDate.text === 'Today' &&
-													'text-blue-600 dark:text-blue-400',
-											)}
-											size='sm'
-											variant='ghost'
-										>
-											<CalendarIcon />
-											{relativeDate.text}
-										</Button>
-									}
-								/>
-								<div className='self-start' />
-								<Textarea
-									className='!bg-transparent m-0 h-full min-h-0 min-w-0 resize-none rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-									onChange={onNotesChange}
-									placeholder='Add notes...'
-									spellCheck={false}
-									value={notes}
-								/>
-							</div>
-						</div>
-					</ScrollArea>
+						{isExpanded ? (
+							<Minimize2 aria-hidden='true' size={iconSizes.md} />
+						) : (
+							<Maximize2 aria-hidden='true' size={iconSizes.md} />
+						)}
+					</Button.Icon>
+					<DialogClose
+						render={
+							<Button.Icon
+								aria-label='Close review'
+								shape='round'
+								size='micro'
+								variant='ghost'
+							/>
+						}
+					>
+						<X aria-hidden='true' size={iconSizes.md} />
+					</DialogClose>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</header>
+			<div
+				{...stylex.props(
+					styles.content,
+					isExpanded && styles.expandedContent,
+				)}
+			>
+				<aside {...stylex.props(styles.rail)}>
+					<div {...stylex.props(styles.ratingControl)}>
+						<RatingPicker
+							onSetRating={onSetRating}
+							rating={review.rating}
+						/>
+					</div>
+				</aside>
+				<div
+					{...stylex.props(
+						styles.editor,
+						isExpanded && styles.expandedEditor,
+					)}
+				>
+					<Textarea
+						aria-label='Review description'
+						placeholder='Description'
+						value={descriptionField.value}
+						onBlur={descriptionField.flush}
+						onChange={descriptionField.onChange}
+						xstyle={styles.description}
+					/>
+					<Textarea
+						aria-label='Review notes'
+						placeholder='Add notes…'
+						value={notesField.value}
+						onBlur={notesField.flush}
+						onChange={notesField.onChange}
+						xstyle={[
+							styles.notes,
+							isExpanded && styles.expandedNotes,
+						]}
+					/>
+				</div>
+				<footer {...stylex.props(styles.footer)}>
+					<div {...stylex.props(styles.footerMetadata)}>
+						<ReviewDatePicker
+							date={(review.date ?? null) as DateString | null}
+							kind={
+								review.rating === undefined
+									? 'scheduled'
+									: 'completed'
+							}
+							onDateChange={onSetDate}
+							size='medium'
+						/>
+						<ReviewDurability review={review} size='medium' />
+					</div>
+					<div {...stylex.props(styles.footerActions)}>
+						<DropdownMenu>
+							<DropdownMenuTrigger
+								render={
+									<Button.Icon
+										aria-label='Review actions'
+										shape='round'
+										size='micro'
+										variant='ghost'
+									/>
+								}
+							>
+								<Ellipsis
+									aria-hidden='true'
+									size={iconSizes.md}
+								/>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align='end'>
+								<DropdownMenuItem onClick={onDelete}>
+									<Trash2
+										aria-hidden='true'
+										size={iconSizes.md}
+									/>
+									Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
+				</footer>
+			</div>
+		</DialogContent>
 	)
 }

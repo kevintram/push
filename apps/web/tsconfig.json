@@ -5,8 +5,9 @@
 		{ "path": "./tsconfig.node.json" }
 	],
 	"compilerOptions": {
-		"baseUrl": ".",
 		"paths": {
+			"@convex/*": ["./convex/*"],
+			"@shared/*": ["./shared/*"],
 			"~/*": ["./src/*"]
 		}
 	}

@@ -1,2 +1,0 @@
-ALTER TABLE review_cards
-ADD COLUMN notes TEXT NOT NULL DEFAULT '';

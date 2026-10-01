@@ -1,11 +1,12 @@
 /// <reference types="vite/client" />
 
-import type DetachedWindowApi from 'happy-dom/lib/window/DetachedWindowAPI.js'
-
-declare global {
-	interface Window {
-		happyDOM?: DetachedWindowApi
-	}
-
-	const __APP_BRANCH__: string | undefined
+interface ImportMetaEnv {
+	readonly VITE_CLERK_PUBLISHABLE_KEY: string
+	readonly VITE_CONVEX_URL: string
 }
+
+interface ImportMeta {
+	readonly env: ImportMetaEnv
+}
+
+declare const __APP_BRANCH__: string

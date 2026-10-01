@@ -1,122 +1,75 @@
 # AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Repository guidance for AI coding agents.
 
-## Repository Overview 
+## Repository overview
 
-This is a monorepo containing multiple independent but related applications:
+This monorepo contains the active React application at `apps/web/` and the Astro
+marketing site at `apps/site/`. `apps/android/` and `apps/ios/` are present but
+their development has not started. The web app uses Clerk for authentication
+and Convex for its backend.
 
-1. `apps/api/` - Python FastAPI service for all the frontend applications (deployed as `api.3gulp.com`)
-2. `apps/web/` - React/TypeScript web application (deployed as `app.3gulp.com`)
-3. `apps/web-v2/` - React/TypeScript Vite application
-4. `apps/android/` - Kotlin native Android application **(development not started yet)**
-5. `apps/ios/` -  Swift native iOS application **(development not started yet)**
-6. `apps/site/` - Astro landing page (deployed as `3gulp.com`)
+## Development commands
 
-The application uses Supabase as a managed postgres database. Configuration, migration, and seed files are located in `supabase/`.
+### Web app (`apps/web/`)
 
-## Development Commands
-
-### API (`apps/api/`)
 ```bash
-uv sync                                 # Install dependencies
-uv run fastapi dev --host localhost     # Start dev server with auto-reload
-./run.sh            # Start dev server with worktree port (see ## Worktree and Environment Files)
-uv run pytest                           # Run tests
-uv run ruff check --fix                 # Run ruff auto-fix lint issues
-uv run ruff format                      # Run ruff formatting
+pnpm install
+pnpm run dev
+./run.sh            # Worktree-aware dev server
+pnpm test            # Unit/integration tests in watch mode
+pnpm test:ci         # Run tests once
+pnpm run lint        # TypeScript, Oxlint, and formatting checks
+pnpm run build
+pnpm run validate
 ```
-Note: When using worktrees, run `apps/api/run.sh` from the worktree to use the assigned port.
 
-### Web App (`apps/web/`)
-```bash
-pnpm install        # Install dependencies
-pnpm run dev        # Start dev server
-./run.sh            # Start dev server with worktree port (see ## Worktree and Environment Files)
-pnpm run test       # Run tests in watch mode
-pnpm run lint       # Run tsc, eslint, formatting checks, and the React one-component rule
-pnpm run validate   # Run full validation pipeline
-```
-Note: When using worktrees, run `apps/web/run.sh` from the worktree to use the assigned port.
+### Marketing site (`apps/site/`)
 
-### Web V2 App (`apps/web-v2/`)
-```bash
-pnpm install        # Install dependencies
-pnpm run dev        # Start dev server
-./run.sh            # Start dev server with worktree port (see ## Worktree and Environment Files)
-pnpm run test       # Run tests
-pnpm run lint       # Run tsc, biome lint, and component-count enforcement
-pnpm run validate   # Run full validation pipeline
-```
-Note: When using worktrees, run `apps/web-v2/run.sh` from the worktree to use the assigned port.
-
-### Landing page (`apps/site/`)
 ```bash
 cd apps/site
-pnpm install            # Install dependencies
-pnpm run dev            # Start dev server
+pnpm install
+pnpm run dev
+pnpm run build
 ```
 
-### Supabase (`supabase/`)
-```bash
-supabase db reset       # reconstruct and seed local db
-supabase migration up   # apply new migrations to local db
-supabase db push        # push new migrations to prod db
-```
+## Commit guidelines
 
-## Commit Guidelines
+Use `<scope>: <description>`. Scopes include `web`, `site`, `android`, and
+`ios`; omit the scope for repository-wide changes.
 
-**Format**: `<scope>[, <scope>...]: <description>`
+## Worktree and environment files
 
-**Scopes**: `web`, `web-v2`, `site`, `api`, `android`, `ios` (or omit for repo-wide changes)
+Each worktree gets a slot *S* (0–15); the web app uses port `6173 + S`.
 
-**Examples**:
-```
-web: add dark mode toggle
-api: handle non-existent user edge case
-web, api: update user authentication flow
-update root .gitignore
-```
-## Worktree and Environment Files
+- `worktree-scripts/add.sh` creates the worktree, environment, `apps/web/run.sh`,
+  and installs dependencies.
+- `worktree-scripts/gen-env.sh` maintains `.worktree.env`,
+  `apps/web/.env.local`, and `apps/site/.env`. It reads
+  `VITE_CLERK_PUBLISHABLE_KEY` and `VITE_CONVEX_URL` from the shared
+  `web.env.local` template beside the repository.
+- `apps/web/run.sh` refreshes generated values and starts Vite on the assigned
+  worktree port.
+- `worktree-scripts/remove.sh` removes a worktree and frees its slot.
 
-Each worktree gets a slot *S* (0–15) that determines its ports (API `8000 + S`, Web `5173 + S`, Web V2 `6173 + S`).
+The site uses `PUBLIC_APP_URL` for the login redirect. Set this to the app's
+deployed URL in the hosting environment.
 
-- **Setup** (`worktree-scripts/add.sh`):
-  1. Claims a slot in `worktree-slots.toml`
-  2. Generates all environment files via `worktree-scripts/gen-env.sh`: `.worktree.env`, `.env`, `apps/api/.env`, `apps/web/.env.local`, and `apps/web-v2/.env.local`
-  3. Generates run scripts for api, web, and web-v2: `apps/api/run.sh`, `apps/web/run.sh`, and `apps/web-v2/run.sh`
-- **Dev servers**: Run `apps/api/run.sh`, `apps/web/run.sh`, or `apps/web-v2/run.sh` to start on the assigned port (runs `gen-env.sh` to refresh env files and recreate any missing ones).
-- **Teardown**: `worktree-scripts/remove.sh` removes the worktree and frees its slot.
-
-## E2E Validation
-
-Please use the playwright-cli skill to perform E2E validations using your own dedicated session to prevent conflicts. 
-
-Please authenticate with the test user account using `TEST_ACCOUNT_EMAIL` and
-`TEST_ACCOUNT_PASSWORD` from the root `.env`.
-
-Please clean up your session when you are finished testing. 
-
-## Development Conventions
-
-### Web Component Size Rules
+## Web component size rules
 
 For `apps/web/`:
+
 - Keep component files under 500 lines.
 - Keep component files to one React component.
-- Treat pages and large feature components as orchestration shells: extract JSX sections into sibling files and move non-UI logic into hooks/utilities before the file grows past the limit.
+- Keep pages and large feature components as orchestration shells; extract JSX
+  sections into sibling files and move non-UI logic into hooks/utilities before
+  files grow past the limit.
 
-### TODO Annotations
+## TODO annotations
 
-We use a priority-based TODO annotation system throughout the codebase:
-
-- `TODO(0)`: Critical - never merge
-- `TODO(1)`: High - architectural flaws, major bugs
-- `TODO(2)`: Medium - minor bugs, missing features
-- `TODO(3)`: Low - polish, tests, documentation
-- `TODO(4)`: Questions/investigations needed
-- `PERF`: Performance optimization opportunities
-
-## Note:
-
-The API is authenticated using cookies and thus cannot be hit directly. You must proceed through the browser.
+- `TODO(0)`: Critical; never merge.
+- `TODO(1)`: High; architectural flaws or major bugs.
+- `TODO(2)`: Medium; minor bugs or missing features.
+- `TODO(3)`: Low; polish or tests/documentation.
+- `TODO(4)`: Questions or investigations needed.
+- `PERF`: Performance optimization opportunities.

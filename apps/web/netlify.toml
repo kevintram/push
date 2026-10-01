@@ -1,5 +1,5 @@
 [build]
-command = "pnpm run build"
+command = "pnpm exec convex deploy --cmd 'pnpm run build'"
 publish = "dist"
 
 [build.environment]
