@@ -271,7 +271,10 @@ export const treeColors = stylex.defineVars({
 })
 
 export const sidebarSectionHeaderColors = stylex.defineVars({
-	foreground: semanticColors.textTertiary,
+	foreground: semanticColors.textInteractive,
+	foregroundHover: semanticColors.textInteractiveHover,
+	foregroundPressed: semanticColors.textInteractiveActive,
+	foregroundDisabled: semanticColors.textInteractiveDisabled,
 })
 
 export const appShellColors = stylex.defineVars({
