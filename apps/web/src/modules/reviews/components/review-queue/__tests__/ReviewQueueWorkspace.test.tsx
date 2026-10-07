@@ -1,12 +1,22 @@
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { DateString } from '~/types/date'
 
 import { ReviewQueueWorkspace } from '../ReviewQueueWorkspace'
 
+const STORAGE_KEY = 'reviewQueueSidebarOpen'
+
 describe('ReviewQueueWorkspace', () => {
+	beforeEach(() => {
+		window.localStorage.clear()
+	})
+
+	afterEach(() => {
+		vi.restoreAllMocks()
+	})
+
 	it('starts with the queue open and toggles its visibility', async () => {
 		const user = userEvent.setup()
 		render(
@@ -30,6 +40,7 @@ describe('ReviewQueueWorkspace', () => {
 		)
 
 		await user.click(closeButton)
+		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('false')
 
 		const openButton = screen.getByRole('button', {
 			name: 'Open queue',
@@ -40,6 +51,7 @@ describe('ReviewQueueWorkspace', () => {
 		).not.toBeInTheDocument()
 
 		await user.click(openButton)
+		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('true')
 
 		expect(
 			screen.getByRole('complementary', { name: 'Due cards' }),
@@ -64,6 +76,7 @@ describe('ReviewQueueWorkspace', () => {
 		await user.click(
 			within(sidebar).getByRole('button', { name: 'Close queue' }),
 		)
+		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('false')
 
 		expect(
 			screen.queryByRole('complementary', { name: 'Due cards' }),
@@ -84,6 +97,7 @@ describe('ReviewQueueWorkspace', () => {
 	})
 
 	it('starts closed on small viewports', () => {
+		window.localStorage.setItem(STORAGE_KEY, 'true')
 		vi.spyOn(window, 'matchMedia').mockReturnValue({
 			matches: false,
 			media: '(min-width: 768px)',
@@ -109,9 +123,45 @@ describe('ReviewQueueWorkspace', () => {
 		expect(
 			screen.getByRole('button', { name: 'Open queue' }),
 		).toHaveAttribute('aria-expanded', 'false')
+		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('true')
+	})
+
+	it('does not overwrite the preference from small viewports', async () => {
+		window.localStorage.setItem(STORAGE_KEY, 'true')
+		vi.spyOn(window, 'matchMedia').mockReturnValue({
+			matches: false,
+			media: '(min-width: 768px)',
+			onchange: null,
+			addEventListener: vi.fn(),
+			removeEventListener: vi.fn(),
+			addListener: vi.fn(),
+			removeListener: vi.fn(),
+			dispatchEvent: vi.fn(),
+		})
+		const user = userEvent.setup()
+		render(
+			<ReviewQueueWorkspace
+				cards={[]}
+				title='Due'
+				today={'2026-09-13' as DateString}
+			/>,
+		)
+
+		await user.click(screen.getByRole('button', { name: 'Open queue' }))
+		await user.click(
+			within(
+				screen.getByRole('complementary', { name: 'Due cards' }),
+			).getByRole('button', { name: 'Close queue' }),
+		)
+
+		expect(
+			screen.queryByRole('complementary', { name: 'Due cards' }),
+		).not.toBeInTheDocument()
+		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('true')
 	})
 
 	it('closes when the viewport becomes small', () => {
+		window.localStorage.setItem(STORAGE_KEY, 'true')
 		let onViewportChange: ((event: MediaQueryListEvent) => void) | undefined
 		vi.spyOn(window, 'matchMedia').mockReturnValue({
 			matches: true,
@@ -147,5 +197,79 @@ describe('ReviewQueueWorkspace', () => {
 		expect(
 			screen.queryByRole('complementary', { name: 'Due cards' }),
 		).not.toBeInTheDocument()
+		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('true')
+	})
+
+	it.each(['New', 'Late', 'Flagged', 'Due'])(
+		'restores the shared preference when returning to %s',
+		async title => {
+			const user = userEvent.setup()
+			const props = { cards: [], today: '2026-09-13' as DateString }
+			const first = render(
+				<ReviewQueueWorkspace {...props} title='Due' />,
+			)
+			await user.click(
+				screen.getByRole('button', {
+					name: 'Close queue',
+					expanded: true,
+				}),
+			)
+			first.unmount()
+
+			const second = render(
+				<ReviewQueueWorkspace {...props} title={title} />,
+			)
+			expect(
+				screen.getByRole('button', { name: 'Open queue' }),
+			).toHaveAttribute('aria-expanded', 'false')
+			await user.click(screen.getByRole('button', { name: 'Open queue' }))
+			second.unmount()
+
+			render(<ReviewQueueWorkspace {...props} title={title} />)
+			expect(
+				screen.getByRole('complementary', { name: `${title} cards` }),
+			).toBeInTheDocument()
+		},
+	)
+
+	it('uses the viewport default for an invalid preference', () => {
+		window.localStorage.setItem(STORAGE_KEY, 'invalid')
+		render(
+			<ReviewQueueWorkspace
+				cards={[]}
+				title='Due'
+				today={'2026-09-13' as DateString}
+			/>,
+		)
+		expect(
+			screen.getByRole('complementary', { name: 'Due cards' }),
+		).toBeInTheDocument()
+	})
+
+	it('keeps manual controls usable when storage is unavailable', async () => {
+		vi.spyOn(window.localStorage, 'getItem').mockImplementation(() => {
+			throw new Error('Storage unavailable')
+		})
+		vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+			throw new Error('Storage unavailable')
+		})
+		const user = userEvent.setup()
+		render(
+			<ReviewQueueWorkspace
+				cards={[]}
+				title='Due'
+				today={'2026-09-13' as DateString}
+			/>,
+		)
+		await user.click(
+			screen.getByRole('button', { name: 'Close queue', expanded: true }),
+		)
+		expect(
+			screen.getByRole('button', { name: 'Open queue' }),
+		).toBeInTheDocument()
+		await user.click(screen.getByRole('button', { name: 'Open queue' }))
+		expect(
+			screen.getByRole('complementary', { name: 'Due cards' }),
+		).toBeInTheDocument()
 	})
 })
