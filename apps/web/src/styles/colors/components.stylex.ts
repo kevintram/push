@@ -342,11 +342,11 @@ export const cardDetailErrorColors = stylex.defineVars({
 
 export const hideModeButtonColors = stylex.defineVars({
 	backgroundActive: {
-		default: blue.s400,
+		default: blue.s600,
 		'@media (prefers-color-scheme: dark)': blue.s800,
 	},
 	backgroundActiveHover: {
-		default: blue.s500,
+		default: blue.s700,
 		'@media (prefers-color-scheme: dark)': blue.s700,
 	},
 	foregroundActive: {
