@@ -23,7 +23,7 @@ function readSidebarExpandedPreference() {
 
 const hideModeOnChromeTheme = stylex.createTheme(appShellColors, {
 	chromeBackground: {
-		default: 'oklch(49% 0.044 257.3)',
+		default: slate.s700,
 		'@media (prefers-color-scheme: dark)': slate.s900,
 	},
 })

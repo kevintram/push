@@ -21,7 +21,12 @@ const styles = stylex.create({
 		borderRadius: radii.lg,
 		alignItems: 'center',
 		backgroundColor: 'transparent',
-		color: sidebarSectionHeaderColors.foreground,
+		color: {
+			default: sidebarSectionHeaderColors.foreground,
+			':disabled': sidebarSectionHeaderColors.foregroundDisabled,
+			':hover': sidebarSectionHeaderColors.foregroundHover,
+			':active': sidebarSectionHeaderColors.foregroundPressed,
+		},
 		cursor: 'pointer',
 		display: 'flex',
 		flexBasis: 0,

@@ -9,21 +9,7 @@ import { LibraryNavigation } from '~/modules/library/components/library-navigati
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { ReviewNavigation } from '~/modules/reviews/components/review-navigation/ReviewNavigation'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
-import {
-	appShellColors,
-	buttonColors,
-	libraryCollectionItemColors,
-	librarySidebarColors,
-	sidebarItemColors,
-	sidebarSectionHeaderColors,
-	treeColors,
-} from '~/styles/colors/components.stylex'
-import {
-	baseColors,
-	blue,
-	slate,
-	whiteAlpha,
-} from '~/styles/colors/primitives.stylex'
+import { appShellColors } from '~/styles/colors/components.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	appSidebar,
@@ -34,97 +20,7 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-const hideModeOnSemanticTheme = stylex.createTheme(semanticColors, {
-	surfaceSecondary: whiteAlpha.s5,
-	surfaceRaised: whiteAlpha.s10,
-	surfaceSunken: whiteAlpha.s5,
-	surfaceTransparentHover: whiteAlpha.s10,
-	surfaceTransparentActive: whiteAlpha.s15,
-	surfaceInteractiveSecondary: whiteAlpha.s10,
-	surfaceInteractiveSecondaryHover: whiteAlpha.s15,
-	surfaceInteractiveSecondaryActive: whiteAlpha.s20,
-
-	textPrimary: whiteAlpha.s95,
-	textSecondary: slate.s300,
-	textTertiary: slate.s400,
-	textDisabled: slate.s400,
-	textOnInverse: slate.s900,
-	textOnInverseSecondary: slate.s400,
-	textInteractive: slate.s200,
-	textInteractiveHover: whiteAlpha.s95,
-	textInteractiveActive: whiteAlpha.s95,
-	textInteractiveDisabled: slate.s400,
-
-	borderPrimary: whiteAlpha.s20,
-	borderSubtle: whiteAlpha.s10,
-	borderStrong: whiteAlpha.s30,
-	borderFocus: blue.s300,
-})
-
-const hideModeOnItemTheme = stylex.createTheme(sidebarItemColors, {
-	background: baseColors.transparent,
-	backgroundHover: whiteAlpha.s10,
-	backgroundSelected: whiteAlpha.s15,
-	backgroundSelectedHover: whiteAlpha.s20,
-	foreground: slate.s200,
-	foregroundHover: whiteAlpha.s95,
-	foregroundSelected: whiteAlpha.s95,
-})
-
-const hideModeOnSectionHeaderTheme = stylex.createTheme(
-	sidebarSectionHeaderColors,
-	{
-		foreground: semanticColors.textTertiary,
-	},
-)
-
-const hideModeOnButtonTheme = stylex.createTheme(buttonColors, {
-	focusRingRest: baseColors.transparent,
-	focusRing: blue.s300,
-
-	secondaryBorder: baseColors.transparent,
-	secondaryBackground: whiteAlpha.s10,
-	secondaryBackgroundHover: whiteAlpha.s15,
-	secondaryBackgroundPressed: whiteAlpha.s20,
-	secondaryForeground: slate.s200,
-	secondaryForegroundHover: whiteAlpha.s95,
-	secondaryForegroundPressed: whiteAlpha.s95,
-
-	ghostBorder: baseColors.transparent,
-	ghostBackground: baseColors.transparent,
-	ghostBackgroundHover: whiteAlpha.s10,
-	ghostBackgroundPressed: whiteAlpha.s15,
-	ghostForeground: slate.s300,
-	ghostForegroundHover: whiteAlpha.s95,
-	ghostForegroundPressed: whiteAlpha.s95,
-	ghostDisabledBorder: baseColors.transparent,
-	ghostDisabledBackground: baseColors.transparent,
-	ghostDisabledForeground: slate.s500,
-})
-
-const hideModeOnTreeTheme = stylex.createTheme(treeColors, {
-	itemBackgroundHover: whiteAlpha.s10,
-	itemBackgroundSelected: whiteAlpha.s15,
-	itemBackgroundSelectedHover: whiteAlpha.s20,
-	labelBackground: baseColors.transparent,
-	labelForeground: slate.s300,
-	labelForegroundHover: whiteAlpha.s95,
-	labelForegroundSelected: whiteAlpha.s95,
-	labelFocusRingRest: baseColors.transparent,
-	labelFocusRing: blue.s300,
-})
-
-const hideModeOnLibraryTheme = stylex.createTheme(librarySidebarColors, {
-	containerBackgroundDropTarget: whiteAlpha.s10,
-})
-
-const hideModeOnCollectionItemTheme = stylex.createTheme(
-	libraryCollectionItemColors,
-	{
-		containerBackgroundDragging: whiteAlpha.s5,
-		containerBackgroundDropTarget: whiteAlpha.s10,
-	},
-)
+import { hideModeSidebarTheme } from './hideModeSidebarTheme'
 
 const styles = stylex.create({
 	container: {
@@ -172,7 +68,11 @@ const styles = stylex.create({
 		gap: spacing.xs,
 		textDecoration: 'none',
 		alignItems: 'center',
-		color: 'inherit',
+		color: {
+			default: semanticColors.textInteractive,
+			':hover': semanticColors.textInteractiveHover,
+			':active': semanticColors.textInteractiveActive,
+		},
 		display: 'flex',
 		fontSize: fontSizes.lg,
 		fontWeight: fontWeights.semibold,
@@ -225,13 +125,7 @@ export function ExpandedAppSidebar({
 			aria-label='primary'
 			{...stylex.props(
 				styles.container,
-				hideMode && hideModeOnSemanticTheme,
-				hideMode && hideModeOnItemTheme,
-				hideMode && hideModeOnSectionHeaderTheme,
-				hideMode && hideModeOnButtonTheme,
-				hideMode && hideModeOnTreeTheme,
-				hideMode && hideModeOnLibraryTheme,
-				hideMode && hideModeOnCollectionItemTheme,
+				hideMode && hideModeSidebarTheme,
 			)}
 		>
 			<div {...stylex.props(styles.brandRow)}>
