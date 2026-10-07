@@ -15,6 +15,7 @@ import type { Card } from '~/modules/reviews/types/review.types'
 import { reviewQueueColors } from '~/styles/colors/components.stylex'
 import { breakpoints, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
+import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import {
 	REVIEW_QUEUE_NEXT_HOTKEY,
@@ -31,6 +32,7 @@ type ReviewQueueWorkspaceProps = {
 }
 
 const TABLET_VIEWPORT_QUERY = '(min-width: 768px)'
+const QUEUE_SIDEBAR_STORAGE_KEY = 'reviewQueueSidebarOpen'
 
 function isTabletViewport() {
 	return (
@@ -114,7 +116,13 @@ export function ReviewQueueWorkspace({
 	today,
 }: ReviewQueueWorkspaceProps) {
 	const [filter, setFilter] = useState<CardTypeFilter>('all')
-	const [queueSidebarOpen, setQueueSidebarOpen] = useState(isTabletViewport)
+	// The preference describes the tablet-and-up layout. Small viewports always
+	// start closed and never overwrite it.
+	const [queueSidebarOpen, setQueueSidebarOpen] = useState(
+		() =>
+			isTabletViewport() &&
+			readStoredBoolean(QUEUE_SIDEBAR_STORAGE_KEY, true),
+	)
 	const queueSidebarToggleRef = useRef<HTMLButtonElement>(null)
 
 	useEffect(() => {
@@ -150,14 +158,21 @@ export function ReviewQueueWorkspace({
 		selectCard,
 	} = useReviewQueueSelection(visibleCards)
 
+	const setQueueSidebarPreference = (open: boolean) => {
+		setQueueSidebarOpen(open)
+		if (isTabletViewport()) {
+			writeStoredBoolean(QUEUE_SIDEBAR_STORAGE_KEY, open)
+		}
+	}
+
 	const onQueueSidebarToggle = () => {
-		setQueueSidebarOpen(currOpen => !currOpen)
+		setQueueSidebarPreference(!queueSidebarOpen)
 	}
 
 	// The close control lives inside the sidebar, so closing would drop focus
 	// to the document body. Hand it back to the toolbar toggle instead.
 	const onQueueSidebarClose = () => {
-		setQueueSidebarOpen(false)
+		setQueueSidebarPreference(false)
 		queueSidebarToggleRef.current?.focus()
 	}
 

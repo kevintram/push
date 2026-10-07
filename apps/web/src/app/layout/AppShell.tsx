@@ -6,20 +6,13 @@ import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { appShellColors } from '~/styles/colors/components.stylex'
 import { slate } from '~/styles/colors/primitives.stylex'
 import { breakpoints, layout, radii } from '~/styles/tokens.stylex'
+import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import { CollapsedAppSidebar } from './CollapsedAppSidebar'
 import { ExpandedAppSidebar } from './ExpandedAppSidebar'
 
 const SIDEBAR_STORAGE_KEY = 'appSidebarExpanded'
 const SIDEBAR_ID = 'app-sidebar'
-
-function readSidebarExpandedPreference() {
-	try {
-		return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true'
-	} catch {
-		return false
-	}
-}
 
 const hideModeOnChromeTheme = stylex.createTheme(appShellColors, {
 	chromeBackground: {
@@ -76,8 +69,8 @@ type AppShellProps = {
 export function AppShell({ children }: AppShellProps) {
 	const { hideMode } = useHideMode()
 	const isHideMode = hideMode === 'on'
-	const [isSidebarExpanded, setIsSidebarExpanded] = useState(
-		readSidebarExpandedPreference,
+	const [isSidebarExpanded, setIsSidebarExpanded] = useState(() =>
+		readStoredBoolean(SIDEBAR_STORAGE_KEY, false),
 	)
 	const collapsedToggleRef = useRef<HTMLButtonElement>(null)
 	const expandedToggleRef = useRef<HTMLButtonElement>(null)
@@ -87,14 +80,7 @@ export function AppShell({ children }: AppShellProps) {
 		const nextExpanded = !isSidebarExpanded
 		pendingFocusTarget.current = nextExpanded ? 'expanded' : 'collapsed'
 		setIsSidebarExpanded(nextExpanded)
-		try {
-			window.localStorage.setItem(
-				SIDEBAR_STORAGE_KEY,
-				String(nextExpanded),
-			)
-		} catch {
-			// The in-memory toggle remains usable when browser storage is unavailable.
-		}
+		writeStoredBoolean(SIDEBAR_STORAGE_KEY, nextExpanded)
 	}, [isSidebarExpanded])
 
 	useLayoutEffect(() => {

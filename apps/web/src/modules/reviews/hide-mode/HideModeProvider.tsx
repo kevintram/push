@@ -1,6 +1,8 @@
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 
+import { readStoredValue, writeStoredValue } from '~/utils/storage'
+
 import {
 	type HideMode,
 	HideModeContext,
@@ -9,6 +11,7 @@ import {
 import { HIDE_MODE_HOTKEY } from './hideModeHotkey'
 
 const STORAGE_KEY = 'hideMode'
+const HIDE_MODES = ['on', 'off'] as const satisfies ReadonlyArray<HideMode>
 
 type HideModeProviderProps = {
 	children: ReactNode
@@ -16,18 +19,18 @@ type HideModeProviderProps = {
 
 export function HideModeProvider({ children }: HideModeProviderProps) {
 	const [state, setState] = useState<HideMode>(() =>
-		sessionStorage.getItem(STORAGE_KEY) === 'on' ? 'on' : 'off',
+		readStoredValue(STORAGE_KEY, HIDE_MODES, 'off', 'session'),
 	)
 
 	const setHide = useCallback((newValue: HideMode) => {
 		setState(newValue)
-		sessionStorage.setItem(STORAGE_KEY, newValue)
+		writeStoredValue(STORAGE_KEY, newValue, 'session')
 	}, [])
 
 	const toggleHide = useCallback(() => {
 		setState(currValue => {
 			const newValue = currValue === 'on' ? 'off' : 'on'
-			sessionStorage.setItem(STORAGE_KEY, newValue)
+			writeStoredValue(STORAGE_KEY, newValue, 'session')
 			return newValue
 		})
 	}, [])
