@@ -1,6 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { TooltipProvider } from '~/components/ui'
 
@@ -61,6 +61,7 @@ vi.mock('../../ReviewDatePicker', () => ({
 
 const firstCard = 'card-1' as Id<'cards'>
 const secondCard = 'card-2' as Id<'cards'>
+const STORAGE_KEY = 'cardDetailSidebarOpen'
 
 function detail(tab: CardTab, cardId = firstCard, showGoToCard = false) {
 	return (
@@ -104,9 +105,14 @@ function expectFallbackClosed() {
 
 describe('CardDetail review composer', () => {
 	beforeEach(() => {
+		window.localStorage.clear()
 		mutation.mutate.mockReset()
 		mutation.isPending = false
 		cardActionsRender.mockReset()
+	})
+
+	afterEach(() => {
+		vi.restoreAllMocks()
 	})
 
 	it('forwards the go-to-card visibility to CardActions', () => {
@@ -128,6 +134,7 @@ describe('CardDetail review composer', () => {
 		expect(sidebarToggle).toHaveAttribute('aria-controls', sidebar.id)
 
 		fireEvent.click(sidebarToggle)
+		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('false')
 		expect(
 			screen.getByRole('button', { name: 'Show details' }),
 		).toHaveAttribute('aria-expanded', 'false')
@@ -135,6 +142,73 @@ describe('CardDetail review composer', () => {
 			screen.queryByRole('complementary', { name: 'Card details' }),
 		).not.toBeInTheDocument()
 
+		fireEvent.click(screen.getByRole('button', { name: 'Show details' }))
+		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('true')
+		expect(
+			screen.getByRole('complementary', { name: 'Card details' }),
+		).toBeInTheDocument()
+	})
+
+	it('remembers details visibility across cards, queue and standalone mounts', () => {
+		const queueCard = render(detail('overview', firstCard, true))
+		fireEvent.click(screen.getByRole('button', { name: 'Hide details' }))
+		queueCard.unmount()
+
+		const nextCard = render(detail('overview', secondCard, true))
+		expect(
+			screen.getByRole('button', { name: 'Show details' }),
+		).toHaveAttribute('aria-expanded', 'false')
+		expect(
+			screen.queryByRole('complementary', { name: 'Card details' }),
+		).not.toBeInTheDocument()
+		nextCard.unmount()
+
+		const standaloneCard = render(detail('reviews', firstCard))
+		expect(
+			screen.getByRole('button', { name: 'Show details' }),
+		).toBeInTheDocument()
+		fireEvent.click(screen.getByRole('button', { name: 'Show details' }))
+		standaloneCard.unmount()
+
+		render(detail('overview', secondCard, true))
+		expect(
+			screen.getByRole('complementary', { name: 'Card details' }),
+		).toBeInTheDocument()
+	})
+
+	it('keeps the details preference independent of the queue sidebar', () => {
+		window.localStorage.setItem('reviewQueueSidebarOpen', 'false')
+		render(detail('overview'))
+		expect(
+			screen.getByRole('complementary', { name: 'Card details' }),
+		).toBeInTheDocument()
+		fireEvent.click(screen.getByRole('button', { name: 'Hide details' }))
+		fireEvent.click(screen.getByRole('button', { name: 'Show details' }))
+		expect(window.localStorage.getItem('reviewQueueSidebarOpen')).toBe(
+			'false',
+		)
+	})
+
+	it('defaults to open for an invalid stored preference', () => {
+		window.localStorage.setItem(STORAGE_KEY, 'invalid')
+		render(detail('overview'))
+		expect(
+			screen.getByRole('complementary', { name: 'Card details' }),
+		).toBeInTheDocument()
+	})
+
+	it('keeps the toggle usable when storage is unavailable', () => {
+		vi.spyOn(window.localStorage, 'getItem').mockImplementation(() => {
+			throw new Error('Storage unavailable')
+		})
+		vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+			throw new Error('Storage unavailable')
+		})
+		render(detail('overview'))
+		fireEvent.click(screen.getByRole('button', { name: 'Hide details' }))
+		expect(
+			screen.queryByRole('complementary', { name: 'Card details' }),
+		).not.toBeInTheDocument()
 		fireEvent.click(screen.getByRole('button', { name: 'Show details' }))
 		expect(
 			screen.getByRole('complementary', { name: 'Card details' }),

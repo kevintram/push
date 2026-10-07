@@ -18,6 +18,7 @@ import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
+import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import { CardActions } from '../CardActions'
 import { ReviewComposerProvider } from '../ReviewComposerProvider'
@@ -28,6 +29,8 @@ import { CardReviews } from './CardReviews'
 import { CardSidebar } from './CardSidebar'
 
 export type CardTab = 'overview' | 'reviews'
+
+const DETAILS_SIDEBAR_STORAGE_KEY = 'cardDetailSidebarOpen'
 
 type CardDetailBaseProps = {
 	cardId: Id<'cards'>
@@ -144,8 +147,16 @@ export function CardDetail({
 	const { data: card } = useSuspenseQuery(cardQueries.detail(cardId))
 	const today = useToday()
 	const srsState = deriveCardSrsState(card, today)
-	const [sidebarOpen, setSidebarOpen] = useState(true)
+	const [sidebarOpen, setSidebarOpen] = useState(() =>
+		readStoredBoolean(DETAILS_SIDEBAR_STORAGE_KEY, true),
+	)
 	const sidebarId = useId()
+
+	const toggleSidebar = () => {
+		const nextOpen = !sidebarOpen
+		setSidebarOpen(nextOpen)
+		writeStoredBoolean(DETAILS_SIDEBAR_STORAGE_KEY, nextOpen)
+	}
 
 	return (
 		<ReviewComposerProvider cardId={cardId} key={cardId}>
@@ -218,9 +229,7 @@ export function CardDetail({
 										variant='secondary'
 										size='small'
 										xstyle={styles.sidebarToggle}
-										onClick={() =>
-											setSidebarOpen(open => !open)
-										}
+										onClick={toggleSidebar}
 									>
 										<PanelRight
 											aria-hidden='true'
