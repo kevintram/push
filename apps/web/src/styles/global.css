@@ -28,6 +28,22 @@
 		}
 	}
 
+	/*
+	 * The desktop app scrolls inside its panels. Clip the viewport so it can't
+	 * rubber-band, and stop panels from chaining scroll into their ancestors.
+	 * Unlike root overscroll-behavior: none, this keeps each panel's own bounce
+	 * in Chrome. Touch devices keep pull-to-refresh.
+	 */
+	@media (pointer: fine) {
+		html {
+			overflow-y: clip;
+		}
+
+		* {
+			overscroll-behavior-y: contain;
+		}
+	}
+
 	html,
 	body {
 		min-height: 100%;

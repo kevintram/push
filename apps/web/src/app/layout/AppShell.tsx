@@ -31,7 +31,6 @@ const hideModeOnChromeTheme = stylex.createTheme(appShellColors, {
 const styles = stylex.create({
 	shell: {
 		overflow: 'hidden',
-		overscrollBehaviorY: 'none',
 
 		display: 'flex',
 

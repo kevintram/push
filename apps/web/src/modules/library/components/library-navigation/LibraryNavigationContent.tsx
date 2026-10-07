@@ -30,7 +30,6 @@ const styles = stylex.create({
 		inlineSize: '100%',
 		height: '100%',
 		minHeight: 0,
-		overscrollBehaviorY: 'none',
 	},
 	containerIsDropTarget: {
 		backgroundColor: librarySidebarColors.containerBackgroundDropTarget,
