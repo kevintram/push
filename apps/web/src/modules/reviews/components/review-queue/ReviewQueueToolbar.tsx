@@ -112,6 +112,7 @@ export function ReviewQueueToolbar({
 								shape='round'
 								variant='secondary'
 								size='medium'
+								active={queueSidebarOpen}
 								onClick={onQueueSidebarToggle}
 							>
 								<Menu size={iconSizes.md} />

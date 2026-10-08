@@ -147,6 +147,30 @@ const variants = stylex.create({
 	},
 })
 
+// Holds each variant's pressed colors while the button is active.
+const activeVariants = stylex.create({
+	primary: {
+		backgroundColor: buttonColors.primaryBackgroundPressed,
+		color: buttonColors.primaryForegroundPressed,
+	},
+	secondary: {
+		backgroundColor: buttonColors.secondaryBackgroundPressed,
+		color: buttonColors.secondaryForegroundPressed,
+	},
+	outline: {
+		backgroundColor: buttonColors.outlineBackgroundPressed,
+		color: buttonColors.outlineForegroundPressed,
+	},
+	ghost: {
+		backgroundColor: buttonColors.ghostBackgroundPressed,
+		color: buttonColors.ghostForegroundPressed,
+	},
+	danger: {
+		backgroundColor: buttonColors.dangerBackgroundPressed,
+		color: buttonColors.dangerForegroundPressed,
+	},
+})
+
 const disabledVariants = stylex.create({
 	brand: {
 		borderColor: {
@@ -235,6 +259,11 @@ export interface ButtonProps extends Omit<
 	size?: ButtonSize
 	shape?: ButtonShape
 	iconOnly?: boolean
+	/**
+	 * Keeps the pressed look, e.g. for a toggle whose panel is open. Visual
+	 * only: pair it with `aria-pressed` or `aria-expanded` as appropriate.
+	 */
+	active?: boolean
 	xstyle?: stylex.StyleXStyles
 }
 
@@ -250,12 +279,14 @@ function renderButton({
 	children,
 	ref,
 	iconOnly = false,
+	active = false,
 	xstyle,
 	...props
 }: ButtonRenderProps) {
 	const styleProps = stylex.props(
 		styles.base,
 		variants[variant],
+		active && activeVariants[variant],
 		sizeVariants[size],
 		iconOnly && styles.iconButton,
 		shapeVariants[shape],
