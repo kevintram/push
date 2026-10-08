@@ -228,6 +228,7 @@ export function CardDetail({
 										shape='round'
 										variant='secondary'
 										size='small'
+										active={sidebarOpen}
 										xstyle={styles.sidebarToggle}
 										onClick={toggleSidebar}
 									>
