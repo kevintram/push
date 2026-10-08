@@ -3,7 +3,7 @@ import { PointerActivationConstraints, PointerSensor } from '@dnd-kit/dom'
 import { useDraggable, useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router'
-import { useCallback, useState } from 'react'
+import { type MouseEvent, useCallback, useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
@@ -137,6 +137,27 @@ export function LibraryCollectionItem({
 		)
 	}, [navigate, createCollection, _id])
 
+	// Clicking the selected collection's label toggles it like the chevron.
+	// Modified and non-primary clicks keep the link's default behavior.
+	const handleLabelClick = useCallback(
+		(event: MouseEvent<HTMLElement>) => {
+			if (!isActive || !hasChildren) return
+			if (
+				event.button !== 0 ||
+				event.metaKey ||
+				event.ctrlKey ||
+				event.shiftKey ||
+				event.altKey
+			) {
+				return
+			}
+
+			event.preventDefault()
+			onCollectionOpenChange(_id, !openCollectionIds.has(_id))
+		},
+		[isActive, hasChildren, onCollectionOpenChange, openCollectionIds, _id],
+	)
+
 	const handleDeleteCollection = useCallback(() => {
 		deleteCollection.mutate(
 			{ collectionId: _id },
@@ -171,6 +192,7 @@ export function LibraryCollectionItem({
 									aria-label={collectionTitle}
 								/>
 							}
+							onClick={handleLabelClick}
 						>
 							{collectionTitle}
 						</TreeItemLabel>
