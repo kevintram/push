@@ -49,7 +49,7 @@ const styles = stylex.create({
 	},
 	toolbar: {
 		gap: spacing.md,
-		paddingBlock: spacing.sm,
+		paddingBlock: layout.topBarInset,
 		paddingInline: spacing.lg,
 		alignItems: 'center',
 		display: 'flex',

@@ -30,12 +30,10 @@ const styles = stylex.create({
 		flexDirection: 'column',
 		inlineSize: '240px',
 	},
-	// Same top padding as the page toolbars so the header centers with
-	// breadcrumbs.
 	brandRow: {
 		alignItems: 'center',
 		display: 'flex',
-		paddingBlockStart: spacing.sm,
+		paddingBlockStart: layout.topBarInset,
 	},
 	brand: {
 		textDecoration: 'none',

@@ -17,7 +17,7 @@ import { useToday } from '~/hooks/useToday'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
-import { iconSizes, spacing } from '~/styles/tokens.stylex'
+import { iconSizes, layout, spacing } from '~/styles/tokens.stylex'
 import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import { CardActions } from '../CardActions'
@@ -65,7 +65,7 @@ const styles = stylex.create({
 	},
 	toolbar: {
 		gap: spacing.md,
-		paddingBlock: spacing.sm,
+		paddingBlock: layout.topBarInset,
 		paddingInline: spacing.lg,
 		alignItems: 'center',
 		display: 'flex',

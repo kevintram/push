@@ -83,6 +83,9 @@ export const breakpoints = stylex.defineConsts({
 export const layout = stylex.defineConsts({
 	// Shared by the shell, sidebars, and page toolbars to keep top controls aligned.
 	appShellInset: '6px',
+	// Space above the top bar controls inside the page card and the sidebars,
+	// so the sidebar header centers on the same line as page breadcrumbs.
+	topBarInset: spacing.sm,
 	contentColumnMaxWidth: '768px',
 	rowBleed: '8px',
 })

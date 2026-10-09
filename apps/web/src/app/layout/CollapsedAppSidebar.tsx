@@ -42,8 +42,8 @@ const styles = stylex.create({
 	},
 	controlWrapper: {
 		display: 'flex',
-		// Keeps the toggle in place when the expanded sidebar's header takes over.
-		marginBlockStart: spacing.sm,
+		// Matches the expanded sidebar's header so the toggle stays put.
+		marginBlockStart: layout.topBarInset,
 	},
 	group: {
 		display: 'flex',
