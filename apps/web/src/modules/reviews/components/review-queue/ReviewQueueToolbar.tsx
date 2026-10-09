@@ -61,7 +61,7 @@ export function ReviewQueueToolbar({
 							<Button.Icon
 								aria-label='Next card'
 								shape='round'
-								variant='secondary'
+								variant='ghost'
 								size='medium'
 								disabled={index >= cardCount - 1}
 								onClick={onNext}
@@ -81,7 +81,7 @@ export function ReviewQueueToolbar({
 							<Button.Icon
 								aria-label='Previous card'
 								shape='round'
-								variant='secondary'
+								variant='ghost'
 								size='medium'
 								disabled={index <= 0}
 								onClick={onPrevious}
@@ -110,7 +110,7 @@ export function ReviewQueueToolbar({
 								aria-expanded={queueSidebarOpen}
 								aria-controls={REVIEW_QUEUE_SIDEBAR_ID}
 								shape='round'
-								variant='secondary'
+								variant='ghost'
 								size='medium'
 								active={queueSidebarOpen}
 								onClick={onQueueSidebarToggle}

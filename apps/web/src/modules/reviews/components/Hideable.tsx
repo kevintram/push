@@ -24,7 +24,7 @@ const styles = stylex.create({
 		visibility: 'hidden',
 	},
 	overlay: {
-		borderRadius: radii.lg,
+		borderRadius: radii['3xl'],
 		gridColumn: '1',
 		gridRow: '1',
 		blockSize: 'auto',

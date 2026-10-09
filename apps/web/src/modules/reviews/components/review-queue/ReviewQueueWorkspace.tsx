@@ -51,6 +51,13 @@ const styles = stylex.create({
 		minInlineSize: 0,
 		overflowY: 'hidden',
 
+		borderColor: reviewQueueColors.containerBorder,
+		borderRadius: {
+			default: 0,
+			[breakpoints.tablet]: radii.xl,
+		},
+		borderStyle: 'solid',
+		borderWidth: 1,
 		backgroundColor: reviewQueueColors.containerBackground,
 	},
 	panels: {
@@ -64,14 +71,15 @@ const styles = stylex.create({
 		minBlockSize: 0,
 		minInlineSize: 0,
 		paddingBlockEnd: spacing.sm,
-		// Combined with the shell inset, align review controls to the app toggle.
-		paddingBlockStart: {
-			default: spacing.sm,
-			[breakpoints.tablet]: spacing.xs,
-		},
+		paddingBlockStart: spacing.sm,
+	},
+	panelsCollapsed: {
+		paddingInline: spacing.xs,
+		paddingBlockEnd: spacing.xs,
+		paddingBlockStart: spacing.xs,
 	},
 	cardColumn: {
-		gap: spacing.xs,
+		gap: spacing.sm,
 		display: 'flex',
 		flexBasis: 0,
 		flexDirection: 'column',
@@ -81,7 +89,10 @@ const styles = stylex.create({
 		minInlineSize: 0,
 	},
 	cardPanel: {
-		borderRadius: radii.lg,
+		borderColor: reviewQueueColors.panelBorder,
+		borderRadius: radii['2xl'],
+		borderStyle: 'solid',
+		borderWidth: 1,
 		overflow: 'hidden',
 		backgroundColor: reviewQueueColors.contentBackground,
 		boxShadow: {
@@ -103,10 +114,6 @@ const styles = stylex.create({
 		flexGrow: 1,
 		fontSize: fontSizes.sm,
 		justifyContent: 'center',
-	},
-	toolbarWrapper: {
-		paddingBlock: spacing.none,
-		paddingInline: spacing.xs,
 	},
 })
 
@@ -189,19 +196,22 @@ export function ReviewQueueWorkspace({
 				onPrevious={goPrevious}
 				onNext={goNext}
 			/>
-			<div {...stylex.props(styles.panels)}>
+			<div
+				{...stylex.props(
+					styles.panels,
+					!queueSidebarOpen && styles.panelsCollapsed,
+				)}
+			>
 				<div {...stylex.props(styles.cardColumn)}>
-					<div {...stylex.props(styles.toolbarWrapper)}>
-						<ReviewQueueToolbar
-							index={index}
-							cardCount={visibleCards.length}
-							queueSidebarOpen={queueSidebarOpen}
-							queueSidebarToggleRef={queueSidebarToggleRef}
-							onPrevious={goPrevious}
-							onNext={goNext}
-							onQueueSidebarToggle={onQueueSidebarToggle}
-						/>
-					</div>
+					<ReviewQueueToolbar
+						index={index}
+						cardCount={visibleCards.length}
+						queueSidebarOpen={queueSidebarOpen}
+						queueSidebarToggleRef={queueSidebarToggleRef}
+						onPrevious={goPrevious}
+						onNext={goNext}
+						onQueueSidebarToggle={onQueueSidebarToggle}
+					/>
 					<section
 						aria-label='Current card'
 						{...stylex.props(styles.cardPanel)}

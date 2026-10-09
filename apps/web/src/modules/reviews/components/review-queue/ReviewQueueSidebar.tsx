@@ -38,7 +38,10 @@ type ReviewQueueSidebarProps = {
 
 const styles = stylex.create({
 	panel: {
-		borderRadius: radii.lg,
+		borderColor: reviewQueueColors.panelBorder,
+		borderRadius: radii['2xl'],
+		borderStyle: 'solid',
+		borderWidth: 1,
 		overflow: 'hidden',
 		backgroundColor: reviewQueueColors.sidebarBackground,
 		blockSize: '100%',
@@ -55,13 +58,12 @@ const styles = stylex.create({
 	},
 	header: {
 		gap: spacing.xs,
+		paddingBlock: spacing.sm,
 		paddingInline: spacing.md,
 		alignItems: 'stretch',
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 0,
-		paddingBlockEnd: spacing.sm,
-		paddingBlockStart: spacing.xs,
 	},
 	titleRow: {
 		gap: spacing.sm,
@@ -79,7 +81,7 @@ const styles = stylex.create({
 	},
 	closeButton: {
 		flexShrink: 0,
-		marginInlineEnd: `calc(${spacing.sm} * -1)`,
+		marginInlineEnd: `calc(${spacing.xs} * -1)`,
 	},
 	titleLabel: {
 		overflow: 'hidden',
