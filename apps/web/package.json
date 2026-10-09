@@ -4,7 +4,7 @@
 	"private": true,
 	"version": "0.0.0",
 	"scripts": {
-		"dev": "vite --open",
+		"dev": "vite",
 		"test": "vitest",
 		"test:ci": "rm -rf coverage && pnpm exec vitest run",
 		"lint:tsc": "tsc -b && tsc -p convex/tsconfig.json",
