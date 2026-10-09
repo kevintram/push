@@ -1,4 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import type { ReactNode } from 'react'
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 
@@ -12,6 +13,7 @@ import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 import { CollapsedAppSidebar } from './CollapsedAppSidebar'
 import { ExpandedAppSidebar } from './ExpandedAppSidebar'
 import { hideModeSidebarTheme } from './hideModeSidebarTheme'
+import { SIDEBAR_HOTKEY } from './sidebarHotkey'
 
 const SIDEBAR_STORAGE_KEY = 'appSidebarExpanded'
 const SIDEBAR_ID = 'app-sidebar'
@@ -73,12 +75,35 @@ export function AppShell({ children }: AppShellProps) {
 	const expandedToggleRef = useRef<HTMLButtonElement>(null)
 	const pendingFocusTarget = useRef<'expanded' | 'collapsed' | null>(null)
 
+	const setSidebarExpanded = useCallback((nextExpanded: boolean) => {
+		setIsSidebarExpanded(nextExpanded)
+		writeStoredBoolean(SIDEBAR_STORAGE_KEY, nextExpanded)
+	}, [])
+
 	const toggleSidebar = useCallback(() => {
 		const nextExpanded = !isSidebarExpanded
 		pendingFocusTarget.current = nextExpanded ? 'expanded' : 'collapsed'
-		setIsSidebarExpanded(nextExpanded)
-		writeStoredBoolean(SIDEBAR_STORAGE_KEY, nextExpanded)
-	}, [isSidebarExpanded])
+		setSidebarExpanded(nextExpanded)
+	}, [isSidebarExpanded, setSidebarExpanded])
+
+	// The hotkey leaves focus where it is, unless focus is on the toggle that
+	// is about to unmount.
+	useHotkey(
+		SIDEBAR_HOTKEY,
+		() => {
+			const { activeElement } = document
+			const isToggleFocused =
+				activeElement !== null &&
+				(activeElement === collapsedToggleRef.current ||
+					activeElement === expandedToggleRef.current)
+			if (isToggleFocused) {
+				toggleSidebar()
+			} else {
+				setSidebarExpanded(!isSidebarExpanded)
+			}
+		},
+		{ ignoreInputs: false, preventDefault: true, requireReset: true },
+	)
 
 	useLayoutEffect(() => {
 		if (pendingFocusTarget.current === 'expanded') {

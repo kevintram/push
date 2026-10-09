@@ -135,4 +135,31 @@ describe('AppShell', () => {
 		expect(screen.getByTestId('expanded-sidebar')).toBeInTheDocument()
 		expect(screen.queryByTestId('icon-only-rail')).not.toBeInTheDocument()
 	})
+
+	it('toggles with Mod+B without moving focus', () => {
+		renderShell()
+		const outside = screen.getByRole('button', { name: 'Toggle hide mode' })
+		outside.focus()
+
+		fireEvent.keyDown(document, { key: 'b', code: 'KeyB', ctrlKey: true })
+		expect(screen.getByTestId('expanded-sidebar')).toBeInTheDocument()
+		expect(window.localStorage.getItem(SIDEBAR_STORAGE_KEY)).toBe('true')
+		expect(outside).toHaveFocus()
+
+		fireEvent.keyUp(document, { key: 'b', code: 'KeyB', ctrlKey: true })
+		fireEvent.keyDown(document, { key: 'b', code: 'KeyB', ctrlKey: true })
+		expect(screen.getByTestId('icon-only-rail')).toBeInTheDocument()
+		expect(window.localStorage.getItem(SIDEBAR_STORAGE_KEY)).toBe('false')
+		expect(outside).toHaveFocus()
+	})
+
+	it('moves focus to the new toggle when Mod+B fires from the toggle', () => {
+		renderShell()
+		screen.getByRole('button', { name: 'Expand sidebar' }).focus()
+
+		fireEvent.keyDown(document, { key: 'b', code: 'KeyB', ctrlKey: true })
+		expect(
+			screen.getByRole('button', { name: 'Collapse sidebar' }),
+		).toHaveFocus()
+	})
 })
