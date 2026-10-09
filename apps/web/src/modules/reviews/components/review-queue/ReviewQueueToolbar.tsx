@@ -36,7 +36,7 @@ const styles = stylex.create({
 		justifyContent: 'flex-end',
 	},
 	headerButtonCluster: {
-		gap: spacing.xs,
+		gap: spacing['2xs'],
 		alignItems: 'center',
 		display: 'flex',
 	},

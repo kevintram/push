@@ -37,6 +37,7 @@ export const radii = stylex.defineVars({
 
 export const spacing = stylex.defineVars({
 	none: '0',
+	'2xs': '2px',
 	xs: '4px',
 	sm: '8px',
 	md: '12px',
