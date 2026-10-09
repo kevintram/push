@@ -37,7 +37,6 @@ const styles = stylex.create({
 		alignItems: 'center',
 		display: 'flex',
 		minBlockSize: '36px',
-		paddingBlockEnd: spacing.xs,
 	},
 	headerButton: {
 		paddingBlock: 0,
