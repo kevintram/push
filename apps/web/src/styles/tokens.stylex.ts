@@ -62,9 +62,13 @@ export const appSidebar = stylex.defineConsts({
 	iconSize: '1rem',
 })
 
-export const controlSizes = stylex.defineConsts({
+export const buttonSizes = stylex.defineConsts({
 	// Hitbox around the 16px md glyph: 5px inset per side, not alignment spacing.
 	micro: '26px',
+	tiny: '28px',
+	small: '32px',
+	medium: '36px',
+	large: '40px',
 })
 
 export const breakpoints = stylex.defineConsts({

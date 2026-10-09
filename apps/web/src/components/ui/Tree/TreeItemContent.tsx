@@ -1,12 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 
 import { treeColors } from '~/styles/colors/components.stylex'
-import {
-	appSidebar,
-	controlSizes,
-	radii,
-	spacing,
-} from '~/styles/tokens.stylex'
+import { appSidebar, buttonSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { useTreeItemContext } from './TreeItemContext'
 
@@ -28,7 +23,7 @@ const styles = stylex.create({
 		},
 		display: 'grid',
 		gridTemplateColumns: `${appSidebar.iconSize} minmax(0, 1fr)`,
-		minBlockSize: controlSizes.micro,
+		minBlockSize: buttonSizes.micro,
 		paddingInlineStart: spacing.sm,
 	},
 	selected: {
