@@ -223,7 +223,7 @@ boundaries used by `ReviewNavigation`, following its current tests.
 2. Run `pnpm lint`.
 3. Run `pnpm test:ci`.
 4. Run `pnpm build`.
-5. Start Web V2 with `./run.sh` and validate through an authenticated browser
+5. Start the web app with `pnpm dev` and validate through an authenticated browser
    session using the repository test account.
 6. At normal and short desktop viewport heights, verify:
    - the rail remains full-height;

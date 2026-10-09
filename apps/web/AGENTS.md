@@ -24,7 +24,6 @@ This is the primary React web app for 3gulp. Grow it conservatively around the e
 Please check `package.json` for the latest scripts. Current commands:
 
 - `pnpm dev` - Start development server with hot reload
-- `./run.sh` - Worktree dev server on the assigned web app port
 - `pnpm build` - Build for production into `dist/`
 - `pnpm preview` - Preview the production build locally
 - `pnpm test` - Run unit/integration tests in watch mode
@@ -34,8 +33,6 @@ Please check `package.json` for the latest scripts. Current commands:
 - `pnpm lint` - Run TypeScript, Oxlint, and formatting checks
 - `pnpm format` - Format code with Oxfmt
 - `pnpm validate` - Run the full local validation pipeline
-
-Worktrees: use `apps/web/run.sh` from the worktree. It runs `worktree-scripts/gen-env.sh` to refresh env files, then starts Vite on `WEB_PORT` (`6173 + slot`).
 
 ## Component Size Limits
 
@@ -147,8 +144,10 @@ The app uses Convex for its backend and Clerk for authentication. Validate
 authenticated user flows through the browser.
 
 Local web app configuration uses `VITE_CLERK_PUBLISHABLE_KEY` and
-`VITE_CONVEX_URL` in `apps/web/.env.local`. Worktree setup refreshes these from
-the shared `web.env.local` template beside the repository.
+`VITE_CONVEX_URL` in `apps/web/.env.local`; see `apps/web/.env.example`.
+
+All checkouts share one Convex dev deployment, so `npx convex dev` pushes from
+parallel worktrees overwrite each other. Run it from one worktree at a time.
 
 ## Date Conventions
 
