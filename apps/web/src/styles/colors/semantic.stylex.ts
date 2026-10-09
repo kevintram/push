@@ -24,10 +24,12 @@ export const semanticColors = stylex.defineVars({
 	surfacePrimary: { default: neutral.s50, [DARK]: neutral.s950 },
 	// A quiet background that separates secondary regions from the primary surface.
 	surfaceSecondary: { default: neutral.s100, [DARK]: neutral.s900 },
+	// A third background level that separates nested regions from secondary surfaces.
+	surfaceTertiary: { default: neutral.s200, [DARK]: neutral.s850 },
 	// An elevated surface that should appear above its surrounding surface.
 	surfaceRaised: { default: neutral.s100, [DARK]: neutral.s900 },
 	// A recessed surface that should appear inset beneath its surrounding surface.
-	surfaceSunken: { default: neutral.s150, [DARK]: neutral.s850 },
+	surfaceSunken: { default: neutral.s150, [DARK]: neutral.s900 },
 	// A contrast-reversed surface intended to host inverse foreground colors.
 	surfaceInverse: { default: neutral.s900, [DARK]: neutral.s50 },
 	// A surface that communicates the product's primary brand identity.
@@ -183,10 +185,14 @@ export const semanticColors = stylex.defineVars({
 	borderDanger: { default: red.s300, [DARK]: red.s700 },
 	// A subdued boundary for an element that is unavailable.
 	borderDisabled: { default: neutral.s200, [DARK]: neutral.s800 },
+	// A boundary that outlines a surface against the background around it.
+	borderSurface: { default: neutral.s250, [DARK]: whiteAlpha.s5 },
 
 	// Shadow
-	// A low-emphasis shadow for gentle depth and surface separation.
-	shadowSubtle: { default: blackAlpha.s10, [DARK]: blackAlpha.s30 },
+	// The default shadow for depth and surface separation.
+	shadowPrimary: { default: blackAlpha.s10, [DARK]: blackAlpha.s30 },
+	// A low-emphasis shadow for surfaces that sit flush within a container.
+	shadowSubtle: { default: blackAlpha.s5, [DARK]: blackAlpha.s20 },
 	// A high-emphasis shadow for pronounced elevation and separation.
 	shadowStrong: { default: blackAlpha.s15, [DARK]: blackAlpha.s50 },
 })

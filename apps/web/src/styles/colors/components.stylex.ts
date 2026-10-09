@@ -1,6 +1,13 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { amber, blue, orange, violet, whiteAlpha } from './primitives.stylex'
+import {
+	amber,
+	baseColors,
+	blue,
+	orange,
+	violet,
+	whiteAlpha,
+} from './primitives.stylex'
 import { semanticColors } from './semantic.stylex'
 
 export const breadcrumbColors = stylex.defineVars({
@@ -170,7 +177,7 @@ export const dropdownMenuColors = stylex.defineVars({
 	popupBorder: semanticColors.borderPrimary,
 	popupBackground: semanticColors.surfaceRaised,
 	popupForeground: semanticColors.textPrimary,
-	popupShadow: semanticColors.shadowSubtle,
+	popupShadow: semanticColors.shadowPrimary,
 
 	itemBackground: semanticColors.surfaceTransparent,
 	itemBackgroundHighlighted: semanticColors.surfaceTransparentHover,
@@ -192,7 +199,7 @@ export const popoverColors = stylex.defineVars({
 	popupBorder: semanticColors.borderPrimary,
 	popupBackground: semanticColors.surfaceRaised,
 	popupForeground: semanticColors.textPrimary,
-	popupShadow: semanticColors.shadowSubtle,
+	popupShadow: semanticColors.shadowPrimary,
 })
 
 export const separatorColors = stylex.defineVars({
@@ -227,7 +234,7 @@ export const tabsColors = stylex.defineVars({
 
 	defaultTriggerBackground: semanticColors.surfaceTransparent,
 	defaultTriggerBackgroundSelected: semanticColors.surfaceTransparentHover,
-	defaultTriggerShadowSelected: semanticColors.shadowSubtle,
+	defaultTriggerShadowSelected: semanticColors.shadowPrimary,
 
 	lineTriggerBorderRest: semanticColors.surfaceTransparent,
 	lineTriggerBorderSelected: semanticColors.borderBrand,
@@ -254,7 +261,7 @@ export const tooltipColors = stylex.defineVars({
 	popupBorder: semanticColors.borderSubtle,
 	popupBackground: semanticColors.surfaceRaised,
 	popupForeground: semanticColors.textPrimary,
-	popupShadow: semanticColors.shadowSubtle,
+	popupShadow: semanticColors.shadowPrimary,
 })
 
 export const treeColors = stylex.defineVars({
@@ -280,7 +287,7 @@ export const sidebarSectionHeaderColors = stylex.defineVars({
 export const appShellColors = stylex.defineVars({
 	chromeBackground: semanticColors.surfaceSunken,
 	surfaceBackground: semanticColors.surfacePrimary,
-	surfaceShadow: semanticColors.shadowSubtle,
+	surfaceShadow: semanticColors.shadowPrimary,
 })
 
 export const loadingIndicatorColors = stylex.defineVars({
@@ -327,9 +334,15 @@ export const moveCollectionDialogColors = stylex.defineVars({
 })
 
 export const reviewQueueColors = stylex.defineVars({
-	containerBackground: semanticColors.surfaceRaised,
+	containerBackground: semanticColors.surfaceTertiary,
+	containerBorder: semanticColors.borderSurface,
 	contentBackground: semanticColors.surfacePrimary,
 	sidebarBackground: semanticColors.surfacePrimary,
+	// Dark mode separates panels by surface contrast alone.
+	panelBorder: {
+		default: semanticColors.borderSurface,
+		'@media (prefers-color-scheme: dark)': baseColors.transparent,
+	},
 	panelShadow: semanticColors.shadowSubtle,
 
 	positionForeground: semanticColors.textSecondary,
