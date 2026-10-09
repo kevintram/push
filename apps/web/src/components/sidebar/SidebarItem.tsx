@@ -146,6 +146,15 @@ export function SidebarItem({
 	xstyle,
 	...props
 }: SidebarItemProps) {
+	const icon = Icon && (
+		<Icon
+			aria-hidden='true'
+			size={appSidebar.iconSize}
+			strokeWidth={iconWeights.medium}
+			{...stylex.props(styles.sidebarIcon)}
+		/>
+	)
+
 	return useRender({
 		defaultTagName: 'button',
 		props: mergeProps<'button'>(
@@ -166,16 +175,13 @@ export function SidebarItem({
 			props,
 			{
 				children: iconOnly ? (
-					<span {...stylex.props(styles.slot)}>{children}</span>
+					<span {...stylex.props(styles.slot)}>
+						{icon}
+						{children}
+					</span>
 				) : (
 					<>
-						{Icon && (
-							<Icon
-								size={appSidebar.iconSize}
-								strokeWidth={iconWeights.medium}
-								{...stylex.props(styles.sidebarIcon)}
-							/>
-						)}
+						{icon}
 						{children}
 					</>
 				),

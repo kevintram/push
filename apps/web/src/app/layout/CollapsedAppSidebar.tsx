@@ -20,13 +20,7 @@ import {
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
-import {
-	appSidebar,
-	iconWeights,
-	layout,
-	radii,
-	spacing,
-} from '~/styles/tokens.stylex'
+import { layout, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	// Matches the gap AppShell leaves around the page surface.
@@ -115,7 +109,7 @@ export function CollapsedAppSidebar({
 			</div>
 
 			<div {...stylex.props(styles.group)}>
-				{reviewLinks.map(({ icon: Icon, label, queueKey, to }) => {
+				{reviewLinks.map(({ icon, label, queueKey, to }) => {
 					const queue = queues[queueKey]
 					const name = queue.countLabel ?? label
 					return (
@@ -124,14 +118,10 @@ export function CollapsedAppSidebar({
 								render={
 									<SidebarItem.Icon
 										ariaLabel={name}
+										icon={icon}
 										render={<Link to={to} />}
 										xstyle={styles.railLink}
 									>
-										<Icon
-											aria-hidden='true'
-											size={appSidebar.iconSize}
-											strokeWidth={iconWeights.medium}
-										/>
 										{queue.count > 0 && (
 											<StatusDot
 												xstyle={styles.statusDot}
@@ -152,6 +142,7 @@ export function CollapsedAppSidebar({
 					render={
 						<SidebarItem.Icon
 							ariaLabel='Settings'
+							icon={Settings}
 							render={
 								<Link
 									activeOptions={{ exact: true }}
@@ -159,13 +150,7 @@ export function CollapsedAppSidebar({
 								/>
 							}
 							xstyle={styles.railLink}
-						>
-							<Settings
-								aria-hidden='true'
-								size={appSidebar.iconSize}
-								strokeWidth={iconWeights.medium}
-							/>
-						</SidebarItem.Icon>
+						/>
 					}
 				/>
 				<TooltipContent side='right'>Settings</TooltipContent>

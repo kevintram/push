@@ -2,7 +2,7 @@ import { SidebarItem, type SidebarItemProps } from './SidebarItem'
 
 export interface SidebarItemIconProps extends Omit<
 	SidebarItemProps,
-	'children' | 'icon' | 'iconOnly'
+	'children' | 'iconOnly'
 > {
 	children?: React.ReactNode
 }
