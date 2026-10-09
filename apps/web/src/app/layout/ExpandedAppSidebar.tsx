@@ -13,7 +13,6 @@ import { appShellColors } from '~/styles/colors/components.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	appSidebar,
-	breakpoints,
 	fontSizes,
 	fontWeights,
 	layout,
@@ -46,10 +45,7 @@ const styles = stylex.create({
 		minBlockSize: '36px',
 		paddingBlockEnd: spacing.xs,
 		// Container padding plus the shell inset matches the collapsed toggle axis.
-		paddingBlockStart: {
-			default: spacing.xs,
-			[breakpoints.tablet]: layout.appShellInset,
-		},
+		paddingBlockStart: layout.appShellInset,
 	},
 	brandLabel: {
 		gap: spacing.sm,
