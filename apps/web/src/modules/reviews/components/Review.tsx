@@ -99,10 +99,10 @@ const styles = stylex.create({
 		whiteSpace: 'nowrap',
 	},
 	notesIndicator: {
-		blockSize: iconSizes.md,
+		blockSize: iconSizes.sm,
 		color: reviewColors.notesIndicatorForeground,
 		flexShrink: 0,
-		inlineSize: iconSizes.md,
+		inlineSize: iconSizes.sm,
 	},
 	footer: {
 		gridColumnEnd: 'footer',
@@ -221,7 +221,7 @@ export function Review({ review }: ReviewProps) {
 							>
 								<Ellipsis
 									aria-hidden='true'
-									size={iconSizes.md}
+									size={iconSizes.sm}
 								/>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align='end'>
@@ -230,7 +230,7 @@ export function Review({ review }: ReviewProps) {
 								>
 									<Trash2
 										aria-hidden='true'
-										size={iconSizes.md}
+										size={iconSizes.sm}
 									/>
 									Delete
 								</DropdownMenuItem>

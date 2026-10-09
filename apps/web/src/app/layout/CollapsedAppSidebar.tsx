@@ -109,7 +109,7 @@ export function CollapsedAppSidebar({
 							>
 								<PanelLeft
 									aria-hidden='true'
-									size={iconSizes.md}
+									size={iconSizes.sm}
 									strokeWidth={iconWeights.medium}
 								/>
 							</Button.Icon>
@@ -138,7 +138,7 @@ export function CollapsedAppSidebar({
 									>
 										<Icon
 											aria-hidden='true'
-											size={iconSizes.md}
+											size={iconSizes.sm}
 											strokeWidth={iconWeights.medium}
 										/>
 										{queue.count > 0 && (
@@ -171,7 +171,7 @@ export function CollapsedAppSidebar({
 						>
 							<Settings
 								aria-hidden='true'
-								size={iconSizes.md}
+								size={iconSizes.sm}
 								strokeWidth={iconWeights.medium}
 							/>
 						</SidebarItem.Icon>

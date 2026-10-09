@@ -43,9 +43,9 @@ const styles = stylex.create({
 		textAlign: 'start',
 	},
 	chevron: {
-		blockSize: iconSizes.md,
+		blockSize: iconSizes.sm,
 		flexShrink: 0,
-		inlineSize: iconSizes.md,
+		inlineSize: iconSizes.sm,
 		opacity: {
 			default: 0,
 			[stylex.when.ancestor(':focus-within')]: 1,

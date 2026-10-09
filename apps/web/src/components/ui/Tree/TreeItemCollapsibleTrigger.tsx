@@ -21,8 +21,8 @@ export type TreeItemCollapsibleTriggerProps = Omit<
 
 const styles = stylex.create({
 	placeholder: {
-		blockSize: iconSizes.md,
-		inlineSize: iconSizes.md,
+		blockSize: iconSizes.sm,
+		inlineSize: iconSizes.sm,
 	},
 	chevronButton: {
 		justifySelf: 'center',
@@ -70,7 +70,7 @@ export function TreeItemCollapsibleTrigger({
 				>
 					<ChevronRight
 						aria-hidden='true'
-						size={iconSizes.md}
+						size={iconSizes.sm}
 						{...stylex.props(
 							styles.chevron,
 							open && styles.chevronOpen,

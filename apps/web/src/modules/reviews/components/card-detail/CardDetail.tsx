@@ -234,7 +234,7 @@ export function CardDetail({
 									>
 										<PanelRight
 											aria-hidden='true'
-											size={iconSizes.md}
+											size={iconSizes.sm}
 										/>
 									</Button.Icon>
 								}

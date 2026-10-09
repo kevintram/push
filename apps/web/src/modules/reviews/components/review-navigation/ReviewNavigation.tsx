@@ -21,7 +21,7 @@ const styles = stylex.create({
 	// Centers the dot in an icon-sized slot so it lines up with header actions.
 	statusDotWrapper: {
 		display: 'flex',
-		inlineSize: iconSizes.md,
+		inlineSize: iconSizes.sm,
 		justifyContent: 'center',
 		marginInlineStart: 'auto',
 	},

@@ -126,7 +126,7 @@ export function LibraryNavigationContent({
 					>
 						<ChevronsDownUp
 							aria-hidden='true'
-							size={iconSizes.md}
+							size={iconSizes.sm}
 							strokeWidth={iconWeights.medium}
 						/>
 					</Button.Icon>
@@ -139,7 +139,7 @@ export function LibraryNavigationContent({
 					>
 						<Plus
 							aria-hidden='true'
-							size={iconSizes.md}
+							size={iconSizes.sm}
 							strokeWidth={iconWeights.medium}
 						/>
 					</Button.Icon>

@@ -68,12 +68,12 @@ export function BadgeSection() {
 				<div {...stylex.props(styles.row)}>
 					<span {...stylex.props(styles.label)}>With icon</span>
 					<Badge variant='secondary'>
-						<BadgeCheck aria-hidden size={iconSizes.sm} />
+						<BadgeCheck aria-hidden size={iconSizes.xs} />
 						Verified
 					</Badge>
 					<Badge variant='outline'>
 						Bookmark
-						<Bookmark aria-hidden size={iconSizes.sm} />
+						<Bookmark aria-hidden size={iconSizes.xs} />
 					</Badge>
 				</div>
 				<div {...stylex.props(styles.row)}>

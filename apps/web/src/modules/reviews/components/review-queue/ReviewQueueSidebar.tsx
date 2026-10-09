@@ -151,7 +151,7 @@ export function ReviewQueueSidebar({
 									variant='ghost'
 									onClick={onClose}
 								>
-									<X aria-hidden='true' size={iconSizes.md} />
+									<X aria-hidden='true' size={iconSizes.sm} />
 								</Button.Icon>
 							}
 						/>

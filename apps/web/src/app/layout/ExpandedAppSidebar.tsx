@@ -91,7 +91,7 @@ export function ExpandedAppSidebar({
 				>
 					<PanelLeft
 						aria-hidden='true'
-						size={iconSizes.md}
+						size={iconSizes.sm}
 						strokeWidth={iconWeights.medium}
 					/>
 				</Button.Icon>

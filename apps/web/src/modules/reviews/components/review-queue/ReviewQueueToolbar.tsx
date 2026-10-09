@@ -64,7 +64,7 @@ export function ReviewQueueToolbar({
 								disabled={index >= cardCount - 1}
 								onClick={onNext}
 							>
-								<ChevronDown size={iconSizes.md} />
+								<ChevronDown size={iconSizes.sm} />
 							</Button.Icon>
 						}
 					/>
@@ -84,7 +84,7 @@ export function ReviewQueueToolbar({
 								disabled={index <= 0}
 								onClick={onPrevious}
 							>
-								<ChevronUp size={iconSizes.md} />
+								<ChevronUp size={iconSizes.sm} />
 							</Button.Icon>
 						}
 					/>
@@ -113,7 +113,7 @@ export function ReviewQueueToolbar({
 								active={queueSidebarOpen}
 								onClick={onQueueSidebarToggle}
 							>
-								<Menu size={iconSizes.md} />
+								<Menu size={iconSizes.sm} />
 							</Button.Icon>
 						}
 					/>

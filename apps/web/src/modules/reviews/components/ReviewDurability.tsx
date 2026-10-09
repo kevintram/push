@@ -22,8 +22,8 @@ const styles = stylex.create({
 		whiteSpace: 'nowrap',
 	},
 	icon: {
-		blockSize: iconSizes.md,
-		inlineSize: iconSizes.md,
+		blockSize: iconSizes.sm,
+		inlineSize: iconSizes.sm,
 	},
 	positiveChange: {
 		color: reviewColors.durabilityPositiveChangeForeground,

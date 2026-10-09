@@ -370,9 +370,9 @@ export function ReviewDialog({
 						variant='ghost'
 					>
 						{isExpanded ? (
-							<Minimize2 aria-hidden='true' size={iconSizes.md} />
+							<Minimize2 aria-hidden='true' size={iconSizes.sm} />
 						) : (
-							<Maximize2 aria-hidden='true' size={iconSizes.md} />
+							<Maximize2 aria-hidden='true' size={iconSizes.sm} />
 						)}
 					</Button.Icon>
 					<DialogClose
@@ -385,7 +385,7 @@ export function ReviewDialog({
 							/>
 						}
 					>
-						<X aria-hidden='true' size={iconSizes.md} />
+						<X aria-hidden='true' size={iconSizes.sm} />
 					</DialogClose>
 				</div>
 			</header>
@@ -457,14 +457,14 @@ export function ReviewDialog({
 							>
 								<Ellipsis
 									aria-hidden='true'
-									size={iconSizes.md}
+									size={iconSizes.sm}
 								/>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align='end'>
 								<DropdownMenuItem onClick={onDelete}>
 									<Trash2
 										aria-hidden='true'
-										size={iconSizes.md}
+										size={iconSizes.sm}
 									/>
 									Delete
 								</DropdownMenuItem>

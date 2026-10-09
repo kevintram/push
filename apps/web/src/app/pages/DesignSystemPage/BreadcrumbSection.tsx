@@ -78,7 +78,7 @@ export function BreadcrumbSection() {
 								</BreadcrumbLink>
 							</BreadcrumbItem>
 							<BreadcrumbSeparator>
-								<Slash aria-hidden='true' size={iconSizes.sm} />
+								<Slash aria-hidden='true' size={iconSizes.xs} />
 							</BreadcrumbSeparator>
 							<BreadcrumbItem>
 								<BreadcrumbPage>Reviews</BreadcrumbPage>

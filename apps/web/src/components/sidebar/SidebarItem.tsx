@@ -173,7 +173,7 @@ export function SidebarItem({
 					<>
 						{Icon && (
 							<Icon
-								size={iconSizes.md}
+								size={iconSizes.sm}
 								strokeWidth={iconWeights.medium}
 								{...stylex.props(styles.sidebarIcon)}
 							/>

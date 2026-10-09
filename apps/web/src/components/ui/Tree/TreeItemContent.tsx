@@ -28,7 +28,7 @@ const styles = stylex.create({
 			':hover': treeColors.itemBackgroundHover,
 		},
 		display: 'grid',
-		gridTemplateColumns: `${iconSizes.md} minmax(0, 1fr)`,
+		gridTemplateColumns: `${iconSizes.sm} minmax(0, 1fr)`,
 		// Rows sit flush at small-button height, with the leading icon where a
 		// small icon button centers its glyph.
 		minBlockSize: buttonSizes.small,

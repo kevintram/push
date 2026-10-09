@@ -6,7 +6,7 @@ import { notAuthenticatedPageColors } from '~/styles/colors/components.stylex'
 import {
 	fontSizes,
 	fontWeights,
-	iconSizes,
+	graphicSizes,
 	spacing,
 } from '~/styles/tokens.stylex'
 
@@ -44,8 +44,8 @@ const styles = stylex.create({
 		color: notAuthenticatedPageColors.loadingIndicatorForeground,
 		display: 'flex',
 		justifyContent: 'center',
-		height: iconSizes.xl,
-		width: iconSizes.xl,
+		height: graphicSizes.md,
+		width: graphicSizes.md,
 	},
 	title: {
 		margin: spacing.none,

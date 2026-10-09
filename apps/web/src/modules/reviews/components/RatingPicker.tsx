@@ -21,11 +21,11 @@ const styles = stylex.create({
 		borderRadius: radii.full,
 		alignItems: 'center',
 		backgroundColor: reviewColors.ratingBadgeBackground,
-		blockSize: iconSizes.md,
+		blockSize: iconSizes.sm,
 		color: reviewColors.ratingBadgeForeground,
 		display: 'flex',
 		flexShrink: 0,
-		inlineSize: iconSizes.md,
+		inlineSize: iconSizes.sm,
 		justifyContent: 'center',
 	},
 })
@@ -61,10 +61,10 @@ export function RatingPicker({
 				}
 			>
 				{!rating ? (
-					<RatingIcon aria-hidden='true' size={iconSizes.md} />
+					<RatingIcon aria-hidden='true' size={iconSizes.sm} />
 				) : (
 					<span {...stylex.props(styles.ratingBadge)}>
-						<RatingIcon aria-hidden='true' size={iconSizes.sm} />
+						<RatingIcon aria-hidden='true' size={iconSizes.xs} />
 					</span>
 				)}
 			</DropdownMenuTrigger>
@@ -79,7 +79,7 @@ export function RatingPicker({
 						closeOnClick
 						value=''
 						prefix={
-							<Circle aria-hidden='true' size={iconSizes.md} />
+							<Circle aria-hidden='true' size={iconSizes.sm} />
 						}
 					>
 						Uncompleted
@@ -90,7 +90,7 @@ export function RatingPicker({
 							closeOnClick
 							value={value}
 							prefix={
-								<Icon aria-hidden='true' size={iconSizes.md} />
+								<Icon aria-hidden='true' size={iconSizes.sm} />
 							}
 						>
 							{label}

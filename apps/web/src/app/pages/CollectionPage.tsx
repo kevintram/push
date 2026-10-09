@@ -220,7 +220,7 @@ export function CollectionPage() {
 								/>
 							}
 						>
-							<Ellipsis aria-hidden='true' size={iconSizes.md} />
+							<Ellipsis aria-hidden='true' size={iconSizes.sm} />
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align='end'>
 							<DropdownMenuItem
@@ -228,7 +228,7 @@ export function CollectionPage() {
 							>
 								<FolderInput
 									aria-hidden='true'
-									size={iconSizes.md}
+									size={iconSizes.sm}
 								/>
 								Move
 							</DropdownMenuItem>
@@ -238,7 +238,7 @@ export function CollectionPage() {
 							>
 								<Trash2
 									aria-hidden='true'
-									size={iconSizes.md}
+									size={iconSizes.sm}
 								/>
 								Delete
 							</DropdownMenuItem>
@@ -298,7 +298,7 @@ export function CollectionPage() {
 								onClick={handleCreateCard}
 								xstyle={styles.addCardButton}
 							>
-								<Plus size={iconSizes.md} />
+								<Plus size={iconSizes.sm} />
 								Add card
 							</Button>
 						</div>

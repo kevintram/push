@@ -49,19 +49,25 @@ export const spacing = stylex.defineVars({
 	'5xl': '96px',
 })
 
+// UI glyphs, paired by name with fontSizes: use the icon that shares the
+// text's name. Each is 2px larger than its text because lucide glyphs leave
+// padding inside their box. Comments give px at the default 16px root size.
 export const iconSizes = stylex.defineVars({
-	xs: '0.75rem',
-	sm: '0.85rem',
-	md: '1rem',
-	lg: '1.5rem',
-	xl: '2rem',
-	'2xl': '3rem',
+	xs: '0.875rem', // 14px, beside xs (12px) text
+	sm: '1rem', // 16px, beside sm (14px) text
+	md: '1.125rem', // 18px, beside md (16px) text
+})
+
+// Standalone graphics such as avatars, spinners, and illustrations.
+export const graphicSizes = stylex.defineVars({
+	sm: '1.5rem', // 24px
+	md: '2rem', // 32px
 })
 
 export const buttonSizes = stylex.defineConsts({
 	// In rem so buttons grow with the text and icons inside them. Comments give
 	// px at the default 16px root size.
-	// Hitbox around the md glyph: 5px inset per side.
+	// Hitbox around the sm glyph: 5px inset per side.
 	micro: '1.625rem', // 26px
 	tiny: '1.75rem', // 28px
 	small: '2rem', // 32px
@@ -72,7 +78,7 @@ export const buttonSizes = stylex.defineConsts({
 export const appSidebar = stylex.defineConsts({
 	// Sidebar rows are as tall as a small button. This lands a row's leading
 	// icon where a small icon button centers its glyph.
-	rowInset: `calc((${buttonSizes.small} - ${iconSizes.md}) / 2)`,
+	rowInset: `calc((${buttonSizes.small} - ${iconSizes.sm}) / 2)`,
 })
 
 export const breakpoints = stylex.defineConsts({

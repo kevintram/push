@@ -3,7 +3,11 @@ import * as stylex from '@stylexjs/stylex'
 import { Circle } from 'lucide-react'
 
 import { dropdownMenuColors } from '~/styles/colors/components.stylex'
-import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
+
+// A mark inside the control rather than a glyph beside text, so it sits
+// outside the iconSizes scale.
+const RADIO_DOT_SIZE = '0.75rem' // 12px
 
 const styles = stylex.create({
 	item: {
@@ -84,7 +88,7 @@ export function DropdownMenuRadioItem({
 			{...props}
 		>
 			<Menu.RadioItemIndicator {...stylex.props(styles.indicator)}>
-				<Circle aria-hidden fill='currentColor' size={iconSizes.xs} />
+				<Circle aria-hidden fill='currentColor' size={RADIO_DOT_SIZE} />
 			</Menu.RadioItemIndicator>
 			<div {...stylex.props(styles.innerContainer)}>
 				{prefix && <span {...stylex.props(styles.slot)}>{prefix}</span>}

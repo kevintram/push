@@ -97,10 +97,10 @@ const styles = stylex.create({
 		borderBlockEndWidth: '1px',
 	},
 	searchIcon: {
-		blockSize: iconSizes.lg,
+		blockSize: iconSizes.sm,
 		color: searchDialogColors.searchIconForeground,
 		flexShrink: 0,
-		inlineSize: iconSizes.md,
+		inlineSize: iconSizes.sm,
 	},
 	actionButton: {
 		flexShrink: 0,
@@ -109,8 +109,8 @@ const styles = stylex.create({
 		visibility: 'hidden',
 	},
 	closeIcon: {
-		blockSize: iconSizes.md,
-		inlineSize: iconSizes.md,
+		blockSize: iconSizes.sm,
+		inlineSize: iconSizes.sm,
 	},
 	input: {
 		inlineSize: '100%',
@@ -218,7 +218,7 @@ export function SearchDialog() {
 								>
 									<Search
 										aria-hidden='true'
-										size={iconSizes.md}
+										size={iconSizes.sm}
 										strokeWidth={iconWeights.medium}
 									/>
 								</Button.Icon>

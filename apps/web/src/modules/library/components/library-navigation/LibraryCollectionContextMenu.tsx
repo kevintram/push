@@ -30,7 +30,7 @@ export function LibraryCollectionContextMenu({
 				<ContextMenuItem onClick={onCreateSubcollection}>
 					<Plus
 						aria-hidden='true'
-						size={iconSizes.md}
+						size={iconSizes.sm}
 						strokeWidth={iconWeights.medium}
 					/>
 					Add subcollection
@@ -38,7 +38,7 @@ export function LibraryCollectionContextMenu({
 				<ContextMenuItem onClick={onMove}>
 					<FolderInput
 						aria-hidden='true'
-						size={iconSizes.md}
+						size={iconSizes.sm}
 						strokeWidth={iconWeights.medium}
 					/>
 					Move
@@ -47,7 +47,7 @@ export function LibraryCollectionContextMenu({
 				<ContextMenuItem onClick={onDelete}>
 					<Trash2
 						aria-hidden='true'
-						size={iconSizes.md}
+						size={iconSizes.sm}
 						strokeWidth={iconWeights.medium}
 					/>
 					Delete

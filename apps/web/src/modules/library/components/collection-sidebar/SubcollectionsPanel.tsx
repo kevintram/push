@@ -97,7 +97,7 @@ export function SubcollectionsPanel({
 					onClick={handleCreateSubcollection}
 					shape='round'
 				>
-					<Plus aria-hidden='true' size={iconSizes.md} />
+					<Plus aria-hidden='true' size={iconSizes.sm} />
 				</Button.Icon>
 			</div>
 			<div {...stylex.props(styles.list)}>
