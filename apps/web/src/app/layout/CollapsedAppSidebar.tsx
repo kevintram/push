@@ -25,12 +25,7 @@ import {
 	sidebarItemColors,
 } from '~/styles/colors/components.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
-import {
-	appSidebar,
-	breakpoints,
-	layout,
-	spacing,
-} from '~/styles/tokens.stylex'
+import { appSidebar, layout, spacing } from '~/styles/tokens.stylex'
 
 import { hideModeSidebarTheme } from './hideModeSidebarTheme'
 import { SidebarRailReviewLink } from './SidebarRailReviewLink'
@@ -48,10 +43,7 @@ const styles = stylex.create({
 		inlineSize: '48px',
 		paddingBlockEnd: spacing.sm,
 		// Add the shell inset so the toggle aligns with page toolbar controls.
-		paddingBlockStart: {
-			default: spacing.sm,
-			[breakpoints.tablet]: `calc(${spacing.xs} + ${layout.appShellInset})`,
-		},
+		paddingBlockStart: `calc(${spacing.xs} + ${layout.appShellInset})`,
 		height: '100%',
 		overflowY: 'hidden',
 	},

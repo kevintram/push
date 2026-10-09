@@ -32,16 +32,10 @@ const styles = stylex.create({
 		backgroundColor: appShellColors.chromeBackground,
 	},
 	children: {
-		// Establish the desktop inset used by sidebar and page toolbar alignment.
-		marginBlock: {
-			default: 0,
-			[breakpoints.tablet]: layout.appShellInset,
-		},
+		// Establish the inset used by sidebar and page toolbar alignment.
+		marginBlock: layout.appShellInset,
 		flexGrow: 1,
-		marginInlineEnd: {
-			default: 0,
-			[breakpoints.tablet]: layout.appShellInset,
-		},
+		marginInlineEnd: layout.appShellInset,
 		minHeight: 0,
 		minWidth: 0,
 
@@ -49,10 +43,7 @@ const styles = stylex.create({
 		zIndex: 1,
 		overflowY: 'auto',
 
-		borderRadius: {
-			default: 0,
-			[breakpoints.tablet]: radii.xl,
-		},
+		borderRadius: radii.xl,
 		backgroundColor: appShellColors.surfaceBackground,
 		boxShadow: {
 			default: 'none',
