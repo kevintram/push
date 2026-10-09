@@ -12,6 +12,9 @@ import {
 import { StatusDot } from '~/components/ui'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { appSidebar } from '~/styles/tokens.stylex'
+import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
+
+const REVIEW_NAVIGATION_STORAGE_KEY = 'reviewNavigationOpen'
 
 const styles = stylex.create({
 	items: {
@@ -31,7 +34,13 @@ export function ReviewNavigation() {
 	const queues = useReviewQueueCounts()
 
 	return (
-		<SidebarCollapsibleItem defaultOpen aria-label='Review'>
+		<SidebarCollapsibleItem
+			defaultOpen={readStoredBoolean(REVIEW_NAVIGATION_STORAGE_KEY, true)}
+			aria-label='Review'
+			onOpenChange={open =>
+				writeStoredBoolean(REVIEW_NAVIGATION_STORAGE_KEY, open)
+			}
+		>
 			<SidebarCollapsibleHeader>
 				<SidebarCollapsibleTrigger>Review</SidebarCollapsibleTrigger>
 			</SidebarCollapsibleHeader>

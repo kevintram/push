@@ -4,7 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ComponentProps } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { dueQueries } from '~/modules/reviews/api/dueQueries'
@@ -27,8 +27,13 @@ vi.mock('@tanstack/react-router', async importOriginal => ({
 }))
 
 const entryFor = (id: string) => ({ card: { _id: id } }) as DueEntry
+const STORAGE_KEY = 'reviewNavigationOpen'
 
 describe('ReviewNavigation', () => {
+	beforeEach(() => {
+		window.localStorage.clear()
+	})
+
 	function renderNavigation({
 		due = 0,
 		newCards = 0,
@@ -173,10 +178,25 @@ describe('ReviewNavigation', () => {
 		expect(
 			screen.queryByRole('navigation', { name: 'review sections' }),
 		).not.toBeInTheDocument()
+		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('false')
 
 		await user.click(screen.getByRole('button', { name: 'Expand Review' }))
 		expect(
 			screen.getByRole('navigation', { name: 'review sections' }),
 		).toBeInTheDocument()
+		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('true')
+	})
+
+	it('restores the collapsed review section preference', () => {
+		window.localStorage.setItem(STORAGE_KEY, 'false')
+
+		renderNavigation()
+
+		expect(
+			screen.getByRole('button', { name: 'Expand Review' }),
+		).toHaveAttribute('aria-expanded', 'false')
+		expect(
+			screen.queryByRole('navigation', { name: 'review sections' }),
+		).not.toBeInTheDocument()
 	})
 })

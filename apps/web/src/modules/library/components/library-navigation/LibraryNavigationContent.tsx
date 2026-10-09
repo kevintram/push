@@ -16,6 +16,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger, Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
 import { spacing } from '~/styles/tokens.stylex'
+import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import { useCreateCollection } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
@@ -23,6 +24,8 @@ import {
 	type CollectionOpenChangeHandler,
 	LibraryCollectionItem,
 } from './LibraryCollectionItem'
+
+const LIBRARY_NAVIGATION_STORAGE_KEY = 'libraryNavigationOpen'
 
 const styles = stylex.create({
 	container: {
@@ -107,8 +110,14 @@ export function LibraryNavigationContent({
 
 	return (
 		<SidebarCollapsibleItem
-			defaultOpen
+			defaultOpen={readStoredBoolean(
+				LIBRARY_NAVIGATION_STORAGE_KEY,
+				true,
+			)}
 			aria-label='Library'
+			onOpenChange={open =>
+				writeStoredBoolean(LIBRARY_NAVIGATION_STORAGE_KEY, open)
+			}
 			xstyle={[
 				styles.container,
 				libraryRootIsDropTarget && styles.containerIsDropTarget,
