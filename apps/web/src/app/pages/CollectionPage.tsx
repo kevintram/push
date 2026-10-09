@@ -49,14 +49,12 @@ const styles = stylex.create({
 	},
 	toolbar: {
 		gap: spacing.md,
+		paddingBlock: spacing.sm,
 		paddingInline: spacing.lg,
 		alignItems: 'center',
 		display: 'flex',
 		flexShrink: 0,
 		justifyContent: 'space-between',
-		paddingBlockEnd: spacing.sm,
-		// Combined with the shell inset, align breadcrumbs and actions to the toggle.
-		paddingBlockStart: spacing.xs,
 	},
 	breadcrumbs: {
 		flexBasis: 0,
@@ -217,6 +215,7 @@ export function CollectionPage() {
 								<Button.Icon
 									aria-label='Collection actions'
 									shape='round'
+									size='small'
 									variant='ghost'
 								/>
 							}
