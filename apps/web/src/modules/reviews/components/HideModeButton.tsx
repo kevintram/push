@@ -46,7 +46,7 @@ export function HideModeButton({
 						onClick={toggleHideMode}
 						shape='round'
 						size='micro'
-						variant='secondary'
+						variant='ghost'
 						xstyle={[
 							hideMode === 'on' && styles.hideModeOn,
 							xstyle,
