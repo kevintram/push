@@ -4,6 +4,7 @@ import { Search, X } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
+import { SidebarIconButton } from '~/components/sidebar'
 import {
 	Button,
 	Dialog,
@@ -19,11 +20,9 @@ import {
 } from '~/components/ui'
 import { searchDialogColors } from '~/styles/colors/components.stylex'
 import {
-	appSidebar,
 	breakpoints,
 	fontSizes,
 	iconSizes,
-	iconWeights,
 	spacing,
 } from '~/styles/tokens.stylex'
 
@@ -211,18 +210,10 @@ export function SearchDialog() {
 					render={
 						<DialogTrigger
 							render={
-								<Button.Icon
+								<SidebarIconButton
 									aria-label='Search'
-									shape='round'
-									size='small'
-									variant='ghost'
-								>
-									<Search
-										aria-hidden='true'
-										size={appSidebar.iconSize}
-										strokeWidth={iconWeights.medium}
-									/>
-								</Button.Icon>
+									icon={Search}
+								/>
 							}
 						/>
 					}

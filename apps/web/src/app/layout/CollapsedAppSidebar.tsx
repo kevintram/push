@@ -10,9 +10,8 @@ import {
 } from 'lucide-react'
 import type { Ref } from 'react'
 
-import { SidebarItem } from '~/components/sidebar'
+import { SidebarIconButton, SidebarItem } from '~/components/sidebar'
 import {
-	Button,
 	StatusDot,
 	Tooltip,
 	TooltipContent,
@@ -49,7 +48,7 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 	},
-	// Round to match the rail's Button.Icon controls.
+	// Round to match the rail's SidebarIconButton controls.
 	railLink: {
 		borderRadius: radii.full,
 		position: 'relative',
@@ -97,22 +96,14 @@ export function CollapsedAppSidebar({
 				<TooltipTrigger
 					render={
 						<span {...stylex.props(styles.controlWrapper)}>
-							<Button.Icon
+							<SidebarIconButton
 								aria-label='Expand sidebar'
 								aria-expanded={false}
 								aria-controls={navId}
+								icon={PanelLeft}
 								onClick={onToggle}
 								ref={toggleRef}
-								shape='round'
-								size='small'
-								variant='ghost'
-							>
-								<PanelLeft
-									aria-hidden='true'
-									size={appSidebar.iconSize}
-									strokeWidth={iconWeights.medium}
-								/>
-							</Button.Icon>
+							/>
 						</span>
 					}
 				/>

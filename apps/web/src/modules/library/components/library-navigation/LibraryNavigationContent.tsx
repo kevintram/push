@@ -11,10 +11,11 @@ import {
 	SidebarCollapsibleHeader,
 	SidebarCollapsibleItem,
 	SidebarCollapsibleTrigger,
+	SidebarIconButton,
 } from '~/components/sidebar'
-import { Button, Tree } from '~/components/ui'
+import { Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
-import { appSidebar, iconWeights, spacing } from '~/styles/tokens.stylex'
+import { spacing } from '~/styles/tokens.stylex'
 
 import { useCreateCollection } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
@@ -116,33 +117,17 @@ export function LibraryNavigationContent({
 			<SidebarCollapsibleHeader ref={libraryRootRef}>
 				<SidebarCollapsibleTrigger>Library</SidebarCollapsibleTrigger>
 				<SidebarCollapsibleActions>
-					<Button.Icon
+					<SidebarIconButton
 						aria-label='Collapse all collections'
 						disabled={openCollectionIds.size === 0}
-						shape='round'
-						size='small'
-						variant='ghost'
+						icon={ChevronsDownUp}
 						onClick={onCollapseAll}
-					>
-						<ChevronsDownUp
-							aria-hidden='true'
-							size={appSidebar.iconSize}
-							strokeWidth={iconWeights.medium}
-						/>
-					</Button.Icon>
-					<Button.Icon
+					/>
+					<SidebarIconButton
 						aria-label='Add collection'
-						shape='round'
-						size='small'
-						variant='ghost'
+						icon={Plus}
 						onClick={handleCreateCollection}
-					>
-						<Plus
-							aria-hidden='true'
-							size={appSidebar.iconSize}
-							strokeWidth={iconWeights.medium}
-						/>
-					</Button.Icon>
+					/>
 				</SidebarCollapsibleActions>
 			</SidebarCollapsibleHeader>
 			<SidebarCollapsibleContent
