@@ -5,10 +5,8 @@ import { CollapsibleTrigger } from '~/components/ui'
 import { sidebarSectionHeaderColors } from '~/styles/colors/components.stylex'
 import {
 	appSidebar,
-	buttonSizes,
 	fontSizes,
 	fontWeights,
-	iconSizes,
 	iconWeights,
 	radii,
 	spacing,
@@ -24,7 +22,7 @@ const styles = stylex.create({
 		borderRadius: radii.lg,
 		alignItems: 'center',
 		backgroundColor: 'transparent',
-		blockSize: buttonSizes.small,
+		blockSize: appSidebar.rowHeight,
 		color: {
 			default: sidebarSectionHeaderColors.foreground,
 			':disabled': sidebarSectionHeaderColors.foregroundDisabled,
@@ -43,9 +41,9 @@ const styles = stylex.create({
 		textAlign: 'start',
 	},
 	chevron: {
-		blockSize: iconSizes.sm,
+		blockSize: appSidebar.iconSize,
 		flexShrink: 0,
-		inlineSize: iconSizes.sm,
+		inlineSize: appSidebar.iconSize,
 		opacity: {
 			default: 0,
 			[stylex.when.ancestor(':focus-within')]: 1,

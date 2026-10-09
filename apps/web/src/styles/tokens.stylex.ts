@@ -75,10 +75,16 @@ export const buttonSizes = stylex.defineConsts({
 	large: '2.5rem', // 40px
 })
 
+// Sidebar rows are as tall as the small icon buttons that share them.
+const sidebarRowHeight = buttonSizes.small
+const sidebarIconSize = iconSizes.sm
+
 export const appSidebar = stylex.defineConsts({
-	// Sidebar rows are as tall as a small button. This lands a row's leading
-	// icon where a small icon button centers its glyph.
-	rowInset: `calc((${buttonSizes.small} - ${iconSizes.sm}) / 2)`,
+	iconSize: sidebarIconSize,
+	rowHeight: sidebarRowHeight,
+	// Lands a row's leading icon where a row-height icon button centers its
+	// glyph.
+	rowInset: `calc((${sidebarRowHeight} - ${sidebarIconSize}) / 2)`,
 })
 
 export const breakpoints = stylex.defineConsts({

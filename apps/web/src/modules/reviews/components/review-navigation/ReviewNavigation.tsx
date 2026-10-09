@@ -11,7 +11,7 @@ import {
 } from '~/components/sidebar'
 import { StatusDot } from '~/components/ui'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
-import { iconSizes } from '~/styles/tokens.stylex'
+import { appSidebar } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	items: {
@@ -21,7 +21,7 @@ const styles = stylex.create({
 	// Centers the dot in an icon-sized slot so it lines up with header actions.
 	statusDotWrapper: {
 		display: 'flex',
-		inlineSize: iconSizes.sm,
+		inlineSize: appSidebar.iconSize,
 		justifyContent: 'center',
 		marginInlineStart: 'auto',
 	},

@@ -10,10 +10,8 @@ import {
 } from '~/styles/colors/components.stylex'
 import {
 	appSidebar,
-	buttonSizes,
 	fontSizes,
 	fontWeights,
-	iconSizes,
 	iconWeights,
 	radii,
 	spacing,
@@ -88,7 +86,7 @@ const styles = stylex.create({
 		gap: spacing.sm,
 		paddingBlock: spacing.none,
 		paddingInline: appSidebar.rowInset,
-		blockSize: buttonSizes.small,
+		blockSize: appSidebar.rowHeight,
 		fontSize: fontSizes.sm,
 	},
 	iconOnly: {
@@ -173,7 +171,7 @@ export function SidebarItem({
 					<>
 						{Icon && (
 							<Icon
-								size={iconSizes.sm}
+								size={appSidebar.iconSize}
 								strokeWidth={iconWeights.medium}
 								{...stylex.props(styles.sidebarIcon)}
 							/>
