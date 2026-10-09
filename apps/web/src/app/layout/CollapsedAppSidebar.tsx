@@ -23,7 +23,6 @@ import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCoun
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import {
 	appSidebar,
-	buttonSizes,
 	iconWeights,
 	layout,
 	radii,
@@ -41,25 +40,14 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 	},
-	// Top-level app controls are small-button sized across shell layouts.
 	controlWrapper: {
-		alignItems: 'center',
-		blockSize: buttonSizes.small,
 		display: 'flex',
-		inlineSize: buttonSizes.small,
-		justifyContent: 'center',
 		// Keeps the toggle in place when the expanded sidebar's header takes over.
 		marginBlockStart: spacing.sm,
 	},
 	group: {
 		display: 'flex',
 		flexDirection: 'column',
-	},
-	railItem: {
-		paddingBlock: 0,
-		paddingInline: 0,
-		blockSize: buttonSizes.small,
-		inlineSize: buttonSizes.small,
 	},
 	// Round to match the rail's Button.Icon controls.
 	railLink: {
@@ -116,9 +104,8 @@ export function CollapsedAppSidebar({
 								onClick={onToggle}
 								ref={toggleRef}
 								shape='round'
-								size='micro'
+								size='small'
 								variant='ghost'
-								xstyle={styles.railItem}
 							>
 								<PanelLeft
 									aria-hidden='true'
@@ -132,8 +119,8 @@ export function CollapsedAppSidebar({
 				<TooltipContent side='right'>Expand sidebar</TooltipContent>
 			</Tooltip>
 			<div {...stylex.props(styles.group)}>
-				<HideModeButton tooltipSide='right' xstyle={styles.railItem} />
-				<SearchDialog triggerXstyle={styles.railItem} />
+				<HideModeButton tooltipSide='right' />
+				<SearchDialog />
 			</div>
 
 			<div {...stylex.props(styles.group)}>

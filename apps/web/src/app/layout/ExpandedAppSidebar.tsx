@@ -12,7 +12,6 @@ import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	appSidebar,
-	buttonSizes,
 	fontSizes,
 	fontWeights,
 	iconWeights,
@@ -37,12 +36,6 @@ const styles = stylex.create({
 		alignItems: 'center',
 		display: 'flex',
 		paddingBlockStart: spacing.sm,
-	},
-	headerButton: {
-		paddingBlock: 0,
-		paddingInline: 0,
-		blockSize: buttonSizes.small,
-		inlineSize: buttonSizes.small,
 	},
 	brand: {
 		textDecoration: 'none',
@@ -95,9 +88,8 @@ export function ExpandedAppSidebar({
 					onClick={onToggle}
 					ref={toggleRef}
 					shape='round'
-					size='micro'
+					size='small'
 					variant='ghost'
-					xstyle={styles.headerButton}
 				>
 					<PanelLeft
 						aria-hidden='true'
@@ -109,8 +101,8 @@ export function ExpandedAppSidebar({
 					<span {...stylex.props(styles.brandText)}>3gulp</span>
 				</Link>
 				<div {...stylex.props(styles.actions)}>
-					<HideModeButton xstyle={styles.headerButton} />
-					<SearchDialog triggerXstyle={styles.headerButton} />
+					<HideModeButton />
+					<SearchDialog />
 				</div>
 			</div>
 			<ReviewNavigation />

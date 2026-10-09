@@ -14,12 +14,7 @@ import {
 } from '~/components/sidebar'
 import { Button, Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
-import {
-	appSidebar,
-	buttonSizes,
-	iconWeights,
-	spacing,
-} from '~/styles/tokens.stylex'
+import { appSidebar, iconWeights, spacing } from '~/styles/tokens.stylex'
 
 import { useCreateCollection } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
@@ -62,12 +57,6 @@ const styles = stylex.create({
 	collectionTree: {
 		gap: 0,
 		paddingBlockEnd: spacing.xl,
-	},
-	headerButton: {
-		paddingBlock: 0,
-		paddingInline: 0,
-		blockSize: buttonSizes.small,
-		inlineSize: buttonSizes.small,
 	},
 })
 
@@ -132,9 +121,8 @@ export function LibraryNavigationContent({
 						aria-label='Collapse all collections'
 						disabled={openCollectionIds.size === 0}
 						shape='round'
-						size='micro'
+						size='small'
 						variant='ghost'
-						xstyle={styles.headerButton}
 						onClick={onCollapseAll}
 					>
 						<ChevronsDownUp
@@ -146,9 +134,8 @@ export function LibraryNavigationContent({
 					<Button.Icon
 						aria-label='Add collection'
 						shape='round'
-						size='micro'
+						size='small'
 						variant='ghost'
-						xstyle={styles.headerButton}
 						onClick={handleCreateCollection}
 					>
 						<Plus

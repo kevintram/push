@@ -17,7 +17,6 @@ import { useHideMode } from '../hide-mode/useHideMode'
 
 type HideModeButtonProps = {
 	tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
-	xstyle?: stylex.StyleXStyles
 }
 
 const styles = stylex.create({
@@ -32,7 +31,6 @@ const styles = stylex.create({
 
 export function HideModeButton({
 	tooltipSide = 'bottom',
-	xstyle,
 }: HideModeButtonProps) {
 	const { hideMode, toggleHideMode } = useHideMode()
 
@@ -45,12 +43,9 @@ export function HideModeButton({
 						aria-pressed={hideMode === 'on'}
 						onClick={toggleHideMode}
 						shape='round'
-						size='micro'
+						size='small'
 						variant='ghost'
-						xstyle={[
-							hideMode === 'on' && styles.hideModeOn,
-							xstyle,
-						]}
+						xstyle={hideMode === 'on' && styles.hideModeOn}
 					>
 						<Copy
 							aria-hidden='true'

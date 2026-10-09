@@ -155,11 +155,7 @@ const styles = stylex.create({
 
 type ExpandedGroup = 'cards' | 'collections' | null
 
-type SearchDialogProps = {
-	triggerXstyle?: stylex.StyleXStyles
-}
-
-export function SearchDialog({ triggerXstyle }: SearchDialogProps = {}) {
+export function SearchDialog() {
 	const [isOpen, setIsOpen] = useState(false)
 	const { isError, isLoading, query, cards, setQuery, collections } =
 		useSearchResults()
@@ -218,9 +214,8 @@ export function SearchDialog({ triggerXstyle }: SearchDialogProps = {}) {
 								<Button.Icon
 									aria-label='Search'
 									shape='round'
-									size='micro'
+									size='small'
 									variant='ghost'
-									xstyle={triggerXstyle}
 								>
 									<Search
 										aria-hidden='true'
