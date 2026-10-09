@@ -1,15 +1,19 @@
 import * as stylex from '@stylexjs/stylex'
+import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { Link } from '@tanstack/react-router'
 import { PanelLeft, Settings } from 'lucide-react'
 import type { Ref } from 'react'
 
 import { SidebarIconButton, SidebarItem } from '~/components/sidebar'
+import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { LibraryNavigation } from '~/modules/library/components/library-navigation/LibraryNavigation'
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { ReviewNavigation } from '~/modules/reviews/components/review-navigation/ReviewNavigation'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
+
+import { SIDEBAR_HOTKEY } from './sidebarHotkey'
 
 const styles = stylex.create({
 	// Matches the gap AppShell leaves around the page surface.
@@ -67,14 +71,24 @@ export function ExpandedAppSidebar({
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.brandRow)}>
-				<SidebarIconButton
-					aria-label='Collapse sidebar'
-					aria-expanded
-					aria-controls={navId}
-					icon={PanelLeft}
-					onClick={onToggle}
-					ref={toggleRef}
-				/>
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<SidebarIconButton
+								aria-label='Collapse sidebar'
+								aria-expanded
+								aria-controls={navId}
+								icon={PanelLeft}
+								onClick={onToggle}
+								ref={toggleRef}
+							/>
+						}
+					/>
+					<TooltipContent side='bottom'>
+						Collapse sidebar
+						<Kbd>{formatForDisplay(SIDEBAR_HOTKEY)}</Kbd>
+					</TooltipContent>
+				</Tooltip>
 				<Link to='/review' {...stylex.props(styles.brand)}>
 					3gulp
 				</Link>
