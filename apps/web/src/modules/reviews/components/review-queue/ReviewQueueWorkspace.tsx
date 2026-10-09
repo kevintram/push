@@ -86,8 +86,9 @@ const styles = stylex.create({
 		minInlineSize: 0,
 	},
 	// Toolbar controls and the sidebar close button are both 36px; offset by
-	// the sidebar's 1px top border so their centers line up.
-	toolbar: {
+	// the sidebar's 1px top border so their centers line up. With the sidebar
+	// closed there is nothing to align with, so the toolbar sits flush.
+	toolbarBesideSidebar: {
 		paddingBlockEnd: spacing.sm,
 		paddingBlockStart: `calc(${spacing.sm} + 1px)`,
 	},
@@ -206,7 +207,11 @@ export function ReviewQueueWorkspace({
 				)}
 			>
 				<div {...stylex.props(styles.cardColumn)}>
-					<div {...stylex.props(styles.toolbar)}>
+					<div
+						{...stylex.props(
+							queueSidebarOpen && styles.toolbarBesideSidebar,
+						)}
+					>
 						<ReviewQueueToolbar
 							index={index}
 							cardCount={visibleCards.length}
