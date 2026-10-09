@@ -83,9 +83,7 @@ describe('CollapsedAppSidebar', () => {
 				<TooltipProvider delay={0}>
 					<HideModeProvider>
 						<CollapsedAppSidebar
-							hideMode={false}
-							id='app-sidebar'
-							expanded={false}
+							navId='app-sidebar'
 							onToggle={() => {}}
 							toggleRef={null}
 						/>
@@ -96,9 +94,8 @@ describe('CollapsedAppSidebar', () => {
 	}
 
 	it('renders the ordered icon rail without Library', () => {
-		renderSidebar()
+		const { container } = renderSidebar()
 
-		const nav = screen.getByRole('navigation', { name: 'primary' })
 		const toggle = screen.getByRole('button', { name: 'Expand sidebar' })
 		const hideMode = screen.getByRole('button', { name: 'Hide mode' })
 		const search = screen.getByRole('button', { name: 'Search' })
@@ -129,7 +126,7 @@ describe('CollapsedAppSidebar', () => {
 		expect(flagged).toHaveAttribute('href', '/review/flagged')
 		expect(settings).toHaveAttribute('href', '/settings')
 		expect(settings).toHaveAttribute('data-exact', 'true')
-		expect(nav).not.toHaveTextContent('Library')
+		expect(container).not.toHaveTextContent('Library')
 		expect(
 			screen.queryByRole('navigation', { name: /library/i }),
 		).not.toBeInTheDocument()

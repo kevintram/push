@@ -9,7 +9,6 @@ import { LibraryNavigation } from '~/modules/library/components/library-navigati
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { ReviewNavigation } from '~/modules/reviews/components/review-navigation/ReviewNavigation'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
-import { appShellColors } from '~/styles/colors/components.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	appSidebar,
@@ -20,23 +19,16 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-import { hideModeSidebarTheme } from './hideModeSidebarTheme'
-
 const styles = stylex.create({
 	container: {
 		padding: spacing.xs,
 		gap: spacing.xs,
 
-		backgroundColor: appShellColors.chromeBackground,
-		color: semanticColors.textPrimary,
-
 		display: 'flex',
 		flexDirection: 'column',
-		flexShrink: 0,
 
+		blockSize: '100%',
 		inlineSize: '240px',
-		height: '100%',
-		overflowY: 'hidden',
 	},
 	brandRow: {
 		gap: spacing.sm,
@@ -101,35 +93,24 @@ const styles = stylex.create({
 })
 
 type ExpandedAppSidebarProps = {
-	hideMode: boolean
-	id: string
-	expanded: boolean
+	navId: string
 	onToggle: () => void
 	toggleRef: Ref<HTMLButtonElement>
 }
 
 export function ExpandedAppSidebar({
-	hideMode,
-	id,
-	expanded,
+	navId,
 	onToggle,
 	toggleRef,
 }: ExpandedAppSidebarProps) {
 	return (
-		<nav
-			id={id}
-			aria-label='primary'
-			{...stylex.props(
-				styles.container,
-				hideMode && hideModeSidebarTheme,
-			)}
-		>
+		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.brandRow)}>
 				<div {...stylex.props(styles.brandLabel)}>
 					<Button.Icon
 						aria-label='Collapse sidebar'
-						aria-expanded={expanded}
-						aria-controls={id}
+						aria-expanded
+						aria-controls={navId}
 						onClick={onToggle}
 						ref={toggleRef}
 						shape='round'
@@ -166,6 +147,6 @@ export function ExpandedAppSidebar({
 					Settings
 				</SidebarItem>
 			</div>
-		</nav>
+		</div>
 	)
 }

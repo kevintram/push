@@ -20,11 +20,9 @@ import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import {
-	appShellColors,
 	buttonColors,
 	sidebarItemColors,
 } from '~/styles/colors/components.stylex'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	appSidebar,
 	iconWeights,
@@ -32,7 +30,6 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-import { hideModeSidebarTheme } from './hideModeSidebarTheme'
 import { SidebarRailReviewLink } from './SidebarRailReviewLink'
 
 const styles = stylex.create({
@@ -40,17 +37,13 @@ const styles = stylex.create({
 		gap: spacing.sm,
 		paddingInline: spacing.xs,
 		alignItems: 'center',
-		backgroundColor: appShellColors.chromeBackground,
-		color: semanticColors.textPrimary,
+		blockSize: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-		flexShrink: 0,
 		inlineSize: '48px',
 		paddingBlockEnd: spacing.sm,
 		// Add the shell inset so the toggle aligns with page toolbar controls.
 		paddingBlockStart: `calc(${spacing.xs} + ${layout.appShellInset})`,
-		height: '100%',
-		overflowY: 'hidden',
 	},
 	// Top-level app controls share this 36px hit area across shell layouts.
 	controlWrapper: {
@@ -92,36 +85,28 @@ const styles = stylex.create({
 })
 
 type CollapsedAppSidebarProps = {
-	hideMode: boolean
-	id: string
-	expanded: boolean
+	navId: string
 	onToggle: () => void
 	toggleRef: Ref<HTMLButtonElement>
 }
 
 export function CollapsedAppSidebar({
-	hideMode,
-	id,
-	expanded,
+	navId,
 	onToggle,
 	toggleRef,
 }: CollapsedAppSidebarProps) {
 	const queues = useReviewQueueCounts()
 
 	return (
-		<nav
-			id={id}
-			aria-label='primary'
-			{...stylex.props(styles.rail, hideMode && hideModeSidebarTheme)}
-		>
+		<div {...stylex.props(styles.rail)}>
 			<Tooltip>
 				<TooltipTrigger
 					render={
 						<span {...stylex.props(styles.controlWrapper)}>
 							<Button.Icon
 								aria-label='Expand sidebar'
-								aria-expanded={expanded}
-								aria-controls={id}
+								aria-expanded={false}
+								aria-controls={navId}
 								onClick={onToggle}
 								ref={toggleRef}
 								shape='round'
@@ -195,6 +180,6 @@ export function CollapsedAppSidebar({
 				/>
 				<TooltipContent side='right'>Settings</TooltipContent>
 			</Tooltip>
-		</nav>
+		</div>
 	)
 }
