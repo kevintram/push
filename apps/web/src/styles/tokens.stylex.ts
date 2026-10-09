@@ -59,12 +59,14 @@ export const iconSizes = stylex.defineVars({
 })
 
 export const buttonSizes = stylex.defineConsts({
-	// Hitbox around the 16px md glyph: 5px inset per side, not alignment spacing.
-	micro: '26px',
-	tiny: '28px',
-	small: '32px',
-	medium: '36px',
-	large: '40px',
+	// In rem so buttons grow with the text and icons inside them. Comments give
+	// px at the default 16px root size.
+	// Hitbox around the md glyph: 5px inset per side.
+	micro: '1.625rem', // 26px
+	tiny: '1.75rem',   // 28px
+	small: '2rem',     // 32px
+	medium: '2.25rem', // 36px
+	large: '2.5rem',   // 40px
 })
 
 const sidebarIconSize = '1rem'
