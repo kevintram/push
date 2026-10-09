@@ -15,7 +15,6 @@ import { spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	items: {
-		gap: spacing.xs,
 		display: 'flex',
 		flexDirection: 'column',
 	},
