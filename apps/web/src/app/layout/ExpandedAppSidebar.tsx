@@ -21,40 +21,31 @@ import {
 
 const styles = stylex.create({
 	container: {
-		padding: spacing.xs,
 		gap: spacing.xs,
-
+		blockSize: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-
-		blockSize: '100%',
 		inlineSize: '240px',
+		paddingBlockEnd: spacing.xs,
+		// Add the shell inset so the toggle aligns with page toolbar controls.
+		paddingBlockStart: `calc(${spacing.xs} + ${layout.appShellInset})`,
+		paddingInlineStart: spacing.xs,
 	},
 	brandRow: {
-		gap: spacing.sm,
-		paddingInline: spacing.md,
+		// Places the toggle at the same x as the collapsed rail's toggle.
+		paddingInline: spacing['2xs'],
 		alignItems: 'center',
 		display: 'flex',
 		minBlockSize: '36px',
 		paddingBlockEnd: spacing.xs,
-		// Container padding plus the shell inset matches the collapsed toggle axis.
-		paddingBlockStart: layout.appShellInset,
-	},
-	brandLabel: {
-		gap: spacing.sm,
-		alignItems: 'center',
-		display: 'grid',
-		gridTemplateColumns: `${appSidebar.iconSize} auto`,
 	},
 	headerButton: {
 		paddingBlock: 0,
 		paddingInline: 0,
 		blockSize: '36px',
 		inlineSize: '36px',
-		justifySelf: 'center',
 	},
 	brand: {
-		gap: spacing.xs,
 		textDecoration: 'none',
 		alignItems: 'center',
 		color: {
@@ -65,29 +56,21 @@ const styles = stylex.create({
 		display: 'flex',
 		fontSize: fontSizes.lg,
 		fontWeight: fontWeights.semibold,
-		marginInlineStart: spacing.xs,
+		marginInlineStart: spacing['2xs'],
 	},
 	brandText: {
 		// The lowercase descender makes the wordmark look slightly low beside centered icons.
 		transform: 'translateY(-1px)',
 	},
 	actions: {
-		alignItems: 'center',
 		display: 'flex',
 		marginInlineStart: 'auto',
-	},
-	footer: {
-		gap: spacing.xs,
-		display: 'flex',
-		flexDirection: 'column',
-		flexShrink: 0,
 	},
 	library: {
 		display: 'flex',
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
-		inlineSize: '100%',
 		minBlockSize: 0,
 	},
 })
@@ -106,28 +89,26 @@ export function ExpandedAppSidebar({
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.brandRow)}>
-				<div {...stylex.props(styles.brandLabel)}>
-					<Button.Icon
-						aria-label='Collapse sidebar'
-						aria-expanded
-						aria-controls={navId}
-						onClick={onToggle}
-						ref={toggleRef}
-						shape='round'
-						size='micro'
-						variant='ghost'
-						xstyle={styles.headerButton}
-					>
-						<PanelLeft
-							aria-hidden='true'
-							size={appSidebar.iconSize}
-							strokeWidth={iconWeights.medium}
-						/>
-					</Button.Icon>
-					<Link to='/review' {...stylex.props(styles.brand)}>
-						<span {...stylex.props(styles.brandText)}>3gulp</span>
-					</Link>
-				</div>
+				<Button.Icon
+					aria-label='Collapse sidebar'
+					aria-expanded
+					aria-controls={navId}
+					onClick={onToggle}
+					ref={toggleRef}
+					shape='round'
+					size='micro'
+					variant='ghost'
+					xstyle={styles.headerButton}
+				>
+					<PanelLeft
+						aria-hidden='true'
+						size={appSidebar.iconSize}
+						strokeWidth={iconWeights.medium}
+					/>
+				</Button.Icon>
+				<Link to='/review' {...stylex.props(styles.brand)}>
+					<span {...stylex.props(styles.brandText)}>3gulp</span>
+				</Link>
 				<div {...stylex.props(styles.actions)}>
 					<HideModeButton xstyle={styles.headerButton} />
 					<SearchDialog triggerXstyle={styles.headerButton} />
@@ -137,16 +118,12 @@ export function ExpandedAppSidebar({
 			<div {...stylex.props(styles.library)}>
 				<LibraryNavigation />
 			</div>
-			<div {...stylex.props(styles.footer)}>
-				<SidebarItem
-					icon={Settings}
-					render={
-						<Link activeOptions={{ exact: true }} to='/settings' />
-					}
-				>
-					Settings
-				</SidebarItem>
-			</div>
+			<SidebarItem
+				icon={Settings}
+				render={<Link activeOptions={{ exact: true }} to='/settings' />}
+			>
+				Settings
+			</SidebarItem>
 		</div>
 	)
 }
