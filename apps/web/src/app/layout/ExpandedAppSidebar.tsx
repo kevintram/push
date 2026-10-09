@@ -79,7 +79,6 @@ const styles = stylex.create({
 		transform: 'translateY(-1px)',
 	},
 	actions: {
-		gap: spacing.xs,
 		alignItems: 'center',
 		display: 'flex',
 		marginInlineStart: 'auto',

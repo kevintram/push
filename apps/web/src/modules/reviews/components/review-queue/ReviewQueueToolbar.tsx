@@ -9,7 +9,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { iconSizes, spacing } from '~/styles/tokens.stylex'
+import { iconSizes } from '~/styles/tokens.stylex'
 
 import {
 	REVIEW_QUEUE_NEXT_HOTKEY,
@@ -36,7 +36,6 @@ const styles = stylex.create({
 		justifyContent: 'flex-end',
 	},
 	headerButtonCluster: {
-		gap: spacing['2xs'],
 		alignItems: 'center',
 		display: 'flex',
 	},
