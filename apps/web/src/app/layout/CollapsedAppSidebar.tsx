@@ -1,4 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
+import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { Link } from '@tanstack/react-router'
 import {
 	BellRing,
@@ -12,6 +13,7 @@ import type { Ref } from 'react'
 
 import { SidebarIconButton, SidebarItem } from '~/components/sidebar'
 import {
+	Kbd,
 	StatusDot,
 	Tooltip,
 	TooltipContent,
@@ -21,6 +23,8 @@ import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import { layout, radii, spacing } from '~/styles/tokens.stylex'
+
+import { SIDEBAR_HOTKEY } from './sidebarHotkey'
 
 const styles = stylex.create({
 	// Matches the gap AppShell leaves around the page surface.
@@ -101,7 +105,10 @@ export function CollapsedAppSidebar({
 						</span>
 					}
 				/>
-				<TooltipContent side='right'>Expand sidebar</TooltipContent>
+				<TooltipContent side='right'>
+					Expand sidebar
+					<Kbd>{formatForDisplay(SIDEBAR_HOTKEY)}</Kbd>
+				</TooltipContent>
 			</Tooltip>
 			<div {...stylex.props(styles.group)}>
 				<HideModeButton tooltipSide='right' />

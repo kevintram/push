@@ -87,10 +87,15 @@ export function AppShell({ children }: AppShellProps) {
 	}, [isSidebarExpanded, setSidebarExpanded])
 
 	// The hotkey leaves focus where it is, unless focus is on the toggle that
-	// is about to unmount.
+	// is about to unmount. Skip auto-repeat instead of using `requireReset`:
+	// macOS sends no keyup for B while Cmd is held, so a reset would swallow
+	// the next press until Cmd is released.
 	useHotkey(
 		SIDEBAR_HOTKEY,
-		() => {
+		event => {
+			if (event.repeat) {
+				return
+			}
 			const { activeElement } = document
 			const isToggleFocused =
 				activeElement !== null &&
@@ -102,7 +107,7 @@ export function AppShell({ children }: AppShellProps) {
 				setSidebarExpanded(!isSidebarExpanded)
 			}
 		},
-		{ ignoreInputs: false, preventDefault: true, requireReset: true },
+		{ preventDefault: true },
 	)
 
 	useLayoutEffect(() => {
