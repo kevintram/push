@@ -19,7 +19,6 @@ import {
 } from '~/components/ui'
 import { searchDialogColors } from '~/styles/colors/components.stylex'
 import {
-	appSidebar,
 	breakpoints,
 	fontSizes,
 	iconSizes,
@@ -219,7 +218,7 @@ export function SearchDialog() {
 								>
 									<Search
 										aria-hidden='true'
-										size={appSidebar.iconSize}
+										size={iconSizes.md}
 										strokeWidth={iconWeights.medium}
 									/>
 								</Button.Icon>

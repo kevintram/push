@@ -22,7 +22,7 @@ import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import {
-	appSidebar,
+	iconSizes,
 	iconWeights,
 	layout,
 	radii,
@@ -109,7 +109,7 @@ export function CollapsedAppSidebar({
 							>
 								<PanelLeft
 									aria-hidden='true'
-									size={appSidebar.iconSize}
+									size={iconSizes.md}
 									strokeWidth={iconWeights.medium}
 								/>
 							</Button.Icon>
@@ -138,7 +138,7 @@ export function CollapsedAppSidebar({
 									>
 										<Icon
 											aria-hidden='true'
-											size={appSidebar.iconSize}
+											size={iconSizes.md}
 											strokeWidth={iconWeights.medium}
 										/>
 										{queue.count > 0 && (
@@ -171,7 +171,7 @@ export function CollapsedAppSidebar({
 						>
 							<Settings
 								aria-hidden='true'
-								size={appSidebar.iconSize}
+								size={iconSizes.md}
 								strokeWidth={iconWeights.medium}
 							/>
 						</SidebarItem.Icon>

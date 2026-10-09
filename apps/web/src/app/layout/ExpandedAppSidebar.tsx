@@ -11,9 +11,9 @@ import { ReviewNavigation } from '~/modules/reviews/components/review-navigation
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
-	appSidebar,
 	fontSizes,
 	fontWeights,
+	iconSizes,
 	iconWeights,
 	layout,
 	spacing,
@@ -93,7 +93,7 @@ export function ExpandedAppSidebar({
 				>
 					<PanelLeft
 						aria-hidden='true'
-						size={appSidebar.iconSize}
+						size={iconSizes.md}
 						strokeWidth={iconWeights.medium}
 					/>
 				</Button.Icon>

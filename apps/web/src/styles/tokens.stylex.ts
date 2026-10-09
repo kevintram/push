@@ -69,13 +69,10 @@ export const buttonSizes = stylex.defineConsts({
 	large: '2.5rem', // 40px
 })
 
-const sidebarIconSize = '1rem'
-
 export const appSidebar = stylex.defineConsts({
-	iconSize: sidebarIconSize,
 	// Sidebar rows are as tall as a small button. This lands a row's leading
 	// icon where a small icon button centers its glyph.
-	rowInset: `calc((${buttonSizes.small} - ${sidebarIconSize}) / 2)`,
+	rowInset: `calc((${buttonSizes.small} - ${iconSizes.md}) / 2)`,
 })
 
 export const breakpoints = stylex.defineConsts({

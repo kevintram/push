@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 
 import { treeColors } from '~/styles/colors/components.stylex'
-import { appSidebar, buttonSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { buttonSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { useTreeItemContext } from './TreeItemContext'
 
@@ -22,7 +22,7 @@ const styles = stylex.create({
 			':hover': treeColors.itemBackgroundHover,
 		},
 		display: 'grid',
-		gridTemplateColumns: `${appSidebar.iconSize} minmax(0, 1fr)`,
+		gridTemplateColumns: `${iconSizes.md} minmax(0, 1fr)`,
 		minBlockSize: buttonSizes.micro,
 		paddingInlineStart: spacing.sm,
 	},

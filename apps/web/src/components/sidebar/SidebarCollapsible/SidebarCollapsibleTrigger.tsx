@@ -8,6 +8,7 @@ import {
 	buttonSizes,
 	fontSizes,
 	fontWeights,
+	iconSizes,
 	iconWeights,
 	radii,
 	spacing,
@@ -42,9 +43,9 @@ const styles = stylex.create({
 		textAlign: 'start',
 	},
 	chevron: {
-		blockSize: appSidebar.iconSize,
+		blockSize: iconSizes.md,
 		flexShrink: 0,
-		inlineSize: appSidebar.iconSize,
+		inlineSize: iconSizes.md,
 		opacity: {
 			default: 0,
 			[stylex.when.ancestor(':focus-within')]: 1,

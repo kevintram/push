@@ -13,6 +13,7 @@ import {
 	buttonSizes,
 	fontSizes,
 	fontWeights,
+	iconSizes,
 	iconWeights,
 	radii,
 	spacing,
@@ -172,7 +173,7 @@ export function SidebarItem({
 					<>
 						{Icon && (
 							<Icon
-								size={appSidebar.iconSize}
+								size={iconSizes.md}
 								strokeWidth={iconWeights.medium}
 								{...stylex.props(styles.sidebarIcon)}
 							/>
