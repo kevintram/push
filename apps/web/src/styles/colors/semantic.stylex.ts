@@ -25,7 +25,7 @@ export const semanticColors = stylex.defineVars({
 	// A quiet background that separates secondary regions from the primary surface.
 	surfaceSecondary: { default: neutral.s100, [DARK]: neutral.s900 },
 	// A third background level that separates nested regions from secondary surfaces.
-	surfaceTertiary: { default: neutral.s200, [DARK]: neutral.s850 },
+	surfaceTertiary: { default: neutral.s150, [DARK]: neutral.s850 },
 	// An elevated surface that should appear above its surrounding surface.
 	surfaceRaised: { default: neutral.s100, [DARK]: neutral.s900 },
 	// A recessed surface that should appear inset beneath its surrounding surface.
