@@ -55,7 +55,6 @@ const styles = stylex.create({
 			'linear-gradient(to bottom, transparent 0, black 24px, black calc(100% - 24px), transparent 100%)',
 	},
 	collectionTree: {
-		gap: 0,
 		paddingBlockEnd: spacing.xl,
 	},
 })

@@ -1,7 +1,13 @@
 import * as stylex from '@stylexjs/stylex'
 
 import { treeColors } from '~/styles/colors/components.stylex'
-import { buttonSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
+import {
+	appSidebar,
+	buttonSizes,
+	iconSizes,
+	radii,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 import { useTreeItemContext } from './TreeItemContext'
 
@@ -23,8 +29,10 @@ const styles = stylex.create({
 		},
 		display: 'grid',
 		gridTemplateColumns: `${iconSizes.md} minmax(0, 1fr)`,
-		minBlockSize: buttonSizes.micro,
-		paddingInlineStart: spacing.sm,
+		// Rows sit flush at small-button height, with the leading icon where a
+		// small icon button centers its glyph.
+		minBlockSize: buttonSizes.small,
+		paddingInlineStart: appSidebar.rowInset,
 	},
 	selected: {
 		backgroundColor: {

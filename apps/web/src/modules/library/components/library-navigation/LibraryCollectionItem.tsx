@@ -14,7 +14,6 @@ import {
 	TreeItemLabel,
 } from '~/components/ui'
 import { libraryCollectionItemColors } from '~/styles/colors/components.stylex'
-import { appSidebar, buttonSizes } from '~/styles/tokens.stylex'
 
 import {
 	useCreateCollection,
@@ -40,22 +39,7 @@ const collectionPointerSensor = PointerSensor.configure({
 	},
 })
 
-// Sidebar rows sit flush on the same row rhythm as SidebarItem.
 const styles = stylex.create({
-	container: {
-		gap: 0,
-	},
-	content: {
-		minBlockSize: buttonSizes.small,
-		paddingInlineStart: appSidebar.rowInset,
-	},
-	label: {
-		paddingBlock: 0,
-		alignSelf: 'stretch',
-	},
-	children: {
-		gap: 0,
-	},
 	containerDragging: {
 		backgroundColor:
 			libraryCollectionItemColors.containerBackgroundDragging,
@@ -189,12 +173,11 @@ export function LibraryCollectionItem({
 			onOpenChange={open => onCollectionOpenChange(_id, open)}
 			selected={isActive}
 			xstyle={[
-				styles.container,
 				isDragging && styles.containerDragging,
 				isDropTarget && styles.containerIsDropTarget,
 			]}
 		>
-			<TreeItemContent ref={droppableElementRef} xstyle={styles.content}>
+			<TreeItemContent ref={droppableElementRef}>
 				<TreeItemCollapsibleTrigger
 					aria-label={`Toggle ${collectionTitle}`}
 				/>
@@ -210,7 +193,6 @@ export function LibraryCollectionItem({
 								/>
 							}
 							onClick={handleLabelClick}
-							xstyle={styles.label}
 						>
 							{collectionTitle}
 						</TreeItemLabel>
@@ -221,7 +203,7 @@ export function LibraryCollectionItem({
 				/>
 			</TreeItemContent>
 
-			<TreeItemChildren xstyle={styles.children}>
+			<TreeItemChildren>
 				{childCollections.map(child => (
 					<LibraryCollectionItem
 						key={child._id}
