@@ -13,7 +13,7 @@ import {
 	SidebarCollapsibleTrigger,
 	SidebarIconButton,
 } from '~/components/sidebar'
-import { Tree } from '~/components/ui'
+import { Tooltip, TooltipContent, TooltipTrigger, Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
@@ -117,17 +117,31 @@ export function LibraryNavigationContent({
 			<SidebarCollapsibleHeader ref={libraryRootRef}>
 				<SidebarCollapsibleTrigger>Library</SidebarCollapsibleTrigger>
 				<SidebarCollapsibleActions>
-					<SidebarIconButton
-						aria-label='Collapse all collections'
-						disabled={openCollectionIds.size === 0}
-						icon={ChevronsDownUp}
-						onClick={onCollapseAll}
-					/>
-					<SidebarIconButton
-						aria-label='Add collection'
-						icon={Plus}
-						onClick={handleCreateCollection}
-					/>
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<SidebarIconButton
+									aria-label='Collapse all'
+									disabled={openCollectionIds.size === 0}
+									icon={ChevronsDownUp}
+									onClick={onCollapseAll}
+								/>
+							}
+						/>
+						<TooltipContent>Collapse all</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<SidebarIconButton
+									aria-label='Add collection'
+									icon={Plus}
+									onClick={handleCreateCollection}
+								/>
+							}
+						/>
+						<TooltipContent>Add collection</TooltipContent>
+					</Tooltip>
 				</SidebarCollapsibleActions>
 			</SidebarCollapsibleHeader>
 			<SidebarCollapsibleContent
