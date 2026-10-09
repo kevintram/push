@@ -71,12 +71,12 @@ const styles = stylex.create({
 		minBlockSize: 0,
 		minInlineSize: 0,
 		paddingBlockEnd: spacing.sm,
-		paddingBlockStart: spacing.sm,
+		// Combined with the shell inset, align review controls to the app toggle.
+		paddingBlockStart: spacing.xs,
 	},
 	panelsCollapsed: {
 		paddingInline: spacing.xs,
 		paddingBlockEnd: spacing.xs,
-		paddingBlockStart: spacing.xs,
 	},
 	cardColumn: {
 		gap: spacing.sm,
