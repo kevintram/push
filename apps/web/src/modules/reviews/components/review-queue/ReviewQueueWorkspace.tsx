@@ -61,8 +61,8 @@ const styles = stylex.create({
 		backgroundColor: reviewQueueColors.containerBackground,
 	},
 	panels: {
+		padding: spacing.sm,
 		gap: spacing.sm,
-		paddingInline: spacing.sm,
 		display: 'flex',
 		flexBasis: 0,
 		flexDirection: 'row',
@@ -70,16 +70,13 @@ const styles = stylex.create({
 		flexShrink: 1,
 		minBlockSize: 0,
 		minInlineSize: 0,
-		paddingBlockEnd: spacing.sm,
-		// Combined with the shell inset, align review controls to the app toggle.
-		paddingBlockStart: spacing.xs,
 	},
 	panelsCollapsed: {
 		paddingInline: spacing.xs,
 		paddingBlockEnd: spacing.xs,
 	},
 	cardColumn: {
-		gap: spacing.sm,
+		gap: spacing.xs,
 		display: 'flex',
 		flexBasis: 0,
 		flexDirection: 'column',
@@ -87,6 +84,12 @@ const styles = stylex.create({
 		flexShrink: 1,
 		minBlockSize: 0,
 		minInlineSize: 0,
+	},
+	// Toolbar controls and the sidebar close button are both 36px; offset by
+	// the sidebar's 1px top border so their centers line up.
+	toolbar: {
+		paddingBlockEnd: spacing.sm,
+		paddingBlockStart: `calc(${spacing.sm} + 1px)`,
 	},
 	cardPanel: {
 		borderColor: reviewQueueColors.panelBorder,
@@ -203,15 +206,17 @@ export function ReviewQueueWorkspace({
 				)}
 			>
 				<div {...stylex.props(styles.cardColumn)}>
-					<ReviewQueueToolbar
-						index={index}
-						cardCount={visibleCards.length}
-						queueSidebarOpen={queueSidebarOpen}
-						queueSidebarToggleRef={queueSidebarToggleRef}
-						onPrevious={goPrevious}
-						onNext={goNext}
-						onQueueSidebarToggle={onQueueSidebarToggle}
-					/>
+					<div {...stylex.props(styles.toolbar)}>
+						<ReviewQueueToolbar
+							index={index}
+							cardCount={visibleCards.length}
+							queueSidebarOpen={queueSidebarOpen}
+							queueSidebarToggleRef={queueSidebarToggleRef}
+							onPrevious={goPrevious}
+							onNext={goNext}
+							onQueueSidebarToggle={onQueueSidebarToggle}
+						/>
+					</div>
 					<section
 						aria-label='Current card'
 						{...stylex.props(styles.cardPanel)}

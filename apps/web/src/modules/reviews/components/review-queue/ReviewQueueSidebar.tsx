@@ -147,7 +147,7 @@ export function ReviewQueueSidebar({
 									aria-label='Close queue'
 									xstyle={styles.closeButton}
 									shape='round'
-									size='small'
+									size='medium'
 									variant='ghost'
 									onClick={onClose}
 								>

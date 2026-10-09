@@ -53,7 +53,6 @@ export function ReviewQueueToolbar({
 }: ReviewQueueToolbarProps) {
 	return (
 		<header {...stylex.props(styles.header)}>
-			{/* Match the 36px sidebar and collection toolbar control size. */}
 			<div {...stylex.props(styles.headerButtonCluster)}>
 				<Tooltip>
 					<TooltipTrigger
