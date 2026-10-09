@@ -14,7 +14,7 @@ import {
 	buttonColors,
 	sidebarItemColors,
 } from '~/styles/colors/components.stylex'
-import { appSidebar, spacing } from '~/styles/tokens.stylex'
+import { appSidebar, iconWeights, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	link: {
@@ -76,6 +76,7 @@ export function SidebarRailReviewLink({
 					>
 						<Icon
 							aria-hidden='true'
+							strokeWidth={iconWeights.medium}
 							{...stylex.props(styles.icon)}
 						/>
 						{queue.count > 0 && (

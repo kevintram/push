@@ -15,6 +15,7 @@ import {
 	appSidebar,
 	fontSizes,
 	fontWeights,
+	iconWeights,
 	layout,
 	spacing,
 } from '~/styles/tokens.stylex'
@@ -139,6 +140,7 @@ export function ExpandedAppSidebar({
 						<PanelLeft
 							aria-hidden='true'
 							size={appSidebar.iconSize}
+							strokeWidth={iconWeights.medium}
 						/>
 					</Button.Icon>
 					<Link to='/review' {...stylex.props(styles.brand)}>

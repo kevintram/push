@@ -25,7 +25,12 @@ import {
 	sidebarItemColors,
 } from '~/styles/colors/components.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
-import { appSidebar, layout, spacing } from '~/styles/tokens.stylex'
+import {
+	appSidebar,
+	iconWeights,
+	layout,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 import { hideModeSidebarTheme } from './hideModeSidebarTheme'
 import { SidebarRailReviewLink } from './SidebarRailReviewLink'
@@ -127,6 +132,7 @@ export function CollapsedAppSidebar({
 								<PanelLeft
 									aria-hidden='true'
 									size={appSidebar.iconSize}
+									strokeWidth={iconWeights.medium}
 								/>
 							</Button.Icon>
 						</span>
@@ -181,6 +187,7 @@ export function CollapsedAppSidebar({
 						>
 							<Settings
 								aria-hidden='true'
+								strokeWidth={iconWeights.medium}
 								{...stylex.props(styles.controlIcon)}
 							/>
 						</Button.Icon>
