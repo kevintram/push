@@ -40,10 +40,6 @@ const styles = stylex.create({
 		fontWeight: fontWeights.semibold,
 		marginInlineStart: spacing['2xs'],
 	},
-	brandText: {
-		// The lowercase descender makes the wordmark look slightly low beside centered icons.
-		transform: 'translateY(-1px)',
-	},
 	actions: {
 		display: 'flex',
 		marginInlineStart: 'auto',
@@ -80,7 +76,7 @@ export function ExpandedAppSidebar({
 					ref={toggleRef}
 				/>
 				<Link to='/review' {...stylex.props(styles.brand)}>
-					<span {...stylex.props(styles.brandText)}>3gulp</span>
+					3gulp
 				</Link>
 				<div {...stylex.props(styles.actions)}>
 					<HideModeButton />
