@@ -36,19 +36,11 @@ pnpm install
 pnpm dev
 ```
 
-## Worktrees
+## Environment
 
-Git worktrees support parallel development with isolated app ports. Each
-worktree gets a slot *S* (0–15), and the web app runs on port `6173 + S`.
-
-- `worktree-scripts/add.sh` creates a worktree and installs app dependencies.
-- `worktree-scripts/gen-env.sh` writes `.worktree.env`, site `PUBLIC_APP_URL`,
-  and `apps/web/.env.local` from the shared `web.env.local` template beside the
-  repository. The template should contain `VITE_CLERK_PUBLISHABLE_KEY` and
-  `VITE_CONVEX_URL`.
-- Run `apps/web/run.sh` to refresh the environment and start the app on its
-  assigned port.
-- `worktree-scripts/remove.sh` removes a worktree and frees its slot.
+Copy `apps/web/.env.example` to `apps/web/.env.local` and set
+`VITE_CLERK_PUBLISHABLE_KEY` and `VITE_CONVEX_URL`. Copy
+`apps/site/.env.example` to `apps/site/.env` and set `PUBLIC_APP_URL`.
 
 The site login button redirects to `PUBLIC_APP_URL`. Configure that variable
 for the deployed site to point to the deployed app.

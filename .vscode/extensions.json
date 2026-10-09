@@ -1,9 +1,6 @@
 {
 	"recommendations": [
 		"oxc.oxc-vscode",
-		"charliermarsh.ruff",
-		"ms-python.python",
-		"ms-python.vscode-pylance",
 		"bradlc.vscode-tailwindcss"
 	]
 }
