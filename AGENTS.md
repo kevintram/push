@@ -16,7 +16,6 @@ and Convex for its backend.
 ```bash
 pnpm install
 pnpm run dev
-./run.sh            # Worktree-aware dev server
 pnpm test            # Unit/integration tests in watch mode
 pnpm test:ci         # Run tests once
 pnpm run lint        # TypeScript, Oxlint, and formatting checks
@@ -38,19 +37,10 @@ pnpm run build
 Use `<scope>: <description>`. Scopes include `web`, `site`, `android`, and
 `ios`; omit the scope for repository-wide changes.
 
-## Worktree and environment files
+## Environment files
 
-Each worktree gets a slot *S* (0–15); the web app uses port `6173 + S`.
-
-- `worktree-scripts/add.sh` creates the worktree, environment, `apps/web/run.sh`,
-  and installs dependencies.
-- `worktree-scripts/gen-env.sh` maintains `.worktree.env`,
-  `apps/web/.env.local`, and `apps/site/.env`. It reads
-  `VITE_CLERK_PUBLISHABLE_KEY` and `VITE_CONVEX_URL` from the shared
-  `web.env.local` template beside the repository.
-- `apps/web/run.sh` refreshes generated values and starts Vite on the assigned
-  worktree port.
-- `worktree-scripts/remove.sh` removes a worktree and frees its slot.
+Copy `apps/web/.env.example` to `apps/web/.env.local` and
+`apps/site/.env.example` to `apps/site/.env`, then fill in the values.
 
 The site uses `PUBLIC_APP_URL` for the login redirect. Set this to the app's
 deployed URL in the hosting environment.
