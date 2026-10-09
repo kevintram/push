@@ -5,6 +5,7 @@ import { CollapsibleTrigger } from '~/components/ui'
 import { sidebarSectionHeaderColors } from '~/styles/colors/components.stylex'
 import {
 	appSidebar,
+	buttonSizes,
 	fontSizes,
 	fontWeights,
 	iconWeights,
@@ -14,13 +15,15 @@ import {
 
 const styles = stylex.create({
 	trigger: {
-		padding: spacing.sm,
 		borderWidth: 0,
 		gap: spacing.xs,
+		paddingBlock: 0,
+		paddingInline: appSidebar.rowInset,
 
 		borderRadius: radii.lg,
 		alignItems: 'center',
 		backgroundColor: 'transparent',
+		blockSize: buttonSizes.small,
 		color: {
 			default: sidebarSectionHeaderColors.foreground,
 			':disabled': sidebarSectionHeaderColors.foregroundDisabled,

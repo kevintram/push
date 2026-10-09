@@ -58,10 +58,6 @@ export const iconSizes = stylex.defineVars({
 	'2xl': '3rem',
 })
 
-export const appSidebar = stylex.defineConsts({
-	iconSize: '1rem',
-})
-
 export const buttonSizes = stylex.defineConsts({
 	// Hitbox around the 16px md glyph: 5px inset per side, not alignment spacing.
 	micro: '26px',
@@ -69,6 +65,15 @@ export const buttonSizes = stylex.defineConsts({
 	small: '32px',
 	medium: '36px',
 	large: '40px',
+})
+
+const sidebarIconSize = '1rem'
+
+export const appSidebar = stylex.defineConsts({
+	iconSize: sidebarIconSize,
+	// Sidebar rows are as tall as a small button. This lands a row's leading
+	// icon where a small icon button centers its glyph.
+	rowInset: `calc((${buttonSizes.small} - ${sidebarIconSize}) / 2)`,
 })
 
 export const breakpoints = stylex.defineConsts({

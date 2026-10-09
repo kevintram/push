@@ -11,16 +11,18 @@ import {
 } from '~/components/sidebar'
 import { StatusDot } from '~/components/ui'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
-import { spacing } from '~/styles/tokens.stylex'
+import { appSidebar } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	items: {
 		display: 'flex',
 		flexDirection: 'column',
 	},
+	// Centers the dot in an icon-sized slot so it lines up with header actions.
 	statusDotWrapper: {
-		paddingInline: spacing.sm,
 		display: 'flex',
+		inlineSize: appSidebar.iconSize,
+		justifyContent: 'center',
 		marginInlineStart: 'auto',
 	},
 })

@@ -10,6 +10,7 @@ import {
 } from '~/styles/colors/components.stylex'
 import {
 	appSidebar,
+	buttonSizes,
 	fontSizes,
 	fontWeights,
 	iconWeights,
@@ -85,10 +86,9 @@ const styles = stylex.create({
 		borderRadius: radii.md,
 		gap: spacing.sm,
 		paddingBlock: spacing.none,
-		blockSize: '36px',
+		paddingInline: appSidebar.rowInset,
+		blockSize: buttonSizes.small,
 		fontSize: fontSizes.sm,
-		paddingInlineEnd: spacing.xs,
-		paddingInlineStart: spacing.sm, // so indicators align with SidebarHeaderActions
 	},
 	iconOnly: {
 		paddingInline: spacing.none,

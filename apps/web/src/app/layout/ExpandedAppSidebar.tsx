@@ -12,6 +12,7 @@ import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	appSidebar,
+	buttonSizes,
 	fontSizes,
 	fontWeights,
 	iconWeights,
@@ -20,29 +21,28 @@ import {
 } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
+	// Matches the gap AppShell leaves around the page surface.
 	container: {
-		gap: spacing.xs,
+		padding: layout.appShellInset,
+		// Separates the header and each section.
+		gap: spacing.md,
 		blockSize: '100%',
 		display: 'flex',
 		flexDirection: 'column',
 		inlineSize: '240px',
-		paddingBlockEnd: spacing.xs,
-		// Add the shell inset so the toggle aligns with page toolbar controls.
-		paddingBlockStart: `calc(${spacing.xs} + ${layout.appShellInset})`,
-		paddingInlineStart: spacing.xs,
 	},
+	// Same top padding as the page toolbars so the header centers with
+	// breadcrumbs.
 	brandRow: {
-		// Places the toggle at the same x as the collapsed rail's toggle.
-		paddingInline: spacing['2xs'],
 		alignItems: 'center',
 		display: 'flex',
-		minBlockSize: '36px',
+		paddingBlockStart: spacing.sm,
 	},
 	headerButton: {
 		paddingBlock: 0,
 		paddingInline: 0,
-		blockSize: '36px',
-		inlineSize: '36px',
+		blockSize: buttonSizes.small,
+		inlineSize: buttonSizes.small,
 	},
 	brand: {
 		textDecoration: 'none',

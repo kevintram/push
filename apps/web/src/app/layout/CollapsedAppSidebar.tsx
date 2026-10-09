@@ -23,6 +23,7 @@ import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCoun
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import {
 	appSidebar,
+	buttonSizes,
 	iconWeights,
 	layout,
 	radii,
@@ -30,31 +31,35 @@ import {
 } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
+	// Matches the gap AppShell leaves around the page surface.
 	rail: {
-		gap: spacing.sm,
-		paddingInline: spacing.xs,
+		padding: layout.appShellInset,
+		// Separates each group, matching the expanded sidebar's sections.
+		gap: spacing.md,
 		alignItems: 'center',
 		blockSize: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-		inlineSize: '48px',
-		paddingBlockEnd: spacing.sm,
-		// Add the shell inset so the toggle aligns with page toolbar controls.
-		paddingBlockStart: `calc(${spacing.xs} + ${layout.appShellInset})`,
 	},
-	// Top-level app controls share this 36px hit area across shell layouts.
+	// Top-level app controls are small-button sized across shell layouts.
 	controlWrapper: {
 		alignItems: 'center',
-		blockSize: '36px',
+		blockSize: buttonSizes.small,
 		display: 'flex',
-		inlineSize: '36px',
+		inlineSize: buttonSizes.small,
 		justifyContent: 'center',
+		// Keeps the toggle in place when the expanded sidebar's header takes over.
+		marginBlockStart: spacing.sm,
+	},
+	group: {
+		display: 'flex',
+		flexDirection: 'column',
 	},
 	railItem: {
 		paddingBlock: 0,
 		paddingInline: 0,
-		blockSize: '36px',
-		inlineSize: '36px',
+		blockSize: buttonSizes.small,
+		inlineSize: buttonSizes.small,
 	},
 	// Round to match the rail's Button.Icon controls.
 	railLink: {
@@ -126,36 +131,42 @@ export function CollapsedAppSidebar({
 				/>
 				<TooltipContent side='right'>Expand sidebar</TooltipContent>
 			</Tooltip>
-			<HideModeButton tooltipSide='right' xstyle={styles.railItem} />
-			<SearchDialog triggerXstyle={styles.railItem} />
+			<div {...stylex.props(styles.group)}>
+				<HideModeButton tooltipSide='right' xstyle={styles.railItem} />
+				<SearchDialog triggerXstyle={styles.railItem} />
+			</div>
 
-			{reviewLinks.map(({ icon: Icon, label, queueKey, to }) => {
-				const queue = queues[queueKey]
-				const name = queue.countLabel ?? label
-				return (
-					<Tooltip key={to}>
-						<TooltipTrigger
-							render={
-								<SidebarItem.Icon
-									ariaLabel={name}
-									render={<Link to={to} />}
-									xstyle={styles.railLink}
-								>
-									<Icon
-										aria-hidden='true'
-										size={appSidebar.iconSize}
-										strokeWidth={iconWeights.medium}
-									/>
-									{queue.count > 0 && (
-										<StatusDot xstyle={styles.statusDot} />
-									)}
-								</SidebarItem.Icon>
-							}
-						/>
-						<TooltipContent side='right'>{name}</TooltipContent>
-					</Tooltip>
-				)
-			})}
+			<div {...stylex.props(styles.group)}>
+				{reviewLinks.map(({ icon: Icon, label, queueKey, to }) => {
+					const queue = queues[queueKey]
+					const name = queue.countLabel ?? label
+					return (
+						<Tooltip key={to}>
+							<TooltipTrigger
+								render={
+									<SidebarItem.Icon
+										ariaLabel={name}
+										render={<Link to={to} />}
+										xstyle={styles.railLink}
+									>
+										<Icon
+											aria-hidden='true'
+											size={appSidebar.iconSize}
+											strokeWidth={iconWeights.medium}
+										/>
+										{queue.count > 0 && (
+											<StatusDot
+												xstyle={styles.statusDot}
+											/>
+										)}
+									</SidebarItem.Icon>
+								}
+							/>
+							<TooltipContent side='right'>{name}</TooltipContent>
+						</Tooltip>
+					)
+				})}
+			</div>
 
 			<div aria-hidden='true' {...stylex.props(styles.spacer)} />
 			<Tooltip>
