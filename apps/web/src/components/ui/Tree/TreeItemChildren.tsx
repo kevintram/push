@@ -18,7 +18,7 @@ export interface TreeItemChildrenProps extends Omit<
 const styles = stylex.create({
 	children: {
 		margin: 0,
-		gap: spacing.xs,
+		gap: 0,
 		paddingBlock: 0,
 		display: {
 			default: 'flex',

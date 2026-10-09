@@ -93,8 +93,8 @@ const styles = stylex.create({
 		transitionProperty: 'background-color',
 	},
 	icon: {
-		blockSize: iconSizes.md,
-		inlineSize: iconSizes.md,
+		blockSize: iconSizes.sm,
+		inlineSize: iconSizes.sm,
 	},
 })
 

@@ -11,10 +11,12 @@ import {
 	SidebarCollapsibleHeader,
 	SidebarCollapsibleItem,
 	SidebarCollapsibleTrigger,
+	SidebarIconButton,
 } from '~/components/sidebar'
-import { Button, Tree } from '~/components/ui'
+import { Tooltip, TooltipContent, TooltipTrigger, Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
-import { appSidebar, iconWeights, spacing } from '~/styles/tokens.stylex'
+import { spacing } from '~/styles/tokens.stylex'
+import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import { useCreateCollection } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
@@ -22,6 +24,8 @@ import {
 	type CollectionOpenChangeHandler,
 	LibraryCollectionItem,
 } from './LibraryCollectionItem'
+
+const LIBRARY_NAVIGATION_STORAGE_KEY = 'libraryNavigationOpen'
 
 const styles = stylex.create({
 	container: {
@@ -106,8 +110,14 @@ export function LibraryNavigationContent({
 
 	return (
 		<SidebarCollapsibleItem
-			defaultOpen
+			defaultOpen={readStoredBoolean(
+				LIBRARY_NAVIGATION_STORAGE_KEY,
+				true,
+			)}
 			aria-label='Library'
+			onOpenChange={open =>
+				writeStoredBoolean(LIBRARY_NAVIGATION_STORAGE_KEY, open)
+			}
 			xstyle={[
 				styles.container,
 				libraryRootIsDropTarget && styles.containerIsDropTarget,
@@ -116,33 +126,31 @@ export function LibraryNavigationContent({
 			<SidebarCollapsibleHeader ref={libraryRootRef}>
 				<SidebarCollapsibleTrigger>Library</SidebarCollapsibleTrigger>
 				<SidebarCollapsibleActions>
-					<Button.Icon
-						aria-label='Collapse all collections'
-						disabled={openCollectionIds.size === 0}
-						shape='round'
-						size='micro'
-						variant='ghost'
-						onClick={onCollapseAll}
-					>
-						<ChevronsDownUp
-							aria-hidden='true'
-							size={appSidebar.iconSize}
-							strokeWidth={iconWeights.medium}
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<SidebarIconButton
+									aria-label='Collapse all'
+									disabled={openCollectionIds.size === 0}
+									icon={ChevronsDownUp}
+									onClick={onCollapseAll}
+								/>
+							}
 						/>
-					</Button.Icon>
-					<Button.Icon
-						aria-label='Add collection'
-						shape='round'
-						size='micro'
-						variant='ghost'
-						onClick={handleCreateCollection}
-					>
-						<Plus
-							aria-hidden='true'
-							size={appSidebar.iconSize}
-							strokeWidth={iconWeights.medium}
+						<TooltipContent>Collapse all</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<SidebarIconButton
+									aria-label='Add collection'
+									icon={Plus}
+									onClick={handleCreateCollection}
+								/>
+							}
 						/>
-					</Button.Icon>
+						<TooltipContent>Add collection</TooltipContent>
+					</Tooltip>
 				</SidebarCollapsibleActions>
 			</SidebarCollapsibleHeader>
 			<SidebarCollapsibleContent

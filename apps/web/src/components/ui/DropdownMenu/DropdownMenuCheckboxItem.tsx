@@ -84,7 +84,7 @@ export function DropdownMenuCheckboxItem({
 			{...props}
 		>
 			<Menu.CheckboxItemIndicator {...stylex.props(styles.indicator)}>
-				<Check aria-hidden size={iconSizes.md} />
+				<Check aria-hidden size={iconSizes.sm} />
 			</Menu.CheckboxItemIndicator>
 			<div {...stylex.props(styles.innerContainer)}>
 				{prefix && <span {...stylex.props(styles.slot)}>{prefix}</span>}

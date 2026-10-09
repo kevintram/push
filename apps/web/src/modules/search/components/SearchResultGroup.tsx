@@ -52,8 +52,8 @@ const styles = stylex.create({
 		fontSize: fontSizes.xs,
 	},
 	icon: {
-		blockSize: iconSizes.md,
-		inlineSize: iconSizes.md,
+		blockSize: iconSizes.sm,
+		inlineSize: iconSizes.sm,
 	},
 	list: {
 		margin: 0,

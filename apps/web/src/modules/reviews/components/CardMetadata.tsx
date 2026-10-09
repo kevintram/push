@@ -156,7 +156,7 @@ export function CardMetadata({
 								{RatingIcon ? (
 									<RatingIcon
 										aria-hidden='true'
-										size={iconSizes.md}
+										size={iconSizes.sm}
 									/>
 								) : null}
 								{formatRelativeDate(lastReviewedAt, today)}
@@ -179,7 +179,7 @@ export function CardMetadata({
 									Durability
 									<Anvil
 										aria-hidden='true'
-										size={iconSizes.md}
+										size={iconSizes.sm}
 									/>
 									{durability}
 								</span>

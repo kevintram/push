@@ -4,6 +4,7 @@ import { Search, X } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
+import { SidebarIconButton } from '~/components/sidebar'
 import {
 	Button,
 	Dialog,
@@ -19,11 +20,9 @@ import {
 } from '~/components/ui'
 import { searchDialogColors } from '~/styles/colors/components.stylex'
 import {
-	appSidebar,
 	breakpoints,
 	fontSizes,
 	iconSizes,
-	iconWeights,
 	spacing,
 } from '~/styles/tokens.stylex'
 
@@ -98,10 +97,10 @@ const styles = stylex.create({
 		borderBlockEndWidth: '1px',
 	},
 	searchIcon: {
-		blockSize: iconSizes.lg,
+		blockSize: iconSizes.sm,
 		color: searchDialogColors.searchIconForeground,
 		flexShrink: 0,
-		inlineSize: iconSizes.md,
+		inlineSize: iconSizes.sm,
 	},
 	actionButton: {
 		flexShrink: 0,
@@ -110,8 +109,8 @@ const styles = stylex.create({
 		visibility: 'hidden',
 	},
 	closeIcon: {
-		blockSize: iconSizes.md,
-		inlineSize: iconSizes.md,
+		blockSize: iconSizes.sm,
+		inlineSize: iconSizes.sm,
 	},
 	input: {
 		inlineSize: '100%',
@@ -155,11 +154,7 @@ const styles = stylex.create({
 
 type ExpandedGroup = 'cards' | 'collections' | null
 
-type SearchDialogProps = {
-	triggerXstyle?: stylex.StyleXStyles
-}
-
-export function SearchDialog({ triggerXstyle }: SearchDialogProps = {}) {
+export function SearchDialog() {
 	const [isOpen, setIsOpen] = useState(false)
 	const { isError, isLoading, query, cards, setQuery, collections } =
 		useSearchResults()
@@ -215,19 +210,10 @@ export function SearchDialog({ triggerXstyle }: SearchDialogProps = {}) {
 					render={
 						<DialogTrigger
 							render={
-								<Button.Icon
+								<SidebarIconButton
 									aria-label='Search'
-									shape='round'
-									size='micro'
-									variant='ghost'
-									xstyle={triggerXstyle}
-								>
-									<Search
-										aria-hidden='true'
-										size={appSidebar.iconSize}
-										strokeWidth={iconWeights.medium}
-									/>
-								</Button.Icon>
+									icon={Search}
+								/>
 							}
 						/>
 					}

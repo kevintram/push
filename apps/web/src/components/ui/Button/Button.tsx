@@ -3,7 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 
 import { buttonColors } from '~/styles/colors/components.stylex'
 import {
-	controlSizes,
+	buttonSizes,
 	fontSizes,
 	fontWeights,
 	radii,
@@ -218,27 +218,27 @@ const sizeVariants = stylex.create({
 		borderRadius: radii.sm,
 		gap: spacing.xs,
 		paddingInline: spacing.sm,
-		blockSize: controlSizes.micro,
+		blockSize: buttonSizes.micro,
 		fontSize: fontSizes.sm,
 	},
 	tiny: {
 		borderRadius: radii.sm,
 		gap: spacing.xs,
 		paddingInline: spacing.sm,
-		blockSize: '28px',
+		blockSize: buttonSizes.tiny,
 		fontSize: fontSizes.sm,
 	},
 	small: {
 		paddingInline: spacing.sm,
-		blockSize: '32px',
+		blockSize: buttonSizes.small,
 	},
 	medium: {
 		paddingInline: spacing.md,
-		blockSize: '36px',
+		blockSize: buttonSizes.medium,
 	},
 	large: {
 		paddingInline: spacing.md,
-		blockSize: '40px',
+		blockSize: buttonSizes.large,
 	},
 })
 

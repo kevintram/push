@@ -9,7 +9,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { iconSizes, spacing } from '~/styles/tokens.stylex'
+import { iconSizes } from '~/styles/tokens.stylex'
 
 import {
 	REVIEW_QUEUE_NEXT_HOTKEY,
@@ -36,7 +36,6 @@ const styles = stylex.create({
 		justifyContent: 'flex-end',
 	},
 	headerButtonCluster: {
-		gap: spacing['2xs'],
 		alignItems: 'center',
 		display: 'flex',
 	},
@@ -65,7 +64,7 @@ export function ReviewQueueToolbar({
 								disabled={index >= cardCount - 1}
 								onClick={onNext}
 							>
-								<ChevronDown size={iconSizes.md} />
+								<ChevronDown size={iconSizes.sm} />
 							</Button.Icon>
 						}
 					/>
@@ -85,7 +84,7 @@ export function ReviewQueueToolbar({
 								disabled={index <= 0}
 								onClick={onPrevious}
 							>
-								<ChevronUp size={iconSizes.md} />
+								<ChevronUp size={iconSizes.sm} />
 							</Button.Icon>
 						}
 					/>
@@ -114,7 +113,7 @@ export function ReviewQueueToolbar({
 								active={queueSidebarOpen}
 								onClick={onQueueSidebarToggle}
 							>
-								<Menu size={iconSizes.md} />
+								<Menu size={iconSizes.sm} />
 							</Button.Icon>
 						}
 					/>

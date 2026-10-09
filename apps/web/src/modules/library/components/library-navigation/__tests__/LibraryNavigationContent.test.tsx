@@ -1,9 +1,13 @@
 import type { Id } from '@convex/_generated/dataModel'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { TooltipProvider } from '~/components/ui'
+
 import { LibraryNavigationContent } from '../LibraryNavigationContent'
+
+const STORAGE_KEY = 'libraryNavigationOpen'
 
 const mocks = vi.hoisted(() => ({
 	droppableRef: vi.fn<(element: HTMLElement | null) => void>(),
@@ -31,6 +35,7 @@ vi.mock('../../../api/collectionQueries', () => ({
 
 describe('LibraryNavigationContent', () => {
 	beforeEach(() => {
+		window.localStorage.clear()
 		mocks.droppableRef.mockClear()
 		mocks.isDropTarget = false
 		mocks.useDroppable.mockClear()
@@ -49,7 +54,7 @@ describe('LibraryNavigationContent', () => {
 		expect(mocks.useDroppable).toHaveBeenCalledWith({ id: 'library-root' })
 		const dropTarget = mocks.droppableRef.mock.calls.at(-1)?.[0]
 		expect(dropTarget).toContainElement(
-			screen.getByRole('button', { name: 'Collapse all collections' }),
+			screen.getByRole('button', { name: 'Collapse all' }),
 		)
 		expect(dropTarget).toContainElement(
 			screen.getByRole('button', { name: 'Add collection' }),
@@ -73,11 +78,33 @@ describe('LibraryNavigationContent', () => {
 		expect(
 			screen.queryByRole('navigation', { name: 'Library collections' }),
 		).not.toBeInTheDocument()
+		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('false')
 
 		await user.click(screen.getByRole('button', { name: 'Expand Library' }))
 		expect(
 			screen.getByRole('navigation', { name: 'Library collections' }),
 		).toBeInTheDocument()
+		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('true')
+	})
+
+	it('restores the collapsed library section preference', () => {
+		window.localStorage.setItem(STORAGE_KEY, 'false')
+
+		render(
+			<LibraryNavigationContent
+				collections={[]}
+				openCollectionIds={new Set()}
+				onCollectionOpenChange={vi.fn()}
+				onCollapseAll={vi.fn()}
+			/>,
+		)
+
+		expect(
+			screen.getByRole('button', { name: 'Expand Library' }),
+		).toHaveAttribute('aria-expanded', 'false')
+		expect(
+			screen.queryByRole('navigation', { name: 'Library collections' }),
+		).not.toBeInTheDocument()
 	})
 
 	it('keeps collapse-all independent from the Library section', async () => {
@@ -94,9 +121,7 @@ describe('LibraryNavigationContent', () => {
 			/>,
 		)
 
-		await user.click(
-			screen.getByRole('button', { name: 'Collapse all collections' }),
-		)
+		await user.click(screen.getByRole('button', { name: 'Collapse all' }))
 		expect(onCollapseAll).toHaveBeenCalledOnce()
 		expect(
 			screen.getByRole('button', { name: 'Collapse Library' }),
@@ -104,6 +129,38 @@ describe('LibraryNavigationContent', () => {
 		expect(
 			screen.getByRole('navigation', { name: 'Library collections' }),
 		).toBeInTheDocument()
+	})
+
+	it('shows tooltips for the library actions', async () => {
+		const user = userEvent.setup()
+		render(
+			<TooltipProvider delay={0}>
+				<LibraryNavigationContent
+					collections={[]}
+					openCollectionIds={
+						new Set(['collection-id' as Id<'collections'>])
+					}
+					onCollectionOpenChange={vi.fn()}
+					onCollapseAll={vi.fn()}
+				/>
+			</TooltipProvider>,
+		)
+
+		const collapseButton = screen.getByRole('button', {
+			name: 'Collapse all',
+		})
+		await user.hover(collapseButton)
+		expect(await screen.findByRole('tooltip')).toHaveTextContent(
+			'Collapse all',
+		)
+
+		await user.unhover(collapseButton)
+		await user.hover(screen.getByRole('button', { name: 'Add collection' }))
+		await waitFor(() =>
+			expect(screen.getByRole('tooltip')).toHaveTextContent(
+				'Add collection',
+			),
+		)
 	})
 
 	it('adds the top fade only while the collection list is scrolled', () => {

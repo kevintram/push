@@ -60,7 +60,7 @@ export function DropdownMenuSubTrigger({
 			{children}
 			<ChevronRight
 				aria-hidden
-				size={iconSizes.md}
+				size={iconSizes.sm}
 				{...stylex.props(styles.icon)}
 			/>
 		</Menu.SubmenuTrigger>

@@ -12,6 +12,7 @@ import {
 	appSidebar,
 	fontSizes,
 	fontWeights,
+	iconWeights,
 	radii,
 	spacing,
 } from '~/styles/tokens.stylex'
@@ -84,10 +85,9 @@ const styles = stylex.create({
 		borderRadius: radii.md,
 		gap: spacing.sm,
 		paddingBlock: spacing.none,
-		blockSize: '36px',
+		paddingInline: appSidebar.rowInset,
+		blockSize: appSidebar.rowHeight,
 		fontSize: fontSizes.sm,
-		paddingInlineEnd: spacing.xs,
-		paddingInlineStart: spacing.sm, // so indicators align with SidebarHeaderActions
 	},
 	iconOnly: {
 		paddingInline: spacing.none,
@@ -146,6 +146,15 @@ export function SidebarItem({
 	xstyle,
 	...props
 }: SidebarItemProps) {
+	const icon = Icon && (
+		<Icon
+			aria-hidden='true'
+			size={appSidebar.iconSize}
+			strokeWidth={iconWeights.medium}
+			{...stylex.props(styles.sidebarIcon)}
+		/>
+	)
+
 	return useRender({
 		defaultTagName: 'button',
 		props: mergeProps<'button'>(
@@ -166,15 +175,13 @@ export function SidebarItem({
 			props,
 			{
 				children: iconOnly ? (
-					<span {...stylex.props(styles.slot)}>{children}</span>
+					<span {...stylex.props(styles.slot)}>
+						{icon}
+						{children}
+					</span>
 				) : (
 					<>
-						{Icon && (
-							<Icon
-								size={appSidebar.iconSize}
-								{...stylex.props(styles.sidebarIcon)}
-							/>
-						)}
+						{icon}
 						{children}
 					</>
 				),

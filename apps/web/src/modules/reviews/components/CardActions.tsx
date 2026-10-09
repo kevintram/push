@@ -100,7 +100,7 @@ export function CardActions({
 							>
 								<ArrowUpRight
 									aria-hidden='true'
-									size={iconSizes.md}
+									size={iconSizes.sm}
 								/>
 							</Button.Icon>
 						}
@@ -121,7 +121,7 @@ export function CardActions({
 							>
 								<Zap
 									aria-hidden='true'
-									size={iconSizes.md}
+									size={iconSizes.sm}
 									{...stylex.props(styles.flashcardOn)}
 								/>
 							</Button.Icon>
@@ -143,7 +143,7 @@ export function CardActions({
 							>
 								<Flag
 									aria-hidden='true'
-									size={iconSizes.md}
+									size={iconSizes.sm}
 									{...stylex.props(styles.flagOn)}
 								/>
 							</Button.Icon>
@@ -165,7 +165,7 @@ export function CardActions({
 							>
 								<Archive
 									aria-hidden='true'
-									size={iconSizes.md}
+									size={iconSizes.sm}
 									{...stylex.props(styles.retiredOn)}
 								/>
 							</Button.Icon>
@@ -186,13 +186,13 @@ export function CardActions({
 						/>
 					}
 				>
-					<Ellipsis aria-hidden='true' size={iconSizes.md} />
+					<Ellipsis aria-hidden='true' size={iconSizes.sm} />
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align='end'>
 					<DropdownMenuItem onClick={toggleType}>
 						<Zap
 							aria-hidden='true'
-							size={iconSizes.md}
+							size={iconSizes.sm}
 							{...(isFlashcard
 								? stylex.props(styles.flashcardOn)
 								: {})}
@@ -204,7 +204,7 @@ export function CardActions({
 					<DropdownMenuItem onClick={toggleFlag}>
 						<Flag
 							aria-hidden='true'
-							size={iconSizes.md}
+							size={iconSizes.sm}
 							{...(isFlagged ? stylex.props(styles.flagOn) : {})}
 						/>
 						{isFlagged ? 'Unflag' : 'Flag'}
@@ -212,7 +212,7 @@ export function CardActions({
 					<DropdownMenuItem onClick={toggleRetire}>
 						<Archive
 							aria-hidden='true'
-							size={iconSizes.md}
+							size={iconSizes.sm}
 							{...(isRetired
 								? stylex.props(styles.retiredOn)
 								: {})}
@@ -220,14 +220,14 @@ export function CardActions({
 						{isRetired ? 'Unretire' : 'Retire'}
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={() => setIsMoveDialogOpen(true)}>
-						<FolderInput aria-hidden='true' size={iconSizes.md} />
+						<FolderInput aria-hidden='true' size={iconSizes.sm} />
 						Move
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						onClick={() => setIsDeleteDialogOpen(true)}
 					>
-						<Trash2 aria-hidden='true' size={iconSizes.md} />
+						<Trash2 aria-hidden='true' size={iconSizes.sm} />
 						Delete
 					</DropdownMenuItem>
 				</DropdownMenuContent>

@@ -10,8 +10,9 @@ import {
 } from 'lucide-react'
 import type { Ref } from 'react'
 
+import { SidebarIconButton, SidebarItem } from '~/components/sidebar'
 import {
-	Button,
+	StatusDot,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
@@ -19,65 +20,37 @@ import {
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
-import {
-	appShellColors,
-	buttonColors,
-	sidebarItemColors,
-} from '~/styles/colors/components.stylex'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
-import { appSidebar, layout, spacing } from '~/styles/tokens.stylex'
-
-import { hideModeSidebarTheme } from './hideModeSidebarTheme'
-import { SidebarRailReviewLink } from './SidebarRailReviewLink'
+import { layout, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
+	// Matches the gap AppShell leaves around the page surface.
 	rail: {
-		gap: spacing.sm,
-		paddingInline: spacing.xs,
+		padding: layout.appShellInset,
+		// Separates each group, matching the expanded sidebar's sections.
+		gap: spacing.md,
 		alignItems: 'center',
-		backgroundColor: appShellColors.chromeBackground,
-		color: semanticColors.textPrimary,
+		blockSize: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-		flexShrink: 0,
-		inlineSize: '48px',
-		paddingBlockEnd: spacing.sm,
-		// Add the shell inset so the toggle aligns with page toolbar controls.
-		paddingBlockStart: `calc(${spacing.xs} + ${layout.appShellInset})`,
-		height: '100%',
-		overflowY: 'hidden',
 	},
-	// Top-level app controls share this 36px hit area across shell layouts.
 	controlWrapper: {
-		alignItems: 'center',
-		blockSize: '36px',
 		display: 'flex',
-		inlineSize: '36px',
-		justifyContent: 'center',
+		// Matches the expanded sidebar's header so the toggle stays put.
+		marginBlockStart: layout.topBarInset,
 	},
-	controlIcon: {
-		blockSize: appSidebar.iconSize,
-		inlineSize: appSidebar.iconSize,
+	group: {
+		display: 'flex',
+		flexDirection: 'column',
 	},
-	railItem: {
-		paddingBlock: 0,
-		paddingInline: 0,
-		blockSize: '36px',
-		inlineSize: '36px',
-	},
+	// Round to match the rail's SidebarIconButton controls.
 	railLink: {
-		backgroundColor: {
-			'[data-status=active]': sidebarItemColors.backgroundSelected,
-			default: buttonColors.ghostBackground,
-			':is([data-status=active]:hover)':
-				sidebarItemColors.backgroundSelectedHover,
-			':hover': buttonColors.ghostBackgroundHover,
-		},
-		color: {
-			'[data-status=active]': sidebarItemColors.foregroundSelected,
-			default: buttonColors.ghostForeground,
-			':hover': buttonColors.ghostForegroundHover,
-		},
+		borderRadius: radii.full,
+		position: 'relative',
+	},
+	statusDot: {
+		insetBlockStart: spacing.xs,
+		insetInlineEnd: spacing.xs,
+		position: 'absolute',
 	},
 	spacer: {
 		flexBasis: 0,
@@ -86,108 +59,102 @@ const styles = stylex.create({
 	},
 })
 
+const reviewLinks = [
+	{ icon: Calendar, label: 'Due', queueKey: 'due', to: '/review/due' },
+	{ icon: Sparkles, label: 'New', queueKey: 'new', to: '/review/new' },
+	{ icon: BellRing, label: 'Late', queueKey: 'late', to: '/review/late' },
+	{
+		icon: Flag,
+		label: 'Flagged',
+		queueKey: 'flagged',
+		to: '/review/flagged',
+	},
+] as const
+
 type CollapsedAppSidebarProps = {
-	hideMode: boolean
-	id: string
-	expanded: boolean
+	navId: string
 	onToggle: () => void
 	toggleRef: Ref<HTMLButtonElement>
 }
 
 export function CollapsedAppSidebar({
-	hideMode,
-	id,
-	expanded,
+	navId,
 	onToggle,
 	toggleRef,
 }: CollapsedAppSidebarProps) {
 	const queues = useReviewQueueCounts()
 
 	return (
-		<nav
-			id={id}
-			aria-label='primary'
-			{...stylex.props(styles.rail, hideMode && hideModeSidebarTheme)}
-		>
+		<div {...stylex.props(styles.rail)}>
 			<Tooltip>
 				<TooltipTrigger
 					render={
 						<span {...stylex.props(styles.controlWrapper)}>
-							<Button.Icon
+							<SidebarIconButton
 								aria-label='Expand sidebar'
-								aria-expanded={expanded}
-								aria-controls={id}
+								aria-expanded={false}
+								aria-controls={navId}
+								icon={PanelLeft}
 								onClick={onToggle}
 								ref={toggleRef}
-								shape='round'
-								size='micro'
-								variant='ghost'
-								xstyle={styles.railItem}
-							>
-								<PanelLeft
-									aria-hidden='true'
-									size={appSidebar.iconSize}
-								/>
-							</Button.Icon>
+							/>
 						</span>
 					}
 				/>
 				<TooltipContent side='right'>Expand sidebar</TooltipContent>
 			</Tooltip>
-			<HideModeButton tooltipSide='right' xstyle={styles.railItem} />
-			<SearchDialog triggerXstyle={styles.railItem} />
+			<div {...stylex.props(styles.group)}>
+				<HideModeButton tooltipSide='right' />
+				<SearchDialog />
+			</div>
 
-			<SidebarRailReviewLink
-				icon={Calendar}
-				label='Due'
-				queue={queues.due}
-				to='/review/due'
-			/>
-			<SidebarRailReviewLink
-				icon={Sparkles}
-				label='New'
-				queue={queues.new}
-				to='/review/new'
-			/>
-			<SidebarRailReviewLink
-				icon={BellRing}
-				label='Late'
-				queue={queues.late}
-				to='/review/late'
-			/>
-			<SidebarRailReviewLink
-				icon={Flag}
-				label='Flagged'
-				queue={queues.flagged}
-				to='/review/flagged'
-			/>
+			<div {...stylex.props(styles.group)}>
+				{reviewLinks.map(({ icon, label, queueKey, to }) => {
+					const queue = queues[queueKey]
+					const name = queue.countLabel ?? label
+					return (
+						<Tooltip key={to}>
+							<TooltipTrigger
+								render={
+									<SidebarItem.Icon
+										ariaLabel={name}
+										icon={icon}
+										render={<Link to={to} />}
+										xstyle={styles.railLink}
+									>
+										{queue.count > 0 && (
+											<StatusDot
+												xstyle={styles.statusDot}
+											/>
+										)}
+									</SidebarItem.Icon>
+								}
+							/>
+							<TooltipContent side='right'>{name}</TooltipContent>
+						</Tooltip>
+					)
+				})}
+			</div>
 
 			<div aria-hidden='true' {...stylex.props(styles.spacer)} />
 			<Tooltip>
 				<TooltipTrigger
 					render={
-						<Button.Icon
-							aria-label='Settings'
+						<SidebarItem.Icon
+							ariaLabel='Settings'
+							icon={Settings}
 							render={
 								<Link
 									activeOptions={{ exact: true }}
 									to='/settings'
 								/>
 							}
-							shape='round'
-							size='micro'
-							variant='ghost'
-							xstyle={[styles.railItem, styles.railLink]}
-						>
-							<Settings
-								aria-hidden='true'
-								{...stylex.props(styles.controlIcon)}
-							/>
-						</Button.Icon>
+							xstyle={styles.railLink}
+						/>
 					}
 				/>
 				<TooltipContent side='right'>Settings</TooltipContent>
 			</Tooltip>
-		</nav>
+		</div>
 	)
 }

@@ -49,14 +49,12 @@ const styles = stylex.create({
 	},
 	toolbar: {
 		gap: spacing.md,
+		paddingBlock: layout.topBarInset,
 		paddingInline: spacing.lg,
 		alignItems: 'center',
 		display: 'flex',
 		flexShrink: 0,
 		justifyContent: 'space-between',
-		paddingBlockEnd: spacing.sm,
-		// Combined with the shell inset, align breadcrumbs and actions to the toggle.
-		paddingBlockStart: spacing.xs,
 	},
 	breadcrumbs: {
 		flexBasis: 0,
@@ -217,11 +215,12 @@ export function CollectionPage() {
 								<Button.Icon
 									aria-label='Collection actions'
 									shape='round'
+									size='small'
 									variant='ghost'
 								/>
 							}
 						>
-							<Ellipsis aria-hidden='true' size={iconSizes.md} />
+							<Ellipsis aria-hidden='true' size={iconSizes.sm} />
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align='end'>
 							<DropdownMenuItem
@@ -229,7 +228,7 @@ export function CollectionPage() {
 							>
 								<FolderInput
 									aria-hidden='true'
-									size={iconSizes.md}
+									size={iconSizes.sm}
 								/>
 								Move
 							</DropdownMenuItem>
@@ -239,7 +238,7 @@ export function CollectionPage() {
 							>
 								<Trash2
 									aria-hidden='true'
-									size={iconSizes.md}
+									size={iconSizes.sm}
 								/>
 								Delete
 							</DropdownMenuItem>
@@ -299,7 +298,7 @@ export function CollectionPage() {
 								onClick={handleCreateCard}
 								xstyle={styles.addCardButton}
 							>
-								<Plus size={iconSizes.md} />
+								<Plus size={iconSizes.sm} />
 								Add card
 							</Button>
 						</div>

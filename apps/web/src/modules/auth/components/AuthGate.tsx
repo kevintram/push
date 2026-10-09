@@ -66,7 +66,7 @@ export function AuthGate({ children }: AuthGateProps) {
 						</h1>
 						<SignInButton mode='modal'>
 							<Button>
-								<LogIn aria-hidden='true' size={iconSizes.md} />
+								<LogIn aria-hidden='true' size={iconSizes.sm} />
 								Sign in
 							</Button>
 						</SignInButton>

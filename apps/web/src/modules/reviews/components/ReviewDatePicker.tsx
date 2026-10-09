@@ -111,7 +111,7 @@ export function ReviewDatePicker(props: ReviewDatePickerProps) {
 					variant='ghost'
 					xstyle={[styles.trigger, dateToneStyle]}
 				>
-					<CalendarIcon aria-hidden='true' size={iconSizes.md} />
+					<CalendarIcon aria-hidden='true' size={iconSizes.sm} />
 					{triggerLabel}
 				</Button>
 			}

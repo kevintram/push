@@ -45,9 +45,9 @@ export function AddReviewPopover({ xstyle }: AddReviewPopoverProps) {
 							shape='round'
 							size='tiny'
 						>
-							<Plus size={iconSizes.sm} />
+							<Plus size={iconSizes.xs} />
 							Add review
-							<ChevronDown size={iconSizes.sm} />
+							<ChevronDown size={iconSizes.xs} />
 						</Button>
 					}
 				/>

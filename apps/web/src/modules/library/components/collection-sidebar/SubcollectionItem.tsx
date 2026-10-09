@@ -97,18 +97,18 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 				</ContextMenuTrigger>
 				<ContextMenuContent>
 					<ContextMenuItem onClick={handleCreateSubcollection}>
-						<Plus aria-hidden='true' size={iconSizes.md} />
+						<Plus aria-hidden='true' size={iconSizes.sm} />
 						Add subcollection
 					</ContextMenuItem>
 					<ContextMenuItem onClick={() => setIsMoveDialogOpen(true)}>
-						<FolderInput aria-hidden='true' size={iconSizes.md} />
+						<FolderInput aria-hidden='true' size={iconSizes.sm} />
 						Move
 					</ContextMenuItem>
 					<ContextMenuSeparator />
 					<ContextMenuItem
 						onClick={() => setIsDeleteDialogOpen(true)}
 					>
-						<Trash2 aria-hidden='true' size={iconSizes.md} />
+						<Trash2 aria-hidden='true' size={iconSizes.sm} />
 						Delete
 					</ContextMenuItem>
 				</ContextMenuContent>

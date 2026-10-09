@@ -17,9 +17,11 @@ export interface TreeItemLabelProps extends Omit<
 const styles = stylex.create({
 	label: {
 		borderWidth: 0,
-		paddingBlock: spacing.xs,
+		paddingBlock: 0,
 		textDecoration: 'none',
 		alignItems: 'center',
+		// Fills the row so the whole row height is clickable.
+		alignSelf: 'stretch',
 		backgroundColor: treeColors.labelBackground,
 		color: {
 			default: treeColors.labelForeground,

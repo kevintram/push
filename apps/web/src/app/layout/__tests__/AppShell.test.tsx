@@ -7,54 +7,40 @@ import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 
 import { AppShell } from '../AppShell'
 
+type SidebarMockProps = {
+	navId: string
+	onToggle: () => void
+	toggleRef: Ref<HTMLButtonElement>
+}
+
 vi.mock('../CollapsedAppSidebar', () => ({
-	CollapsedAppSidebar: ({
-		id,
-		expanded,
-		onToggle,
-		toggleRef,
-	}: {
-		id: string
-		expanded: boolean
-		onToggle: () => void
-		toggleRef: Ref<HTMLButtonElement>
-	}) => (
-		<nav aria-label='primary' data-testid='icon-only-rail' id={id}>
+	CollapsedAppSidebar: ({ navId, onToggle, toggleRef }: SidebarMockProps) => (
+		<div data-testid='icon-only-rail'>
 			<button
-				aria-controls={id}
-				aria-expanded={expanded}
+				aria-controls={navId}
+				aria-expanded={false}
 				aria-label='Expand sidebar'
 				onClick={onToggle}
 				ref={toggleRef}
 				type='button'
 			/>
-		</nav>
+		</div>
 	),
 }))
 
 vi.mock('../ExpandedAppSidebar', () => ({
-	ExpandedAppSidebar: ({
-		id,
-		expanded,
-		onToggle,
-		toggleRef,
-	}: {
-		id: string
-		expanded: boolean
-		onToggle: () => void
-		toggleRef: Ref<HTMLButtonElement>
-	}) => (
-		<nav aria-label='primary' data-testid='expanded-sidebar' id={id}>
+	ExpandedAppSidebar: ({ navId, onToggle, toggleRef }: SidebarMockProps) => (
+		<div data-testid='expanded-sidebar'>
 			<button
-				aria-controls={id}
-				aria-expanded={expanded}
+				aria-controls={navId}
+				aria-expanded
 				aria-label='Collapse sidebar'
 				onClick={onToggle}
 				ref={toggleRef}
 				type='button'
 			/>
 			<div>Library</div>
-		</nav>
+		</div>
 	),
 }))
 
@@ -89,10 +75,9 @@ describe('AppShell', () => {
 		const shell = screen.getByRole('main').parentElement
 		const toggle = screen.getByRole('button', { name: 'Expand sidebar' })
 		expect(shell).toHaveAttribute('data-hide-mode', 'off')
-		expect(screen.getByTestId('icon-only-rail')).toHaveAttribute(
-			'id',
-			'app-sidebar',
-		)
+		const nav = screen.getByRole('navigation', { name: 'primary' })
+		expect(nav).toHaveAttribute('id', 'app-sidebar')
+		expect(nav).toContainElement(screen.getByTestId('icon-only-rail'))
 		expect(toggle).toHaveAttribute('aria-expanded', 'false')
 		expect(toggle).toHaveAttribute('aria-controls', 'app-sidebar')
 		expect(screen.queryByTestId('expanded-sidebar')).not.toBeInTheDocument()
@@ -122,9 +107,9 @@ describe('AppShell', () => {
 		expect(screen.getByTestId('expanded-sidebar')).toHaveTextContent(
 			'Library',
 		)
-		expect(screen.getByRole('navigation', { name: 'primary' })).toBe(
-			screen.getByTestId('expanded-sidebar'),
-		)
+		expect(
+			screen.getByRole('navigation', { name: 'primary' }),
+		).toContainElement(screen.getByTestId('expanded-sidebar'))
 		expect(screen.queryByTestId('icon-only-rail')).not.toBeInTheDocument()
 
 		fireEvent.click(collapseToggle)

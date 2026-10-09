@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { radii, spacing } from '~/styles/tokens.stylex'
+import { radii } from '~/styles/tokens.stylex'
 
 import { Collapsible, type CollapsibleProps } from '../Collapsible'
 import { TreeItemContext } from './TreeItemContext'
@@ -17,7 +17,7 @@ export interface TreeItemProps extends Omit<
 const styles = stylex.create({
 	root: {
 		borderRadius: radii.md,
-		gap: spacing.xs,
+		gap: 0,
 		display: 'flex',
 		flexDirection: 'column',
 	},

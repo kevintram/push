@@ -185,7 +185,7 @@ export function ComponentSection() {
 								Danger round
 							</Button>
 							<Button shape='round' variant='outline'>
-								<Star aria-hidden size={iconSizes.md} />
+								<Star aria-hidden size={iconSizes.sm} />
 								Icon + label
 							</Button>
 						</div>
@@ -203,7 +203,7 @@ export function ComponentSection() {
 									size={size}
 									variant='outline'
 								>
-									<Star aria-hidden size={iconSizes.md} />
+									<Star aria-hidden size={iconSizes.sm} />
 								</Button.Icon>
 							))}
 						</div>
@@ -304,7 +304,7 @@ export function ComponentSection() {
 							render={<Button variant='outline' />}
 						>
 							My account
-							<ChevronDown aria-hidden size={iconSizes.md} />
+							<ChevronDown aria-hidden size={iconSizes.sm} />
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
 							<DropdownMenuGroup>
@@ -312,7 +312,7 @@ export function ComponentSection() {
 									My account
 								</DropdownMenuLabel>
 								<DropdownMenuItem>
-									<User aria-hidden size={iconSizes.md} />{' '}
+									<User aria-hidden size={iconSizes.sm} />{' '}
 									Profile
 									<DropdownMenuShortcut>
 										⇧⌘P
@@ -321,12 +321,12 @@ export function ComponentSection() {
 								<DropdownMenuItem>
 									<CreditCard
 										aria-hidden
-										size={iconSizes.md}
+										size={iconSizes.sm}
 									/>{' '}
 									Billing
 								</DropdownMenuItem>
 								<DropdownMenuItem disabled>
-									<Settings aria-hidden size={iconSizes.md} />{' '}
+									<Settings aria-hidden size={iconSizes.sm} />{' '}
 									Settings
 								</DropdownMenuItem>
 							</DropdownMenuGroup>
@@ -353,21 +353,21 @@ export function ComponentSection() {
 											<DropdownMenuRadioItem value='light'>
 												<Sun
 													aria-hidden
-													size={iconSizes.md}
+													size={iconSizes.sm}
 												/>{' '}
 												Light
 											</DropdownMenuRadioItem>
 											<DropdownMenuRadioItem value='dark'>
 												<Moon
 													aria-hidden
-													size={iconSizes.md}
+													size={iconSizes.sm}
 												/>{' '}
 												Dark
 											</DropdownMenuRadioItem>
 											<DropdownMenuRadioItem value='system'>
 												<Monitor
 													aria-hidden
-													size={iconSizes.md}
+													size={iconSizes.sm}
 												/>{' '}
 												System
 											</DropdownMenuRadioItem>
@@ -377,7 +377,7 @@ export function ComponentSection() {
 							</DropdownMenuSub>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem>
-								<LogOut aria-hidden size={iconSizes.md} /> Log
+								<LogOut aria-hidden size={iconSizes.sm} /> Log
 								out
 							</DropdownMenuItem>
 						</DropdownMenuContent>
@@ -398,18 +398,18 @@ export function ComponentSection() {
 						</ContextMenuTrigger>
 						<ContextMenuContent>
 							<ContextMenuItem>
-								<FilePenLine aria-hidden size={iconSizes.md} />{' '}
+								<FilePenLine aria-hidden size={iconSizes.sm} />{' '}
 								Edit
 								<ContextMenuShortcut>⌘E</ContextMenuShortcut>
 							</ContextMenuItem>
 							<ContextMenuItem>
-								<Copy aria-hidden size={iconSizes.md} />{' '}
+								<Copy aria-hidden size={iconSizes.sm} />{' '}
 								Duplicate
 								<ContextMenuShortcut>⌘D</ContextMenuShortcut>
 							</ContextMenuItem>
 							<ContextMenuSeparator />
 							<ContextMenuItem>
-								<Trash2 aria-hidden size={iconSizes.md} />{' '}
+								<Trash2 aria-hidden size={iconSizes.sm} />{' '}
 								Delete
 							</ContextMenuItem>
 						</ContextMenuContent>

@@ -11,16 +11,17 @@ export interface BreadcrumbEllipsisProps extends Omit<
 }
 
 const styles = stylex.create({
+	// A 24px box around the glyph.
 	ellipsis: {
 		alignItems: 'center',
-		blockSize: iconSizes.lg,
+		blockSize: '1.5rem',
 		display: 'flex',
-		inlineSize: iconSizes.lg,
+		inlineSize: '1.5rem',
 		justifyContent: 'center',
 	},
 	icon: {
-		blockSize: iconSizes.md,
-		inlineSize: iconSizes.md,
+		blockSize: iconSizes.sm,
+		inlineSize: iconSizes.sm,
 	},
 })
 

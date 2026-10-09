@@ -14,13 +14,15 @@ import {
 
 const styles = stylex.create({
 	trigger: {
-		padding: spacing.sm,
 		borderWidth: 0,
 		gap: spacing.xs,
+		paddingBlock: 0,
+		paddingInline: appSidebar.rowInset,
 
 		borderRadius: radii.lg,
 		alignItems: 'center',
 		backgroundColor: 'transparent',
+		blockSize: appSidebar.rowHeight,
 		color: {
 			default: sidebarSectionHeaderColors.foreground,
 			':disabled': sidebarSectionHeaderColors.foregroundDisabled,

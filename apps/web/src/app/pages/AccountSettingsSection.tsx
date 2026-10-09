@@ -10,7 +10,7 @@ import {
 	breakpoints,
 	fontSizes,
 	fontWeights,
-	iconSizes,
+	graphicSizes,
 	radii,
 	spacing,
 } from '~/styles/tokens.stylex'
@@ -125,7 +125,7 @@ export function AccountSettingsSection() {
 
 			<div {...stylex.props(styles.accountRow)}>
 				<div aria-hidden='true' {...stylex.props(styles.avatar)}>
-					<UserRound size={iconSizes.lg} strokeWidth={1.75} />
+					<UserRound size={graphicSizes.sm} strokeWidth={1.75} />
 				</div>
 
 				<div {...stylex.props(styles.accountCopy)}>

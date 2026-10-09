@@ -141,7 +141,7 @@ export function CardPropertiesPanel({
 										{lastReviewed.Icon ? (
 											<lastReviewed.Icon
 												aria-hidden='true'
-												size={iconSizes.md}
+												size={iconSizes.sm}
 											/>
 										) : null}
 										{formatRelativeDate(
@@ -173,7 +173,7 @@ export function CardPropertiesPanel({
 									>
 										<Anvil
 											aria-hidden='true'
-											size={iconSizes.md}
+											size={iconSizes.sm}
 										/>
 										{formatDurability(stability)}
 									</span>

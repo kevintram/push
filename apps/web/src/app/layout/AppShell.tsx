@@ -5,11 +5,13 @@ import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { appShellColors } from '~/styles/colors/components.stylex'
 import { slate } from '~/styles/colors/primitives.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { breakpoints, layout, radii } from '~/styles/tokens.stylex'
 import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import { CollapsedAppSidebar } from './CollapsedAppSidebar'
 import { ExpandedAppSidebar } from './ExpandedAppSidebar'
+import { hideModeSidebarTheme } from './hideModeSidebarTheme'
 
 const SIDEBAR_STORAGE_KEY = 'appSidebarExpanded'
 const SIDEBAR_ID = 'app-sidebar'
@@ -30,6 +32,11 @@ const styles = stylex.create({
 		height: '100svh',
 
 		backgroundColor: appShellColors.chromeBackground,
+	},
+	sidebar: {
+		color: semanticColors.textPrimary,
+		flexShrink: 0,
+		overflowY: 'hidden',
 	},
 	children: {
 		// Establish the inset used by sidebar and page toolbar alignment.
@@ -87,23 +94,28 @@ export function AppShell({ children }: AppShellProps) {
 			data-hide-mode={isHideMode ? 'on' : 'off'}
 			{...stylex.props(styles.shell, isHideMode && hideModeOnChromeTheme)}
 		>
-			{isSidebarExpanded ? (
-				<ExpandedAppSidebar
-					hideMode={isHideMode}
-					id={SIDEBAR_ID}
-					expanded={isSidebarExpanded}
-					onToggle={toggleSidebar}
-					toggleRef={expandedToggleRef}
-				/>
-			) : (
-				<CollapsedAppSidebar
-					hideMode={isHideMode}
-					id={SIDEBAR_ID}
-					expanded={isSidebarExpanded}
-					onToggle={toggleSidebar}
-					toggleRef={collapsedToggleRef}
-				/>
-			)}
+			<nav
+				id={SIDEBAR_ID}
+				aria-label='primary'
+				{...stylex.props(
+					styles.sidebar,
+					isHideMode && hideModeSidebarTheme,
+				)}
+			>
+				{isSidebarExpanded ? (
+					<ExpandedAppSidebar
+						navId={SIDEBAR_ID}
+						onToggle={toggleSidebar}
+						toggleRef={expandedToggleRef}
+					/>
+				) : (
+					<CollapsedAppSidebar
+						navId={SIDEBAR_ID}
+						onToggle={toggleSidebar}
+						toggleRef={collapsedToggleRef}
+					/>
+				)}
+			</nav>
 			<main {...stylex.props(styles.children)}>{children}</main>
 		</div>
 	)
