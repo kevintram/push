@@ -10,8 +10,10 @@ import {
 } from 'lucide-react'
 import type { Ref } from 'react'
 
+import { SidebarItem } from '~/components/sidebar'
 import {
 	Button,
+	StatusDot,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
@@ -20,17 +22,12 @@ import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import {
-	buttonColors,
-	sidebarItemColors,
-} from '~/styles/colors/components.stylex'
-import {
 	appSidebar,
 	iconWeights,
 	layout,
+	radii,
 	spacing,
 } from '~/styles/tokens.stylex'
-
-import { SidebarRailReviewLink } from './SidebarRailReviewLink'
 
 const styles = stylex.create({
 	rail: {
@@ -53,29 +50,21 @@ const styles = stylex.create({
 		inlineSize: '36px',
 		justifyContent: 'center',
 	},
-	controlIcon: {
-		blockSize: appSidebar.iconSize,
-		inlineSize: appSidebar.iconSize,
-	},
 	railItem: {
 		paddingBlock: 0,
 		paddingInline: 0,
 		blockSize: '36px',
 		inlineSize: '36px',
 	},
+	// Round to match the rail's Button.Icon controls.
 	railLink: {
-		backgroundColor: {
-			'[data-status=active]': sidebarItemColors.backgroundSelected,
-			default: buttonColors.ghostBackground,
-			':is([data-status=active]:hover)':
-				sidebarItemColors.backgroundSelectedHover,
-			':hover': buttonColors.ghostBackgroundHover,
-		},
-		color: {
-			'[data-status=active]': sidebarItemColors.foregroundSelected,
-			default: buttonColors.ghostForeground,
-			':hover': buttonColors.ghostForegroundHover,
-		},
+		borderRadius: radii.full,
+		position: 'relative',
+	},
+	statusDot: {
+		insetBlockStart: spacing.xs,
+		insetInlineEnd: spacing.xs,
+		position: 'absolute',
 	},
 	spacer: {
 		flexBasis: 0,
@@ -83,6 +72,18 @@ const styles = stylex.create({
 		minBlockSize: spacing.xs,
 	},
 })
+
+const reviewLinks = [
+	{ icon: Calendar, label: 'Due', queueKey: 'due', to: '/review/due' },
+	{ icon: Sparkles, label: 'New', queueKey: 'new', to: '/review/new' },
+	{ icon: BellRing, label: 'Late', queueKey: 'late', to: '/review/late' },
+	{
+		icon: Flag,
+		label: 'Flagged',
+		queueKey: 'flagged',
+		to: '/review/flagged',
+	},
+] as const
 
 type CollapsedAppSidebarProps = {
 	navId: string
@@ -128,54 +129,54 @@ export function CollapsedAppSidebar({
 			<HideModeButton tooltipSide='right' xstyle={styles.railItem} />
 			<SearchDialog triggerXstyle={styles.railItem} />
 
-			<SidebarRailReviewLink
-				icon={Calendar}
-				label='Due'
-				queue={queues.due}
-				to='/review/due'
-			/>
-			<SidebarRailReviewLink
-				icon={Sparkles}
-				label='New'
-				queue={queues.new}
-				to='/review/new'
-			/>
-			<SidebarRailReviewLink
-				icon={BellRing}
-				label='Late'
-				queue={queues.late}
-				to='/review/late'
-			/>
-			<SidebarRailReviewLink
-				icon={Flag}
-				label='Flagged'
-				queue={queues.flagged}
-				to='/review/flagged'
-			/>
+			{reviewLinks.map(({ icon: Icon, label, queueKey, to }) => {
+				const queue = queues[queueKey]
+				const name = queue.countLabel ?? label
+				return (
+					<Tooltip key={to}>
+						<TooltipTrigger
+							render={
+								<SidebarItem.Icon
+									ariaLabel={name}
+									render={<Link to={to} />}
+									xstyle={styles.railLink}
+								>
+									<Icon
+										aria-hidden='true'
+										size={appSidebar.iconSize}
+										strokeWidth={iconWeights.medium}
+									/>
+									{queue.count > 0 && (
+										<StatusDot xstyle={styles.statusDot} />
+									)}
+								</SidebarItem.Icon>
+							}
+						/>
+						<TooltipContent side='right'>{name}</TooltipContent>
+					</Tooltip>
+				)
+			})}
 
 			<div aria-hidden='true' {...stylex.props(styles.spacer)} />
 			<Tooltip>
 				<TooltipTrigger
 					render={
-						<Button.Icon
-							aria-label='Settings'
+						<SidebarItem.Icon
+							ariaLabel='Settings'
 							render={
 								<Link
 									activeOptions={{ exact: true }}
 									to='/settings'
 								/>
 							}
-							shape='round'
-							size='micro'
-							variant='ghost'
-							xstyle={[styles.railItem, styles.railLink]}
+							xstyle={styles.railLink}
 						>
 							<Settings
 								aria-hidden='true'
+								size={appSidebar.iconSize}
 								strokeWidth={iconWeights.medium}
-								{...stylex.props(styles.controlIcon)}
 							/>
-						</Button.Icon>
+						</SidebarItem.Icon>
 					}
 				/>
 				<TooltipContent side='right'>Settings</TooltipContent>
