@@ -51,11 +51,18 @@ const styles = stylex.create({
 		minInlineSize: 0,
 		overflowY: 'hidden',
 
+		borderColor: reviewQueueColors.containerBorder,
+		borderRadius: {
+			default: 0,
+			[breakpoints.tablet]: radii.xl,
+		},
+		borderStyle: 'solid',
+		borderWidth: 1,
 		backgroundColor: reviewQueueColors.containerBackground,
 	},
 	panels: {
+		padding: spacing.sm,
 		gap: spacing.sm,
-		paddingInline: spacing.sm,
 		display: 'flex',
 		flexBasis: 0,
 		flexDirection: 'row',
@@ -63,9 +70,10 @@ const styles = stylex.create({
 		flexShrink: 1,
 		minBlockSize: 0,
 		minInlineSize: 0,
-		paddingBlockEnd: spacing.sm,
-		// Combined with the shell inset, align review controls to the app toggle.
-		paddingBlockStart: spacing.xs,
+	},
+	panelsCollapsed: {
+		paddingInline: spacing.xs,
+		paddingBlockEnd: spacing.xs,
 	},
 	cardColumn: {
 		gap: spacing.xs,
@@ -77,8 +85,18 @@ const styles = stylex.create({
 		minBlockSize: 0,
 		minInlineSize: 0,
 	},
+	// Toolbar controls and the sidebar close button are both 36px; offset by
+	// the sidebar's 1px top border so their centers line up. With the sidebar
+	// closed there is nothing to align with, so the toolbar sits flush.
+	toolbarBesideSidebar: {
+		paddingBlockEnd: spacing.sm,
+		paddingBlockStart: `calc(${spacing.sm} + 1px)`,
+	},
 	cardPanel: {
-		borderRadius: radii.lg,
+		borderColor: reviewQueueColors.panelBorder,
+		borderRadius: radii['2xl'],
+		borderStyle: 'solid',
+		borderWidth: 1,
 		overflow: 'hidden',
 		backgroundColor: reviewQueueColors.contentBackground,
 		boxShadow: {
@@ -100,10 +118,6 @@ const styles = stylex.create({
 		flexGrow: 1,
 		fontSize: fontSizes.sm,
 		justifyContent: 'center',
-	},
-	toolbarWrapper: {
-		paddingBlock: spacing.none,
-		paddingInline: spacing.xs,
 	},
 })
 
@@ -186,9 +200,18 @@ export function ReviewQueueWorkspace({
 				onPrevious={goPrevious}
 				onNext={goNext}
 			/>
-			<div {...stylex.props(styles.panels)}>
+			<div
+				{...stylex.props(
+					styles.panels,
+					!queueSidebarOpen && styles.panelsCollapsed,
+				)}
+			>
 				<div {...stylex.props(styles.cardColumn)}>
-					<div {...stylex.props(styles.toolbarWrapper)}>
+					<div
+						{...stylex.props(
+							queueSidebarOpen && styles.toolbarBesideSidebar,
+						)}
+					>
 						<ReviewQueueToolbar
 							index={index}
 							cardCount={visibleCards.length}

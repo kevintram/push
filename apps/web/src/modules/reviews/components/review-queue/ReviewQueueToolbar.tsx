@@ -36,7 +36,7 @@ const styles = stylex.create({
 		justifyContent: 'flex-end',
 	},
 	headerButtonCluster: {
-		gap: spacing.xs,
+		gap: spacing['2xs'],
 		alignItems: 'center',
 		display: 'flex',
 	},
@@ -53,7 +53,6 @@ export function ReviewQueueToolbar({
 }: ReviewQueueToolbarProps) {
 	return (
 		<header {...stylex.props(styles.header)}>
-			{/* Match the 36px sidebar and collection toolbar control size. */}
 			<div {...stylex.props(styles.headerButtonCluster)}>
 				<Tooltip>
 					<TooltipTrigger
@@ -61,7 +60,7 @@ export function ReviewQueueToolbar({
 							<Button.Icon
 								aria-label='Next card'
 								shape='round'
-								variant='secondary'
+								variant='ghost'
 								size='medium'
 								disabled={index >= cardCount - 1}
 								onClick={onNext}
@@ -81,7 +80,7 @@ export function ReviewQueueToolbar({
 							<Button.Icon
 								aria-label='Previous card'
 								shape='round'
-								variant='secondary'
+								variant='ghost'
 								size='medium'
 								disabled={index <= 0}
 								onClick={onPrevious}
@@ -110,7 +109,7 @@ export function ReviewQueueToolbar({
 								aria-expanded={queueSidebarOpen}
 								aria-controls={REVIEW_QUEUE_SIDEBAR_ID}
 								shape='round'
-								variant='secondary'
+								variant='ghost'
 								size='medium'
 								active={queueSidebarOpen}
 								onClick={onQueueSidebarToggle}

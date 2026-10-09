@@ -31,11 +31,13 @@ export const radii = stylex.defineVars({
 	lg: '12px',
 	xl: '16px',
 	'2xl': '20px',
+	'3xl': '24px',
 	full: '9999px',
 })
 
 export const spacing = stylex.defineVars({
 	none: '0',
+	'2xs': '2px',
 	xs: '4px',
 	sm: '8px',
 	md: '12px',
