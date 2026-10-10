@@ -8,11 +8,11 @@ import {
 	SidebarCollapsibleTrigger,
 	SidebarItem,
 } from '~/components/sidebar'
-import { StatusDot } from '~/components/ui'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { REVIEW_LINKS } from '~/modules/reviews/reviewLinks'
-import { appSidebar } from '~/styles/tokens.stylex'
 import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
+
+import { QueueCount } from './QueueCount'
 
 const REVIEW_NAVIGATION_STORAGE_KEY = 'reviewNavigationOpen'
 
@@ -20,13 +20,6 @@ const styles = stylex.create({
 	items: {
 		display: 'flex',
 		flexDirection: 'column',
-	},
-	// Centers the dot in an icon-sized slot so it lines up with header actions.
-	statusDotWrapper: {
-		display: 'flex',
-		inlineSize: appSidebar.iconSize,
-		justifyContent: 'center',
-		marginInlineStart: 'auto',
 	},
 })
 
@@ -56,11 +49,7 @@ export function ReviewNavigation() {
 						render={<Link to={to} />}
 					>
 						{label}
-						{queues[queueKey].count > 0 && (
-							<span {...stylex.props(styles.statusDotWrapper)}>
-								<StatusDot />
-							</span>
-						)}
+						<QueueCount count={queues[queueKey].count} />
 					</SidebarItem>
 				))}
 			</SidebarCollapsibleContent>
