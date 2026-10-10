@@ -1,14 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { Link } from '@tanstack/react-router'
-import {
-	BellRing,
-	Calendar,
-	Flag,
-	PanelLeft,
-	Settings,
-	Sparkles,
-} from 'lucide-react'
+import { PanelLeft, Settings } from 'lucide-react'
 import type { Ref } from 'react'
 
 import { SidebarIconButton, SidebarItem } from '~/components/sidebar'
@@ -21,6 +14,7 @@ import {
 } from '~/components/ui'
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
+import { REVIEW_LINKS } from '~/modules/reviews/reviewLinks'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import { layout, radii, spacing } from '~/styles/tokens.stylex'
 
@@ -63,18 +57,6 @@ const styles = stylex.create({
 	},
 })
 
-const reviewLinks = [
-	{ icon: Calendar, label: 'Due', queueKey: 'due', to: '/review/due' },
-	{ icon: Sparkles, label: 'New', queueKey: 'new', to: '/review/new' },
-	{ icon: BellRing, label: 'Late', queueKey: 'late', to: '/review/late' },
-	{
-		icon: Flag,
-		label: 'Flagged',
-		queueKey: 'flagged',
-		to: '/review/flagged',
-	},
-] as const
-
 type CollapsedAppSidebarProps = {
 	navId: string
 	onToggle: () => void
@@ -116,7 +98,7 @@ export function CollapsedAppSidebar({
 			</div>
 
 			<div {...stylex.props(styles.group)}>
-				{reviewLinks.map(({ icon, label, queueKey, to }) => {
+				{REVIEW_LINKS.map(({ icon, label, queueKey, to }) => {
 					const queue = queues[queueKey]
 					const name = queue.countLabel ?? label
 					return (

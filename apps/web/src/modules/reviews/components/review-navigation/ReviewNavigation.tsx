@@ -1,6 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
-import { BellRing, Calendar, Flag, Sparkles } from 'lucide-react'
 
 import {
 	SidebarCollapsibleContent,
@@ -11,6 +10,7 @@ import {
 } from '~/components/sidebar'
 import { StatusDot } from '~/components/ui'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
+import { REVIEW_LINKS } from '~/modules/reviews/reviewLinks'
 import { appSidebar } from '~/styles/tokens.stylex'
 import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
@@ -48,54 +48,21 @@ export function ReviewNavigation() {
 				render={<nav aria-label='review sections' />}
 				xstyle={styles.items}
 			>
-				<SidebarItem
-					ariaLabel={queues.due.countLabel}
-					icon={Calendar}
-					render={<Link to='/review/due' />}
-				>
-					Due
-					{queues.due.count > 0 && (
-						<span {...stylex.props(styles.statusDotWrapper)}>
-							<StatusDot />
-						</span>
-					)}
-				</SidebarItem>
-				<SidebarItem
-					ariaLabel={queues.new.countLabel}
-					icon={Sparkles}
-					render={<Link to='/review/new' />}
-				>
-					New
-					{queues.new.count > 0 && (
-						<span {...stylex.props(styles.statusDotWrapper)}>
-							<StatusDot />
-						</span>
-					)}
-				</SidebarItem>
-				<SidebarItem
-					ariaLabel={queues.late.countLabel}
-					icon={BellRing}
-					render={<Link to='/review/late' />}
-				>
-					Late
-					{queues.late.count > 0 && (
-						<span {...stylex.props(styles.statusDotWrapper)}>
-							<StatusDot />
-						</span>
-					)}
-				</SidebarItem>
-				<SidebarItem
-					ariaLabel={queues.flagged.countLabel}
-					icon={Flag}
-					render={<Link to='/review/flagged' />}
-				>
-					Flagged
-					{queues.flagged.count > 0 && (
-						<span {...stylex.props(styles.statusDotWrapper)}>
-							<StatusDot />
-						</span>
-					)}
-				</SidebarItem>
+				{REVIEW_LINKS.map(({ icon, label, queueKey, to }) => (
+					<SidebarItem
+						key={to}
+						ariaLabel={queues[queueKey].countLabel}
+						icon={icon}
+						render={<Link to={to} />}
+					>
+						{label}
+						{queues[queueKey].count > 0 && (
+							<span {...stylex.props(styles.statusDotWrapper)}>
+								<StatusDot />
+							</span>
+						)}
+					</SidebarItem>
+				))}
 			</SidebarCollapsibleContent>
 		</SidebarCollapsibleItem>
 	)
