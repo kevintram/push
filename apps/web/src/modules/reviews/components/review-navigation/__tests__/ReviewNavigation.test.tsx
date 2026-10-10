@@ -28,6 +28,11 @@ vi.mock('@tanstack/react-router', async importOriginal => ({
 
 const entryFor = (id: string) => ({ card: { _id: id } }) as DueEntry
 const STORAGE_KEY = 'reviewNavigationOpen'
+const queueCounts = () =>
+	Array.from(
+		document.querySelectorAll('[data-slot="queue-count"]'),
+		node => node.textContent,
+	)
 
 describe('ReviewNavigation', () => {
 	beforeEach(() => {
@@ -79,7 +84,7 @@ describe('ReviewNavigation', () => {
 		}
 	}
 
-	it('uses matching singular count labels and dots for each nonempty queue', () => {
+	it('shows singular count labels and counts for each nonempty queue', () => {
 		renderNavigation({
 			due: 1,
 			lateEntries: [entryFor('late-1')],
@@ -95,12 +100,10 @@ describe('ReviewNavigation', () => {
 		]) {
 			expect(screen.getByRole('link', { name })).toBeInTheDocument()
 		}
-		expect(
-			document.querySelectorAll('[data-slot="status-dot"]'),
-		).toHaveLength(4)
+		expect(queueCounts()).toEqual(['1', '1', '1', '1'])
 	})
 
-	it('uses plural count labels and deduplicates late cards for its label', () => {
+	it('shows plural count labels and counts, deduplicating late cards', () => {
 		renderNavigation({
 			due: 2,
 			newCards: 3,
@@ -129,9 +132,7 @@ describe('ReviewNavigation', () => {
 			screen.getByRole('link', { name: '1 card due' }),
 		).toBeInTheDocument()
 		expect(screen.getByRole('link', { name: 'New' })).toBeInTheDocument()
-		expect(
-			document.querySelectorAll('[data-slot="status-dot"]'),
-		).toHaveLength(1)
+		expect(queueCounts()).toEqual(['1'])
 
 		queryClient.setQueryData(dueQueries.listDue(today).queryKey, [])
 		queryClient.setQueryData(dueQueries.listNew().queryKey, [
@@ -162,9 +163,7 @@ describe('ReviewNavigation', () => {
 			expect(
 				screen.getByRole('link', { name: '1 flagged card' }),
 			).toBeInTheDocument()
-			expect(
-				document.querySelectorAll('[data-slot="status-dot"]'),
-			).toHaveLength(3)
+			expect(queueCounts()).toEqual(['1', '1', '1'])
 		})
 	})
 

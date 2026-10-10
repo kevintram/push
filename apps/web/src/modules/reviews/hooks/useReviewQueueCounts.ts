@@ -29,7 +29,7 @@ function toQueueCount(
 export function useReviewQueueCounts() {
 	const today = useToday()
 	// TODO(3): Replace these full-list subscriptions with count queries.
-	// TODO(2): Handle query errors instead of showing missing status dots as empty queues.
+	// TODO(2): Handle query errors instead of showing failed queues as empty.
 	const { data: dueEntries } = useQuery(dueQueries.listDue(today))
 	const { data: newEntries } = useQuery(dueQueries.listNew())
 	const { data: lateCards } = useQuery(dueQueries.listLateCards(today))
