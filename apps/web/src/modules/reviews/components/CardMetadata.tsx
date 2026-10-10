@@ -100,7 +100,7 @@ export function CardMetadata({
 				{...stylex.props(styles.boundary, onClick && styles.clickable)}
 			>
 				<div {...stylex.props(styles.container)}>
-					<span {...stylex.props(styles.item)}>Unreviewed</span>
+					<span {...stylex.props(styles.item)}>New</span>
 				</div>
 			</div>
 		)
