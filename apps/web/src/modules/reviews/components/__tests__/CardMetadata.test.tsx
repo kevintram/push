@@ -94,7 +94,7 @@ describe('CardMetadata', () => {
 		},
 	)
 
-	it('renders unreviewed cards without a rating icon', () => {
+	it('renders new cards without a rating icon', () => {
 		render(
 			<CardMetadata
 				lastReviewedAt={null}
@@ -106,7 +106,7 @@ describe('CardMetadata', () => {
 			/>,
 		)
 
-		expect(screen.getByText('Unreviewed')).toBeInTheDocument()
+		expect(screen.getByText('New')).toBeInTheDocument()
 		expect(document.querySelector('svg')).not.toBeInTheDocument()
 	})
 
