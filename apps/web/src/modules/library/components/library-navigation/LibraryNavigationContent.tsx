@@ -15,7 +15,7 @@ import {
 } from '~/components/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger, Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
-import { spacing } from '~/styles/tokens.stylex'
+import { radii, spacing } from '~/styles/tokens.stylex'
 import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import { useCreateCollection } from '../../api/collectionQueries'
@@ -29,6 +29,7 @@ const LIBRARY_NAVIGATION_STORAGE_KEY = 'libraryNavigationOpen'
 
 const styles = stylex.create({
 	container: {
+		borderRadius: radii.lg,
 		display: 'flex',
 		flexDirection: 'column',
 		inlineSize: '100%',
