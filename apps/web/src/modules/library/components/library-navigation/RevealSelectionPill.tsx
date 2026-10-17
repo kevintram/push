@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import {
 	ChevronDown,
-	ChevronRight,
+	ChevronsUpDown,
 	ChevronUp,
 	type LucideIcon,
 } from 'lucide-react'
@@ -111,9 +111,9 @@ const styles = stylex.create({
  */
 export type HiddenSelectionPosition = 'collapsed' | OffscreenDirection
 
-// The collapsed chevron matches the tree's own chevron for a closed branch.
+// The collapsed icon mirrors the Collapse all button's ChevronsDownUp.
 const icons: Record<HiddenSelectionPosition, LucideIcon> = {
-	collapsed: ChevronRight,
+	collapsed: ChevronsUpDown,
 	above: ChevronUp,
 	below: ChevronDown,
 }

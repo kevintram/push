@@ -299,7 +299,7 @@ describe('LibraryNavigationContent', () => {
 
 		const pill = getRevealPill()
 		expect(pill).toHaveTextContent('Spanish verbs')
-		expect(pill.querySelector('.lucide-chevron-right')).not.toBeNull()
+		expect(pill.querySelector('.lucide-chevrons-up-down')).not.toBeNull()
 
 		await user.click(pill)
 
@@ -354,7 +354,7 @@ describe('LibraryNavigationContent', () => {
 		)
 
 		expect(
-			getRevealPill().querySelector('.lucide-chevron-right'),
+			getRevealPill().querySelector('.lucide-chevrons-up-down'),
 		).not.toBeNull()
 	})
 
