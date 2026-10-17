@@ -318,6 +318,15 @@ export const libraryCollectionItemColors = stylex.defineVars({
 	containerBackgroundDropTarget: semanticColors.surfaceTransparentHover,
 })
 
+export const revealSelectionPillColors = stylex.defineVars({
+	background: semanticColors.surfaceInverse,
+	foreground: semanticColors.textOnInverse,
+	iconForeground: semanticColors.textOnInverseSecondary,
+	focusRingRest: semanticColors.surfaceTransparent,
+	focusRing: semanticColors.borderFocus,
+	shadow: semanticColors.shadowPrimary,
+})
+
 export const subcollectionsPanelColors = stylex.defineVars({
 	containerBackground: semanticColors.surfaceSecondary,
 

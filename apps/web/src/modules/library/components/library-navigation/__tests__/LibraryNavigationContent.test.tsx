@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { TooltipProvider } from '~/components/ui'
 
+import type { CollectionWithChildren } from '../../../types/collection.types'
 import { LibraryNavigationContent } from '../LibraryNavigationContent'
 
 const STORAGE_KEY = 'libraryNavigationOpen'
@@ -33,6 +34,36 @@ vi.mock('../../../api/collectionQueries', () => ({
 	useCreateCollection: () => ({ mutate: vi.fn() }),
 }))
 
+// Stands in for the real row, which needs the router and drag and drop. The
+// selected row's link is marked the way the router marks the active link.
+vi.mock('../LibraryCollectionItem', () => ({
+	LibraryCollectionItem: ({ _id, title }: CollectionWithChildren) => (
+		<li>
+			<a
+				href={`/library/${_id}`}
+				aria-current={_id === 'selected-id' ? 'page' : undefined}
+			>
+				{title}
+			</a>
+		</li>
+	),
+}))
+
+function makeCollection(id: string, title: string): CollectionWithChildren {
+	return {
+		_id: id as Id<'collections'>,
+		_creationTime: 0,
+		title,
+		description: '',
+		ownerId: 'owner',
+		searchText: title,
+		path: [],
+		childCollections: [],
+	}
+}
+
+const hiddenSelection = makeCollection('selected-id', 'Spanish verbs')
+
 describe('LibraryNavigationContent', () => {
 	beforeEach(() => {
 		window.localStorage.clear()
@@ -48,6 +79,7 @@ describe('LibraryNavigationContent', () => {
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
 				onCollapseAll={vi.fn()}
+				onRevealSelection={vi.fn()}
 			/>,
 		)
 
@@ -69,6 +101,7 @@ describe('LibraryNavigationContent', () => {
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
 				onCollapseAll={vi.fn()}
+				onRevealSelection={vi.fn()}
 			/>,
 		)
 
@@ -96,6 +129,7 @@ describe('LibraryNavigationContent', () => {
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
 				onCollapseAll={vi.fn()}
+				onRevealSelection={vi.fn()}
 			/>,
 		)
 
@@ -118,6 +152,7 @@ describe('LibraryNavigationContent', () => {
 				}
 				onCollectionOpenChange={vi.fn()}
 				onCollapseAll={onCollapseAll}
+				onRevealSelection={vi.fn()}
 			/>,
 		)
 
@@ -142,6 +177,7 @@ describe('LibraryNavigationContent', () => {
 					}
 					onCollectionOpenChange={vi.fn()}
 					onCollapseAll={vi.fn()}
+					onRevealSelection={vi.fn()}
 				/>
 			</TooltipProvider>,
 		)
@@ -170,6 +206,7 @@ describe('LibraryNavigationContent', () => {
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
 				onCollapseAll={vi.fn()}
+				onRevealSelection={vi.fn()}
 			/>,
 		)
 		const navigation = screen.getByRole('navigation', {
@@ -191,6 +228,7 @@ describe('LibraryNavigationContent', () => {
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
 				onCollapseAll={vi.fn()}
+				onRevealSelection={vi.fn()}
 			/>,
 		)
 		const sidebar = screen.getByRole('navigation').parentElement
@@ -203,9 +241,94 @@ describe('LibraryNavigationContent', () => {
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
 				onCollapseAll={vi.fn()}
+				onRevealSelection={vi.fn()}
 			/>,
 		)
 
 		expect(sidebar?.className).not.toBe(restingClassName)
+	})
+
+	it('shows no reveal pill while the selection is visible', () => {
+		render(
+			<LibraryNavigationContent
+				collections={[]}
+				openCollectionIds={new Set()}
+				onCollectionOpenChange={vi.fn()}
+				onCollapseAll={vi.fn()}
+				onRevealSelection={vi.fn()}
+			/>,
+		)
+
+		expect(
+			screen.queryByRole('button', { name: /in library$/ }),
+		).not.toBeInTheDocument()
+	})
+
+	it('reveals the hidden selection and focuses its row from the pill', async () => {
+		const user = userEvent.setup()
+		const onRevealSelection = vi.fn()
+		render(
+			<LibraryNavigationContent
+				collections={[hiddenSelection]}
+				openCollectionIds={new Set()}
+				onCollectionOpenChange={vi.fn()}
+				onCollapseAll={vi.fn()}
+				hiddenSelection={hiddenSelection}
+				onRevealSelection={onRevealSelection}
+			/>,
+		)
+
+		const pill = screen.getByRole('button', {
+			name: 'Show Spanish verbs in library',
+		})
+		expect(pill).toHaveTextContent('Spanish verbs')
+
+		await user.click(pill)
+
+		expect(onRevealSelection).toHaveBeenCalledOnce()
+		expect(
+			screen.getByRole('link', { name: 'Spanish verbs' }),
+		).toHaveFocus()
+	})
+
+	it('labels an untitled hidden selection', () => {
+		render(
+			<LibraryNavigationContent
+				collections={[]}
+				openCollectionIds={new Set()}
+				onCollectionOpenChange={vi.fn()}
+				onCollapseAll={vi.fn()}
+				hiddenSelection={makeCollection('selected-id', '  ')}
+				onRevealSelection={vi.fn()}
+			/>,
+		)
+
+		expect(
+			screen.getByRole('button', { name: 'Show Untitled in library' }),
+		).toBeInTheDocument()
+	})
+
+	it('hides the reveal pill while the Library section is collapsed', async () => {
+		const user = userEvent.setup()
+		render(
+			<LibraryNavigationContent
+				collections={[]}
+				openCollectionIds={new Set()}
+				onCollectionOpenChange={vi.fn()}
+				onCollapseAll={vi.fn()}
+				hiddenSelection={hiddenSelection}
+				onRevealSelection={vi.fn()}
+			/>,
+		)
+
+		await user.click(
+			screen.getByRole('button', { name: 'Collapse Library' }),
+		)
+
+		expect(
+			screen.queryByRole('button', {
+				name: 'Show Spanish verbs in library',
+			}),
+		).not.toBeInTheDocument()
 	})
 })
