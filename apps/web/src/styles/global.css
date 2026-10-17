@@ -5,6 +5,25 @@
 /* StyleX setup */
 @stylex;
 
+/*
+ * Animated fade depths for `scrollFade` in `src/styles/scrollFade.ts`. They are
+ * registered here, not with StyleX's typed `defineVars`, because StyleX always
+ * registers those with `inherits: true`. An inherited property makes every
+ * descendant of the scroll container recalculate its style on each scroll
+ * frame.
+ */
+@property --scroll-fade-top {
+	syntax: '<length>';
+	inherits: false;
+	initial-value: 0px;
+}
+
+@property --scroll-fade-bottom {
+	syntax: '<length>';
+	inherits: false;
+	initial-value: 0px;
+}
+
 @layer reset {
 	/*
 	 * Custom CSS reset
