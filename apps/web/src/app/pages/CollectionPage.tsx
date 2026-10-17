@@ -30,6 +30,7 @@ import { CardItemLink } from '~/modules/reviews/components/CardItemLink'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { baseColors } from '~/styles/colors/primitives.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { scrollFade } from '~/styles/scrollFade'
 import {
 	fontSizes,
 	fontWeights,
@@ -256,7 +257,7 @@ export function CollectionPage() {
 			) : null}
 
 			<div {...stylex.props(styles.body)}>
-				<div {...stylex.props(styles.scrollArea)}>
+				<div {...stylex.props(styles.scrollArea, scrollFade.y)}>
 					<div {...stylex.props(styles.content)}>
 						<section {...stylex.props(styles.collectionDetails)}>
 							<Textarea

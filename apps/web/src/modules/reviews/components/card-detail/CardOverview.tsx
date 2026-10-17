@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 
 import { Separator, Textarea } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
+import { scrollFade } from '~/styles/scrollFade'
 import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
 
 import { cardQueries } from '../../api/cardQueries'
@@ -107,7 +108,7 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 
 	return (
 		<div {...stylex.props(styles.layout)}>
-			<div {...stylex.props(styles.main)}>
+			<div {...stylex.props(styles.main, scrollFade.y)}>
 				<div {...stylex.props(styles.content)}>
 					<Textarea
 						aria-label='Card primary text'

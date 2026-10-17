@@ -19,6 +19,7 @@ import {
 	TooltipTrigger,
 } from '~/components/ui'
 import { searchDialogColors } from '~/styles/colors/components.stylex'
+import { scrollFade } from '~/styles/scrollFade'
 import {
 	breakpoints,
 	fontSizes,
@@ -295,7 +296,7 @@ export function SearchDialog() {
 					</Tooltip>
 				</div>
 
-				<div {...stylex.props(styles.results)}>
+				<div {...stylex.props(styles.results, scrollFade.y)}>
 					{!hasQuery ? (
 						<p {...stylex.props(styles.status)}>
 							Search collections and cards
