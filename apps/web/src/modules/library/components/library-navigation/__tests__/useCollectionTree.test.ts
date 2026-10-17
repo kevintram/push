@@ -227,4 +227,99 @@ describe('useCollectionTree', () => {
 
 		expect(result.current.openCollectionIds.size).toBe(0)
 	})
+
+	describe('hidden selection', () => {
+		const nestedCollections = [
+			makeCollection('root'),
+			makeCollection('parent', ['root'], 'root'),
+			makeCollection('child', ['root', 'parent'], 'parent'),
+		]
+
+		it('reports the selection while its parent is collapsed', () => {
+			selectCollection('child')
+			loadCollections(nestedCollections)
+			const { result } = renderHook(() => useCollectionTree())
+
+			expect(result.current.hiddenSelection).toBeUndefined()
+
+			act(() => {
+				result.current.setCollectionOpen(collectionId('parent'), false)
+			})
+
+			expect(result.current.hiddenSelection?._id).toBe('child')
+		})
+
+		it('reports the selection while a further ancestor is collapsed', () => {
+			selectCollection('child')
+			loadCollections(nestedCollections)
+			const { result } = renderHook(() => useCollectionTree())
+
+			act(() => {
+				result.current.setCollectionOpen(collectionId('root'), false)
+			})
+
+			expect(
+				result.current.openCollectionIds.has(collectionId('parent')),
+			).toBe(true)
+			expect(result.current.hiddenSelection?._id).toBe('child')
+		})
+
+		it('does not report the selection when only the selection is collapsed', () => {
+			selectCollection('child')
+			loadCollections(nestedCollections)
+			const { result } = renderHook(() => useCollectionTree())
+
+			act(() => {
+				result.current.setCollectionOpen(collectionId('child'), false)
+			})
+
+			expect(result.current.hiddenSelection).toBeUndefined()
+		})
+
+		it('never reports a selected root collection', () => {
+			selectCollection('root')
+			loadCollections(nestedCollections)
+			const { result } = renderHook(() => useCollectionTree())
+
+			act(() => {
+				result.current.collapseAll()
+			})
+
+			expect(result.current.hiddenSelection).toBeUndefined()
+		})
+
+		it('ignores ancestors missing from the collection list', () => {
+			selectCollection('orphan')
+			loadCollections([makeCollection('orphan', ['missing'], 'missing')])
+			const { result } = renderHook(() => useCollectionTree())
+
+			act(() => {
+				result.current.collapseAll()
+			})
+
+			expect(result.current.hiddenSelection).toBeUndefined()
+		})
+
+		it('reveals the selection by opening its ancestors and itself', () => {
+			selectCollection('child')
+			loadCollections(nestedCollections)
+			const { result } = renderHook(() => useCollectionTree())
+
+			act(() => {
+				result.current.collapseAll()
+			})
+			expect(result.current.hiddenSelection?._id).toBe('child')
+
+			act(() => {
+				result.current.revealSelection()
+			})
+
+			expect([...result.current.openCollectionIds]).toEqual([
+				'root',
+				'parent',
+				'child',
+			])
+			expect(result.current.hiddenSelection).toBeUndefined()
+		})
+	})
 })
