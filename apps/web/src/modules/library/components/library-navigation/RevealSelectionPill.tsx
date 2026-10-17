@@ -1,5 +1,10 @@
 import * as stylex from '@stylexjs/stylex'
-import { ChevronRight } from 'lucide-react'
+import {
+	ChevronDown,
+	ChevronRight,
+	ChevronUp,
+	type LucideIcon,
+} from 'lucide-react'
 
 import { revealSelectionPillColors } from '~/styles/colors/components.stylex'
 import {
@@ -12,8 +17,16 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-const enter = stylex.keyframes({
+import type { OffscreenDirection } from './useOffscreenDirection'
+
+// The pill enters from the edge it sits on.
+const enterUp = stylex.keyframes({
 	from: { opacity: 0, transform: 'translateY(4px) scale(0.96)' },
+	to: { opacity: 1, transform: 'none' },
+})
+
+const enterDown = stylex.keyframes({
+	from: { opacity: 0, transform: 'translateY(-4px) scale(0.96)' },
 	to: { opacity: 1, transform: 'none' },
 })
 
@@ -28,8 +41,14 @@ const styles = stylex.create({
 
 		alignItems: 'center',
 		blockSize: buttonSizes.tiny,
-		display: 'inline-flex',
-		maxInlineSize: '100%',
+		display: 'flex',
+		inlineSize: 'fit-content',
+		insetInlineEnd: 0,
+		insetInlineStart: 0,
+		marginInlineEnd: 'auto',
+		marginInlineStart: 'auto',
+		maxInlineSize: `calc(100% - 2 * ${spacing.lg})`,
+		position: 'absolute',
 
 		backgroundColor: revealSelectionPillColors.background,
 		boxShadow: `0 4px 12px ${revealSelectionPillColors.shadow}`,
@@ -40,7 +59,7 @@ const styles = stylex.create({
 
 		animationDuration: '200ms',
 		animationName: {
-			default: enter,
+			default: enterUp,
 			'@media (prefers-reduced-motion: reduce)': 'none',
 		},
 		animationTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
@@ -64,6 +83,16 @@ const styles = stylex.create({
 		transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
 		userSelect: 'none',
 	},
+	top: {
+		animationName: {
+			default: enterDown,
+			'@media (prefers-reduced-motion: reduce)': 'none',
+		},
+		insetBlockStart: spacing.sm,
+	},
+	bottom: {
+		insetBlockEnd: spacing.sm,
+	},
 	icon: {
 		color: revealSelectionPillColors.iconForeground,
 		flexShrink: 0,
@@ -76,29 +105,48 @@ const styles = stylex.create({
 	},
 })
 
+/**
+ * Where the selected collection is hidden: inside a collapsed branch, or
+ * scrolled out of view above or below the visible rows.
+ */
+export type HiddenSelectionPosition = 'collapsed' | OffscreenDirection
+
+// The collapsed chevron matches the tree's own chevron for a closed branch.
+const icons: Record<HiddenSelectionPosition, LucideIcon> = {
+	collapsed: ChevronRight,
+	above: ChevronUp,
+	below: ChevronDown,
+}
+
 type RevealSelectionPillProps = {
 	title: string
+	position: HiddenSelectionPosition
 	onClick: () => void
-	xstyle?: stylex.StyleXStyles
 }
 
 /**
  * Names the selected collection while it is hidden in the library tree and
- * reveals it when clicked.
+ * reveals it when clicked. It floats over the bottom edge of its positioned
+ * container, or over the top edge when the selection is above.
  */
 export function RevealSelectionPill({
 	title,
+	position,
 	onClick,
-	xstyle,
 }: RevealSelectionPillProps) {
+	const Icon = icons[position]
+
 	return (
 		<button
 			type='button'
 			aria-label={`Show ${title} in library`}
 			onClick={onClick}
-			{...stylex.props(styles.pill, xstyle)}
+			{...stylex.props(
+				styles.pill,
+				position === 'above' ? styles.top : styles.bottom,
+			)}
 		>
-			<ChevronRight
+			<Icon
 				aria-hidden='true'
 				size={iconSizes.sm}
 				strokeWidth={iconWeights.medium}
