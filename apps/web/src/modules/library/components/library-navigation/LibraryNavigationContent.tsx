@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { useNavigate } from '@tanstack/react-router'
 import { ChevronsDownUp, Plus } from 'lucide-react'
-import { type UIEvent, useCallback, useRef, useState } from 'react'
+import { type UIEvent, useCallback, useState } from 'react'
 import { flushSync } from 'react-dom'
 
 import {
@@ -87,8 +87,9 @@ type LibraryNavigationContentProps = {
 	openCollectionIds: ReadonlySet<Id<'collections'>>
 	onCollectionOpenChange: CollectionOpenChangeHandler
 	onCollapseAll: () => void
-	/** The selected collection while a collapsed ancestor hides it in the tree. */
-	hiddenSelection?: CollectionWithChildren
+	selectedCollection?: CollectionWithChildren
+	/** Whether a collapsed ancestor hides the selected collection in the tree. */
+	isSelectionCollapsed?: boolean
 	onRevealSelection: () => void
 }
 
@@ -102,13 +103,13 @@ export function LibraryNavigationContent({
 	openCollectionIds,
 	onCollectionOpenChange,
 	onCollapseAll,
-	hiddenSelection,
+	selectedCollection,
+	isSelectionCollapsed = false,
 	onRevealSelection,
 }: LibraryNavigationContentProps) {
 	const createCollection = useCreateCollection()
 	const navigate = useNavigate()
-	// Typed as the panel's default <div>, although it renders the <nav>.
-	const navRef = useRef<HTMLDivElement>(null)
+	const [selectedLabel, setSelectedLabel] = useState<HTMLElement | null>(null)
 	const [isOpen, setIsOpen] = useState(() =>
 		readStoredBoolean(LIBRARY_NAVIGATION_STORAGE_KEY, true),
 	)
@@ -147,14 +148,12 @@ export function LibraryNavigationContent({
 	// synchronously makes that label focusable right away.
 	const handleRevealSelection = useCallback(() => {
 		flushSync(onRevealSelection)
-		const label = navRef.current?.querySelector<HTMLElement>(
-			'[aria-current="page"]',
-		)
-		label?.focus({ preventScroll: true })
-		label?.scrollIntoView({ block: 'nearest' })
-	}, [onRevealSelection])
+		selectedLabel?.focus({ preventScroll: true })
+		selectedLabel?.scrollIntoView({ block: 'nearest' })
+	}, [onRevealSelection, selectedLabel])
 
-	const showRevealSelectionPill = isOpen && hiddenSelection !== undefined
+	const showRevealSelectionPill =
+		isOpen && selectedCollection !== undefined && isSelectionCollapsed
 
 	return (
 		<SidebarCollapsibleItem
@@ -197,7 +196,6 @@ export function LibraryNavigationContent({
 				</SidebarCollapsibleActions>
 			</SidebarCollapsibleHeader>
 			<SidebarCollapsibleContent
-				ref={navRef}
 				render={<nav aria-label='Library collections' />}
 				xstyle={[styles.nav, hasScrolled && styles.navScrolled]}
 				onScroll={handleScroll}
@@ -215,13 +213,14 @@ export function LibraryNavigationContent({
 							{...collection}
 							openCollectionIds={openCollectionIds}
 							onCollectionOpenChange={onCollectionOpenChange}
+							selectedLabelRef={setSelectedLabel}
 						/>
 					))}
 				</Tree>
 			</SidebarCollapsibleContent>
 			{showRevealSelectionPill ? (
 				<RevealSelectionPill
-					title={hiddenSelection.title.trim() || 'Untitled'}
+					title={selectedCollection.title.trim() || 'Untitled'}
 					onClick={handleRevealSelection}
 					xstyle={styles.revealSelectionPill}
 				/>

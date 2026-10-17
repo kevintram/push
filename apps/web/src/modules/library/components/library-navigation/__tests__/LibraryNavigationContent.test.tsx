@@ -34,14 +34,20 @@ vi.mock('../../../api/collectionQueries', () => ({
 	useCreateCollection: () => ({ mutate: vi.fn() }),
 }))
 
-// Stands in for the real row, which needs the router and drag and drop. The
-// selected row's link is marked the way the router marks the active link.
+// Stands in for the real row, which needs the router and drag and drop. Like
+// the real row, it attaches the selected label ref only when it is selected.
 vi.mock('../LibraryCollectionItem', () => ({
-	LibraryCollectionItem: ({ _id, title }: CollectionWithChildren) => (
+	LibraryCollectionItem: ({
+		_id,
+		title,
+		selectedLabelRef,
+	}: CollectionWithChildren & {
+		selectedLabelRef?: (element: HTMLElement | null) => void
+	}) => (
 		<li>
 			<a
 				href={`/library/${_id}`}
-				aria-current={_id === 'selected-id' ? 'page' : undefined}
+				ref={_id === 'selected-id' ? selectedLabelRef : undefined}
 			>
 				{title}
 			</a>
@@ -62,7 +68,7 @@ function makeCollection(id: string, title: string): CollectionWithChildren {
 	}
 }
 
-const hiddenSelection = makeCollection('selected-id', 'Spanish verbs')
+const selectedCollection = makeCollection('selected-id', 'Spanish verbs')
 
 describe('LibraryNavigationContent', () => {
 	beforeEach(() => {
@@ -269,11 +275,12 @@ describe('LibraryNavigationContent', () => {
 		const onRevealSelection = vi.fn()
 		render(
 			<LibraryNavigationContent
-				collections={[hiddenSelection]}
+				collections={[selectedCollection]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
 				onCollapseAll={vi.fn()}
-				hiddenSelection={hiddenSelection}
+				selectedCollection={selectedCollection}
+				isSelectionCollapsed
 				onRevealSelection={onRevealSelection}
 			/>,
 		)
@@ -298,7 +305,8 @@ describe('LibraryNavigationContent', () => {
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
 				onCollapseAll={vi.fn()}
-				hiddenSelection={makeCollection('selected-id', '  ')}
+				selectedCollection={makeCollection('selected-id', '  ')}
+				isSelectionCollapsed
 				onRevealSelection={vi.fn()}
 			/>,
 		)
@@ -316,7 +324,8 @@ describe('LibraryNavigationContent', () => {
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
 				onCollapseAll={vi.fn()}
-				hiddenSelection={hiddenSelection}
+				selectedCollection={selectedCollection}
+				isSelectionCollapsed
 				onRevealSelection={vi.fn()}
 			/>,
 		)
