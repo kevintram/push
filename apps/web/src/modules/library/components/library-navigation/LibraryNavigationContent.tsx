@@ -26,6 +26,8 @@ import {
 } from './LibraryCollectionItem'
 
 const LIBRARY_NAVIGATION_STORAGE_KEY = 'libraryNavigationOpen'
+// Height of the fades at the scroll edges of the collection list.
+const EDGE_FADE_SIZE = '24px'
 
 const styles = stylex.create({
 	container: {
@@ -40,24 +42,23 @@ const styles = stylex.create({
 		backgroundColor: librarySidebarColors.containerBackgroundDropTarget,
 	},
 	nav: {
-		WebkitMaskImage:
-			'linear-gradient(to bottom, black 0, black calc(100% - 24px), transparent 100%)',
+		WebkitMaskImage: `linear-gradient(to bottom, black 0, black calc(100% - ${EDGE_FADE_SIZE}), transparent 100%)`,
 		paddingBlock: 0,
 		paddingInline: 0,
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
 		inlineSize: '100%',
-		maskImage:
-			'linear-gradient(to bottom, black 0, black calc(100% - 24px), transparent 100%)',
+		maskImage: `linear-gradient(to bottom, black 0, black calc(100% - ${EDGE_FADE_SIZE}), transparent 100%)`,
+		// Keeps focused and revealed rows clear of the edge fades.
+		scrollPaddingBlockEnd: EDGE_FADE_SIZE,
+		scrollPaddingBlockStart: EDGE_FADE_SIZE,
 		minHeight: 0,
 		overflowY: 'auto',
 	},
 	navScrolled: {
-		WebkitMaskImage:
-			'linear-gradient(to bottom, transparent 0, black 24px, black calc(100% - 24px), transparent 100%)',
-		maskImage:
-			'linear-gradient(to bottom, transparent 0, black 24px, black calc(100% - 24px), transparent 100%)',
+		WebkitMaskImage: `linear-gradient(to bottom, transparent 0, black ${EDGE_FADE_SIZE}, black calc(100% - ${EDGE_FADE_SIZE}), transparent 100%)`,
+		maskImage: `linear-gradient(to bottom, transparent 0, black ${EDGE_FADE_SIZE}, black calc(100% - ${EDGE_FADE_SIZE}), transparent 100%)`,
 	},
 	collectionTree: {
 		paddingBlockEnd: spacing.xl,
