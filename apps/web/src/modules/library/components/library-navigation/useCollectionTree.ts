@@ -16,6 +16,10 @@ export type CollectionTree = {
 	openCollectionIds: ReadonlySet<CollectionId>
 	setCollectionOpen: CollectionOpenChangeHandler
 	collapseAll: () => void
+	/** The selected collection while a collapsed ancestor hides it in the tree. */
+	hiddenSelection: CollectionWithChildren | undefined
+	/** Opens the selected collection and its ancestors. */
+	revealSelection: () => void
 }
 
 // IDs never contain NUL, so it is a safe separator.
@@ -29,7 +33,8 @@ const KEY_SEPARATOR = '\0'
  * The selected collection is the one the current route points at, if any.
  * When it changes, it and its ancestors are opened, so it is visible and its
  * children are revealed. A manual collapse-all is not undone by refetches of
- * the same selection.
+ * the same selection, but the selection is reported as hidden until
+ * `revealSelection` opens its branch again.
  */
 export function useCollectionTree(): CollectionTree {
 	// The tree is mounted by the app-level sidebar on every authenticated route.
@@ -62,6 +67,18 @@ export function useCollectionTree(): CollectionTree {
 		[],
 	)
 
+	const openCollections = useCallback(
+		(collectionIds: ReadonlyArray<CollectionId>) => {
+			setOpenCollectionIds(previousIds => {
+				if (collectionIds.every(id => previousIds.has(id))) {
+					return previousIds
+				}
+				return new Set([...previousIds, ...collectionIds])
+			})
+		},
+		[],
+	)
+
 	const collapseAll = useCallback(() => {
 		setOpenCollectionIds(previousIds =>
 			previousIds.size === 0 ? previousIds : new Set(),
@@ -82,23 +99,30 @@ export function useCollectionTree(): CollectionTree {
 		? [...selected.path, selected._id].join(KEY_SEPARATOR)
 		: null
 
-	useEffect(() => {
+	// Round-trip through the key so the effect depends only on the key.
+	const revealSelection = useCallback(() => {
 		if (selectionKey === null) return
-		// Round-trip through the key so the effect depends only on the key.
-		const idsToOpen = selectionKey.split(
-			KEY_SEPARATOR,
-		) as Array<CollectionId>
+		openCollections(
+			selectionKey.split(KEY_SEPARATOR) as Array<CollectionId>,
+		)
+	}, [selectionKey, openCollections])
 
-		setOpenCollectionIds(previousIds => {
-			if (idsToOpen.every(id => previousIds.has(id))) return previousIds
-			return new Set([...previousIds, ...idsToOpen])
-		})
-	}, [selectionKey])
+	useEffect(() => revealSelection(), [revealSelection])
+
+	// An ancestor missing from the list is not rendered, so it cannot hide the
+	// selection.
+	const hiddenSelection = selected?.path.some(
+		id => tree.nodesById.has(id) && !openCollectionIds.has(id),
+	)
+		? selected
+		: undefined
 
 	return {
 		rootCollections: tree.roots,
 		openCollectionIds,
 		setCollectionOpen,
 		collapseAll,
+		hiddenSelection,
+		revealSelection,
 	}
 }

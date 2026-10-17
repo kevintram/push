@@ -3,7 +3,8 @@ import { useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { useNavigate } from '@tanstack/react-router'
 import { ChevronsDownUp, Plus } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 import {
 	SidebarCollapsibleActions,
@@ -16,7 +17,8 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger, Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
 import { scrollFade } from '~/styles/scrollFade'
-import { radii } from '~/styles/tokens.stylex'
+import { scrollFadeVars } from '~/styles/scrollFade.stylex'
+import { radii, spacing } from '~/styles/tokens.stylex'
 import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import { useCreateCollection } from '../../api/collectionQueries'
@@ -25,6 +27,7 @@ import {
 	type CollectionOpenChangeHandler,
 	LibraryCollectionItem,
 } from './LibraryCollectionItem'
+import { RevealSelectionPill } from './RevealSelectionPill'
 
 const LIBRARY_NAVIGATION_STORAGE_KEY = 'libraryNavigationOpen'
 
@@ -34,6 +37,7 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 		inlineSize: '100%',
+		position: 'relative',
 		height: '100%',
 		minHeight: 0,
 	},
@@ -56,8 +60,25 @@ const styles = stylex.create({
 	// would disable the scroll fade.
 	scrollArea: {
 		flexGrow: 1,
+		// Keeps focused and revealed rows clear of the edge fades.
+		scrollPaddingBlockEnd: scrollFadeVars.size,
+		scrollPaddingBlockStart: scrollFadeVars.size,
 		minHeight: 0,
 		overflowY: 'auto',
+	},
+	// Lets the last row scroll above the reveal pill.
+	collectionTreeWithPill: {
+		paddingBlockEnd: spacing['3xl'],
+	},
+	revealSelectionPill: {
+		inlineSize: 'fit-content',
+		insetBlockEnd: spacing.sm,
+		insetInlineEnd: 0,
+		insetInlineStart: 0,
+		marginInlineEnd: 'auto',
+		marginInlineStart: 'auto',
+		maxInlineSize: `calc(100% - 2 * ${spacing.lg})`,
+		position: 'absolute',
 	},
 })
 
@@ -66,6 +87,9 @@ type LibraryNavigationContentProps = {
 	openCollectionIds: ReadonlySet<Id<'collections'>>
 	onCollectionOpenChange: CollectionOpenChangeHandler
 	onCollapseAll: () => void
+	/** The selected collection while a collapsed ancestor hides it in the tree. */
+	hiddenSelection?: CollectionWithChildren
+	onRevealSelection: () => void
 }
 
 /**
@@ -78,9 +102,16 @@ export function LibraryNavigationContent({
 	openCollectionIds,
 	onCollectionOpenChange,
 	onCollapseAll,
+	hiddenSelection,
+	onRevealSelection,
 }: LibraryNavigationContentProps) {
 	const createCollection = useCreateCollection()
 	const navigate = useNavigate()
+	// Typed as the panel's default <div>, although it renders the <nav>.
+	const navRef = useRef<HTMLDivElement>(null)
+	const [isOpen, setIsOpen] = useState(() =>
+		readStoredBoolean(LIBRARY_NAVIGATION_STORAGE_KEY, true),
+	)
 
 	const { ref: libraryRootRef, isDropTarget: libraryRootIsDropTarget } =
 		useDroppable({ id: 'library-root' })
@@ -98,16 +129,30 @@ export function LibraryNavigationContent({
 		)
 	}, [navigate, createCollection])
 
+	const handleOpenChange = useCallback((open: boolean) => {
+		setIsOpen(open)
+		writeStoredBoolean(LIBRARY_NAVIGATION_STORAGE_KEY, open)
+	}, [])
+
+	// The pill unmounts once the branch opens, so focus moves to the revealed
+	// label instead of falling back to the document. Committing the branch
+	// synchronously makes that label focusable right away.
+	const handleRevealSelection = useCallback(() => {
+		flushSync(onRevealSelection)
+		const label = navRef.current?.querySelector<HTMLElement>(
+			'[aria-current="page"]',
+		)
+		label?.focus({ preventScroll: true })
+		label?.scrollIntoView({ block: 'nearest' })
+	}, [onRevealSelection])
+
+	const showRevealSelectionPill = isOpen && hiddenSelection !== undefined
+
 	return (
 		<SidebarCollapsibleItem
-			defaultOpen={readStoredBoolean(
-				LIBRARY_NAVIGATION_STORAGE_KEY,
-				true,
-			)}
+			open={isOpen}
 			aria-label='Library'
-			onOpenChange={open =>
-				writeStoredBoolean(LIBRARY_NAVIGATION_STORAGE_KEY, open)
-			}
+			onOpenChange={handleOpenChange}
 			xstyle={[
 				styles.container,
 				libraryRootIsDropTarget && styles.containerIsDropTarget,
@@ -144,11 +189,17 @@ export function LibraryNavigationContent({
 				</SidebarCollapsibleActions>
 			</SidebarCollapsibleHeader>
 			<SidebarCollapsibleContent
+				ref={navRef}
 				render={<nav aria-label='Library collections' />}
 				xstyle={styles.nav}
 			>
 				<div {...stylex.props(styles.scrollArea, scrollFade.y)}>
-					<Tree>
+					<Tree
+						xstyle={
+							showRevealSelectionPill &&
+							styles.collectionTreeWithPill
+						}
+					>
 						{collections.map(collection => (
 							<LibraryCollectionItem
 								key={collection._id}
@@ -160,6 +211,13 @@ export function LibraryNavigationContent({
 					</Tree>
 				</div>
 			</SidebarCollapsibleContent>
+			{showRevealSelectionPill ? (
+				<RevealSelectionPill
+					title={hiddenSelection.title.trim() || 'Untitled'}
+					onClick={handleRevealSelection}
+					xstyle={styles.revealSelectionPill}
+				/>
+			) : null}
 		</SidebarCollapsibleItem>
 	)
 }
