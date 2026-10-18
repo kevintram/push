@@ -44,7 +44,7 @@ export function ReviewNavigation() {
 				{REVIEW_LINKS.map(({ icon, label, queueKey, to }) => (
 					<SidebarItem
 						key={to}
-						ariaLabel={queues[queueKey].countLabel}
+						aria-label={queues[queueKey].countLabel}
 						icon={icon}
 						render={<Link to={to} />}
 					>

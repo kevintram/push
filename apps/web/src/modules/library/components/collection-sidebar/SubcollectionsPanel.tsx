@@ -99,8 +99,9 @@ export function SubcollectionsPanel({
 		>
 			<div {...stylex.props(styles.header)}>
 				<p {...stylex.props(styles.title)}>Subcollections</p>
-				<Button.Icon
+				<Button
 					aria-label='Add subcollection'
+					iconOnly
 					variant='ghost'
 					size='micro'
 					disabled={createCollection.isPending}
@@ -108,7 +109,7 @@ export function SubcollectionsPanel({
 					shape='round'
 				>
 					<Plus aria-hidden='true' size={iconSizes.sm} />
-				</Button.Icon>
+				</Button>
 			</div>
 			<div {...stylex.props(styles.list, scrollFade.y)}>
 				{subcollections.map(subcollection => (

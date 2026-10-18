@@ -210,8 +210,9 @@ export function Review({ review }: ReviewProps) {
 						<DropdownMenu>
 							<DropdownMenuTrigger
 								render={
-									<Button.Icon
+									<Button
 										aria-label='Review actions'
+										iconOnly
 										shape='round'
 										size='micro'
 										variant='ghost'

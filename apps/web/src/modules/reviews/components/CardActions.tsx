@@ -85,8 +85,9 @@ export function CardActions({
 				<Tooltip>
 					<TooltipTrigger
 						render={
-							<Button.Icon
+							<Button
 								aria-label='Go to card'
+								iconOnly
 								shape='round'
 								variant='ghost'
 								size='small'
@@ -102,7 +103,7 @@ export function CardActions({
 									aria-hidden='true'
 									size={iconSizes.sm}
 								/>
-							</Button.Icon>
+							</Button>
 						}
 					/>
 					<TooltipContent>Go to card</TooltipContent>
@@ -112,8 +113,9 @@ export function CardActions({
 				<Tooltip>
 					<TooltipTrigger
 						render={
-							<Button.Icon
+							<Button
 								aria-label='Remove as flashcard'
+								iconOnly
 								shape='round'
 								variant='ghost'
 								size='small'
@@ -124,7 +126,7 @@ export function CardActions({
 									size={iconSizes.sm}
 									{...stylex.props(styles.flashcardOn)}
 								/>
-							</Button.Icon>
+							</Button>
 						}
 					/>
 					<TooltipContent>Remove as flashcard</TooltipContent>
@@ -134,8 +136,9 @@ export function CardActions({
 				<Tooltip>
 					<TooltipTrigger
 						render={
-							<Button.Icon
+							<Button
 								aria-label='Unflag'
+								iconOnly
 								shape='round'
 								variant='ghost'
 								size='small'
@@ -146,7 +149,7 @@ export function CardActions({
 									size={iconSizes.sm}
 									{...stylex.props(styles.flagOn)}
 								/>
-							</Button.Icon>
+							</Button>
 						}
 					/>
 					<TooltipContent>Unflag</TooltipContent>
@@ -156,8 +159,9 @@ export function CardActions({
 				<Tooltip>
 					<TooltipTrigger
 						render={
-							<Button.Icon
+							<Button
 								aria-label='Unretire'
+								iconOnly
 								shape='round'
 								variant='ghost'
 								size='small'
@@ -168,7 +172,7 @@ export function CardActions({
 									size={iconSizes.sm}
 									{...stylex.props(styles.retiredOn)}
 								/>
-							</Button.Icon>
+							</Button>
 						}
 					/>
 					<TooltipContent>Unretire</TooltipContent>
@@ -178,8 +182,9 @@ export function CardActions({
 			<DropdownMenu>
 				<DropdownMenuTrigger
 					render={
-						<Button.Icon
+						<Button
 							aria-label='Card actions'
+							iconOnly
 							shape='round'
 							variant='ghost'
 							size='small'

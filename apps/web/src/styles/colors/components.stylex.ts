@@ -295,14 +295,20 @@ export const loadingIndicatorColors = stylex.defineVars({
 })
 
 export const sidebarItemColors = stylex.defineVars({
+	focusRingRest: semanticColors.surfaceTransparent,
+	focusRing: semanticColors.borderFocus,
+
 	background: semanticColors.surfaceTransparent,
 	backgroundHover: semanticColors.surfaceTransparentHover,
+	backgroundPressed: semanticColors.surfaceTransparentActive,
 	backgroundSelected: semanticColors.surfaceTransparentActive,
 	backgroundSelectedHover: semanticColors.surfaceTransparentActive,
 
 	foreground: semanticColors.textInteractive,
 	foregroundHover: semanticColors.textInteractiveHover,
+	foregroundPressed: semanticColors.textInteractiveActive,
 	foregroundSelected: semanticColors.textInteractiveActive,
+	foregroundDisabled: semanticColors.textInteractiveDisabled,
 })
 
 export const notAuthenticatedPageColors = stylex.defineVars({
@@ -364,11 +370,11 @@ export const cardDetailErrorColors = stylex.defineVars({
 
 export const hideModeButtonColors = stylex.defineVars({
 	backgroundActive: {
-		default: blue.s600,
+		default: blue.s500,
 		'@media (prefers-color-scheme: dark)': blue.s800,
 	},
 	backgroundActiveHover: {
-		default: blue.s700,
+		default: blue.s600,
 		'@media (prefers-color-scheme: dark)': blue.s700,
 	},
 	foregroundActive: {

@@ -3,7 +3,7 @@ import { PointerActivationConstraints, PointerSensor } from '@dnd-kit/dom'
 import { useDraggable, useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router'
-import { type MouseEvent, useCallback, useState } from 'react'
+import { type MouseEvent, type RefCallback, useCallback, useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
@@ -55,6 +55,8 @@ type LibraryCollectionItemProps = CollectionWithChildren & {
 	openCollectionIds: ReadonlySet<Id<'collections'>>
 	/** Updates the controlled open state for this collection. */
 	onCollectionOpenChange: CollectionOpenChangeHandler
+	/** Attached to the selected collection's label, wherever it is in the tree. */
+	selectedLabelRef?: RefCallback<HTMLElement>
 	/**
 	 * Disables this collection and its descendants as drop targets. Parent links pass
 	 * this down while their subtree is being dragged to prevent cyclic reparenting.
@@ -74,6 +76,7 @@ export function LibraryCollectionItem({
 	parentId,
 	openCollectionIds,
 	onCollectionOpenChange,
+	selectedLabelRef,
 	dropDisabled = false,
 }: LibraryCollectionItemProps) {
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
@@ -184,6 +187,7 @@ export function LibraryCollectionItem({
 				<LibraryCollectionContextMenu
 					trigger={
 						<TreeItemLabel
+							ref={isActive ? selectedLabelRef : undefined}
 							render={
 								<Link
 									to='/library/$collectionId'
@@ -210,6 +214,7 @@ export function LibraryCollectionItem({
 						{...child}
 						openCollectionIds={openCollectionIds}
 						onCollectionOpenChange={onCollectionOpenChange}
+						selectedLabelRef={selectedLabelRef}
 						dropDisabled={isDropDisabled}
 					/>
 				))}

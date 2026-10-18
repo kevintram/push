@@ -61,8 +61,9 @@ export function TreeItemCollapsibleTrigger({
 		<CollapsibleTrigger
 			{...props}
 			render={(renderProps, { open }) => (
-				<Button.Icon
+				<Button
 					{...renderProps}
+					iconOnly
 					shape='round'
 					size='micro'
 					variant='ghost'
@@ -76,7 +77,7 @@ export function TreeItemCollapsibleTrigger({
 							open && styles.chevronOpen,
 						)}
 					/>
-				</Button.Icon>
+				</Button>
 			)}
 		/>
 	)

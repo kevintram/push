@@ -196,15 +196,16 @@ export function ComponentSection() {
 						</span>
 						<div {...stylex.props(styles.rowButtons)}>
 							{buttonSizes.map(size => (
-								<Button.Icon
+								<Button
 									aria-label={`${size} favorite`}
+									iconOnly
 									key={size}
 									shape='round'
 									size={size}
 									variant='outline'
 								>
 									<Star aria-hidden size={iconSizes.sm} />
-								</Button.Icon>
+								</Button>
 							))}
 						</div>
 					</div>

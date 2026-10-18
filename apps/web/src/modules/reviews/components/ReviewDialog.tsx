@@ -358,11 +358,12 @@ export function ReviewDialog({
 					collection={collection}
 				/>
 				<div {...stylex.props(styles.headerActions)}>
-					<Button.Icon
+					<Button
 						aria-expanded={isExpanded}
 						aria-label={
 							isExpanded ? 'Collapse review' : 'Expand review'
 						}
+						iconOnly
 						onClick={() => setIsExpanded(expanded => !expanded)}
 						xstyle={styles.windowControl}
 						shape='round'
@@ -374,11 +375,12 @@ export function ReviewDialog({
 						) : (
 							<Maximize2 aria-hidden='true' size={iconSizes.sm} />
 						)}
-					</Button.Icon>
+					</Button>
 					<DialogClose
 						render={
-							<Button.Icon
+							<Button
 								aria-label='Close review'
+								iconOnly
 								shape='round'
 								size='micro'
 								variant='ghost'
@@ -447,8 +449,9 @@ export function ReviewDialog({
 						<DropdownMenu>
 							<DropdownMenuTrigger
 								render={
-									<Button.Icon
+									<Button
 										aria-label='Review actions'
+										iconOnly
 										shape='round'
 										size='micro'
 										variant='ghost'
