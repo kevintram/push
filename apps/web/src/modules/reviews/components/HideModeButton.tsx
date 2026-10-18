@@ -10,7 +10,12 @@ import {
 	TooltipTrigger,
 } from '~/components/ui'
 import { hideModeButtonColors } from '~/styles/colors/components.stylex'
-import { appSidebar, iconWeights } from '~/styles/tokens.stylex'
+import {
+	appSidebar,
+	fontSizes,
+	fontWeights,
+	iconWeights,
+} from '~/styles/tokens.stylex'
 
 import { HIDE_MODE_HOTKEY } from '../hide-mode/hideModeHotkey'
 import { useHideMode } from '../hide-mode/useHideMode'
@@ -28,6 +33,8 @@ const styles = stylex.create({
 			':hover': hideModeButtonColors.backgroundActiveHover,
 		},
 		color: hideModeButtonColors.foregroundActive,
+		fontSize: fontSizes.sm,
+		fontWeight: fontWeights.medium,
 	},
 })
 
@@ -55,12 +62,12 @@ export function HideModeButton({
 						variant='ghost'
 						xstyle={isOn && styles.hideModeOn}
 					>
+						{isLabeled && 'Hiding'}
 						<Copy
 							aria-hidden='true'
 							size={appSidebar.iconSize}
 							strokeWidth={iconWeights.medium}
 						/>
-						{isLabeled && 'Hiding'}
 					</Button>
 				}
 			/>
