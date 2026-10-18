@@ -72,7 +72,7 @@ describe('formatDurability', () => {
 describe('formatDurabilityTooltip', () => {
 	it.each([
 		[null, null],
-		[10.4, 'Estimated you will remember this for at least 10d'],
+		[10.4, 'Estimated to remember for at least 10d'],
 	] as const)('formats %s as %s', (stability, expected) => {
 		expect(formatDurabilityTooltip(stability)).toBe(expected)
 	})
