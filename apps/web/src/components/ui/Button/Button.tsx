@@ -59,12 +59,6 @@ const styles = stylex.create({
 		paddingInline: spacing.none,
 		aspectRatio: '1 / 1',
 	},
-	slot: {
-		alignItems: 'center',
-		display: 'inline-flex',
-		flexShrink: 0,
-		justifyContent: 'center',
-	},
 	disabled: {
 		boxShadow: 'none',
 		cursor: 'not-allowed',
@@ -307,11 +301,7 @@ function renderButton({
 			{...styleProps}
 			{...props}
 		>
-			{iconOnly ? (
-				<span {...stylex.props(styles.slot)}>{children}</span>
-			) : (
-				children
-			)}
+			{children}
 		</ButtonPrimitive>
 	)
 }
