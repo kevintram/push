@@ -21,7 +21,7 @@ describe('HideModeButton', () => {
 		const hideButton = screen.getByRole('button', { name: 'Hide mode' })
 		expect(hideButton).toHaveAttribute('aria-pressed', 'false')
 		expect(hideButton.querySelectorAll('svg')).toHaveLength(1)
-		expect(hideButton).toHaveTextContent('')
+		expect(hideButton.textContent).toBe('')
 
 		await user.click(hideButton)
 
@@ -29,5 +29,29 @@ describe('HideModeButton', () => {
 
 		await user.click(hideButton)
 		expect(hideButton).toHaveAttribute('aria-pressed', 'false')
+	})
+
+	it('shows "Hiding" with showLabel only while hide mode is on', async () => {
+		const user = userEvent.setup()
+		render(
+			<HideModeProvider>
+				<HideModeButton showLabel />
+			</HideModeProvider>,
+		)
+
+		const hideButton = screen.getByRole('button', { name: 'Hide mode' })
+		expect(hideButton.textContent).toBe('')
+
+		await user.click(hideButton)
+
+		expect(hideButton).toHaveAttribute('aria-pressed', 'true')
+		expect(hideButton.textContent).toBe('Hiding')
+		// The same element stays mounted, so toggling keeps focus.
+		expect(hideButton).toHaveFocus()
+
+		await user.click(hideButton)
+
+		expect(hideButton.textContent).toBe('')
+		expect(hideButton).toHaveFocus()
 	})
 })

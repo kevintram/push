@@ -93,7 +93,7 @@ export function ExpandedAppSidebar({
 					3gulp
 				</Link>
 				<div {...stylex.props(styles.actions)}>
-					<HideModeButton />
+					<HideModeButton showLabel />
 					<SearchDialog />
 				</div>
 			</div>
