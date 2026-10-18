@@ -89,7 +89,7 @@ export function CollapsedAppSidebar({
 			</Tooltip>
 			<div {...stylex.props(styles.group)}>
 				<HideModeButton tooltipSide='right' />
-				<SearchDialog />
+				<SearchDialog tooltipSide='right' />
 			</div>
 
 			<div {...stylex.props(styles.group)}>

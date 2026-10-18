@@ -10,7 +10,7 @@ import { HIDE_MODE_HOTKEY } from '../hide-mode/hideModeHotkey'
 import { useHideMode } from '../hide-mode/useHideMode'
 
 type HideModeButtonProps = {
-	tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
+	tooltipSide?: React.ComponentProps<typeof TooltipContent>['side']
 	/** Shows "Hiding" next to the icon while hide mode is on. */
 	showLabel?: boolean
 }

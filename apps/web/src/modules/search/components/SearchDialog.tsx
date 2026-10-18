@@ -154,7 +154,11 @@ const styles = stylex.create({
 
 type ExpandedGroup = 'cards' | 'collections' | null
 
-export function SearchDialog() {
+type SearchDialogProps = {
+	tooltipSide?: React.ComponentProps<typeof TooltipContent>['side']
+}
+
+export function SearchDialog({ tooltipSide = 'bottom' }: SearchDialogProps) {
 	const [isOpen, setIsOpen] = useState(false)
 	const { isError, isLoading, query, cards, setQuery, collections } =
 		useSearchResults()
@@ -218,7 +222,7 @@ export function SearchDialog() {
 						/>
 					}
 				/>
-				<TooltipContent side='right'>
+				<TooltipContent side={tooltipSide}>
 					Search
 					<Kbd>{formatForDisplay(SEARCH_HOTKEY)}</Kbd>
 				</TooltipContent>
