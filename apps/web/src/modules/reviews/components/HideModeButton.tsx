@@ -2,20 +2,9 @@ import * as stylex from '@stylexjs/stylex'
 import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { Copy } from 'lucide-react'
 
-import {
-	Button,
-	Kbd,
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from '~/components/ui'
+import { SidebarIconButton } from '~/components/sidebar'
+import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { hideModeButtonColors } from '~/styles/colors/components.stylex'
-import {
-	appSidebar,
-	fontSizes,
-	fontWeights,
-	iconWeights,
-} from '~/styles/tokens.stylex'
 
 import { HIDE_MODE_HOTKEY } from '../hide-mode/hideModeHotkey'
 import { useHideMode } from '../hide-mode/useHideMode'
@@ -33,13 +22,9 @@ const styles = stylex.create({
 			':hover': hideModeButtonColors.backgroundActiveHover,
 		},
 		color: hideModeButtonColors.foregroundActive,
-		fontSize: fontSizes.sm,
-		fontWeight: fontWeights.medium,
 	},
 })
 
-// Styled like SidebarIconButton, but one Button element serves both the
-// icon-only and labeled states so toggling keeps focus on it.
 export function HideModeButton({
 	tooltipSide = 'bottom',
 	showLabel = false,
@@ -52,23 +37,14 @@ export function HideModeButton({
 		<Tooltip>
 			<TooltipTrigger
 				render={
-					<Button
+					<SidebarIconButton
 						aria-label='Hide mode'
 						aria-pressed={isOn}
-						iconOnly={!isLabeled}
+						icon={Copy}
+						label={isLabeled ? 'Hiding' : undefined}
 						onClick={toggleHideMode}
-						shape='round'
-						size='small'
-						variant='ghost'
 						xstyle={isOn && styles.hideModeOn}
-					>
-						{isLabeled && 'Hiding'}
-						<Copy
-							aria-hidden='true'
-							size={appSidebar.iconSize}
-							strokeWidth={iconWeights.medium}
-						/>
-					</Button>
+					/>
 				}
 			/>
 			<TooltipContent side={tooltipSide}>
