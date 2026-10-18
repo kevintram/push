@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { Anvil } from 'lucide-react'
+import { Anvil, Calendar, Sparkles } from 'lucide-react'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { cardMetadataColors } from '~/styles/colors/components.stylex'
@@ -100,7 +100,25 @@ export function CardMetadata({
 				{...stylex.props(styles.boundary, onClick && styles.clickable)}
 			>
 				<div {...stylex.props(styles.container)}>
-					<span {...stylex.props(styles.item)}>New</span>
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<span
+									{...stylex.props(
+										styles.item,
+										styles.raisedItem,
+									)}
+								>
+									<Sparkles
+										aria-hidden='true'
+										size={iconSizes.sm}
+									/>
+									New
+								</span>
+							}
+						/>
+						<TooltipContent>Not reviewed yet</TooltipContent>
+					</Tooltip>
 				</div>
 			</div>
 		)
@@ -133,6 +151,10 @@ export function CardMetadata({
 										dueTone === 'today' && styles.today,
 									)}
 								>
+									<Calendar
+										aria-hidden='true'
+										size={iconSizes.sm}
+									/>
 									{`Due ${formatRelativeDate(nextDueAt, today)}`}
 								</span>
 							}

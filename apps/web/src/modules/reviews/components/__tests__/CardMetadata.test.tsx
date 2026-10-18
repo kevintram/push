@@ -25,6 +25,9 @@ describe('CardMetadata', () => {
 		)
 
 		expect(screen.getByText('Due Tomorrow')).toBeInTheDocument()
+		expect(
+			document.querySelector('svg.lucide-calendar'),
+		).toBeInTheDocument()
 		expect(screen.getByText('8d ago')).toBeInTheDocument()
 	})
 
@@ -94,20 +97,32 @@ describe('CardMetadata', () => {
 		},
 	)
 
-	it('renders new cards without a rating icon', () => {
+	it('renders new cards with a sparkles icon and tooltip', async () => {
+		const user = userEvent.setup()
+
 		render(
-			<CardMetadata
-				lastReviewedAt={null}
-				lastRating={null}
-				nextDueAt={null}
-				retrievability={null}
-				stability={null}
-				today='2026-08-09'
-			/>,
+			<TooltipProvider delay={0}>
+				<CardMetadata
+					lastReviewedAt={null}
+					lastRating={null}
+					nextDueAt={null}
+					retrievability={null}
+					stability={null}
+					today='2026-08-09'
+				/>
+			</TooltipProvider>,
 		)
 
-		expect(screen.getByText('New')).toBeInTheDocument()
-		expect(document.querySelector('svg')).not.toBeInTheDocument()
+		const newItem = screen.getByText('New')
+		expect(document.querySelectorAll('svg')).toHaveLength(1)
+		expect(
+			document.querySelector('svg.lucide-sparkles'),
+		).toBeInTheDocument()
+		await user.hover(newItem)
+
+		expect(await screen.findByRole('tooltip')).toHaveTextContent(
+			'Not reviewed yet',
+		)
 	})
 
 	it('forwards metadata clicks when requested', async () => {
