@@ -295,14 +295,20 @@ export const loadingIndicatorColors = stylex.defineVars({
 })
 
 export const sidebarItemColors = stylex.defineVars({
+	focusRingRest: semanticColors.surfaceTransparent,
+	focusRing: semanticColors.borderFocus,
+
 	background: semanticColors.surfaceTransparent,
 	backgroundHover: semanticColors.surfaceTransparentHover,
+	backgroundPressed: semanticColors.surfaceTransparentActive,
 	backgroundSelected: semanticColors.surfaceTransparentActive,
 	backgroundSelectedHover: semanticColors.surfaceTransparentActive,
 
 	foreground: semanticColors.textInteractive,
 	foregroundHover: semanticColors.textInteractiveHover,
+	foregroundPressed: semanticColors.textInteractiveActive,
 	foregroundSelected: semanticColors.textInteractiveActive,
+	foregroundDisabled: semanticColors.textInteractiveDisabled,
 })
 
 export const notAuthenticatedPageColors = stylex.defineVars({

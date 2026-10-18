@@ -48,13 +48,18 @@ const hideModeOnSemanticTheme = stylex.createTheme(semanticColors, {
 // semantic palette above. These mirror the base aliases in
 // components.stylex.ts; tune colors in the semantic theme, not here.
 const hideModeOnItemTheme = stylex.createTheme(sidebarItemColors, {
+	focusRingRest: semanticColors.surfaceTransparent,
+	focusRing: semanticColors.borderFocus,
 	background: semanticColors.surfaceTransparent,
 	backgroundHover: semanticColors.surfaceTransparentHover,
+	backgroundPressed: semanticColors.surfaceTransparentActive,
 	backgroundSelected: semanticColors.surfaceTransparentActive,
 	backgroundSelectedHover: semanticColors.surfaceTransparentActive,
 	foreground: semanticColors.textInteractive,
 	foregroundHover: semanticColors.textInteractiveHover,
+	foregroundPressed: semanticColors.textInteractiveActive,
 	foregroundSelected: semanticColors.textInteractiveActive,
+	foregroundDisabled: semanticColors.textInteractiveDisabled,
 })
 
 const hideModeOnSectionHeaderTheme = stylex.createTheme(

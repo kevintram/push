@@ -40,18 +40,21 @@ describe('HideModeButton', () => {
 		)
 
 		const hideButton = screen.getByRole('button', { name: 'Hide mode' })
+		const icon = hideButton.querySelector('svg')
 		expect(hideButton.textContent).toBe('')
 
 		await user.click(hideButton)
 
 		expect(hideButton).toHaveAttribute('aria-pressed', 'true')
 		expect(hideButton.textContent).toBe('Hiding')
-		// The same element stays mounted, so toggling keeps focus.
+		// The same elements stay mounted, so toggling keeps focus and the icon.
 		expect(hideButton).toHaveFocus()
+		expect(hideButton.querySelector('svg')).toBe(icon)
 
 		await user.click(hideButton)
 
 		expect(hideButton.textContent).toBe('')
 		expect(hideButton).toHaveFocus()
+		expect(hideButton.querySelector('svg')).toBe(icon)
 	})
 })

@@ -12,7 +12,7 @@ import {
 	SidebarCollapsibleHeader,
 	SidebarCollapsibleItem,
 	SidebarCollapsibleTrigger,
-	SidebarIconButton,
+	SidebarItem,
 } from '~/components/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger, Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
@@ -172,10 +172,11 @@ export function LibraryNavigationContent({
 					<Tooltip>
 						<TooltipTrigger
 							render={
-								<SidebarIconButton
+								<SidebarItem
 									aria-label='Collapse all'
 									disabled={openCollectionIds.size === 0}
 									icon={ChevronsDownUp}
+									iconOnly
 									onClick={onCollapseAll}
 								/>
 							}
@@ -185,9 +186,10 @@ export function LibraryNavigationContent({
 					<Tooltip>
 						<TooltipTrigger
 							render={
-								<SidebarIconButton
+								<SidebarItem
 									aria-label='Add collection'
 									icon={Plus}
+									iconOnly
 									onClick={handleCreateCollection}
 								/>
 							}

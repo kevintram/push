@@ -212,8 +212,9 @@ export function CollectionPage() {
 					<DropdownMenu>
 						<DropdownMenuTrigger
 							render={
-								<Button.Icon
+								<Button
 									aria-label='Collection actions'
+									iconOnly
 									shape='round'
 									size='small'
 									variant='ghost'

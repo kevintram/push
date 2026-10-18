@@ -84,9 +84,9 @@ describe('Button', () => {
 
 	it('keeps icon-only buttons accessible', () => {
 		render(
-			<Button.Icon aria-label='Favorite review'>
+			<Button aria-label='Favorite review' iconOnly>
 				<Star aria-hidden='true' />
-			</Button.Icon>,
+			</Button>,
 		)
 
 		expect(
@@ -109,17 +109,17 @@ describe('Button', () => {
 
 	it('supports square and round icon buttons', () => {
 		const { rerender } = render(
-			<Button.Icon aria-label='Add'>
+			<Button aria-label='Add' iconOnly>
 				<Plus aria-hidden='true' />
-			</Button.Icon>,
+			</Button>,
 		)
 
 		expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument()
 
 		rerender(
-			<Button.Icon aria-label='Add' shape='round'>
+			<Button aria-label='Add' iconOnly shape='round'>
 				<Plus aria-hidden='true' />
-			</Button.Icon>,
+			</Button>,
 		)
 
 		expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument()

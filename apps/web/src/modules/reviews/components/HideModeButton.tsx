@@ -2,26 +2,21 @@ import * as stylex from '@stylexjs/stylex'
 import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { Copy } from 'lucide-react'
 
-import {
-	Button,
-	Kbd,
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from '~/components/ui'
+import { SidebarItem } from '~/components/sidebar'
+import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { hideModeButtonColors } from '~/styles/colors/components.stylex'
 import {
 	appSidebar,
-	fontSizes,
 	fontWeights,
 	iconWeights,
+	radii,
 } from '~/styles/tokens.stylex'
 
 import { HIDE_MODE_HOTKEY } from '../hide-mode/hideModeHotkey'
 import { useHideMode } from '../hide-mode/useHideMode'
 
 type HideModeButtonProps = {
-	tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
+	tooltipSide?: React.ComponentProps<typeof TooltipContent>['side']
 	/** Shows "Hiding" next to the icon while hide mode is on. */
 	showLabel?: boolean
 }
@@ -33,13 +28,13 @@ const styles = stylex.create({
 			':hover': hideModeButtonColors.backgroundActiveHover,
 		},
 		color: hideModeButtonColors.foregroundActive,
-		fontSize: fontSizes.sm,
+	},
+	labeled: {
+		borderRadius: radii.full,
 		fontWeight: fontWeights.medium,
 	},
 })
 
-// Styled like SidebarIconButton, but one Button element serves both the
-// icon-only and labeled states so toggling keeps focus on it.
 export function HideModeButton({
 	tooltipSide = 'bottom',
 	showLabel = false,
@@ -52,15 +47,17 @@ export function HideModeButton({
 		<Tooltip>
 			<TooltipTrigger
 				render={
-					<Button
+					// The glyph is a child, not `icon`, so it can follow the label.
+					// Toggling the label keeps this one element, so focus stays.
+					<SidebarItem
 						aria-label='Hide mode'
 						aria-pressed={isOn}
 						iconOnly={!isLabeled}
 						onClick={toggleHideMode}
-						shape='round'
-						size='small'
-						variant='ghost'
-						xstyle={isOn && styles.hideModeOn}
+						xstyle={[
+							isOn && styles.hideModeOn,
+							isLabeled && styles.labeled,
+						]}
 					>
 						{isLabeled && 'Hiding'}
 						<Copy
@@ -68,7 +65,7 @@ export function HideModeButton({
 							size={appSidebar.iconSize}
 							strokeWidth={iconWeights.medium}
 						/>
-					</Button>
+					</SidebarItem>
 				}
 			/>
 			<TooltipContent side={tooltipSide}>

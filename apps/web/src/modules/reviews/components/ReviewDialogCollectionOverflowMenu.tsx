@@ -32,13 +32,14 @@ export function ReviewDialogCollectionOverflowMenu({
 		<DropdownMenu>
 			<DropdownMenuTrigger
 				render={
-					<Button.Icon
+					<Button
 						aria-label='Show collection path'
+						iconOnly
 						size='small'
 						variant='ghost'
 					>
 						<BreadcrumbEllipsis />
-					</Button.Icon>
+					</Button>
 				}
 			/>
 			<DropdownMenuContent align='start'>

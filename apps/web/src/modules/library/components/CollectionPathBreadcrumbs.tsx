@@ -68,8 +68,9 @@ export function CollectionPathBreadcrumbs({
 							<DropdownMenu>
 								<DropdownMenuTrigger
 									render={
-										<Button.Icon
+										<Button
 											aria-label='Show hidden collections'
+											iconOnly
 											size='small'
 											variant='ghost'
 										/>

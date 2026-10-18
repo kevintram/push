@@ -4,7 +4,7 @@ import { Search, X } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
-import { SidebarIconButton } from '~/components/sidebar'
+import { SidebarItem } from '~/components/sidebar'
 import {
 	Button,
 	Dialog,
@@ -154,7 +154,11 @@ const styles = stylex.create({
 
 type ExpandedGroup = 'cards' | 'collections' | null
 
-export function SearchDialog() {
+type SearchDialogProps = {
+	tooltipSide?: React.ComponentProps<typeof TooltipContent>['side']
+}
+
+export function SearchDialog({ tooltipSide = 'bottom' }: SearchDialogProps) {
 	const [isOpen, setIsOpen] = useState(false)
 	const { isError, isLoading, query, cards, setQuery, collections } =
 		useSearchResults()
@@ -210,15 +214,16 @@ export function SearchDialog() {
 					render={
 						<DialogTrigger
 							render={
-								<SidebarIconButton
+								<SidebarItem
 									aria-label='Search'
 									icon={Search}
+									iconOnly
 								/>
 							}
 						/>
 					}
 				/>
-				<TooltipContent side='right'>
+				<TooltipContent side={tooltipSide}>
 					Search
 					<Kbd>{formatForDisplay(SEARCH_HOTKEY)}</Kbd>
 				</TooltipContent>
@@ -276,8 +281,9 @@ export function SearchDialog() {
 							render={
 								<DialogClose
 									render={
-										<Button.Icon
+										<Button
 											aria-label='Close search'
+											iconOnly
 											size='small'
 											variant='ghost'
 											xstyle={styles.actionButton}

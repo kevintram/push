@@ -217,7 +217,7 @@ export function CardDetail({
 						<Tooltip>
 							<TooltipTrigger
 								render={
-									<Button.Icon
+									<Button
 										aria-label={
 											sidebarOpen
 												? 'Hide details'
@@ -225,6 +225,7 @@ export function CardDetail({
 										}
 										aria-expanded={sidebarOpen}
 										aria-controls={sidebarId}
+										iconOnly
 										shape='round'
 										variant='secondary'
 										size='small'
@@ -236,7 +237,7 @@ export function CardDetail({
 											aria-hidden='true'
 											size={iconSizes.sm}
 										/>
-									</Button.Icon>
+									</Button>
 								}
 							/>
 							<TooltipContent>

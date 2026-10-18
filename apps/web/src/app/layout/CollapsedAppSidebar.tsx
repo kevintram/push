@@ -4,7 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { PanelLeft, Settings } from 'lucide-react'
 import type { Ref } from 'react'
 
-import { SidebarIconButton, SidebarItem } from '~/components/sidebar'
+import { SidebarItem } from '~/components/sidebar'
 import {
 	Kbd,
 	StatusDot,
@@ -16,7 +16,7 @@ import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { REVIEW_LINKS } from '~/modules/reviews/reviewLinks'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
-import { layout, radii, spacing } from '~/styles/tokens.stylex'
+import { layout, spacing } from '~/styles/tokens.stylex'
 
 import { SIDEBAR_HOTKEY } from './sidebarHotkey'
 
@@ -39,11 +39,6 @@ const styles = stylex.create({
 	group: {
 		display: 'flex',
 		flexDirection: 'column',
-	},
-	// Round to match the rail's SidebarIconButton controls.
-	railLink: {
-		borderRadius: radii.full,
-		position: 'relative',
 	},
 	statusDot: {
 		insetBlockStart: spacing.xs,
@@ -76,11 +71,12 @@ export function CollapsedAppSidebar({
 				<TooltipTrigger
 					render={
 						<span {...stylex.props(styles.controlWrapper)}>
-							<SidebarIconButton
+							<SidebarItem
 								aria-label='Expand sidebar'
 								aria-expanded={false}
 								aria-controls={navId}
 								icon={PanelLeft}
+								iconOnly
 								onClick={onToggle}
 								ref={toggleRef}
 							/>
@@ -94,7 +90,7 @@ export function CollapsedAppSidebar({
 			</Tooltip>
 			<div {...stylex.props(styles.group)}>
 				<HideModeButton tooltipSide='right' />
-				<SearchDialog />
+				<SearchDialog tooltipSide='right' />
 			</div>
 
 			<div {...stylex.props(styles.group)}>
@@ -105,18 +101,18 @@ export function CollapsedAppSidebar({
 						<Tooltip key={to}>
 							<TooltipTrigger
 								render={
-									<SidebarItem.Icon
-										ariaLabel={name}
+									<SidebarItem
+										aria-label={name}
 										icon={icon}
+										iconOnly
 										render={<Link to={to} />}
-										xstyle={styles.railLink}
 									>
 										{queue.count > 0 && (
 											<StatusDot
 												xstyle={styles.statusDot}
 											/>
 										)}
-									</SidebarItem.Icon>
+									</SidebarItem>
 								}
 							/>
 							<TooltipContent side='right'>{name}</TooltipContent>
@@ -129,16 +125,16 @@ export function CollapsedAppSidebar({
 			<Tooltip>
 				<TooltipTrigger
 					render={
-						<SidebarItem.Icon
-							ariaLabel='Settings'
+						<SidebarItem
+							aria-label='Settings'
 							icon={Settings}
+							iconOnly
 							render={
 								<Link
 									activeOptions={{ exact: true }}
 									to='/settings'
 								/>
 							}
-							xstyle={styles.railLink}
 						/>
 					}
 				/>
