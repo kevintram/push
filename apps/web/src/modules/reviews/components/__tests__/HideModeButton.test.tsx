@@ -21,7 +21,7 @@ describe('HideModeButton', () => {
 		const hideButton = screen.getByRole('button', { name: 'Hide mode' })
 		expect(hideButton).toHaveAttribute('aria-pressed', 'false')
 		expect(hideButton.querySelectorAll('svg')).toHaveLength(1)
-		expect(hideButton).toHaveTextContent('')
+		expect(hideButton.textContent).toBe('')
 
 		await user.click(hideButton)
 
