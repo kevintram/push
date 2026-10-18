@@ -17,8 +17,6 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-import { SidebarItemIcon } from './SidebarItemIcon'
-
 export interface SidebarItemProps extends Omit<
 	useRender.ComponentProps<'button'>,
 	'children' | 'className' | 'style'
@@ -31,6 +29,7 @@ export interface SidebarItemProps extends Omit<
 	 * Defaults to `skinny`.
 	 */
 	layout?: 'fat' | 'skinny'
+	/** Drops the label and draws a round icon, as in the collapsed rail. */
 	iconOnly?: boolean
 	/**
 	 * Marks non-link items as current. Links get `data-status` from TanStack
@@ -99,7 +98,7 @@ const styles = stylex.create({
 		blockSize: appSidebar.rowHeight,
 		fontSize: fontSizes.sm,
 	},
-	// Round with an outset ring, matching SidebarIconButton beside it in the
+	// Round with an outset ring, matching SidebarAction beside it in the
 	// rail. Relative so badges can sit on the icon's corner.
 	iconOnly: {
 		borderRadius: radii.full,
@@ -143,6 +142,7 @@ const styles = stylex.create({
 	},
 })
 
+// A place to go in the sidebar. Controls that act in place use SidebarAction.
 export function SidebarItem({
 	active,
 	ariaLabel,
@@ -197,5 +197,3 @@ export function SidebarItem({
 		state: { slot: 'sidebar-item', status: active ? 'active' : undefined },
 	})
 }
-
-SidebarItem.Icon = SidebarItemIcon

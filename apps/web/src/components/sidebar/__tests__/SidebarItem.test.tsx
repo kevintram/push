@@ -74,9 +74,9 @@ describe('SidebarItem', () => {
 
 	it('keeps icon-only items accessible', () => {
 		render(
-			<SidebarItem.Icon aria-label='Search'>
+			<SidebarItem aria-label='Search' iconOnly>
 				<Search aria-hidden='true' />
-			</SidebarItem.Icon>,
+			</SidebarItem>,
 		)
 
 		const item = screen.getByRole('button', { name: 'Search' })

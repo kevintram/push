@@ -4,7 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { PanelLeft, Settings } from 'lucide-react'
 import type { Ref } from 'react'
 
-import { SidebarIconButton, SidebarItem } from '~/components/sidebar'
+import { SidebarAction, SidebarItem } from '~/components/sidebar'
 import {
 	Kbd,
 	StatusDot,
@@ -71,7 +71,7 @@ export function CollapsedAppSidebar({
 				<TooltipTrigger
 					render={
 						<span {...stylex.props(styles.controlWrapper)}>
-							<SidebarIconButton
+							<SidebarAction
 								aria-label='Expand sidebar'
 								aria-expanded={false}
 								aria-controls={navId}
@@ -100,9 +100,10 @@ export function CollapsedAppSidebar({
 						<Tooltip key={to}>
 							<TooltipTrigger
 								render={
-									<SidebarItem.Icon
+									<SidebarItem
 										ariaLabel={name}
 										icon={icon}
+										iconOnly
 										render={<Link to={to} />}
 									>
 										{queue.count > 0 && (
@@ -110,7 +111,7 @@ export function CollapsedAppSidebar({
 												xstyle={styles.statusDot}
 											/>
 										)}
-									</SidebarItem.Icon>
+									</SidebarItem>
 								}
 							/>
 							<TooltipContent side='right'>{name}</TooltipContent>
@@ -123,9 +124,10 @@ export function CollapsedAppSidebar({
 			<Tooltip>
 				<TooltipTrigger
 					render={
-						<SidebarItem.Icon
+						<SidebarItem
 							ariaLabel='Settings'
 							icon={Settings}
+							iconOnly
 							render={
 								<Link
 									activeOptions={{ exact: true }}

@@ -7,12 +7,12 @@ import { type UIEvent, useCallback, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
 import {
+	SidebarAction,
 	SidebarCollapsibleActions,
 	SidebarCollapsibleContent,
 	SidebarCollapsibleHeader,
 	SidebarCollapsibleItem,
 	SidebarCollapsibleTrigger,
-	SidebarIconButton,
 } from '~/components/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger, Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
@@ -172,7 +172,7 @@ export function LibraryNavigationContent({
 					<Tooltip>
 						<TooltipTrigger
 							render={
-								<SidebarIconButton
+								<SidebarAction
 									aria-label='Collapse all'
 									disabled={openCollectionIds.size === 0}
 									icon={ChevronsDownUp}
@@ -185,7 +185,7 @@ export function LibraryNavigationContent({
 					<Tooltip>
 						<TooltipTrigger
 							render={
-								<SidebarIconButton
+								<SidebarAction
 									aria-label='Add collection'
 									icon={Plus}
 									onClick={handleCreateCollection}

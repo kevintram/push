@@ -4,7 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { PanelLeft, Settings } from 'lucide-react'
 import type { Ref } from 'react'
 
-import { SidebarIconButton, SidebarItem } from '~/components/sidebar'
+import { SidebarAction, SidebarItem } from '~/components/sidebar'
 import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { LibraryNavigation } from '~/modules/library/components/library-navigation/LibraryNavigation'
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
@@ -74,7 +74,7 @@ export function ExpandedAppSidebar({
 				<Tooltip>
 					<TooltipTrigger
 						render={
-							<SidebarIconButton
+							<SidebarAction
 								aria-label='Collapse sidebar'
 								aria-expanded
 								aria-controls={navId}

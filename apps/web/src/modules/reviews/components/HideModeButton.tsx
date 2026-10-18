@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { Copy } from 'lucide-react'
 
-import { SidebarIconButton } from '~/components/sidebar'
+import { SidebarAction } from '~/components/sidebar'
 import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { hideModeButtonColors } from '~/styles/colors/components.stylex'
 
@@ -37,7 +37,7 @@ export function HideModeButton({
 		<Tooltip>
 			<TooltipTrigger
 				render={
-					<SidebarIconButton
+					<SidebarAction
 						aria-label='Hide mode'
 						aria-pressed={isOn}
 						icon={Copy}

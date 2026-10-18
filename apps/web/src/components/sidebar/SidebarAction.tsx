@@ -16,7 +16,7 @@ const styles = stylex.create({
 	},
 })
 
-export interface SidebarIconButtonProps extends Omit<
+export interface SidebarActionProps extends Omit<
 	ButtonProps,
 	'children' | 'iconOnly' | 'shape' | 'size' | 'variant'
 > {
@@ -28,14 +28,16 @@ export interface SidebarIconButtonProps extends Omit<
 	label?: string
 }
 
+// A sidebar control that acts in place. Places to go use SidebarItem.
+//
 // A small button is as tall as a sidebar row, so its glyph lines up with the
 // rows' leading icons.
-export function SidebarIconButton({
+export function SidebarAction({
 	icon: Icon,
 	label,
 	xstyle,
 	...props
-}: SidebarIconButtonProps) {
+}: SidebarActionProps) {
 	return (
 		<Button
 			{...props}
