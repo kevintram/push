@@ -22,7 +22,6 @@ export interface SidebarItemProps extends Omit<
 > {
 	children?: ReactNode
 	icon?: LucideIcon
-	ariaLabel?: string
 	/** Drops the label and draws a round icon, as in the collapsed rail. */
 	iconOnly?: boolean
 	/**
@@ -125,7 +124,6 @@ const styles = stylex.create({
 // A place to go in the sidebar. Controls that act in place use SidebarAction.
 export function SidebarItem({
 	active,
-	ariaLabel,
 	children,
 	icon: Icon,
 	iconOnly = false,
@@ -148,8 +146,7 @@ export function SidebarItem({
 		props: mergeProps<'button'>(
 			{
 				'aria-label':
-					ariaLabel ??
-					(typeof children === 'string' ? children : undefined),
+					typeof children === 'string' ? children : undefined,
 				type: render ? undefined : 'button',
 			},
 			stylex.props(

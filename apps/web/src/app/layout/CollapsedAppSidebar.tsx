@@ -101,7 +101,7 @@ export function CollapsedAppSidebar({
 							<TooltipTrigger
 								render={
 									<SidebarItem
-										ariaLabel={name}
+										aria-label={name}
 										icon={icon}
 										iconOnly
 										render={<Link to={to} />}
@@ -125,7 +125,7 @@ export function CollapsedAppSidebar({
 				<TooltipTrigger
 					render={
 						<SidebarItem
-							ariaLabel='Settings'
+							aria-label='Settings'
 							icon={Settings}
 							iconOnly
 							render={

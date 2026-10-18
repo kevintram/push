@@ -49,7 +49,7 @@ describe('SidebarItem', () => {
 
 	it('prefers an explicit aria label over the visible text', () => {
 		render(
-			<SidebarItem ariaLabel='Open library' icon={Library}>
+			<SidebarItem aria-label='Open library' icon={Library}>
 				Library
 			</SidebarItem>,
 		)
@@ -61,7 +61,7 @@ describe('SidebarItem', () => {
 
 	it('renders custom content', () => {
 		render(
-			<SidebarItem ariaLabel='Library, cards available' icon={Library}>
+			<SidebarItem aria-label='Library, cards available' icon={Library}>
 				Library
 				<span aria-label='Cards available' role='img' />
 			</SidebarItem>,
