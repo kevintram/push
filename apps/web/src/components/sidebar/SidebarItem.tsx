@@ -99,16 +99,15 @@ const styles = stylex.create({
 		blockSize: appSidebar.rowHeight,
 		fontSize: fontSizes.sm,
 	},
+	// Round with an outset ring, matching SidebarIconButton beside it in the
+	// rail. Relative so badges can sit on the icon's corner.
 	iconOnly: {
+		borderRadius: radii.full,
 		paddingInline: spacing.none,
 		aspectRatio: '1 / 1',
 		justifyContent: 'center',
-	},
-	slot: {
-		alignItems: 'center',
-		display: 'inline-flex',
-		flexShrink: 0,
-		justifyContent: 'center',
+		outlineOffset: '2px',
+		position: 'relative',
 	},
 	sidebarIcon: {
 		display: 'block',
@@ -184,12 +183,7 @@ export function SidebarItem({
 			),
 			props,
 			{
-				children: iconOnly ? (
-					<span {...stylex.props(styles.slot)}>
-						{icon}
-						{children}
-					</span>
-				) : (
+				children: (
 					<>
 						{icon}
 						{children}

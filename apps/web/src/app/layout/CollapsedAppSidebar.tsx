@@ -16,7 +16,7 @@ import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { REVIEW_LINKS } from '~/modules/reviews/reviewLinks'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
-import { layout, radii, spacing } from '~/styles/tokens.stylex'
+import { layout, spacing } from '~/styles/tokens.stylex'
 
 import { SIDEBAR_HOTKEY } from './sidebarHotkey'
 
@@ -39,11 +39,6 @@ const styles = stylex.create({
 	group: {
 		display: 'flex',
 		flexDirection: 'column',
-	},
-	// Round to match the rail's SidebarIconButton controls.
-	railLink: {
-		borderRadius: radii.full,
-		position: 'relative',
 	},
 	statusDot: {
 		insetBlockStart: spacing.xs,
@@ -109,7 +104,6 @@ export function CollapsedAppSidebar({
 										ariaLabel={name}
 										icon={icon}
 										render={<Link to={to} />}
-										xstyle={styles.railLink}
 									>
 										{queue.count > 0 && (
 											<StatusDot
@@ -138,7 +132,6 @@ export function CollapsedAppSidebar({
 									to='/settings'
 								/>
 							}
-							xstyle={styles.railLink}
 						/>
 					}
 				/>
