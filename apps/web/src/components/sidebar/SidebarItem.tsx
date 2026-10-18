@@ -56,6 +56,14 @@ const styles = stylex.create({
 		textDecoration: 'none',
 		cursor: 'pointer',
 		fontFamily: 'inherit',
+		outlineColor: {
+			default: sidebarItemColors.focusRingRest,
+			':focus-visible': sidebarItemColors.focusRing,
+		},
+		// Inset to match the library tree's rows, which share the sidebar.
+		outlineOffset: '-2px',
+		outlineStyle: 'solid',
+		outlineWidth: '2px',
 
 		backgroundColor: {
 			'[data-status=active]': sidebarItemColors.backgroundSelected,
@@ -63,11 +71,13 @@ const styles = stylex.create({
 			':is([data-status=active]:hover)':
 				sidebarItemColors.backgroundSelectedHover,
 			':hover': sidebarItemColors.backgroundHover,
+			':active': sidebarItemColors.backgroundPressed,
 		},
 		color: {
 			'[data-status=active]': sidebarItemColors.foregroundSelected,
 			default: sidebarItemColors.foreground,
 			':hover': sidebarItemColors.foregroundHover,
+			':active': sidebarItemColors.foregroundPressed,
 		},
 	},
 	fat: {
