@@ -310,8 +310,8 @@ describe('LibraryNavigationContent', () => {
 	})
 
 	it.each([
-		{ direction: 'above', icon: 'lucide-chevron-up' },
-		{ direction: 'below', icon: 'lucide-chevron-down' },
+		{ direction: 'above', icon: 'lucide-arrow-up' },
+		{ direction: 'below', icon: 'lucide-arrow-down' },
 	] as const)(
 		'points the pill $direction at a selection scrolled out of view',
 		async ({ direction, icon }) => {

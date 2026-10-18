@@ -1,8 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
 import {
-	ChevronDown,
+	ArrowDown,
+	ArrowUp,
 	ChevronsUpDown,
-	ChevronUp,
 	type LucideIcon,
 } from 'lucide-react'
 
@@ -114,8 +114,8 @@ export type HiddenSelectionPosition = 'collapsed' | OffscreenDirection
 // The collapsed icon mirrors the Collapse all button's ChevronsDownUp.
 const icons: Record<HiddenSelectionPosition, LucideIcon> = {
 	collapsed: ChevronsUpDown,
-	above: ChevronUp,
-	below: ChevronDown,
+	above: ArrowUp,
+	below: ArrowDown,
 }
 
 type RevealSelectionPillProps = {
