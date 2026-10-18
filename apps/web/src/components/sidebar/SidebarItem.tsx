@@ -11,7 +11,6 @@ import {
 import {
 	appSidebar,
 	fontSizes,
-	fontWeights,
 	iconWeights,
 	radii,
 	spacing,
@@ -24,11 +23,6 @@ export interface SidebarItemProps extends Omit<
 	children?: ReactNode
 	icon?: LucideIcon
 	ariaLabel?: string
-	/**
-	 * `fat` stacks the icon above the label; `skinny` puts them on one line.
-	 * Defaults to `skinny`.
-	 */
-	layout?: 'fat' | 'skinny'
 	/** Drops the label and draws a round icon, as in the collapsed rail. */
 	iconOnly?: boolean
 	/**
@@ -46,15 +40,20 @@ export interface SidebarItemProps extends Omit<
 
 const styles = stylex.create({
 	item: {
+		borderRadius: radii.md,
 		borderWidth: 0,
-		gap: spacing.xs,
+		gap: spacing.sm,
+		paddingBlock: spacing.none,
+		paddingInline: appSidebar.rowInset,
 
 		alignItems: 'center',
+		blockSize: appSidebar.rowHeight,
 		display: 'flex',
 
 		textDecoration: 'none',
 		cursor: 'pointer',
 		fontFamily: 'inherit',
+		fontSize: fontSizes.sm,
 		outlineColor: {
 			default: sidebarItemColors.focusRingRest,
 			':focus-visible': sidebarItemColors.focusRing,
@@ -78,25 +77,6 @@ const styles = stylex.create({
 			':hover': sidebarItemColors.foregroundHover,
 			':active': sidebarItemColors.foregroundPressed,
 		},
-	},
-	fat: {
-		gap: spacing.xs,
-		paddingBlock: spacing.md,
-		paddingInline: spacing.sm,
-
-		borderRadius: radii['2xl'],
-		flexDirection: 'column',
-		fontSize: fontSizes.xs,
-		fontWeight: fontWeights.medium,
-		textAlign: 'center',
-	},
-	skinny: {
-		borderRadius: radii.md,
-		gap: spacing.sm,
-		paddingBlock: spacing.none,
-		paddingInline: appSidebar.rowInset,
-		blockSize: appSidebar.rowHeight,
-		fontSize: fontSizes.sm,
 	},
 	// Round with an outset ring, matching SidebarAction beside it in the
 	// rail. Relative so badges can sit on the icon's corner.
@@ -149,7 +129,6 @@ export function SidebarItem({
 	children,
 	icon: Icon,
 	iconOnly = false,
-	layout = 'skinny',
 	render,
 	variant = 'ghost',
 	xstyle,
@@ -175,7 +154,6 @@ export function SidebarItem({
 			},
 			stylex.props(
 				styles.item,
-				layout === 'fat' ? styles.fat : styles.skinny,
 				iconOnly && styles.iconOnly,
 				variant === 'secondary' && styles.secondary,
 				variant === 'outline' && styles.outline,
