@@ -39,5 +39,5 @@ export function formatDurabilityTooltip(
 ): string | null {
 	const durability = formatDurability(stability)
 	if (durability === null) return null
-	return `Estimated you will remember this for at least ${durability}`
+	return `Estimated to remember for at least ${durability}`
 }
