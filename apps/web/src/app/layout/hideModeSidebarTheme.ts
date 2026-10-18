@@ -59,6 +59,7 @@ const hideModeOnItemTheme = stylex.createTheme(sidebarItemColors, {
 	foregroundHover: semanticColors.textInteractiveHover,
 	foregroundPressed: semanticColors.textInteractiveActive,
 	foregroundSelected: semanticColors.textInteractiveActive,
+	foregroundDisabled: semanticColors.textInteractiveDisabled,
 })
 
 const hideModeOnSectionHeaderTheme = stylex.createTheme(

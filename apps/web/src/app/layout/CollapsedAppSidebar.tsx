@@ -4,7 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { PanelLeft, Settings } from 'lucide-react'
 import type { Ref } from 'react'
 
-import { SidebarAction, SidebarItem } from '~/components/sidebar'
+import { SidebarItem } from '~/components/sidebar'
 import {
 	Kbd,
 	StatusDot,
@@ -71,11 +71,12 @@ export function CollapsedAppSidebar({
 				<TooltipTrigger
 					render={
 						<span {...stylex.props(styles.controlWrapper)}>
-							<SidebarAction
+							<SidebarItem
 								aria-label='Expand sidebar'
 								aria-expanded={false}
 								aria-controls={navId}
 								icon={PanelLeft}
+								iconOnly
 								onClick={onToggle}
 								ref={toggleRef}
 							/>

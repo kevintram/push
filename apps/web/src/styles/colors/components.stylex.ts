@@ -308,6 +308,7 @@ export const sidebarItemColors = stylex.defineVars({
 	foregroundHover: semanticColors.textInteractiveHover,
 	foregroundPressed: semanticColors.textInteractiveActive,
 	foregroundSelected: semanticColors.textInteractiveActive,
+	foregroundDisabled: semanticColors.textInteractiveDisabled,
 })
 
 export const notAuthenticatedPageColors = stylex.defineVars({

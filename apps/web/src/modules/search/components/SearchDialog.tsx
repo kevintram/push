@@ -4,7 +4,7 @@ import { Search, X } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
-import { SidebarAction } from '~/components/sidebar'
+import { SidebarItem } from '~/components/sidebar'
 import {
 	Button,
 	Dialog,
@@ -214,9 +214,10 @@ export function SearchDialog({ tooltipSide = 'bottom' }: SearchDialogProps) {
 					render={
 						<DialogTrigger
 							render={
-								<SidebarAction
+								<SidebarItem
 									aria-label='Search'
 									icon={Search}
+									iconOnly
 								/>
 							}
 						/>

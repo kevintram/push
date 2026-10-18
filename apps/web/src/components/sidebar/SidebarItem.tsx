@@ -61,6 +61,12 @@ const styles = stylex.create({
 		outlineOffset: '-2px',
 		outlineStyle: 'solid',
 		outlineWidth: '2px',
+		transitionDuration: {
+			default: '125ms, 125ms, 125ms, 389ms',
+			'@media (prefers-reduced-motion: reduce)': '1ms',
+		},
+		transitionProperty: 'background-color, border-color, color, transform',
+		transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
 
 		backgroundColor: {
 			'[data-status=active]': sidebarItemColors.backgroundSelected,
@@ -77,8 +83,15 @@ const styles = stylex.create({
 			':active': sidebarItemColors.foregroundPressed,
 		},
 	},
-	// Round with an outset ring, matching SidebarAction beside it in the
-	// rail. Relative so badges can sit on the icon's corner.
+	// Buttons shrink a little while pressed, like Button. Links don't.
+	pressable: {
+		transform: {
+			default: 'scale(1)',
+			':active': 'scale(0.97)',
+		},
+	},
+	// Round with an outset ring. Relative so badges can sit on the icon's
+	// corner.
 	iconOnly: {
 		borderRadius: radii.full,
 		paddingInline: spacing.none,
@@ -86,6 +99,16 @@ const styles = stylex.create({
 		justifyContent: 'center',
 		outlineOffset: '2px',
 		position: 'relative',
+	},
+	disabled: {
+		backgroundColor: {
+			default: sidebarItemColors.background,
+			':hover': sidebarItemColors.background,
+			':active': sidebarItemColors.background,
+		},
+		color: sidebarItemColors.foregroundDisabled,
+		cursor: 'not-allowed',
+		transform: 'none',
 	},
 	sidebarIcon: {
 		display: 'block',
@@ -121,12 +144,13 @@ const styles = stylex.create({
 	},
 })
 
-// A place to go in the sidebar. Controls that act in place use SidebarAction.
 export function SidebarItem({
 	active,
 	children,
+	disabled,
 	icon: Icon,
 	iconOnly = false,
+	ref,
 	render,
 	variant = 'ghost',
 	xstyle,
@@ -147,13 +171,16 @@ export function SidebarItem({
 			{
 				'aria-label':
 					typeof children === 'string' ? children : undefined,
+				disabled,
 				type: render ? undefined : 'button',
 			},
 			stylex.props(
 				styles.item,
+				!render && styles.pressable,
 				iconOnly && styles.iconOnly,
 				variant === 'secondary' && styles.secondary,
 				variant === 'outline' && styles.outline,
+				disabled && styles.disabled,
 				xstyle,
 			),
 			props,
@@ -166,6 +193,7 @@ export function SidebarItem({
 				),
 			},
 		),
+		ref,
 		render,
 		// Links get `data-status` from TanStack Router; this mirrors it for
 		// buttons so one set of active styles covers both.

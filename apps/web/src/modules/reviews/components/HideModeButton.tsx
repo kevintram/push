@@ -2,9 +2,15 @@ import * as stylex from '@stylexjs/stylex'
 import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { Copy } from 'lucide-react'
 
-import { SidebarAction } from '~/components/sidebar'
+import { SidebarItem } from '~/components/sidebar'
 import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { hideModeButtonColors } from '~/styles/colors/components.stylex'
+import {
+	appSidebar,
+	fontWeights,
+	iconWeights,
+	radii,
+} from '~/styles/tokens.stylex'
 
 import { HIDE_MODE_HOTKEY } from '../hide-mode/hideModeHotkey'
 import { useHideMode } from '../hide-mode/useHideMode'
@@ -23,6 +29,10 @@ const styles = stylex.create({
 		},
 		color: hideModeButtonColors.foregroundActive,
 	},
+	labeled: {
+		borderRadius: radii.full,
+		fontWeight: fontWeights.medium,
+	},
 })
 
 export function HideModeButton({
@@ -37,14 +47,25 @@ export function HideModeButton({
 		<Tooltip>
 			<TooltipTrigger
 				render={
-					<SidebarAction
+					// The glyph is a child, not `icon`, so it can follow the label.
+					// Toggling the label keeps this one element, so focus stays.
+					<SidebarItem
 						aria-label='Hide mode'
 						aria-pressed={isOn}
-						icon={Copy}
-						label={isLabeled ? 'Hiding' : undefined}
+						iconOnly={!isLabeled}
 						onClick={toggleHideMode}
-						xstyle={isOn && styles.hideModeOn}
-					/>
+						xstyle={[
+							isOn && styles.hideModeOn,
+							isLabeled && styles.labeled,
+						]}
+					>
+						{isLabeled && 'Hiding'}
+						<Copy
+							aria-hidden='true'
+							size={appSidebar.iconSize}
+							strokeWidth={iconWeights.medium}
+						/>
+					</SidebarItem>
 				}
 			/>
 			<TooltipContent side={tooltipSide}>
