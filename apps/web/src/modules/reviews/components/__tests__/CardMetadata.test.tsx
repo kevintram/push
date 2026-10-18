@@ -94,7 +94,7 @@ describe('CardMetadata', () => {
 		},
 	)
 
-	it('renders new cards without a rating icon', () => {
+	it('renders new cards with the new icon and no rating icon', () => {
 		render(
 			<CardMetadata
 				lastReviewedAt={null}
@@ -107,7 +107,10 @@ describe('CardMetadata', () => {
 		)
 
 		expect(screen.getByText('New')).toBeInTheDocument()
-		expect(document.querySelector('svg')).not.toBeInTheDocument()
+		expect(
+			document.querySelector('svg.lucide-sparkles'),
+		).toBeInTheDocument()
+		expect(document.querySelectorAll('svg')).toHaveLength(1)
 	})
 
 	it('forwards metadata clicks when requested', async () => {
