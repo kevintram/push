@@ -9,7 +9,7 @@ import {
 	SidebarItem,
 } from '~/components/sidebar'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
-import { REVIEW_LINKS } from '~/modules/reviews/reviewLinks'
+import { reviewQueueKeys, reviewQueues } from '~/modules/reviews/reviewQueues'
 import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import { QueueCount } from './QueueCount'
@@ -41,17 +41,20 @@ export function ReviewNavigation() {
 				render={<nav aria-label='review sections' />}
 				xstyle={styles.items}
 			>
-				{REVIEW_LINKS.map(({ icon, label, queueKey, to }) => (
-					<SidebarItem
-						key={to}
-						ariaLabel={queues[queueKey].countLabel}
-						icon={icon}
-						render={<Link to={to} />}
-					>
-						{label}
-						<QueueCount count={queues[queueKey].count} />
-					</SidebarItem>
-				))}
+				{reviewQueueKeys.map(queueKey => {
+					const { label, Icon, to } = reviewQueues[queueKey]
+					return (
+						<SidebarItem
+							key={queueKey}
+							ariaLabel={queues[queueKey].countLabel}
+							icon={Icon}
+							render={<Link to={to} />}
+						>
+							{label}
+							<QueueCount count={queues[queueKey].count} />
+						</SidebarItem>
+					)
+				})}
 			</SidebarCollapsibleContent>
 		</SidebarCollapsibleItem>
 	)

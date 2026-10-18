@@ -14,7 +14,7 @@ import {
 } from '~/components/ui'
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
-import { REVIEW_LINKS } from '~/modules/reviews/reviewLinks'
+import { reviewQueueKeys, reviewQueues } from '~/modules/reviews/reviewQueues'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import { layout, radii, spacing } from '~/styles/tokens.stylex'
 
@@ -98,16 +98,17 @@ export function CollapsedAppSidebar({
 			</div>
 
 			<div {...stylex.props(styles.group)}>
-				{REVIEW_LINKS.map(({ icon, label, queueKey, to }) => {
+				{reviewQueueKeys.map(queueKey => {
+					const { label, Icon, to } = reviewQueues[queueKey]
 					const queue = queues[queueKey]
 					const name = queue.countLabel ?? label
 					return (
-						<Tooltip key={to}>
+						<Tooltip key={queueKey}>
 							<TooltipTrigger
 								render={
 									<SidebarItem.Icon
 										ariaLabel={name}
-										icon={icon}
+										icon={Icon}
 										render={<Link to={to} />}
 										xstyle={styles.railLink}
 									>

@@ -17,7 +17,7 @@ import {
 	getDueDateTone,
 } from '~/utils/date'
 
-import { NewCardIcon } from '../reviewLinks'
+import { reviewQueues } from '../reviewQueues'
 import type { CardSrsState } from '../types/review.types'
 import { formatDurability, formatDurabilityTooltip } from '../utils/cardSrs'
 import { getLastReviewedDetails } from './reviewRatings'
@@ -102,8 +102,11 @@ export function CardMetadata({
 			>
 				<div {...stylex.props(styles.container)}>
 					<span {...stylex.props(styles.item)}>
-						<NewCardIcon aria-hidden='true' size={iconSizes.sm} />
-						New
+						<reviewQueues.new.Icon
+							aria-hidden='true'
+							size={iconSizes.sm}
+						/>
+						{reviewQueues.new.label}
 					</span>
 				</div>
 			</div>

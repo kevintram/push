@@ -4,6 +4,7 @@ import { useToday } from '~/hooks/useToday'
 
 import { cardQueries } from '../api/cardQueries'
 import { dueQueries } from '../api/dueQueries'
+import type { ReviewQueueKey } from '../reviewQueues'
 
 export type ReviewQueueCount = {
 	count: number
@@ -44,5 +45,5 @@ export function useReviewQueueCounts() {
 			'flagged card',
 			'flagged cards',
 		),
-	}
+	} satisfies Record<ReviewQueueKey, ReviewQueueCount>
 }
