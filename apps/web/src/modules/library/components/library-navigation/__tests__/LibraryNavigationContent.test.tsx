@@ -13,6 +13,7 @@ const STORAGE_KEY = 'libraryNavigationOpen'
 const mocks = vi.hoisted(() => ({
 	droppableRef: vi.fn<(element: HTMLElement | null) => void>(),
 	isDropTarget: false,
+	offscreenDirection: undefined as 'above' | 'below' | undefined,
 	useDroppable: vi.fn(),
 }))
 
@@ -34,19 +35,30 @@ vi.mock('../../../api/collectionQueries', () => ({
 	useCreateCollection: () => ({ mutate: vi.fn() }),
 }))
 
-// Stands in for the real row, which needs the router and drag and drop. The
-// selected row's link is marked the way the router marks the active link.
+// Stands in for the real row, which needs the router and drag and drop. Like
+// the real row, it attaches the selected label ref only when it is selected.
 vi.mock('../LibraryCollectionItem', () => ({
-	LibraryCollectionItem: ({ _id, title }: CollectionWithChildren) => (
+	LibraryCollectionItem: ({
+		_id,
+		title,
+		selectedLabelRef,
+	}: CollectionWithChildren & {
+		selectedLabelRef?: (element: HTMLElement | null) => void
+	}) => (
 		<li>
 			<a
 				href={`/library/${_id}`}
-				aria-current={_id === 'selected-id' ? 'page' : undefined}
+				ref={_id === 'selected-id' ? selectedLabelRef : undefined}
 			>
 				{title}
 			</a>
 		</li>
 	),
+}))
+
+// Geometry is covered by the hook's own tests.
+vi.mock('../useOffscreenDirection', () => ({
+	useOffscreenDirection: () => mocks.offscreenDirection,
 }))
 
 function makeCollection(id: string, title: string): CollectionWithChildren {
@@ -62,13 +74,18 @@ function makeCollection(id: string, title: string): CollectionWithChildren {
 	}
 }
 
-const hiddenSelection = makeCollection('selected-id', 'Spanish verbs')
+const selectedCollection = makeCollection('selected-id', 'Spanish verbs')
+
+function getRevealPill() {
+	return screen.getByRole('button', { name: 'Show Spanish verbs in library' })
+}
 
 describe('LibraryNavigationContent', () => {
 	beforeEach(() => {
 		window.localStorage.clear()
 		mocks.droppableRef.mockClear()
 		mocks.isDropTarget = false
+		mocks.offscreenDirection = undefined
 		mocks.useDroppable.mockClear()
 	})
 
@@ -231,8 +248,8 @@ describe('LibraryNavigationContent', () => {
 				onRevealSelection={vi.fn()}
 			/>,
 		)
-		const sidebar = screen.getByRole('navigation').parentElement
-		const restingClassName = sidebar?.className
+		const sidebar = screen.getByRole('region', { name: 'Library' })
+		const restingClassName = sidebar.className
 
 		mocks.isDropTarget = true
 		rerender(
@@ -245,16 +262,17 @@ describe('LibraryNavigationContent', () => {
 			/>,
 		)
 
-		expect(sidebar?.className).not.toBe(restingClassName)
+		expect(sidebar.className).not.toBe(restingClassName)
 	})
 
 	it('shows no reveal pill while the selection is visible', () => {
 		render(
 			<LibraryNavigationContent
-				collections={[]}
+				collections={[selectedCollection]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
 				onCollapseAll={vi.fn()}
+				selectedCollection={selectedCollection}
 				onRevealSelection={vi.fn()}
 			/>,
 		)
@@ -264,24 +282,24 @@ describe('LibraryNavigationContent', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('reveals the hidden selection and focuses its row from the pill', async () => {
+	it('reveals a collapsed selection and focuses its row from the pill', async () => {
 		const user = userEvent.setup()
 		const onRevealSelection = vi.fn()
 		render(
 			<LibraryNavigationContent
-				collections={[hiddenSelection]}
+				collections={[selectedCollection]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
 				onCollapseAll={vi.fn()}
-				hiddenSelection={hiddenSelection}
+				selectedCollection={selectedCollection}
+				isSelectionCollapsed
 				onRevealSelection={onRevealSelection}
 			/>,
 		)
 
-		const pill = screen.getByRole('button', {
-			name: 'Show Spanish verbs in library',
-		})
+		const pill = getRevealPill()
 		expect(pill).toHaveTextContent('Spanish verbs')
+		expect(pill.querySelector('.lucide-chevrons-up-down')).not.toBeNull()
 
 		await user.click(pill)
 
@@ -291,6 +309,55 @@ describe('LibraryNavigationContent', () => {
 		).toHaveFocus()
 	})
 
+	it.each([
+		{ direction: 'above', icon: 'lucide-arrow-up' },
+		{ direction: 'below', icon: 'lucide-arrow-down' },
+	] as const)(
+		'points the pill $direction at a selection scrolled out of view',
+		async ({ direction, icon }) => {
+			const user = userEvent.setup()
+			mocks.offscreenDirection = direction
+			render(
+				<LibraryNavigationContent
+					collections={[selectedCollection]}
+					openCollectionIds={new Set()}
+					onCollectionOpenChange={vi.fn()}
+					onCollapseAll={vi.fn()}
+					selectedCollection={selectedCollection}
+					onRevealSelection={vi.fn()}
+				/>,
+			)
+
+			const pill = getRevealPill()
+			expect(pill.querySelector(`.${icon}`)).not.toBeNull()
+
+			await user.click(pill)
+
+			expect(
+				screen.getByRole('link', { name: 'Spanish verbs' }),
+			).toHaveFocus()
+		},
+	)
+
+	it('treats a collapsed selection as collapsed even when it is also offscreen', () => {
+		mocks.offscreenDirection = 'below'
+		render(
+			<LibraryNavigationContent
+				collections={[selectedCollection]}
+				openCollectionIds={new Set()}
+				onCollectionOpenChange={vi.fn()}
+				onCollapseAll={vi.fn()}
+				selectedCollection={selectedCollection}
+				isSelectionCollapsed
+				onRevealSelection={vi.fn()}
+			/>,
+		)
+
+		expect(
+			getRevealPill().querySelector('.lucide-chevrons-up-down'),
+		).not.toBeNull()
+	})
+
 	it('labels an untitled hidden selection', () => {
 		render(
 			<LibraryNavigationContent
@@ -298,7 +365,8 @@ describe('LibraryNavigationContent', () => {
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
 				onCollapseAll={vi.fn()}
-				hiddenSelection={makeCollection('selected-id', '  ')}
+				selectedCollection={makeCollection('selected-id', '  ')}
+				isSelectionCollapsed
 				onRevealSelection={vi.fn()}
 			/>,
 		)
@@ -316,7 +384,8 @@ describe('LibraryNavigationContent', () => {
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
 				onCollapseAll={vi.fn()}
-				hiddenSelection={hiddenSelection}
+				selectedCollection={selectedCollection}
+				isSelectionCollapsed
 				onRevealSelection={vi.fn()}
 			/>,
 		)
@@ -326,9 +395,7 @@ describe('LibraryNavigationContent', () => {
 		)
 
 		expect(
-			screen.queryByRole('button', {
-				name: 'Show Spanish verbs in library',
-			}),
+			screen.queryByRole('button', { name: /in library$/ }),
 		).not.toBeInTheDocument()
 	})
 })

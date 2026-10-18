@@ -16,8 +16,10 @@ export type CollectionTree = {
 	openCollectionIds: ReadonlySet<CollectionId>
 	setCollectionOpen: CollectionOpenChangeHandler
 	collapseAll: () => void
-	/** The selected collection while a collapsed ancestor hides it in the tree. */
-	hiddenSelection: CollectionWithChildren | undefined
+	/** The collection the current route points at, if any. */
+	selectedCollection: CollectionWithChildren | undefined
+	/** Whether a collapsed ancestor hides the selected collection in the tree. */
+	isSelectionCollapsed: boolean
 	/** Opens the selected collection and its ancestors. */
 	revealSelection: () => void
 }
@@ -33,7 +35,7 @@ const KEY_SEPARATOR = '\0'
  * The selected collection is the one the current route points at, if any.
  * When it changes, it and its ancestors are opened, so it is visible and its
  * children are revealed. A manual collapse-all is not undone by refetches of
- * the same selection, but the selection is reported as hidden until
+ * the same selection, but the selection is reported as collapsed until
  * `revealSelection` opens its branch again.
  */
 export function useCollectionTree(): CollectionTree {
@@ -111,18 +113,18 @@ export function useCollectionTree(): CollectionTree {
 
 	// An ancestor missing from the list is not rendered, so it cannot hide the
 	// selection.
-	const hiddenSelection = selected?.path.some(
-		id => tree.nodesById.has(id) && !openCollectionIds.has(id),
-	)
-		? selected
-		: undefined
+	const isSelectionCollapsed =
+		selected?.path.some(
+			id => tree.nodesById.has(id) && !openCollectionIds.has(id),
+		) ?? false
 
 	return {
 		rootCollections: tree.roots,
 		openCollectionIds,
 		setCollectionOpen,
 		collapseAll,
-		hiddenSelection,
+		selectedCollection: selected,
+		isSelectionCollapsed,
 		revealSelection,
 	}
 }

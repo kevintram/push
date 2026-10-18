@@ -228,7 +228,7 @@ describe('useCollectionTree', () => {
 		expect(result.current.openCollectionIds.size).toBe(0)
 	})
 
-	describe('hidden selection', () => {
+	describe('collapsed selection', () => {
 		const nestedCollections = [
 			makeCollection('root'),
 			makeCollection('parent', ['root'], 'root'),
@@ -240,13 +240,14 @@ describe('useCollectionTree', () => {
 			loadCollections(nestedCollections)
 			const { result } = renderHook(() => useCollectionTree())
 
-			expect(result.current.hiddenSelection).toBeUndefined()
+			expect(result.current.selectedCollection?._id).toBe('child')
+			expect(result.current.isSelectionCollapsed).toBe(false)
 
 			act(() => {
 				result.current.setCollectionOpen(collectionId('parent'), false)
 			})
 
-			expect(result.current.hiddenSelection?._id).toBe('child')
+			expect(result.current.isSelectionCollapsed).toBe(true)
 		})
 
 		it('reports the selection while a further ancestor is collapsed', () => {
@@ -261,7 +262,7 @@ describe('useCollectionTree', () => {
 			expect(
 				result.current.openCollectionIds.has(collectionId('parent')),
 			).toBe(true)
-			expect(result.current.hiddenSelection?._id).toBe('child')
+			expect(result.current.isSelectionCollapsed).toBe(true)
 		})
 
 		it('does not report the selection when only the selection is collapsed', () => {
@@ -273,7 +274,7 @@ describe('useCollectionTree', () => {
 				result.current.setCollectionOpen(collectionId('child'), false)
 			})
 
-			expect(result.current.hiddenSelection).toBeUndefined()
+			expect(result.current.isSelectionCollapsed).toBe(false)
 		})
 
 		it('never reports a selected root collection', () => {
@@ -285,7 +286,7 @@ describe('useCollectionTree', () => {
 				result.current.collapseAll()
 			})
 
-			expect(result.current.hiddenSelection).toBeUndefined()
+			expect(result.current.isSelectionCollapsed).toBe(false)
 		})
 
 		it('ignores ancestors missing from the collection list', () => {
@@ -297,7 +298,7 @@ describe('useCollectionTree', () => {
 				result.current.collapseAll()
 			})
 
-			expect(result.current.hiddenSelection).toBeUndefined()
+			expect(result.current.isSelectionCollapsed).toBe(false)
 		})
 
 		it('reveals the selection by opening its ancestors and itself', () => {
@@ -308,7 +309,7 @@ describe('useCollectionTree', () => {
 			act(() => {
 				result.current.collapseAll()
 			})
-			expect(result.current.hiddenSelection?._id).toBe('child')
+			expect(result.current.isSelectionCollapsed).toBe(true)
 
 			act(() => {
 				result.current.revealSelection()
@@ -319,7 +320,7 @@ describe('useCollectionTree', () => {
 				'parent',
 				'child',
 			])
-			expect(result.current.hiddenSelection).toBeUndefined()
+			expect(result.current.isSelectionCollapsed).toBe(false)
 		})
 	})
 })
