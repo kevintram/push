@@ -15,8 +15,7 @@ export function LibraryNavigation() {
 		openCollectionIds,
 		setCollectionOpen,
 		collapseAll,
-		selectedCollection,
-		isSelectionCollapsed,
+		hiddenSelection,
 		revealSelection,
 	} = useCollectionTree()
 	const updateCollection = useUpdateCollection()
@@ -54,8 +53,7 @@ export function LibraryNavigation() {
 				openCollectionIds={openCollectionIds}
 				onCollectionOpenChange={setCollectionOpen}
 				onCollapseAll={collapseAll}
-				selectedCollection={selectedCollection}
-				isSelectionCollapsed={isSelectionCollapsed}
+				hiddenSelection={hiddenSelection}
 				onRevealSelection={revealSelection}
 			/>
 		</DragDropProvider>

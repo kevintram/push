@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { useNavigate } from '@tanstack/react-router'
 import { ChevronsDownUp, Plus } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
 import {
@@ -27,11 +27,7 @@ import {
 	type CollectionOpenChangeHandler,
 	LibraryCollectionItem,
 } from './LibraryCollectionItem'
-import {
-	type HiddenSelectionPosition,
-	RevealSelectionPill,
-} from './RevealSelectionPill'
-import { useOffscreenDirection } from './useOffscreenDirection'
+import { RevealSelectionPill } from './RevealSelectionPill'
 
 const LIBRARY_NAVIGATION_STORAGE_KEY = 'libraryNavigationOpen'
 
@@ -88,9 +84,8 @@ type LibraryNavigationContentProps = {
 	openCollectionIds: ReadonlySet<Id<'collections'>>
 	onCollectionOpenChange: CollectionOpenChangeHandler
 	onCollapseAll: () => void
-	selectedCollection?: CollectionWithChildren
-	/** Whether a collapsed ancestor hides the selected collection in the tree. */
-	isSelectionCollapsed?: boolean
+	/** The selected collection while a collapsed ancestor hides it in the tree. */
+	hiddenSelection?: CollectionWithChildren
 	onRevealSelection: () => void
 }
 
@@ -104,16 +99,12 @@ export function LibraryNavigationContent({
 	openCollectionIds,
 	onCollectionOpenChange,
 	onCollapseAll,
-	selectedCollection,
-	isSelectionCollapsed = false,
+	hiddenSelection,
 	onRevealSelection,
 }: LibraryNavigationContentProps) {
 	const createCollection = useCreateCollection()
 	const navigate = useNavigate()
-	// Elements in state so the offscreen check reattaches when either remounts.
-	const [scrollArea, setScrollArea] = useState<HTMLElement | null>(null)
-	const [selectedLabel, setSelectedLabel] = useState<HTMLElement | null>(null)
-	const offscreenDirection = useOffscreenDirection(scrollArea, selectedLabel)
+	const scrollAreaRef = useRef<HTMLDivElement>(null)
 	const [isOpen, setIsOpen] = useState(() =>
 		readStoredBoolean(LIBRARY_NAVIGATION_STORAGE_KEY, true),
 	)
@@ -139,21 +130,19 @@ export function LibraryNavigationContent({
 		writeStoredBoolean(LIBRARY_NAVIGATION_STORAGE_KEY, open)
 	}, [])
 
-	// The pill unmounts once the selection is in view, so focus moves to its
+	// The pill unmounts once the selection is revealed, so focus moves to its
 	// label instead of falling back to the document. Committing any opened
 	// branch synchronously makes that label focusable right away.
 	const handleRevealSelection = useCallback(() => {
 		flushSync(onRevealSelection)
-		selectedLabel?.focus({ preventScroll: true })
-		selectedLabel?.scrollIntoView({ block: 'nearest' })
-	}, [onRevealSelection, selectedLabel])
+		const label = scrollAreaRef.current?.querySelector<HTMLElement>(
+			'[aria-current="page"]',
+		)
+		label?.focus({ preventScroll: true })
+		label?.scrollIntoView({ block: 'nearest' })
+	}, [onRevealSelection])
 
-	const hiddenSelectionPosition: HiddenSelectionPosition | undefined =
-		isSelectionCollapsed ? 'collapsed' : offscreenDirection
-	const showRevealSelectionPill =
-		isOpen &&
-		selectedCollection !== undefined &&
-		hiddenSelectionPosition !== undefined
+	const showRevealSelectionPill = isOpen && hiddenSelection !== undefined
 
 	return (
 		<SidebarCollapsibleItem
@@ -203,15 +192,12 @@ export function LibraryNavigationContent({
 					xstyle={styles.nav}
 				>
 					<div
-						ref={setScrollArea}
+						ref={scrollAreaRef}
 						{...stylex.props(styles.scrollArea, scrollFade.y)}
 					>
 						<Tree
 							xstyle={
-								// A scrolled-out selection comes into view, and its
-								// pill goes away, before the list reaches its end.
 								showRevealSelectionPill &&
-								hiddenSelectionPosition === 'collapsed' &&
 								styles.collectionTreeWithPill
 							}
 						>
@@ -223,7 +209,6 @@ export function LibraryNavigationContent({
 									onCollectionOpenChange={
 										onCollectionOpenChange
 									}
-									selectedLabelRef={setSelectedLabel}
 								/>
 							))}
 						</Tree>
@@ -231,11 +216,7 @@ export function LibraryNavigationContent({
 				</SidebarCollapsibleContent>
 				{showRevealSelectionPill ? (
 					<RevealSelectionPill
-						// Remount on a change so the pill enters again, from its new
-						// edge if it moved.
-						key={hiddenSelectionPosition}
-						title={selectedCollection.title.trim() || 'Untitled'}
-						position={hiddenSelectionPosition}
+						title={hiddenSelection.title.trim() || 'Untitled'}
 						onClick={handleRevealSelection}
 					/>
 				) : null}

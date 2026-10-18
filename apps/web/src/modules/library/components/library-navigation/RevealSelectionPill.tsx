@@ -1,10 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import {
-	ArrowDown,
-	ArrowUp,
-	ChevronsUpDown,
-	type LucideIcon,
-} from 'lucide-react'
+import { ChevronsUpDown } from 'lucide-react'
 
 import { revealSelectionPillColors } from '~/styles/colors/components.stylex'
 import {
@@ -17,16 +12,9 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-import type { OffscreenDirection } from './useOffscreenDirection'
-
-// The pill enters from the edge it sits on.
-const enterUp = stylex.keyframes({
+// The pill enters from the bottom edge it sits on.
+const enter = stylex.keyframes({
 	from: { opacity: 0, transform: 'translateY(4px) scale(0.96)' },
-	to: { opacity: 1, transform: 'none' },
-})
-
-const enterDown = stylex.keyframes({
-	from: { opacity: 0, transform: 'translateY(-4px) scale(0.96)' },
 	to: { opacity: 1, transform: 'none' },
 })
 
@@ -43,6 +31,7 @@ const styles = stylex.create({
 		blockSize: buttonSizes.tiny,
 		display: 'flex',
 		inlineSize: 'fit-content',
+		insetBlockEnd: spacing.sm,
 		insetInlineEnd: 0,
 		insetInlineStart: 0,
 		marginInlineEnd: 'auto',
@@ -59,7 +48,7 @@ const styles = stylex.create({
 
 		animationDuration: '200ms',
 		animationName: {
-			default: enterUp,
+			default: enter,
 			'@media (prefers-reduced-motion: reduce)': 'none',
 		},
 		animationTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
@@ -83,16 +72,6 @@ const styles = stylex.create({
 		transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
 		userSelect: 'none',
 	},
-	top: {
-		animationName: {
-			default: enterDown,
-			'@media (prefers-reduced-motion: reduce)': 'none',
-		},
-		insetBlockStart: spacing.sm,
-	},
-	bottom: {
-		insetBlockEnd: spacing.sm,
-	},
 	icon: {
 		color: revealSelectionPillColors.iconForeground,
 		flexShrink: 0,
@@ -105,48 +84,29 @@ const styles = stylex.create({
 	},
 })
 
-/**
- * Where the selected collection is hidden: inside a collapsed branch, or
- * scrolled out of view above or below the visible rows.
- */
-export type HiddenSelectionPosition = 'collapsed' | OffscreenDirection
-
-// The collapsed icon mirrors the Collapse all button's ChevronsDownUp.
-const icons: Record<HiddenSelectionPosition, LucideIcon> = {
-	collapsed: ChevronsUpDown,
-	above: ArrowUp,
-	below: ArrowDown,
-}
-
 type RevealSelectionPillProps = {
 	title: string
-	position: HiddenSelectionPosition
 	onClick: () => void
 }
 
 /**
- * Names the selected collection while it is hidden in the library tree and
- * reveals it when clicked. It floats over the bottom edge of its positioned
- * container, or over the top edge when the selection is above.
+ * Names the selected collection while a collapsed branch hides it in the
+ * library tree and reveals it when clicked. It floats over the bottom edge of
+ * its positioned container.
  */
 export function RevealSelectionPill({
 	title,
-	position,
 	onClick,
 }: RevealSelectionPillProps) {
-	const Icon = icons[position]
-
 	return (
 		<button
 			type='button'
 			aria-label={`Show ${title} in library`}
 			onClick={onClick}
-			{...stylex.props(
-				styles.pill,
-				position === 'above' ? styles.top : styles.bottom,
-			)}
+			{...stylex.props(styles.pill)}
 		>
-			<Icon
+			{/* Mirrors the Collapse all button's ChevronsDownUp. */}
+			<ChevronsUpDown
 				aria-hidden='true'
 				size={iconSizes.sm}
 				strokeWidth={iconWeights.medium}

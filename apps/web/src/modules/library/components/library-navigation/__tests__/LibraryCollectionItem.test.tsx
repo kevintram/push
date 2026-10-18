@@ -151,29 +151,3 @@ describe('LibraryCollectionItem label click', () => {
 		expect(mocks.onCollectionOpenChange).not.toHaveBeenCalled()
 	})
 })
-
-describe('LibraryCollectionItem selected label ref', () => {
-	beforeEach(() => {
-		mocks.activeCollectionId = undefined
-	})
-
-	it('attaches only to the selected label, even when it is nested', () => {
-		mocks.activeCollectionId = 'child'
-		const selectedLabelRef = vi.fn()
-		render(
-			<ul>
-				<LibraryCollectionItem
-					{...collection('parent', [collection('child')])}
-					openCollectionIds={new Set()}
-					onCollectionOpenChange={mocks.onCollectionOpenChange}
-					selectedLabelRef={selectedLabelRef}
-				/>
-			</ul>,
-		)
-
-		expect(selectedLabelRef).toHaveBeenCalledOnce()
-		expect(selectedLabelRef).toHaveBeenCalledWith(
-			screen.getByLabelText('child'),
-		)
-	})
-})
