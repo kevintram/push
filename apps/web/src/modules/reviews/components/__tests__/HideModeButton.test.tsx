@@ -39,20 +39,19 @@ describe('HideModeButton', () => {
 			</HideModeProvider>,
 		)
 
-		expect(
-			screen.getByRole('button', { name: 'Hide mode' }),
-		).not.toHaveTextContent('Hiding')
-
-		await user.click(screen.getByRole('button', { name: 'Hide mode' }))
-
 		const hideButton = screen.getByRole('button', { name: 'Hide mode' })
-		expect(hideButton).toHaveAttribute('aria-pressed', 'true')
-		expect(hideButton).toHaveTextContent('Hiding')
+		expect(hideButton.textContent).toBe('')
 
 		await user.click(hideButton)
 
-		expect(
-			screen.getByRole('button', { name: 'Hide mode' }),
-		).not.toHaveTextContent('Hiding')
+		expect(hideButton).toHaveAttribute('aria-pressed', 'true')
+		expect(hideButton.textContent).toBe('Hiding')
+		// The same element stays mounted, so toggling keeps focus.
+		expect(hideButton).toHaveFocus()
+
+		await user.click(hideButton)
+
+		expect(hideButton.textContent).toBe('')
+		expect(hideButton).toHaveFocus()
 	})
 })

@@ -2,7 +2,6 @@ import * as stylex from '@stylexjs/stylex'
 import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { Copy } from 'lucide-react'
 
-import { SidebarIconButton } from '~/components/sidebar'
 import {
 	Button,
 	Kbd,
@@ -32,43 +31,37 @@ const styles = stylex.create({
 	},
 })
 
+// Styled like SidebarIconButton, but one Button element serves both the
+// icon-only and labeled states so toggling keeps focus on it.
 export function HideModeButton({
 	tooltipSide = 'bottom',
 	showLabel = false,
 }: HideModeButtonProps) {
 	const { hideMode, toggleHideMode } = useHideMode()
 	const isOn = hideMode === 'on'
-
-	// The accessible name stays "Hide mode" in both states; aria-pressed
-	// carries the state.
-	const triggerProps = {
-		'aria-label': 'Hide mode',
-		'aria-pressed': isOn,
-		onClick: toggleHideMode,
-		xstyle: isOn && styles.hideModeOn,
-	}
+	const isLabeled = showLabel && isOn
 
 	return (
 		<Tooltip>
 			<TooltipTrigger
 				render={
-					showLabel && isOn ? (
-						<Button
-							{...triggerProps}
-							shape='round'
-							size='small'
-							variant='ghost'
-						>
-							<Copy
-								aria-hidden='true'
-								size={appSidebar.iconSize}
-								strokeWidth={iconWeights.medium}
-							/>
-							Hiding
-						</Button>
-					) : (
-						<SidebarIconButton {...triggerProps} icon={Copy} />
-					)
+					<Button
+						aria-label='Hide mode'
+						aria-pressed={isOn}
+						iconOnly={!isLabeled}
+						onClick={toggleHideMode}
+						shape='round'
+						size='small'
+						variant='ghost'
+						xstyle={isOn && styles.hideModeOn}
+					>
+						<Copy
+							aria-hidden='true'
+							size={appSidebar.iconSize}
+							strokeWidth={iconWeights.medium}
+						/>
+						{isLabeled && 'Hiding'}
+					</Button>
 				}
 			/>
 			<TooltipContent side={tooltipSide}>
