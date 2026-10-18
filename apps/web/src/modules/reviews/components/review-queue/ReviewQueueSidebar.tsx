@@ -143,8 +143,9 @@ export function ReviewQueueSidebar({
 					<Tooltip>
 						<TooltipTrigger
 							render={
-								<Button.Icon
+								<Button
 									aria-label='Close queue'
+									iconOnly
 									xstyle={styles.closeButton}
 									shape='round'
 									size='medium'
@@ -152,7 +153,7 @@ export function ReviewQueueSidebar({
 									onClick={onClose}
 								>
 									<X aria-hidden='true' size={iconSizes.sm} />
-								</Button.Icon>
+								</Button>
 							}
 						/>
 						<TooltipContent>Close queue</TooltipContent>

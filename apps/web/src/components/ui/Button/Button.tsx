@@ -10,8 +10,6 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-import { ButtonIcon } from './ButtonIcon'
-
 const styles = stylex.create({
 	base: {
 		borderRadius: radii.lg,
@@ -252,6 +250,7 @@ export interface ButtonProps extends Omit<
 	variant?: ButtonVariant
 	size?: ButtonSize
 	shape?: ButtonShape
+	/** Squares the button off for a lone icon. Give it an `aria-label`. */
 	iconOnly?: boolean
 	/**
 	 * Keeps the pressed look, e.g. for a toggle whose panel is open. Visual
@@ -261,11 +260,7 @@ export interface ButtonProps extends Omit<
 	xstyle?: stylex.StyleXStyles
 }
 
-interface ButtonRenderProps extends ButtonProps {
-	iconOnly?: boolean
-}
-
-function renderButton({
+export function Button({
 	variant = 'primary',
 	size = 'medium',
 	shape = 'square',
@@ -276,7 +271,7 @@ function renderButton({
 	active = false,
 	xstyle,
 	...props
-}: ButtonRenderProps) {
+}: ButtonProps) {
 	const styleProps = stylex.props(
 		styles.base,
 		variants[variant],
@@ -305,9 +300,3 @@ function renderButton({
 		</ButtonPrimitive>
 	)
 }
-
-export function Button(props: ButtonProps) {
-	return renderButton(props)
-}
-
-Button.Icon = ButtonIcon

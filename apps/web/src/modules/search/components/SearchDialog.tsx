@@ -280,8 +280,9 @@ export function SearchDialog({ tooltipSide = 'bottom' }: SearchDialogProps) {
 							render={
 								<DialogClose
 									render={
-										<Button.Icon
+										<Button
 											aria-label='Close search'
+											iconOnly
 											size='small'
 											variant='ghost'
 											xstyle={styles.actionButton}

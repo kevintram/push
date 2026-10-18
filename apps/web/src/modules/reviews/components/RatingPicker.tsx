@@ -51,7 +51,8 @@ export function RatingPicker({
 			<DropdownMenuTrigger
 				aria-label={current?.label ?? 'Uncompleted'}
 				render={
-					<Button.Icon
+					<Button
+						iconOnly
 						shape='round'
 						size='micro'
 						disabled={disabled}

@@ -1,7 +1,6 @@
 export * from './Badge'
 export * from './Breadcrumb'
 export { Button, type ButtonProps, type ButtonSize } from './Button/Button'
-export { ButtonIcon, type ButtonIconProps } from './Button/ButtonIcon'
 export * from './Calendar'
 export * from './Collapsible'
 export * from './ContextMenu'

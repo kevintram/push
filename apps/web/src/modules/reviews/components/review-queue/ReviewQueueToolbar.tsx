@@ -56,8 +56,9 @@ export function ReviewQueueToolbar({
 				<Tooltip>
 					<TooltipTrigger
 						render={
-							<Button.Icon
+							<Button
 								aria-label='Next card'
+								iconOnly
 								shape='round'
 								variant='ghost'
 								size='medium'
@@ -65,7 +66,7 @@ export function ReviewQueueToolbar({
 								onClick={onNext}
 							>
 								<ChevronDown size={iconSizes.sm} />
-							</Button.Icon>
+							</Button>
 						}
 					/>
 					<TooltipContent>
@@ -76,8 +77,9 @@ export function ReviewQueueToolbar({
 				<Tooltip>
 					<TooltipTrigger
 						render={
-							<Button.Icon
+							<Button
 								aria-label='Previous card'
+								iconOnly
 								shape='round'
 								variant='ghost'
 								size='medium'
@@ -85,7 +87,7 @@ export function ReviewQueueToolbar({
 								onClick={onPrevious}
 							>
 								<ChevronUp size={iconSizes.sm} />
-							</Button.Icon>
+							</Button>
 						}
 					/>
 					<TooltipContent>
@@ -98,7 +100,8 @@ export function ReviewQueueToolbar({
 				<Tooltip>
 					<TooltipTrigger
 						render={
-							<Button.Icon
+							<Button
+								iconOnly
 								ref={queueSidebarToggleRef}
 								aria-label={
 									queueSidebarOpen
@@ -114,7 +117,7 @@ export function ReviewQueueToolbar({
 								onClick={onQueueSidebarToggle}
 							>
 								<Menu size={iconSizes.sm} />
-							</Button.Icon>
+							</Button>
 						}
 					/>
 					<TooltipContent>
