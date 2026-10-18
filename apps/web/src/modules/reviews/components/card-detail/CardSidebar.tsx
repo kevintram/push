@@ -1,6 +1,7 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 
+import { scrollFade } from '~/styles/scrollFade'
 import { spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
@@ -40,7 +41,7 @@ export function CardSidebar({
 		<aside
 			id={id}
 			aria-label='Card details'
-			{...stylex.props(styles.container, xstyle)}
+			{...stylex.props(styles.container, scrollFade.y, xstyle)}
 		>
 			{showReviews && <CardSidebarReviews cardId={cardId} key={cardId} />}
 			<CardPropertiesPanel {...srsState} today={today} />

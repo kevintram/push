@@ -3,6 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
 import { reviewComposerColors } from '~/styles/colors/components.stylex'
+import { scrollFade } from '~/styles/scrollFade'
 import { layout, radii, spacing } from '~/styles/tokens.stylex'
 
 import { reviewQueries } from '../../api/reviewQueries'
@@ -46,7 +47,7 @@ export function CardReviews({ cardId }: CardReviewsProps) {
 	const { data: reviews } = useSuspenseQuery(reviewQueries.listByCard(cardId))
 
 	return (
-		<div {...stylex.props(styles.container)}>
+		<div {...stylex.props(styles.container, scrollFade.y)}>
 			<div {...stylex.props(styles.content)}>
 				<div {...stylex.props(styles.composerSurface)}>
 					<ReviewComposer />

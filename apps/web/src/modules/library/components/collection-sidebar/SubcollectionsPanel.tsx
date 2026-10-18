@@ -7,6 +7,7 @@ import { useCallback, useMemo } from 'react'
 
 import { Button } from '~/components/ui'
 import { subcollectionsPanelColors } from '~/styles/colors/components.stylex'
+import { scrollFade } from '~/styles/scrollFade'
 import {
 	fontSizes,
 	fontWeights,
@@ -26,10 +27,10 @@ const styles = stylex.create({
 		padding: spacing.lg,
 		borderRadius: radii.xl,
 		backgroundColor: subcollectionsPanelColors.containerBackground,
-		display: 'block',
+		display: 'flex',
+		flexDirection: 'column',
 		flexShrink: 1,
 		minBlockSize: 0,
-		overflowY: 'auto',
 	},
 	header: {
 		alignItems: 'center',
@@ -45,7 +46,16 @@ const styles = stylex.create({
 		fontSize: fontSizes.md,
 		fontWeight: fontWeights.medium,
 	},
-	list: { display: 'flex', flexDirection: 'column' },
+	list: {
+		marginInline: `calc(${spacing.sm} * -1)`,
+		// Items bleed into the panel padding on hover. The scroll container
+		// clips horizontally, so give the list that padding back.
+		paddingInline: spacing.sm,
+		display: 'flex',
+		flexDirection: 'column',
+		minBlockSize: 0,
+		overflowY: 'auto',
+	},
 })
 
 type SubcollectionsPanelProps = {
@@ -101,7 +111,7 @@ export function SubcollectionsPanel({
 					<Plus aria-hidden='true' size={iconSizes.sm} />
 				</Button>
 			</div>
-			<div {...stylex.props(styles.list)}>
+			<div {...stylex.props(styles.list, scrollFade.y)}>
 				{subcollections.map(subcollection => (
 					<SubcollectionItem
 						key={subcollection._id}

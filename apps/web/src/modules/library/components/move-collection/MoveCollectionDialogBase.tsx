@@ -14,6 +14,7 @@ import {
 import { collectionQueries } from '~/modules/library/api/collectionQueries'
 import { treeifyCollections } from '~/modules/library/utils/treeifyCollections'
 import { moveCollectionDialogColors } from '~/styles/colors/components.stylex'
+import { scrollFade } from '~/styles/scrollFade'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
 import { MoveCollectionTree } from './MoveCollectionTree'
@@ -22,15 +23,18 @@ const styles = stylex.create({
 	header: {
 		flexDirection: 'column',
 	},
-	collectionTreeContainer: {
-		padding: spacing.md,
-		maxBlockSize: '24rem',
-		overflowY: 'auto',
-
+	// The border sits on a wrapper so the scroll fade dissolves the tree rows
+	// without fading the border.
+	collectionTreeFrame: {
 		borderColor: moveCollectionDialogColors.treeBorder,
 		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
+	},
+	collectionTreeContainer: {
+		padding: spacing.md,
+		maxBlockSize: '24rem',
+		overflowY: 'auto',
 	},
 	status: {
 		margin: 0,
@@ -103,32 +107,39 @@ export function MoveCollectionDialogBase(props: MoveCollectionDialogBaseProps) {
 					<DialogTitle>{title}</DialogTitle>
 				</DialogHeader>
 
-				<nav
-					aria-label='Destination collection'
-					{...stylex.props(styles.collectionTreeContainer)}
-				>
-					{collectionsArePending ? (
-						<p {...stylex.props(styles.status)}>
-							Loading collections…
-						</p>
-					) : collectionsHaveError ? (
-						<p {...stylex.props(styles.status)}>
-							Could not load collections.
-						</p>
-					) : collectionTree.length === 0 ? (
-						<p {...stylex.props(styles.status)}>
-							No collections available.
-						</p>
-					) : (
-						<MoveCollectionTree
-							allowLibraryRoot={props.allowLibraryRoot ?? false}
-							excludeCollectionId={excludeCollectionId}
-							onSelect={setSelectedDestination}
-							selectedDestination={selectedDestination}
-							collections={collectionTree}
-						/>
-					)}
-				</nav>
+				<div {...stylex.props(styles.collectionTreeFrame)}>
+					<nav
+						aria-label='Destination collection'
+						{...stylex.props(
+							styles.collectionTreeContainer,
+							scrollFade.y,
+						)}
+					>
+						{collectionsArePending ? (
+							<p {...stylex.props(styles.status)}>
+								Loading collections…
+							</p>
+						) : collectionsHaveError ? (
+							<p {...stylex.props(styles.status)}>
+								Could not load collections.
+							</p>
+						) : collectionTree.length === 0 ? (
+							<p {...stylex.props(styles.status)}>
+								No collections available.
+							</p>
+						) : (
+							<MoveCollectionTree
+								allowLibraryRoot={
+									props.allowLibraryRoot ?? false
+								}
+								excludeCollectionId={excludeCollectionId}
+								onSelect={setSelectedDestination}
+								selectedDestination={selectedDestination}
+								collections={collectionTree}
+							/>
+						)}
+					</nav>
+				</div>
 
 				<DialogFooter>
 					<Button

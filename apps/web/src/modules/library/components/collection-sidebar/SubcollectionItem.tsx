@@ -31,6 +31,9 @@ const styles = stylex.create({
 
 		overflow: 'hidden',
 		display: 'block',
+		// The list scrolls, so keep rows at full height instead of letting the
+		// flex column squeeze them to fit.
+		flexShrink: 0,
 
 		borderRadius: radii.md,
 		backgroundColor: {

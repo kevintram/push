@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { useNavigate } from '@tanstack/react-router'
 import { ChevronsDownUp, Plus } from 'lucide-react'
-import { type UIEvent, useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
 import {
@@ -16,6 +16,8 @@ import {
 } from '~/components/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger, Tree } from '~/components/ui'
 import { librarySidebarColors } from '~/styles/colors/components.stylex'
+import { scrollFade } from '~/styles/scrollFade'
+import { scrollFadeVars } from '~/styles/scrollFade.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
 import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
@@ -25,15 +27,9 @@ import {
 	type CollectionOpenChangeHandler,
 	LibraryCollectionItem,
 } from './LibraryCollectionItem'
-import {
-	type HiddenSelectionPosition,
-	RevealSelectionPill,
-} from './RevealSelectionPill'
-import { useOffscreenDirection } from './useOffscreenDirection'
+import { RevealSelectionPill } from './RevealSelectionPill'
 
 const LIBRARY_NAVIGATION_STORAGE_KEY = 'libraryNavigationOpen'
-// Height of the fades at the scroll edges of the collection list.
-const EDGE_FADE_SIZE = '24px'
 
 const styles = stylex.create({
 	container: {
@@ -56,26 +52,26 @@ const styles = stylex.create({
 		backgroundColor: librarySidebarColors.containerBackgroundDropTarget,
 	},
 	nav: {
-		WebkitMaskImage: `linear-gradient(to bottom, black 0, black calc(100% - ${EDGE_FADE_SIZE}), transparent 100%)`,
 		paddingBlock: 0,
 		paddingInline: 0,
+		display: 'flex',
 		flexBasis: 0,
+		flexDirection: 'column',
 		flexGrow: 1,
 		flexShrink: 1,
 		inlineSize: '100%',
-		maskImage: `linear-gradient(to bottom, black 0, black calc(100% - ${EDGE_FADE_SIZE}), transparent 100%)`,
+		minHeight: 0,
+	},
+	// Scrolls inside the collapsible panel rather than as the panel. Base UI
+	// treats any animation on the panel as its open/close animation, which
+	// would disable the scroll fade.
+	scrollArea: {
+		flexGrow: 1,
 		// Keeps focused and revealed rows clear of the edge fades.
-		scrollPaddingBlockEnd: EDGE_FADE_SIZE,
-		scrollPaddingBlockStart: EDGE_FADE_SIZE,
+		scrollPaddingBlockEnd: scrollFadeVars.size,
+		scrollPaddingBlockStart: scrollFadeVars.size,
 		minHeight: 0,
 		overflowY: 'auto',
-	},
-	navScrolled: {
-		WebkitMaskImage: `linear-gradient(to bottom, transparent 0, black ${EDGE_FADE_SIZE}, black calc(100% - ${EDGE_FADE_SIZE}), transparent 100%)`,
-		maskImage: `linear-gradient(to bottom, transparent 0, black ${EDGE_FADE_SIZE}, black calc(100% - ${EDGE_FADE_SIZE}), transparent 100%)`,
-	},
-	collectionTree: {
-		paddingBlockEnd: spacing.xl,
 	},
 	// Lets the last row scroll above the reveal pill.
 	collectionTreeWithPill: {
@@ -88,9 +84,8 @@ type LibraryNavigationContentProps = {
 	openCollectionIds: ReadonlySet<Id<'collections'>>
 	onCollectionOpenChange: CollectionOpenChangeHandler
 	onCollapseAll: () => void
-	selectedCollection?: CollectionWithChildren
-	/** Whether a collapsed ancestor hides the selected collection in the tree. */
-	isSelectionCollapsed?: boolean
+	/** The selected collection while a collapsed ancestor hides it in the tree. */
+	hiddenSelection?: CollectionWithChildren
 	onRevealSelection: () => void
 }
 
@@ -104,23 +99,15 @@ export function LibraryNavigationContent({
 	openCollectionIds,
 	onCollectionOpenChange,
 	onCollapseAll,
-	selectedCollection,
-	isSelectionCollapsed = false,
+	hiddenSelection,
 	onRevealSelection,
 }: LibraryNavigationContentProps) {
 	const createCollection = useCreateCollection()
 	const navigate = useNavigate()
-	// Elements in state so the offscreen check reattaches when either remounts.
-	const [nav, setNav] = useState<HTMLElement | null>(null)
-	const [selectedLabel, setSelectedLabel] = useState<HTMLElement | null>(null)
-	const offscreenDirection = useOffscreenDirection(nav, selectedLabel)
+	const scrollAreaRef = useRef<HTMLDivElement>(null)
 	const [isOpen, setIsOpen] = useState(() =>
 		readStoredBoolean(LIBRARY_NAVIGATION_STORAGE_KEY, true),
 	)
-	const [hasScrolled, setHasScrolled] = useState(false)
-	// TODO(4): Investigate simplifying the two mask variants and scroll state while
-	// keeping no initial header gap, a full-size top fade after scrolling, and
-	// clearance at the bottom edge.
 
 	const { ref: libraryRootRef, isDropTarget: libraryRootIsDropTarget } =
 		useDroppable({ id: 'library-root' })
@@ -138,30 +125,24 @@ export function LibraryNavigationContent({
 		)
 	}, [navigate, createCollection])
 
-	const handleScroll = useCallback((event: UIEvent<HTMLElement>) => {
-		setHasScrolled(event.currentTarget.scrollTop > 0)
-	}, [])
-
 	const handleOpenChange = useCallback((open: boolean) => {
 		setIsOpen(open)
 		writeStoredBoolean(LIBRARY_NAVIGATION_STORAGE_KEY, open)
 	}, [])
 
-	// The pill unmounts once the selection is in view, so focus moves to its
+	// The pill unmounts once the selection is revealed, so focus moves to its
 	// label instead of falling back to the document. Committing any opened
 	// branch synchronously makes that label focusable right away.
 	const handleRevealSelection = useCallback(() => {
 		flushSync(onRevealSelection)
-		selectedLabel?.focus({ preventScroll: true })
-		selectedLabel?.scrollIntoView({ block: 'nearest' })
-	}, [onRevealSelection, selectedLabel])
+		const label = scrollAreaRef.current?.querySelector<HTMLElement>(
+			'[aria-current="page"]',
+		)
+		label?.focus({ preventScroll: true })
+		label?.scrollIntoView({ block: 'nearest' })
+	}, [onRevealSelection])
 
-	const hiddenSelectionPosition: HiddenSelectionPosition | undefined =
-		isSelectionCollapsed ? 'collapsed' : offscreenDirection
-	const showRevealSelectionPill =
-		isOpen &&
-		selectedCollection !== undefined &&
-		hiddenSelectionPosition !== undefined
+	const showRevealSelectionPill = isOpen && hiddenSelection !== undefined
 
 	return (
 		<SidebarCollapsibleItem
@@ -207,39 +188,35 @@ export function LibraryNavigationContent({
 			</SidebarCollapsibleHeader>
 			<div {...stylex.props(styles.listArea)}>
 				<SidebarCollapsibleContent
-					ref={setNav}
 					render={<nav aria-label='Library collections' />}
-					xstyle={[styles.nav, hasScrolled && styles.navScrolled]}
-					onScroll={handleScroll}
+					xstyle={styles.nav}
 				>
-					<Tree
-						xstyle={[
-							styles.collectionTree,
-							// A scrolled-out selection comes into view, and its pill
-							// goes away, before the list reaches its end.
-							showRevealSelectionPill &&
-								hiddenSelectionPosition === 'collapsed' &&
-								styles.collectionTreeWithPill,
-						]}
+					<div
+						ref={scrollAreaRef}
+						{...stylex.props(styles.scrollArea, scrollFade.y)}
 					>
-						{collections.map(collection => (
-							<LibraryCollectionItem
-								key={collection._id}
-								{...collection}
-								openCollectionIds={openCollectionIds}
-								onCollectionOpenChange={onCollectionOpenChange}
-								selectedLabelRef={setSelectedLabel}
-							/>
-						))}
-					</Tree>
+						<Tree
+							xstyle={
+								showRevealSelectionPill &&
+								styles.collectionTreeWithPill
+							}
+						>
+							{collections.map(collection => (
+								<LibraryCollectionItem
+									key={collection._id}
+									{...collection}
+									openCollectionIds={openCollectionIds}
+									onCollectionOpenChange={
+										onCollectionOpenChange
+									}
+								/>
+							))}
+						</Tree>
+					</div>
 				</SidebarCollapsibleContent>
 				{showRevealSelectionPill ? (
 					<RevealSelectionPill
-						// Remount on a change so the pill enters again, from its new
-						// edge if it moved.
-						key={hiddenSelectionPosition}
-						title={selectedCollection.title.trim() || 'Untitled'}
-						position={hiddenSelectionPosition}
+						title={hiddenSelection.title.trim() || 'Untitled'}
 						onClick={handleRevealSelection}
 					/>
 				) : null}

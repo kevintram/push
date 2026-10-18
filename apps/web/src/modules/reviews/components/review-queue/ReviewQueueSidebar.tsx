@@ -13,6 +13,7 @@ import { CardItem } from '~/modules/reviews/components/CardItem'
 import type { Card } from '~/modules/reviews/types/review.types'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { reviewQueueColors } from '~/styles/colors/components.stylex'
+import { scrollFade } from '~/styles/scrollFade'
 import {
 	breakpoints,
 	fontSizes,
@@ -164,7 +165,7 @@ export function ReviewQueueSidebar({
 					onValueChange={onFilterChange}
 				/>
 			</div>
-			<div {...stylex.props(styles.list)}>
+			<div {...stylex.props(styles.list, scrollFade.y)}>
 				{cards.length === 0 ? (
 					<p {...stylex.props(styles.empty)}>No cards.</p>
 				) : null}
