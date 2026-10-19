@@ -33,6 +33,8 @@ const styles = stylex.create({
 			default: 'none',
 			':active': 'none',
 		},
+		// The outline is only the focus ring; each variant sets the visible edge
+		// with borderColor.
 		outlineColor: {
 			default: semanticColors.surfaceTransparent,
 			':focus-visible': semanticColors.borderFocus,
