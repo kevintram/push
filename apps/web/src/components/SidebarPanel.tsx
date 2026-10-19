@@ -7,7 +7,10 @@ import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 const styles = stylex.create({
 	container: {
 		padding: spacing.lg,
+		borderColor: semanticColors.borderSubtle,
 		borderRadius: radii.xl,
+		borderStyle: 'solid',
+		borderWidth: 1,
 		backgroundColor: semanticColors.surfaceSecondary,
 	},
 	header: {

@@ -10,7 +10,10 @@ import { CardReviewsPanel } from './CardReviewsPanel'
 const styles = stylex.create({
 	composerSurface: {
 		padding: spacing.md,
+		borderColor: semanticColors.borderSubtle,
 		borderRadius: radii.xl,
+		borderStyle: 'solid',
+		borderWidth: 1,
 		backgroundColor: semanticColors.surfaceRaised,
 		flexShrink: 0,
 		inlineSize: '100%',
