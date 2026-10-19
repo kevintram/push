@@ -11,7 +11,7 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from '~/components/ui'
-import { subcollectionsPanelColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import {
@@ -38,12 +38,12 @@ const styles = stylex.create({
 		borderRadius: radii.md,
 		backgroundColor: {
 			default: 'transparent',
-			':hover': subcollectionsPanelColors.itemBackgroundHover,
-			':active': subcollectionsPanelColors.itemBackgroundActive,
+			':hover': semanticColors.surfaceTransparentHover,
+			':active': semanticColors.surfaceTransparentActive,
 		},
 
 		textDecoration: 'none',
-		color: subcollectionsPanelColors.itemForeground,
+		color: semanticColors.textPrimary,
 		fontSize: fontSizes.sm,
 		textOverflow: 'ellipsis',
 		whiteSpace: 'nowrap',

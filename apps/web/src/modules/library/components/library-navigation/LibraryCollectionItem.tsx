@@ -13,7 +13,7 @@ import {
 	TreeItemContent,
 	TreeItemLabel,
 } from '~/components/ui'
-import { libraryCollectionItemColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 
 import {
 	useCreateCollection,
@@ -41,12 +41,10 @@ const collectionPointerSensor = PointerSensor.configure({
 
 const styles = stylex.create({
 	containerDragging: {
-		backgroundColor:
-			libraryCollectionItemColors.containerBackgroundDragging,
+		backgroundColor: semanticColors.surfaceSecondary,
 	},
 	containerIsDropTarget: {
-		backgroundColor:
-			libraryCollectionItemColors.containerBackgroundDropTarget,
+		backgroundColor: semanticColors.surfaceTransparentHover,
 	},
 })
 

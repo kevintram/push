@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 
 import { Button } from '~/components/ui'
-import { subcollectionsPanelColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import {
 	fontSizes,
@@ -26,7 +26,7 @@ const styles = stylex.create({
 	container: {
 		padding: spacing.lg,
 		borderRadius: radii.xl,
-		backgroundColor: subcollectionsPanelColors.containerBackground,
+		backgroundColor: semanticColors.surfaceSecondary,
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 1,
@@ -39,7 +39,7 @@ const styles = stylex.create({
 	},
 	title: {
 		margin: 0,
-		color: subcollectionsPanelColors.titleForeground,
+		color: semanticColors.textSecondary,
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
