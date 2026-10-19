@@ -1,9 +1,12 @@
+import { QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen } from '@testing-library/react'
 import type { Ref } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { collectionQueries } from '~/modules/library/api/collectionQueries'
 import { HideModeProvider } from '~/modules/reviews/hide-mode/HideModeProvider'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
+import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
 import { AppShell } from '../AppShell'
 
@@ -53,14 +56,20 @@ function HideModeToggle() {
 }
 
 function renderShell() {
-	return render(
-		<HideModeProvider>
-			<HideModeToggle />
-			<AppShell>
-				<div>Main content</div>
-			</AppShell>
-		</HideModeProvider>,
+	const queryClient = createTestQueryClient()
+	queryClient.setQueryData(collectionQueries.list().queryKey, [])
+
+	const view = render(
+		<QueryClientProvider client={queryClient}>
+			<HideModeProvider>
+				<HideModeToggle />
+				<AppShell>
+					<div>Main content</div>
+				</AppShell>
+			</HideModeProvider>
+		</QueryClientProvider>,
 	)
+	return { ...view, queryClient }
 }
 
 describe('AppShell', () => {
@@ -91,6 +100,16 @@ describe('AppShell', () => {
 			screen.getByRole('button', { name: 'Toggle hide mode' }),
 		)
 		expect(shell).toHaveAttribute('data-hide-mode', 'off')
+	})
+
+	it('subscribes to the library list while collapsed', () => {
+		const { queryClient } = renderShell()
+
+		expect(screen.getByTestId('icon-only-rail')).toBeInTheDocument()
+		const query = queryClient
+			.getQueryCache()
+			.find({ queryKey: collectionQueries.list().queryKey })
+		expect(query?.getObserversCount()).toBe(1)
 	})
 
 	it('switches presentations, persists preference, and restores focus each way', () => {
