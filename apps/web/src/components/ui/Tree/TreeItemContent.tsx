@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { treeColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { appSidebar, radii, spacing } from '~/styles/tokens.stylex'
 
 import { useTreeItemContext } from './TreeItemContext'
@@ -19,7 +19,7 @@ const styles = stylex.create({
 		alignItems: 'center',
 		backgroundColor: {
 			default: 'inherit',
-			':hover': treeColors.itemBackgroundHover,
+			':hover': semanticColors.surfaceTransparentHover,
 		},
 		display: 'grid',
 		gridTemplateColumns: `${appSidebar.iconSize} minmax(0, 1fr)`,
@@ -30,8 +30,8 @@ const styles = stylex.create({
 	},
 	selected: {
 		backgroundColor: {
-			default: treeColors.itemBackgroundSelected,
-			':hover': treeColors.itemBackgroundSelectedHover,
+			default: semanticColors.surfaceTransparentActive,
+			':hover': semanticColors.surfaceTransparentActive,
 		},
 	},
 })

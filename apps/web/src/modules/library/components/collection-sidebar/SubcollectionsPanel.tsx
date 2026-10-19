@@ -5,16 +5,10 @@ import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 
+import { SidebarPanel } from '~/components/SidebarPanel'
 import { Button } from '~/components/ui'
-import { subcollectionsPanelColors } from '~/styles/colors/components.stylex'
 import { scrollFade } from '~/styles/scrollFade'
-import {
-	fontSizes,
-	fontWeights,
-	iconSizes,
-	radii,
-	spacing,
-} from '~/styles/tokens.stylex'
+import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import {
 	collectionQueries,
@@ -24,27 +18,10 @@ import { SubcollectionItem } from './SubcollectionItem'
 
 const styles = stylex.create({
 	container: {
-		padding: spacing.lg,
-		borderRadius: radii.xl,
-		backgroundColor: subcollectionsPanelColors.containerBackground,
 		display: 'flex',
 		flexDirection: 'column',
 		flexShrink: 1,
 		minBlockSize: 0,
-	},
-	header: {
-		alignItems: 'center',
-		display: 'flex',
-		paddingBlockEnd: spacing.sm,
-	},
-	title: {
-		margin: 0,
-		color: subcollectionsPanelColors.titleForeground,
-		flexBasis: 0,
-		flexGrow: 1,
-		flexShrink: 1,
-		fontSize: fontSizes.md,
-		fontWeight: fontWeights.medium,
 	},
 	list: {
 		marginInline: `calc(${spacing.sm} * -1)`,
@@ -93,12 +70,9 @@ export function SubcollectionsPanel({
 	}, [createCollection, navigate, collectionId])
 
 	return (
-		<section
-			aria-label='Subcollections'
-			{...stylex.props(styles.container)}
-		>
-			<div {...stylex.props(styles.header)}>
-				<p {...stylex.props(styles.title)}>Subcollections</p>
+		<SidebarPanel
+			title='Subcollections'
+			actions={
 				<Button
 					aria-label='Add subcollection'
 					iconOnly
@@ -110,7 +84,9 @@ export function SubcollectionsPanel({
 				>
 					<Plus aria-hidden='true' size={iconSizes.sm} />
 				</Button>
-			</div>
+			}
+			xstyle={styles.container}
+		>
 			<div {...stylex.props(styles.list, scrollFade.y)}>
 				{subcollections.map(subcollection => (
 					<SubcollectionItem
@@ -119,6 +95,6 @@ export function SubcollectionsPanel({
 					/>
 				))}
 			</div>
-		</section>
+		</SidebarPanel>
 	)
 }

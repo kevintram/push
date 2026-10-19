@@ -14,9 +14,8 @@ import {
 
 const DARK = '@media (prefers-color-scheme: dark)'
 
-// Semantic color tokens, tier 2 of the three-tier system (primitives,
-// semantic tokens, component tokens). Each token references the color
-// primitives in primitives.stylex.ts directly.
+// Semantic color tokens, tier 2 of the color system. Components consume these
+// tokens directly; each token references primitives.stylex.ts.
 export const semanticColors = stylex.defineVars({
 	// Surface
 	// Structural surfaces
@@ -174,7 +173,7 @@ export const semanticColors = stylex.defineVars({
 	// The default boundary used to clearly separate adjacent elements or surfaces.
 	borderPrimary: { default: neutral.s300, [DARK]: neutral.s600 },
 	// A low-emphasis boundary for gentle visual separation.
-	borderSubtle: { default: neutral.s200, [DARK]: neutral.s700 },
+	borderSubtle: { default: neutral.s200, [DARK]: whiteAlpha.s5 },
 	// A high-emphasis boundary for pronounced separation or containment.
 	borderStrong: { default: neutral.s400, [DARK]: neutral.s500 },
 	// The boundary color that identifies keyboard or input focus.
@@ -185,8 +184,6 @@ export const semanticColors = stylex.defineVars({
 	borderDanger: { default: red.s300, [DARK]: red.s700 },
 	// A subdued boundary for an element that is unavailable.
 	borderDisabled: { default: neutral.s200, [DARK]: neutral.s800 },
-	// A boundary that outlines a surface against the background around it.
-	borderSurface: { default: neutral.s250, [DARK]: whiteAlpha.s5 },
 
 	// Shadow
 	// The default shadow for depth and surface separation.

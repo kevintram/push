@@ -1,14 +1,13 @@
 import * as stylex from '@stylexjs/stylex'
 import { Anvil } from 'lucide-react'
 
+import { SidebarPanel } from '~/components/SidebarPanel'
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
-import { cardPropertiesColors } from '~/styles/colors/components.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	fontSizes,
 	fontWeights,
 	iconSizes,
-	radii,
 	spacing,
 } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
@@ -24,18 +23,7 @@ import { getLastReviewedDetails } from '../reviewRatings'
 
 const styles = stylex.create({
 	container: {
-		padding: spacing.lg,
-		borderRadius: radii.xl,
-		backgroundColor: cardPropertiesColors.containerBackground,
 		flexShrink: 0,
-	},
-	title: {
-		margin: 0,
-
-		color: semanticColors.textSecondary,
-		fontSize: fontSizes.md,
-		fontWeight: fontWeights.medium,
-		paddingBlockEnd: spacing.sm,
 	},
 	list: {
 		columnGap: spacing['3xl'],
@@ -50,7 +38,7 @@ const styles = stylex.create({
 		display: 'contents',
 	},
 	label: {
-		color: cardPropertiesColors.labelForeground,
+		color: semanticColors.textSecondary,
 		fontWeight: fontWeights.medium,
 	},
 	value: {
@@ -58,7 +46,7 @@ const styles = stylex.create({
 		// than to the full width of the 1fr column.
 		justifySelf: 'start',
 
-		color: cardPropertiesColors.valueForeground,
+		color: semanticColors.textPrimary,
 		whiteSpace: 'nowrap',
 	},
 	valueWithIcon: {
@@ -70,7 +58,7 @@ const styles = stylex.create({
 		color: semanticColors.textDanger,
 	},
 	today: {
-		color: cardPropertiesColors.valueForegroundToday,
+		color: semanticColors.textToday,
 	},
 })
 
@@ -92,8 +80,7 @@ export function CardPropertiesPanel({
 			: getLastReviewedDetails(lastReviewedAt, lastRating)
 
 	return (
-		<section aria-label='Properties' {...stylex.props(styles.container)}>
-			<p {...stylex.props(styles.title)}>Properties</p>
+		<SidebarPanel title='Properties' xstyle={styles.container}>
 			<div {...stylex.props(styles.list)}>
 				<div {...stylex.props(styles.row)}>
 					<span {...stylex.props(styles.label)}>Due</span>
@@ -186,6 +173,6 @@ export function CardPropertiesPanel({
 					)}
 				</div>
 			</div>
-		</section>
+		</SidebarPanel>
 	)
 }

@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { DayPicker } from 'react-day-picker'
 
-import { calendarColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 import { CalendarChevron } from './CalendarChevron'
@@ -31,25 +31,25 @@ const styles = stylex.create({
 	},
 	navButton: {
 		padding: spacing.none,
-		borderColor: calendarColors.navButtonBorder,
+		borderColor: semanticColors.surfaceTransparent,
 		borderRadius: radii.sm,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		alignItems: 'center',
 		backgroundColor: {
-			default: calendarColors.navButtonBackground,
-			':hover': calendarColors.navButtonBackgroundHover,
-			':active': calendarColors.navButtonBackgroundPressed,
+			default: semanticColors.surfaceTransparent,
+			':hover': semanticColors.surfaceTransparentHover,
+			':active': semanticColors.surfaceTransparentActive,
 		},
 		blockSize: '32px',
-		color: calendarColors.navButtonForeground,
+		color: semanticColors.textInteractive,
 		cursor: 'pointer',
 		display: 'inline-flex',
 		inlineSize: '32px',
 		justifyContent: 'center',
 		outlineColor: {
-			default: calendarColors.navButtonFocusRingRest,
-			':focus-visible': calendarColors.navButtonFocusRing,
+			default: semanticColors.surfaceTransparent,
+			':focus-visible': semanticColors.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
@@ -58,7 +58,7 @@ const styles = stylex.create({
 	monthGrid: { borderCollapse: 'collapse' },
 	weekdays: { display: 'flex' },
 	weekday: {
-		color: calendarColors.weekdayForeground,
+		color: semanticColors.textSecondary,
 		fontSize: fontSizes.xs,
 		fontWeight: fontWeights.regular,
 		inlineSize: '32px',

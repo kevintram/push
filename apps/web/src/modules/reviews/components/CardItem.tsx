@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { buttonColors, cardItemColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
@@ -30,15 +30,15 @@ const styles = stylex.create({
 		borderRadius: radii.lg,
 
 		backgroundColor: {
-			':hover': cardItemColors.containerBackgroundHover,
+			':hover': semanticColors.surfaceTransparentHover,
 		},
 
-		color: cardItemColors.containerForeground,
+		color: semanticColors.textPrimary,
 	},
 	active: {
 		backgroundColor: {
-			default: cardItemColors.containerBackgroundActive,
-			':hover': cardItemColors.containerBackgroundActiveHover,
+			default: semanticColors.surfaceTransparentActive,
+			':hover': semanticColors.surfaceTransparentActive,
 		},
 	},
 	inner: {
@@ -50,7 +50,7 @@ const styles = stylex.create({
 		fontSize: 'inherit',
 		fontWeight: fontWeights.semibold,
 
-		color: cardItemColors.titleForeground,
+		color: semanticColors.textPrimary,
 	},
 	raised: {
 		// Create seperate z-index context so overlay button
@@ -79,8 +79,8 @@ const styles = stylex.create({
 		cursor: 'pointer',
 
 		outlineColor: {
-			default: buttonColors.focusRingRest,
-			':focus-visible': buttonColors.focusRing,
+			default: semanticColors.surfaceTransparent,
+			':focus-visible': semanticColors.borderFocus,
 		},
 		outlineOffset: '-2px',
 		outlineStyle: 'solid',

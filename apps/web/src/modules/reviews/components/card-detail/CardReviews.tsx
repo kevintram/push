@@ -2,7 +2,7 @@ import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
-import { reviewComposerColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import { layout, radii, spacing } from '~/styles/tokens.stylex'
 
@@ -34,8 +34,8 @@ const styles = stylex.create({
 	composerSurface: {
 		padding: spacing.md,
 		borderRadius: radii.xl,
-		backgroundColor: reviewComposerColors.containerBackground,
-		boxShadow: `0 4px 16px ${reviewComposerColors.containerShadow}`,
+		backgroundColor: semanticColors.surfaceRaised,
+		boxShadow: `0 2px 8px ${semanticColors.shadowStrong}`,
 	},
 })
 

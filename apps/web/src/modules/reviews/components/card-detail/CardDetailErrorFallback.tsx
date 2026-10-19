@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import type { FallbackProps } from 'react-error-boundary'
 
 import { Button } from '~/components/ui'
-import { cardDetailErrorColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -18,7 +18,7 @@ const styles = stylex.create({
 
 		fontSize: fontSizes.sm,
 	},
-	message: { color: cardDetailErrorColors.messageForeground },
+	message: { color: semanticColors.textSecondary },
 })
 
 /**

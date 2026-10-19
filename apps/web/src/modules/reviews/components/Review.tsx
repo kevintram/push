@@ -12,7 +12,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '~/components/ui'
-import { reviewColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	fontSizes,
 	iconSizes,
@@ -45,8 +45,8 @@ const styles = stylex.create({
 		marginInline: `calc(${layout.rowBleed} * -1)`,
 		paddingInline: layout.rowBleed,
 		backgroundColor: {
-			default: reviewColors.rowBackground,
-			':hover': reviewColors.rowBackgroundHover,
+			default: semanticColors.surfaceTransparent,
+			':hover': semanticColors.surfaceTransparentHover,
 		},
 		cursor: 'pointer',
 	},
@@ -75,8 +75,8 @@ const styles = stylex.create({
 		fontSize: fontSizes.sm,
 		textAlign: 'start',
 
-		backgroundColor: reviewColors.notesButtonBackground,
-		color: reviewColors.notesButtonForeground,
+		backgroundColor: semanticColors.surfaceTransparent,
+		color: semanticColors.textPrimary,
 		cursor: 'pointer',
 
 		borderWidth: 0,
@@ -100,7 +100,7 @@ const styles = stylex.create({
 	},
 	notesIndicator: {
 		blockSize: iconSizes.sm,
-		color: reviewColors.notesIndicatorForeground,
+		color: semanticColors.textSecondary,
 		flexShrink: 0,
 		inlineSize: iconSizes.sm,
 	},

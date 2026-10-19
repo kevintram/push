@@ -4,7 +4,7 @@ import { Copy } from 'lucide-react'
 
 import { SidebarItem } from '~/components/sidebar'
 import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
-import { hideModeButtonColors } from '~/styles/colors/components.stylex'
+import { blue, whiteAlpha } from '~/styles/colors/primitives.stylex'
 import {
 	appSidebar,
 	fontWeights,
@@ -15,6 +15,8 @@ import {
 import { HIDE_MODE_HOTKEY } from '../hide-mode/hideModeHotkey'
 import { useHideMode } from '../hide-mode/useHideMode'
 
+const DARK = '@media (prefers-color-scheme: dark)'
+
 type HideModeButtonProps = {
 	tooltipSide?: React.ComponentProps<typeof TooltipContent>['side']
 	/** Shows "Hiding" next to the icon while hide mode is on. */
@@ -24,10 +26,23 @@ type HideModeButtonProps = {
 const styles = stylex.create({
 	hideModeOn: {
 		backgroundColor: {
-			default: hideModeButtonColors.backgroundActive,
-			':hover': hideModeButtonColors.backgroundActiveHover,
+			[DARK]: {
+				default: null,
+				':is([aria-pressed="true"])': blue.s800,
+				':is([aria-pressed="true"]):hover': blue.s700,
+			},
+			default: null,
+			':is([aria-pressed="true"])': blue.s500,
+			':is([aria-pressed="true"]):hover': blue.s600,
 		},
-		color: hideModeButtonColors.foregroundActive,
+		color: {
+			[DARK]: {
+				default: null,
+				':is([aria-pressed="true"])': blue.s100,
+			},
+			default: null,
+			':is([aria-pressed="true"])': whiteAlpha.s95,
+		},
 	},
 	labeled: {
 		borderRadius: radii.full,

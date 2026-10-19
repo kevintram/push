@@ -2,7 +2,7 @@ import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import * as stylex from '@stylexjs/stylex'
 
-import { badgeColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -28,8 +28,8 @@ const styles = stylex.create({
 		whiteSpace: 'nowrap',
 
 		outlineColor: {
-			default: badgeColors.focusRingRest,
-			':focus-visible': badgeColors.focusRing,
+			default: semanticColors.surfaceTransparent,
+			':focus-visible': semanticColors.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
@@ -62,29 +62,29 @@ const styles = stylex.create({
 // so adopting the variant/color split is the remaining piece.
 const variants = stylex.create({
 	solid: {
-		borderColor: badgeColors.solidBorder,
-		backgroundColor: badgeColors.solidBackground,
-		color: badgeColors.solidForeground,
+		borderColor: semanticColors.surfaceInverse,
+		backgroundColor: semanticColors.surfaceInverse,
+		color: semanticColors.textOnInverse,
 	},
 	secondary: {
-		borderColor: badgeColors.secondaryBorder,
-		backgroundColor: badgeColors.secondaryBackground,
-		color: badgeColors.secondaryForeground,
+		borderColor: semanticColors.surfaceTransparent,
+		backgroundColor: semanticColors.surfaceInteractiveSecondary,
+		color: semanticColors.textInteractive,
 	},
 	outline: {
-		borderColor: badgeColors.outlineBorder,
-		backgroundColor: badgeColors.outlineBackground,
-		color: badgeColors.outlineForeground,
+		borderColor: semanticColors.borderSubtle,
+		backgroundColor: semanticColors.surfaceInteractiveSecondary,
+		color: semanticColors.textInteractive,
 	},
 	ghost: {
-		borderColor: badgeColors.ghostBorder,
-		backgroundColor: badgeColors.ghostBackground,
-		color: badgeColors.ghostForeground,
+		borderColor: semanticColors.surfaceTransparent,
+		backgroundColor: semanticColors.surfaceTransparent,
+		color: semanticColors.textInteractive,
 	},
 	danger: {
-		borderColor: badgeColors.dangerBorder,
-		backgroundColor: badgeColors.dangerBackground,
-		color: badgeColors.dangerForeground,
+		borderColor: semanticColors.surfaceTransparent,
+		backgroundColor: semanticColors.surfaceInteractiveDanger,
+		color: semanticColors.textOnDanger,
 	},
 })
 
@@ -92,50 +92,50 @@ const interactiveVariants = stylex.create({
 	solid: {},
 	secondary: {
 		backgroundColor: {
-			default: badgeColors.secondaryBackground,
-			':hover': badgeColors.secondaryBackgroundHover,
-			':active': badgeColors.secondaryBackgroundPressed,
+			default: semanticColors.surfaceInteractiveSecondary,
+			':hover': semanticColors.surfaceInteractiveSecondaryHover,
+			':active': semanticColors.surfaceInteractiveSecondaryActive,
 		},
 		color: {
-			default: badgeColors.secondaryForeground,
-			':hover': badgeColors.secondaryForegroundHover,
-			':active': badgeColors.secondaryForegroundPressed,
+			default: semanticColors.textInteractive,
+			':hover': semanticColors.textInteractiveHover,
+			':active': semanticColors.textInteractiveActive,
 		},
 	},
 	outline: {
 		backgroundColor: {
-			default: badgeColors.outlineBackground,
-			':hover': badgeColors.outlineBackgroundHover,
-			':active': badgeColors.outlineBackgroundPressed,
+			default: semanticColors.surfaceInteractiveSecondary,
+			':hover': semanticColors.surfaceInteractiveSecondaryHover,
+			':active': semanticColors.surfaceInteractiveSecondaryActive,
 		},
 		color: {
-			default: badgeColors.outlineForeground,
-			':hover': badgeColors.outlineForegroundHover,
-			':active': badgeColors.outlineForegroundPressed,
+			default: semanticColors.textInteractive,
+			':hover': semanticColors.textInteractiveHover,
+			':active': semanticColors.textInteractiveActive,
 		},
 	},
 	ghost: {
 		backgroundColor: {
-			default: badgeColors.ghostBackground,
-			':hover': badgeColors.ghostBackgroundHover,
-			':active': badgeColors.ghostBackgroundPressed,
+			default: semanticColors.surfaceTransparent,
+			':hover': semanticColors.surfaceTransparentHover,
+			':active': semanticColors.surfaceTransparentActive,
 		},
 		color: {
-			default: badgeColors.ghostForeground,
-			':hover': badgeColors.ghostForegroundHover,
-			':active': badgeColors.ghostForegroundPressed,
+			default: semanticColors.textInteractive,
+			':hover': semanticColors.textInteractiveHover,
+			':active': semanticColors.textInteractiveActive,
 		},
 	},
 	danger: {
 		backgroundColor: {
-			default: badgeColors.dangerBackground,
-			':hover': badgeColors.dangerBackgroundHover,
-			':active': badgeColors.dangerBackgroundPressed,
+			default: semanticColors.surfaceInteractiveDanger,
+			':hover': semanticColors.surfaceInteractiveDangerHover,
+			':active': semanticColors.surfaceInteractiveDangerActive,
 		},
 		color: {
-			default: badgeColors.dangerForeground,
-			':hover': badgeColors.dangerForegroundHover,
-			':active': badgeColors.dangerForegroundPressed,
+			default: semanticColors.textOnDanger,
+			':hover': semanticColors.textOnDanger,
+			':active': semanticColors.textOnDanger,
 		},
 	},
 })

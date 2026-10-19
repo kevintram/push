@@ -6,7 +6,6 @@ import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 
 import { collectionQueries } from '~/modules/library/api/collectionQueries'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
-import { appShellColors } from '~/styles/colors/components.stylex'
 import { slate } from '~/styles/colors/primitives.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { breakpoints, layout, radii } from '~/styles/tokens.stylex'
@@ -20,13 +19,6 @@ import { SIDEBAR_HOTKEY } from './sidebarHotkey'
 const SIDEBAR_STORAGE_KEY = 'appSidebarExpanded'
 const SIDEBAR_ID = 'app-sidebar'
 
-const hideModeOnChromeTheme = stylex.createTheme(appShellColors, {
-	chromeBackground: {
-		default: slate.s700,
-		'@media (prefers-color-scheme: dark)': slate.s900,
-	},
-})
-
 const styles = stylex.create({
 	shell: {
 		overflow: 'hidden',
@@ -35,7 +27,13 @@ const styles = stylex.create({
 
 		height: '100svh',
 
-		backgroundColor: appShellColors.chromeBackground,
+		backgroundColor: semanticColors.surfaceSunken,
+	},
+	hideModeShell: {
+		backgroundColor: {
+			default: slate.s700,
+			'@media (prefers-color-scheme: dark)': slate.s900,
+		},
 	},
 	sidebar: {
 		color: semanticColors.textPrimary,
@@ -55,10 +53,10 @@ const styles = stylex.create({
 		overflowY: 'auto',
 
 		borderRadius: radii.xl,
-		backgroundColor: appShellColors.surfaceBackground,
+		backgroundColor: semanticColors.surfacePrimary,
 		boxShadow: {
 			default: 'none',
-			[breakpoints.desktop]: `0 0 4px ${appShellColors.surfaceShadow}`,
+			[breakpoints.desktop]: `0 0 4px ${semanticColors.shadowPrimary}`,
 		},
 	},
 })
@@ -128,7 +126,7 @@ export function AppShell({ children }: AppShellProps) {
 	return (
 		<div
 			data-hide-mode={isHideMode ? 'on' : 'off'}
-			{...stylex.props(styles.shell, isHideMode && hideModeOnChromeTheme)}
+			{...stylex.props(styles.shell, isHideMode && styles.hideModeShell)}
 		>
 			<nav
 				id={SIDEBAR_ID}

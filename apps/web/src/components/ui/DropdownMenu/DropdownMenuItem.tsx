@@ -1,7 +1,7 @@
 import { Menu } from '@base-ui/react/menu'
 import * as stylex from '@stylexjs/stylex'
 
-import { dropdownMenuColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 export interface DropdownMenuItemProps extends Omit<
@@ -25,15 +25,13 @@ const styles = stylex.create({
 		borderRadius: radii.xs,
 		outline: 'none',
 		backgroundColor: {
-			default: dropdownMenuColors.itemBackground,
-			':is([data-highlighted])':
-				dropdownMenuColors.itemBackgroundHighlighted,
+			default: semanticColors.surfaceTransparent,
+			':is([data-highlighted])': semanticColors.surfaceTransparentHover,
 		},
 		color: {
-			default: dropdownMenuColors.itemForeground,
-			':is([data-highlighted])':
-				dropdownMenuColors.itemForegroundHighlighted,
-			':active': dropdownMenuColors.itemForegroundPressed,
+			default: semanticColors.textInteractive,
+			':is([data-highlighted])': semanticColors.textInteractiveHover,
+			':active': semanticColors.textInteractiveActive,
 		},
 		cursor: 'default',
 		fontSize: fontSizes.sm,

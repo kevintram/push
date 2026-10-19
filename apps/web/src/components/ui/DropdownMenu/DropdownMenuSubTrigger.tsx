@@ -2,7 +2,7 @@ import { Menu } from '@base-ui/react/menu'
 import * as stylex from '@stylexjs/stylex'
 import { ChevronRight } from 'lucide-react'
 
-import { dropdownMenuColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 export interface DropdownMenuSubTriggerProps extends Omit<
@@ -24,15 +24,15 @@ const styles = stylex.create({
 		borderRadius: radii.xs,
 		outline: 'none',
 		backgroundColor: {
-			default: dropdownMenuColors.subTriggerBackground,
+			default: semanticColors.surfaceTransparent,
 			':is([data-highlighted], [data-popup-open])':
-				dropdownMenuColors.subTriggerBackgroundHighlighted,
+				semanticColors.surfaceTransparentHover,
 		},
 		color: {
-			default: dropdownMenuColors.subTriggerForeground,
+			default: semanticColors.textInteractive,
 			':is([data-highlighted], [data-popup-open])':
-				dropdownMenuColors.subTriggerForegroundHighlighted,
-			':active': dropdownMenuColors.subTriggerForegroundPressed,
+				semanticColors.textInteractiveHover,
+			':active': semanticColors.textInteractiveActive,
 		},
 		cursor: 'default',
 		fontSize: fontSizes.sm,

@@ -23,7 +23,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { cardActionsColors } from '~/styles/colors/components.stylex'
+import { amber, orange, violet } from '~/styles/colors/primitives.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { useCardActions } from '../hooks/useCardActions'
@@ -38,18 +38,18 @@ const styles = stylex.create({
 		flexShrink: 0,
 	},
 	flashcardOn: {
-		fill: cardActionsColors.flashcardSelectedForeground,
-		color: cardActionsColors.flashcardSelectedForeground,
+		fill: amber.s400,
+		color: amber.s400,
 	},
 	flagOn: {
-		fill: cardActionsColors.flagSelectedForeground,
-		color: cardActionsColors.flagSelectedForeground,
+		fill: orange.s500,
+		color: orange.s500,
 	},
 	// Stroke only, unlike `flagOn` and `flashcardOn`. `Flag` and `Zap` fill into
 	// legible solid shapes; a filled `Archive` collapses into a blob that reads
 	// like the neighbouring trash icon.
 	retiredOn: {
-		color: cardActionsColors.retiredSelectedForeground,
+		color: violet.s400,
 	},
 })
 
