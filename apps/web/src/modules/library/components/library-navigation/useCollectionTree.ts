@@ -37,9 +37,9 @@ const KEY_SEPARATOR = '\0'
  * `revealSelection` opens its branch again.
  */
 export function useCollectionTree(): CollectionTree {
-	// The tree is mounted by the app-level sidebar on every authenticated route.
-	// Keep the shell usable while this global query is loading; library routes
-	// still prefetch the same query in their route loaders.
+	// `AppShell` keeps this query subscribed while the sidebar is collapsed, so
+	// the list is usually cached by the time the tree mounts. Keep the shell
+	// usable while a cold load is still in flight.
 	// TODO(2): Handle query errors so a failed request isn't shown as an empty library.
 	const { data: collections = [] } = useQuery(collectionQueries.list())
 	const tree = useMemo(() => treeifyCollections(collections), [collections])

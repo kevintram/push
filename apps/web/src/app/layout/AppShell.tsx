@@ -1,8 +1,10 @@
 import * as stylex from '@stylexjs/stylex'
 import { useHotkey } from '@tanstack/react-hotkeys'
+import { useQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 
+import { collectionQueries } from '~/modules/library/api/collectionQueries'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { appShellColors } from '~/styles/colors/components.stylex'
 import { slate } from '~/styles/colors/primitives.stylex'
@@ -67,6 +69,10 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
 	const { hideMode } = useHideMode()
+	// Keeps the library list subscribed while the sidebar is collapsed, so
+	// expanding it renders the tree from cache instead of an empty library.
+	// The shell never reads the data, so it opts out of re-rendering on it.
+	useQuery({ ...collectionQueries.list(), notifyOnChangeProps: [] })
 	const isHideMode = hideMode === 'on'
 	const [isSidebarExpanded, setIsSidebarExpanded] = useState(() =>
 		readStoredBoolean(SIDEBAR_STORAGE_KEY, false),
