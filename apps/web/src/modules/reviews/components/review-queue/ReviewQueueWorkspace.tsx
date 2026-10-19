@@ -52,7 +52,7 @@ const styles = stylex.create({
 		minInlineSize: 0,
 		overflowY: 'hidden',
 
-		borderColor: semanticColors.borderSurface,
+		borderColor: semanticColors.borderSubtle,
 		borderRadius: {
 			default: 0,
 			[breakpoints.tablet]: radii.xl,
@@ -95,7 +95,7 @@ const styles = stylex.create({
 	},
 	cardPanel: {
 		borderColor: {
-			default: semanticColors.borderSurface,
+			default: semanticColors.borderSubtle,
 			'@media (prefers-color-scheme: dark)': baseColors.transparent,
 		},
 		borderRadius: radii['2xl'],

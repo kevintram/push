@@ -41,7 +41,7 @@ type ReviewQueueSidebarProps = {
 const styles = stylex.create({
 	panel: {
 		borderColor: {
-			default: semanticColors.borderSurface,
+			default: semanticColors.borderSubtle,
 			'@media (prefers-color-scheme: dark)': baseColors.transparent,
 		},
 		borderRadius: radii['2xl'],
