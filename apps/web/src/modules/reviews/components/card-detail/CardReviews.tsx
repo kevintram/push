@@ -35,7 +35,7 @@ const styles = stylex.create({
 		padding: spacing.md,
 		borderRadius: radii.xl,
 		backgroundColor: semanticColors.surfaceRaised,
-		boxShadow: `0 4px 16px ${semanticColors.shadowStrong}`,
+		boxShadow: `0 2px 8px ${semanticColors.shadowStrong}`,
 	},
 })
 
