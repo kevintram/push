@@ -15,6 +15,8 @@ import {
 import { HIDE_MODE_HOTKEY } from '../hide-mode/hideModeHotkey'
 import { useHideMode } from '../hide-mode/useHideMode'
 
+const DARK = '@media (prefers-color-scheme: dark)'
+
 type HideModeButtonProps = {
 	tooltipSide?: React.ComponentProps<typeof TooltipContent>['side']
 	/** Shows "Hiding" next to the icon while hide mode is on. */
@@ -24,10 +26,23 @@ type HideModeButtonProps = {
 const styles = stylex.create({
 	hideModeOn: {
 		backgroundColor: {
-			default: `light-dark(${blue.s500}, ${blue.s800})`,
-			':hover': `light-dark(${blue.s600}, ${blue.s700})`,
+			[DARK]: {
+				default: null,
+				':is([aria-pressed="true"])': blue.s800,
+				':is([aria-pressed="true"]):hover': blue.s700,
+			},
+			default: null,
+			':is([aria-pressed="true"])': blue.s500,
+			':is([aria-pressed="true"]):hover': blue.s600,
 		},
-		color: `light-dark(${whiteAlpha.s95}, ${blue.s100})`,
+		color: {
+			[DARK]: {
+				default: null,
+				':is([aria-pressed="true"])': blue.s100,
+			},
+			default: null,
+			':is([aria-pressed="true"])': whiteAlpha.s95,
+		},
 	},
 	labeled: {
 		borderRadius: radii.full,
