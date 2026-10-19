@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
 	readStoredBoolean,
+	readStoredStringArray,
 	readStoredValue,
 	writeStoredBoolean,
 	writeStoredValue,
@@ -53,6 +54,19 @@ describe('storage', () => {
 		},
 	)
 
+	it('reads a stored string array', () => {
+		window.localStorage.setItem(KEY, '["a","b"]')
+		expect(readStoredStringArray(KEY)).toEqual(['a', 'b'])
+	})
+
+	it.each(['not json', '"a"', '{"a":1}', '["a",1]'])(
+		'falls back to an empty array for %s',
+		value => {
+			window.localStorage.setItem(KEY, value)
+			expect(readStoredStringArray(KEY)).toEqual([])
+		},
+	)
+
 	it('tolerates unavailable storage', () => {
 		vi.spyOn(window.localStorage, 'getItem').mockImplementation(() => {
 			throw new Error('Storage unavailable')
@@ -62,5 +76,6 @@ describe('storage', () => {
 		})
 		expect(readStoredBoolean(KEY, true)).toBe(true)
 		expect(() => writeStoredBoolean(KEY, false)).not.toThrow()
+		expect(readStoredStringArray(KEY)).toEqual([])
 	})
 })

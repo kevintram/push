@@ -58,3 +58,22 @@ export function writeStoredBoolean(
 ): void {
 	writeStoredValue(key, String(value), area)
 }
+
+/**
+ * Read a JSON array of strings, as stored by `writeStoredValue`, returning an empty array when the key
+ * is missing, holds anything else, or browser storage is unavailable.
+ */
+export function readStoredStringArray(
+	key: string,
+	area: StorageArea = 'local',
+): ReadonlyArray<string> {
+	try {
+		const value: unknown = JSON.parse(getStorage(area).getItem(key) ?? '[]')
+		return Array.isArray(value) &&
+			value.every(item => typeof item === 'string')
+			? value
+			: []
+	} catch {
+		return []
+	}
+}

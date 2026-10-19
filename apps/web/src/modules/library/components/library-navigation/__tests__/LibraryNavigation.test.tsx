@@ -53,6 +53,7 @@ function finishDrag(event: TestDragEndEvent) {
 
 describe('LibraryNavigation drag and drop', () => {
 	beforeEach(() => {
+		window.localStorage.clear()
 		mocks.onDragEnd = undefined
 		mocks.updateCollection.mockClear()
 	})

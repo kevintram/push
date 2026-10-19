@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { readStoredStringArray, writeStoredValue } from '~/utils/storage'
+
 import { collectionQueries } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
 import { treeifyCollections } from '../../utils/treeifyCollections'
@@ -24,6 +26,15 @@ export type CollectionTree = {
 
 // IDs never contain NUL, so it is a safe separator.
 const KEY_SEPARATOR = '\0'
+const OPEN_COLLECTIONS_STORAGE_KEY = 'libraryOpenCollectionIds'
+
+function readStoredOpenCollectionIds(): ReadonlySet<CollectionId> {
+	return new Set(
+		readStoredStringArray(
+			OPEN_COLLECTIONS_STORAGE_KEY,
+		) as Array<CollectionId>,
+	)
+}
 
 /**
  * The library tree: the user's collections as a forest, plus which of its
@@ -35,24 +46,49 @@ const KEY_SEPARATOR = '\0'
  * children are revealed. A manual collapse-all is not undone by refetches of
  * the same selection, but the selection is reported as hidden until
  * `revealSelection` opens its branch again.
+ *
+ * The open branches are saved to local storage, so they survive reloads and
+ * the sidebar unmounting this tree when it collapses.
  */
 export function useCollectionTree(): CollectionTree {
 	// The tree is mounted by the app-level sidebar on every authenticated route.
 	// Keep the shell usable while this global query is loading; library routes
 	// still prefetch the same query in their route loaders.
 	// TODO(2): Handle query errors so a failed request isn't shown as an empty library.
-	const { data: collections = [] } = useQuery(collectionQueries.list())
-	const tree = useMemo(() => treeifyCollections(collections), [collections])
+	const { data } = useQuery(collectionQueries.list())
+	// A query error keeps the last data, so check for data, not success.
+	const isLoaded = data !== undefined
+	const tree = useMemo(() => treeifyCollections(data ?? []), [data])
 	// Read loosely because most routes do not define a collectionId param.
 	const { collectionId: selectedCollectionId } = useParams({
 		strict: false,
 	}) as { collectionId?: CollectionId }
 
-	// Stale IDs are harmless when the reactive collection tree changes. They are
-	// cleared by collapse-all, so reconciling the set against the tree is unnecessary.
-	const [openCollectionIds, setOpenCollectionIds] = useState<
+	// May name collections missing from the tree, such as ones deleted here or
+	// on another device. `openCollectionIds` leaves those out.
+	const [unfilteredOpenIds, setOpenCollectionIds] = useState<
 		ReadonlySet<CollectionId>
-	>(() => new Set())
+	>(readStoredOpenCollectionIds)
+
+	// Unfiltered until the list loads: the tree is empty until then, and
+	// filtering would discard every saved branch.
+	const openCollectionIds = useMemo(() => {
+		if (!isLoaded) return unfilteredOpenIds
+		const ids = [...unfilteredOpenIds].filter(id => tree.nodesById.has(id))
+		return ids.length === unfilteredOpenIds.size
+			? unfilteredOpenIds
+			: new Set(ids)
+	}, [isLoaded, unfilteredOpenIds, tree])
+
+	// Serialized so a refetch that leaves the set unchanged does not write.
+	const serializedOpenIds = isLoaded
+		? JSON.stringify([...openCollectionIds])
+		: null
+
+	useEffect(() => {
+		if (serializedOpenIds === null) return
+		writeStoredValue(OPEN_COLLECTIONS_STORAGE_KEY, serializedOpenIds)
+	}, [serializedOpenIds])
 
 	const setCollectionOpen = useCallback(
 		(collectionId: CollectionId, open: boolean) => {
