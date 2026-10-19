@@ -4,7 +4,7 @@ import { Copy } from 'lucide-react'
 
 import { SidebarItem } from '~/components/sidebar'
 import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
-import { hideModeButtonColors } from '~/styles/colors/components.stylex'
+import { blue, whiteAlpha } from '~/styles/colors/primitives.stylex'
 import {
 	appSidebar,
 	fontWeights,
@@ -24,10 +24,10 @@ type HideModeButtonProps = {
 const styles = stylex.create({
 	hideModeOn: {
 		backgroundColor: {
-			default: hideModeButtonColors.backgroundActive,
-			':hover': hideModeButtonColors.backgroundActiveHover,
+			default: `light-dark(${blue.s500}, ${blue.s800})`,
+			':hover': `light-dark(${blue.s600}, ${blue.s700})`,
 		},
-		color: hideModeButtonColors.foregroundActive,
+		color: `light-dark(${whiteAlpha.s95}, ${blue.s100})`,
 	},
 	labeled: {
 		borderRadius: radii.full,

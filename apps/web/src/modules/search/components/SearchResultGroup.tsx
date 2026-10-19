@@ -2,10 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
 
 import { Button } from '~/components/ui/Button'
-import {
-	dialogColors,
-	searchResultGroupColors,
-} from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -34,13 +31,13 @@ const styles = stylex.create({
 		minBlockSize: '32px',
 	},
 	headerExpanded: {
-		backgroundColor: dialogColors.popupBackground,
+		backgroundColor: semanticColors.surfaceRaised,
 		insetBlockStart: 0,
 		position: 'sticky',
 		zIndex: 1,
 	},
 	title: {
-		color: searchResultGroupColors.titleForeground,
+		color: semanticColors.textSecondary,
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
@@ -48,7 +45,7 @@ const styles = stylex.create({
 		fontWeight: fontWeights.semibold,
 	},
 	control: {
-		color: searchResultGroupColors.controlForeground,
+		color: semanticColors.textSecondary,
 		fontSize: fontSizes.xs,
 	},
 	icon: {

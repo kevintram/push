@@ -2,7 +2,6 @@ import * as stylex from '@stylexjs/stylex'
 import { Anvil, Calendar, Sparkles } from 'lucide-react'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
-import { cardMetadataColors } from '~/styles/colors/components.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	fontSizes,
@@ -47,7 +46,7 @@ const styles = stylex.create({
 	item: {
 		gap: spacing.xs,
 		alignItems: 'center',
-		color: cardMetadataColors.itemForeground,
+		color: semanticColors.textSecondary,
 		display: 'inline-flex',
 		fontWeight: fontWeights.semibold,
 		whiteSpace: 'nowrap',
@@ -69,7 +68,7 @@ const styles = stylex.create({
 		color: semanticColors.textDanger,
 	},
 	today: {
-		color: cardMetadataColors.itemForegroundToday,
+		color: semanticColors.textToday,
 	},
 })
 

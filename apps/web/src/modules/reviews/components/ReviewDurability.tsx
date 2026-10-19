@@ -7,7 +7,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { reviewColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import type { Review } from '../types/review.types'
@@ -16,7 +16,7 @@ import { formatDurabilityTooltip } from '../utils/cardSrs'
 const styles = stylex.create({
 	container: {
 		alignItems: 'center',
-		color: reviewColors.durabilityForeground,
+		color: semanticColors.textSecondary,
 		columnGap: spacing.xs,
 		display: 'flex',
 		whiteSpace: 'nowrap',
@@ -26,10 +26,10 @@ const styles = stylex.create({
 		inlineSize: iconSizes.sm,
 	},
 	positiveChange: {
-		color: reviewColors.durabilityPositiveChangeForeground,
+		color: semanticColors.textSuccess,
 	},
 	negativeChange: {
-		color: reviewColors.durabilityNegativeChangeForeground,
+		color: semanticColors.textDanger,
 	},
 })
 

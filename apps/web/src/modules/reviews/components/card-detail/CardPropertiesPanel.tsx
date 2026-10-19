@@ -2,7 +2,6 @@ import * as stylex from '@stylexjs/stylex'
 import { Anvil } from 'lucide-react'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
-import { cardPropertiesColors } from '~/styles/colors/components.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	fontSizes,
@@ -26,7 +25,7 @@ const styles = stylex.create({
 	container: {
 		padding: spacing.lg,
 		borderRadius: radii.xl,
-		backgroundColor: cardPropertiesColors.containerBackground,
+		backgroundColor: semanticColors.surfaceSecondary,
 		flexShrink: 0,
 	},
 	title: {
@@ -50,7 +49,7 @@ const styles = stylex.create({
 		display: 'contents',
 	},
 	label: {
-		color: cardPropertiesColors.labelForeground,
+		color: semanticColors.textSecondary,
 		fontWeight: fontWeights.medium,
 	},
 	value: {
@@ -58,7 +57,7 @@ const styles = stylex.create({
 		// than to the full width of the 1fr column.
 		justifySelf: 'start',
 
-		color: cardPropertiesColors.valueForeground,
+		color: semanticColors.textPrimary,
 		whiteSpace: 'nowrap',
 	},
 	valueWithIcon: {
@@ -70,7 +69,7 @@ const styles = stylex.create({
 		color: semanticColors.textDanger,
 	},
 	today: {
-		color: cardPropertiesColors.valueForegroundToday,
+		color: semanticColors.textToday,
 	},
 })
 

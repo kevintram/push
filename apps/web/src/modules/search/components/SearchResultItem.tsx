@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 
 import { DialogClose } from '~/components/ui'
-import { searchResultItemColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 import type { SearchResultItem as SearchResultItemModel } from '../utils/searchResults'
@@ -21,14 +21,14 @@ const styles = stylex.create({
 		borderRadius: radii.lg,
 		textDecoration: 'none',
 		backgroundColor: {
-			default: searchResultItemColors.background,
-			':focus-visible': searchResultItemColors.backgroundFocusVisible,
-			':hover': searchResultItemColors.backgroundHover,
+			default: semanticColors.surfaceTransparent,
+			':focus-visible': semanticColors.surfaceTransparentActive,
+			':hover': semanticColors.surfaceTransparentHover,
 		},
-		color: searchResultItemColors.foreground,
+		color: semanticColors.textPrimary,
 		outlineColor: {
-			default: searchResultItemColors.focusRingRest,
-			':focus-visible': searchResultItemColors.focusRing,
+			default: semanticColors.surfaceTransparent,
+			':focus-visible': semanticColors.borderFocus,
 		},
 		outlineOffset: '-2px',
 		outlineStyle: 'solid',
@@ -44,7 +44,7 @@ const styles = stylex.create({
 	},
 	secondary: {
 		overflow: 'hidden',
-		color: searchResultItemColors.secondaryForeground,
+		color: semanticColors.textSecondary,
 		fontSize: fontSizes.sm,
 		lineHeight: 1.4,
 		textOverflow: 'ellipsis',
@@ -52,7 +52,7 @@ const styles = stylex.create({
 	},
 	path: {
 		overflow: 'hidden',
-		color: searchResultItemColors.pathForeground,
+		color: semanticColors.textSecondary,
 		fontSize: fontSizes.xs,
 		lineHeight: 1.4,
 		textOverflow: 'ellipsis',

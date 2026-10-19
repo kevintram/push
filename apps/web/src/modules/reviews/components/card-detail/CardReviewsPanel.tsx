@@ -3,7 +3,6 @@ import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 
-import { reviewsSidebarColors } from '~/styles/colors/components.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
@@ -14,7 +13,7 @@ const styles = stylex.create({
 	container: {
 		padding: spacing.lg,
 		borderRadius: radii.xl,
-		backgroundColor: reviewsSidebarColors.containerBackground,
+		backgroundColor: semanticColors.surfaceSecondary,
 		display: 'block',
 		flexShrink: 0,
 	},
@@ -36,9 +35,9 @@ const styles = stylex.create({
 	seeAll: {
 		textDecoration: 'none',
 		color: {
-			default: reviewsSidebarColors.seeAllForeground,
-			':hover': reviewsSidebarColors.seeAllForegroundHover,
-			':active': reviewsSidebarColors.seeAllForegroundPressed,
+			default: semanticColors.textInteractive,
+			':hover': semanticColors.textInteractiveHover,
+			':active': semanticColors.textInteractiveActive,
 		},
 		fontSize: fontSizes.sm,
 	},

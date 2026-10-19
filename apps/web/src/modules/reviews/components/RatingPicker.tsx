@@ -10,7 +10,7 @@ import {
 	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
 } from '~/components/ui'
-import { reviewColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { iconSizes, radii } from '~/styles/tokens.stylex'
 
 import type { Rating } from '../types/review.types'
@@ -20,9 +20,9 @@ const styles = stylex.create({
 	ratingBadge: {
 		borderRadius: radii.full,
 		alignItems: 'center',
-		backgroundColor: reviewColors.ratingBadgeBackground,
+		backgroundColor: semanticColors.surfaceInteractivePrimary,
 		blockSize: iconSizes.sm,
-		color: reviewColors.ratingBadgeForeground,
+		color: semanticColors.textOnBrand,
 		display: 'flex',
 		flexShrink: 0,
 		inlineSize: iconSizes.sm,

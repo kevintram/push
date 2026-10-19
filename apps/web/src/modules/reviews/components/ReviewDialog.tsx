@@ -17,7 +17,7 @@ import {
 } from '~/components/ui'
 import { collectionQueries } from '~/modules/library/api/collectionQueries'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
-import { dialogColors, reviewColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
 	breakpoints,
 	fontSizes,
@@ -82,7 +82,7 @@ const styles = stylex.create({
 		overflow: 'hidden',
 		paddingBlock: spacing.md,
 		paddingInline: spacing.md,
-		backgroundColor: dialogColors.fullscreenBackground,
+		backgroundColor: semanticColors.surfacePrimary,
 		display: 'flex',
 		flexDirection: 'column',
 		inlineSize: '100%',
@@ -192,7 +192,7 @@ const styles = stylex.create({
 	ratingControl: {
 		borderRadius: radii.md,
 		alignSelf: 'flex-start',
-		backgroundColor: reviewColors.rowBackground,
+		backgroundColor: semanticColors.surfaceTransparent,
 	},
 	editor: {
 		gap: spacing.sm,

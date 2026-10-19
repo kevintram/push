@@ -1,7 +1,7 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 
-import { reviewComposerColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
 import { ReviewComposer } from '../ReviewComposer'
@@ -11,7 +11,7 @@ const styles = stylex.create({
 	composerSurface: {
 		padding: spacing.md,
 		borderRadius: radii.xl,
-		backgroundColor: reviewComposerColors.containerBackground,
+		backgroundColor: semanticColors.surfaceRaised,
 		flexShrink: 0,
 		inlineSize: '100%',
 		minInlineSize: 0,
