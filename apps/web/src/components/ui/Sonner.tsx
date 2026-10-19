@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Toaster as SonnerToaster, type ToasterProps } from 'sonner'
 
-import { toasterColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fonts, radii } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -11,79 +11,79 @@ const styles = stylex.create({
 			':is([data-sonner-toaster][data-sonner-theme])': radii.lg,
 		},
 		'--error-bg': {
-			default: toasterColors.errorBackground,
+			default: semanticColors.surfaceDanger,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.errorBackground,
+				semanticColors.surfaceDanger,
 		},
 		'--error-border': {
-			default: toasterColors.errorBorder,
+			default: semanticColors.borderDanger,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.errorBorder,
+				semanticColors.borderDanger,
 		},
 		'--error-text': {
-			default: toasterColors.errorForeground,
+			default: semanticColors.textDanger,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.errorForeground,
+				semanticColors.textDanger,
 		},
 		'--info-bg': {
-			default: toasterColors.normalBackground,
+			default: semanticColors.surfaceRaised,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.normalBackground,
+				semanticColors.surfaceRaised,
 		},
 		'--info-border': {
-			default: toasterColors.normalBorder,
+			default: semanticColors.borderPrimary,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.normalBorder,
+				semanticColors.borderPrimary,
 		},
 		'--info-text': {
-			default: toasterColors.normalForeground,
+			default: semanticColors.textPrimary,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.normalForeground,
+				semanticColors.textPrimary,
 		},
 		'--normal-bg': {
-			default: toasterColors.normalBackground,
+			default: semanticColors.surfaceRaised,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.normalBackground,
+				semanticColors.surfaceRaised,
 		},
 		'--normal-border': {
-			default: toasterColors.normalBorder,
+			default: semanticColors.borderPrimary,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.normalBorder,
+				semanticColors.borderPrimary,
 		},
 		'--normal-text': {
-			default: toasterColors.normalForeground,
+			default: semanticColors.textPrimary,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.normalForeground,
+				semanticColors.textPrimary,
 		},
 		'--success-bg': {
-			default: toasterColors.normalBackground,
+			default: semanticColors.surfaceRaised,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.normalBackground,
+				semanticColors.surfaceRaised,
 		},
 		'--success-border': {
-			default: toasterColors.normalBorder,
+			default: semanticColors.borderPrimary,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.normalBorder,
+				semanticColors.borderPrimary,
 		},
 		'--success-text': {
-			default: toasterColors.normalForeground,
+			default: semanticColors.textPrimary,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.normalForeground,
+				semanticColors.textPrimary,
 		},
 		'--warning-bg': {
-			default: toasterColors.normalBackground,
+			default: semanticColors.surfaceRaised,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.normalBackground,
+				semanticColors.surfaceRaised,
 		},
 		'--warning-border': {
-			default: toasterColors.normalBorder,
+			default: semanticColors.borderPrimary,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.normalBorder,
+				semanticColors.borderPrimary,
 		},
 		'--warning-text': {
-			default: toasterColors.normalForeground,
+			default: semanticColors.textPrimary,
 			':is([data-sonner-toaster][data-sonner-theme])':
-				toasterColors.normalForeground,
+				semanticColors.textPrimary,
 		},
 		fontFamily: {
 			default: fonts.sans,

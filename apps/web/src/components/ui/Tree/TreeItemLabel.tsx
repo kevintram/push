@@ -2,7 +2,7 @@ import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import * as stylex from '@stylexjs/stylex'
 
-import { treeColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
 import { useTreeItemContext } from './TreeItemContext'
@@ -22,18 +22,18 @@ const styles = stylex.create({
 		alignItems: 'center',
 		// Fills the row so the whole row height is clickable.
 		alignSelf: 'stretch',
-		backgroundColor: treeColors.labelBackground,
+		backgroundColor: semanticColors.surfaceTransparent,
 		color: {
-			default: treeColors.labelForeground,
-			':hover': treeColors.labelForegroundHover,
+			default: semanticColors.textInteractive,
+			':hover': semanticColors.textInteractiveHover,
 		},
 		cursor: 'pointer',
 		display: 'flex',
 		fontFamily: 'inherit',
 		fontSize: fontSizes.sm,
 		outlineColor: {
-			default: treeColors.labelFocusRingRest,
-			':focus-visible': treeColors.labelFocusRing,
+			default: semanticColors.surfaceTransparent,
+			':focus-visible': semanticColors.borderFocus,
 		},
 		outlineOffset: '-2px',
 		outlineStyle: 'solid',
@@ -43,7 +43,7 @@ const styles = stylex.create({
 		textAlign: 'start',
 	},
 	selected: {
-		color: treeColors.labelForegroundSelected,
+		color: semanticColors.textInteractiveActive,
 	},
 })
 

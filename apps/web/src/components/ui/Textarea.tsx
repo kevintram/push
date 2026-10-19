@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { textareaColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
 export interface TextareaProps extends Omit<
@@ -14,13 +14,13 @@ export interface TextareaProps extends Omit<
 const styles = stylex.create({
 	textarea: {
 		fieldSizing: 'content',
-		borderColor: textareaColors.border,
+		borderColor: semanticColors.surfaceTransparent,
 		paddingBlock: spacing.none,
 		paddingInline: spacing.none,
-		backgroundColor: textareaColors.background,
+		backgroundColor: semanticColors.surfaceTransparent,
 		color: {
-			default: textareaColors.foreground,
-			':disabled': textareaColors.foregroundDisabled,
+			default: semanticColors.textPrimary,
+			':disabled': semanticColors.textDisabled,
 		},
 		cursor: { default: 'text', ':disabled': 'not-allowed' },
 		display: 'block',
@@ -31,7 +31,7 @@ const styles = stylex.create({
 		lineHeight: 'inherit',
 		outlineStyle: 'none',
 		resize: 'none',
-		'::placeholder': { color: textareaColors.placeholderForeground },
+		'::placeholder': { color: semanticColors.textSecondary },
 	},
 })
 

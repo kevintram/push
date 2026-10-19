@@ -1,7 +1,7 @@
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
 import * as stylex from '@stylexjs/stylex'
 
-import { tabsColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 
 export type TabsContentProps = Omit<
 	React.ComponentProps<typeof TabsPrimitive.Panel>,
@@ -11,8 +11,8 @@ export type TabsContentProps = Omit<
 const styles = stylex.create({
 	content: {
 		outlineColor: {
-			default: tabsColors.contentFocusRingRest,
-			':focus-visible': tabsColors.contentFocusRing,
+			default: semanticColors.surfaceTransparent,
+			':focus-visible': semanticColors.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',

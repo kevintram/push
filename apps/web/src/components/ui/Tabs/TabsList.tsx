@@ -1,7 +1,7 @@
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
 import * as stylex from '@stylexjs/stylex'
 
-import { tabsColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { radii } from '~/styles/tokens.stylex'
 
 import { type TabsVariant, TabsVariantContext } from './TabsContext'
@@ -30,19 +30,20 @@ const styles = stylex.create({
 	},
 	default: {
 		borderRadius: radii.lg,
-		backgroundColor: tabsColors.listBackground,
-		color: tabsColors.listForeground,
+		backgroundColor: semanticColors.surfaceSecondary,
+		color: semanticColors.textSecondary,
 	},
 	line: {
 		borderBlockEndColor: {
-			default: tabsColors.lineListBorder,
-			':is([data-orientation="vertical"])': tabsColors.lineListBorderRest,
+			default: semanticColors.borderSubtle,
+			':is([data-orientation="vertical"])':
+				semanticColors.surfaceTransparent,
 		},
 		borderBlockEndStyle: 'solid',
 		borderBlockEndWidth: '1px',
 		borderInlineEndColor: {
-			default: tabsColors.lineListBorderRest,
-			':is([data-orientation="vertical"])': tabsColors.lineListBorder,
+			default: semanticColors.surfaceTransparent,
+			':is([data-orientation="vertical"])': semanticColors.borderSubtle,
 		},
 		borderInlineEndStyle: 'solid',
 		borderInlineEndWidth: '1px',

@@ -1,7 +1,7 @@
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
 import * as stylex from '@stylexjs/stylex'
 
-import { tabsColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 import { type TabsVariant, useTabsVariant } from './TabsContext'
@@ -16,20 +16,20 @@ const styles = stylex.create({
 		paddingBlock: spacing.sm,
 		paddingInline: spacing.md,
 
-		borderColor: tabsColors.triggerBorder,
+		borderColor: semanticColors.surfaceTransparent,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		gap: spacing.sm,
 		textDecoration: 'none',
 		alignItems: 'center',
-		backgroundColor: tabsColors.triggerBackground,
+		backgroundColor: semanticColors.surfaceTransparent,
 		color: {
-			default: tabsColors.triggerForeground,
-			':is([data-active])': tabsColors.triggerForegroundSelected,
-			':is([data-disabled])': tabsColors.triggerForegroundDisabled,
-			':is([data-disabled]:hover)': tabsColors.triggerForegroundDisabled,
-			':hover': tabsColors.triggerForegroundHover,
-			':active': tabsColors.triggerForegroundPressed,
+			default: semanticColors.textInteractive,
+			':is([data-active])': semanticColors.textInteractiveActive,
+			':is([data-disabled])': semanticColors.textDisabled,
+			':is([data-disabled]:hover)': semanticColors.textDisabled,
+			':hover': semanticColors.textInteractiveHover,
+			':active': semanticColors.textInteractiveActive,
 		},
 		cursor: {
 			default: 'pointer',
@@ -41,8 +41,8 @@ const styles = stylex.create({
 		justifyContent: 'center',
 		lineHeight: 1,
 		outlineColor: {
-			default: tabsColors.triggerFocusRingRest,
-			':focus-visible': tabsColors.triggerFocusRing,
+			default: semanticColors.surfaceTransparent,
+			':focus-visible': semanticColors.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
@@ -56,26 +56,26 @@ const styles = stylex.create({
 	default: {
 		borderRadius: radii.lg,
 		backgroundColor: {
-			default: tabsColors.defaultTriggerBackground,
-			':is([data-active])': tabsColors.defaultTriggerBackgroundSelected,
+			default: semanticColors.surfaceTransparent,
+			':is([data-active])': semanticColors.surfaceTransparentHover,
 		},
 		boxShadow: {
 			default: 'none',
-			':is([data-active])': `0 1px 2px ${tabsColors.defaultTriggerShadowSelected}`,
+			':is([data-active])': `0 1px 2px ${semanticColors.shadowPrimary}`,
 		},
 	},
 	line: {
 		borderRadius: 0,
 		borderBlockEndColor: {
-			default: tabsColors.lineTriggerBorderRest,
-			':is([data-active])': tabsColors.lineTriggerBorderSelected,
+			default: semanticColors.surfaceTransparent,
+			':is([data-active])': semanticColors.borderBrand,
 			':is([data-orientation="vertical"])':
-				tabsColors.lineTriggerBorderRest,
+				semanticColors.surfaceTransparent,
 		},
 		borderInlineEndColor: {
-			default: tabsColors.lineTriggerBorderRest,
+			default: semanticColors.surfaceTransparent,
 			':is([data-active][data-orientation="vertical"])':
-				tabsColors.lineTriggerBorderSelected,
+				semanticColors.borderBrand,
 		},
 		marginBlockEnd: {
 			default: '-1px',

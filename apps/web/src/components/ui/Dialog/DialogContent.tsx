@@ -2,7 +2,7 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import * as stylex from '@stylexjs/stylex'
 import { X } from 'lucide-react'
 
-import { dialogColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { DialogOverlay } from './DialogOverlay'
@@ -37,14 +37,14 @@ const styles = stylex.create({
 		inlineSize: '100%',
 		maxInlineSize: '32rem',
 
-		borderColor: dialogColors.popupBorder,
+		borderColor: semanticColors.borderPrimary,
 		borderRadius: radii.xl,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		outline: 'none',
-		backgroundColor: dialogColors.popupBackground,
-		boxShadow: `0 16px 48px ${dialogColors.popupShadow}`,
-		color: dialogColors.popupForeground,
+		backgroundColor: semanticColors.surfaceRaised,
+		boxShadow: `0 16px 48px ${semanticColors.shadowStrong}`,
+		color: semanticColors.textPrimary,
 		opacity: {
 			default: 1,
 			':is([data-starting-style], [data-ending-style])': 0,
@@ -71,20 +71,20 @@ const styles = stylex.create({
 		inlineSize: '32px',
 		justifyContent: 'center',
 
-		borderColor: dialogColors.closeButtonBorder,
+		borderColor: semanticColors.surfaceTransparent,
 		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		backgroundColor: {
-			default: dialogColors.closeButtonBackground,
-			':hover': dialogColors.closeButtonBackgroundHover,
-			':active': dialogColors.closeButtonBackgroundPressed,
+			default: semanticColors.surfaceTransparent,
+			':hover': semanticColors.surfaceTransparentHover,
+			':active': semanticColors.surfaceTransparentActive,
 		},
 		color: 'inherit',
 		cursor: 'pointer',
 		outlineColor: {
-			default: dialogColors.closeButtonFocusRingRest,
-			':focus-visible': dialogColors.closeButtonFocusRing,
+			default: semanticColors.surfaceTransparent,
+			':focus-visible': semanticColors.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',

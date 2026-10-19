@@ -1,7 +1,7 @@
 import { Menu } from '@base-ui/react/menu'
 import * as stylex from '@stylexjs/stylex'
 
-import { dropdownMenuColors } from '~/styles/colors/components.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
 export interface DropdownMenuContentProps extends Omit<
@@ -21,14 +21,14 @@ const styles = stylex.create({
 	popup: {
 		padding: spacing.xs,
 
-		borderColor: dropdownMenuColors.popupBorder,
+		borderColor: semanticColors.borderPrimary,
 		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		outline: 'none',
-		backgroundColor: dropdownMenuColors.popupBackground,
-		boxShadow: `0 8px 24px ${dropdownMenuColors.popupShadow}`,
-		color: dropdownMenuColors.popupForeground,
+		backgroundColor: semanticColors.surfaceRaised,
+		boxShadow: `0 8px 24px ${semanticColors.shadowPrimary}`,
+		color: semanticColors.textPrimary,
 
 		maxBlockSize: 'var(--available-height)',
 		minInlineSize: '8rem',

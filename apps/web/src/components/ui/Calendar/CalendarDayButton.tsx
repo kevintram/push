@@ -1,41 +1,40 @@
 import * as stylex from '@stylexjs/stylex'
 import { DayButton } from 'react-day-picker'
 
-import { calendarColors } from '~/styles/colors/components.stylex'
+import { blue } from '~/styles/colors/primitives.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	button: {
 		padding: spacing.none,
-		borderColor: calendarColors.dayButtonBorder,
+		borderColor: semanticColors.surfaceTransparent,
 		borderRadius: radii.full,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		backgroundColor: {
-			default: calendarColors.dayButtonBackground,
+			default: semanticColors.surfaceTransparent,
 			':is([data-selected-single="true"])':
-				calendarColors.dayButtonBackgroundSelected,
-			':is([data-today="true"])': calendarColors.dayButtonBackgroundToday,
+				semanticColors.surfaceInteractivePrimary,
+			':is([data-today="true"])': `light-dark(${blue.s400}, ${blue.s900})`,
 
 			':is([data-selected-single="true"]):hover':
-				calendarColors.dayButtonBackgroundSelectedHover,
-			':is([data-today="true"]):hover':
-				calendarColors.dayButtonBackgroundTodayHover,
-			':hover': calendarColors.dayButtonBackgroundHover,
+				semanticColors.surfaceInteractivePrimaryHover,
+			':is([data-today="true"]):hover': blue.s600,
+			':hover': semanticColors.surfaceTransparentHover,
 		},
 		blockSize: '32px',
 		color: {
-			default: calendarColors.dayButtonForeground,
-			':is([data-selected-single="true"])':
-				calendarColors.dayButtonForegroundSelected,
-			':is([data-today="true"])': calendarColors.dayButtonForegroundToday,
+			default: semanticColors.textPrimary,
+			':is([data-selected-single="true"])': semanticColors.textOnBrand,
+			':is([data-today="true"])': semanticColors.textOnBrand,
 		},
 		cursor: 'pointer',
 		fontSize: fontSizes.sm,
 		inlineSize: '32px',
 		outlineColor: {
-			default: calendarColors.dayButtonFocusRingRest,
-			':focus-visible': calendarColors.dayButtonFocusRing,
+			default: semanticColors.surfaceTransparent,
+			':focus-visible': semanticColors.borderFocus,
 		},
 		outlineOffset: '1px',
 		outlineStyle: 'solid',
