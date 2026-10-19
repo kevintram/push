@@ -14,9 +14,8 @@ import {
 
 const DARK = '@media (prefers-color-scheme: dark)'
 
-// Semantic color tokens, tier 2 of the three-tier system (primitives,
-// semantic tokens, component tokens). Each token references the color
-// primitives in primitives.stylex.ts directly.
+// Semantic color tokens, tier 2 of the color system. Components consume these
+// tokens directly; each token references primitives.stylex.ts.
 export const semanticColors = stylex.defineVars({
 	// Surface
 	// Structural surfaces
