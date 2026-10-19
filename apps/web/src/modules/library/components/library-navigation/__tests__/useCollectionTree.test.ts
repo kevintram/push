@@ -1,17 +1,23 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { act, renderHook } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Collection } from '../../../types/collection.types'
 import { useCollectionTree } from '../useCollectionTree'
 
 const mocks = vi.hoisted(() => ({
 	collections: [] as ReadonlyArray<unknown>,
+	status: 'success' as 'pending' | 'success' | 'error',
 	selectedCollectionId: undefined as string | undefined,
 }))
 
 vi.mock('@tanstack/react-query', () => ({
-	useQuery: () => ({ data: mocks.collections }),
+	// An errored query keeps its last data, as `@convex-dev/react-query` does.
+	useQuery: () => ({
+		data: mocks.status === 'pending' ? undefined : mocks.collections,
+		isSuccess: mocks.status === 'success',
+		status: mocks.status,
+	}),
 }))
 
 vi.mock('@tanstack/react-router', () => ({
@@ -22,6 +28,8 @@ vi.mock('../../../api/collectionQueries', () => ({
 	collectionQueries: { list: () => ({}) },
 }))
 
+const STORAGE_KEY = 'libraryOpenCollectionIds'
+
 const collectionId = (id: string) => id as Id<'collections'>
 
 function selectCollection(id: string | undefined) {
@@ -30,6 +38,19 @@ function selectCollection(id: string | undefined) {
 
 function loadCollections(collections: ReadonlyArray<Collection>) {
 	mocks.collections = collections
+	mocks.status = 'success'
+}
+
+function startLoading() {
+	mocks.status = 'pending'
+}
+
+function failQuery() {
+	mocks.status = 'error'
+}
+
+function storedOpenIds(): unknown {
+	return JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? 'null')
 }
 
 function makeCollection(
@@ -51,6 +72,7 @@ function makeCollection(
 
 describe('useCollectionTree', () => {
 	beforeEach(() => {
+		window.localStorage.clear()
 		loadCollections([])
 		selectCollection(undefined)
 	})
@@ -320,6 +342,138 @@ describe('useCollectionTree', () => {
 				'child',
 			])
 			expect(result.current.hiddenSelection).toBeUndefined()
+		})
+	})
+
+	describe('persistence', () => {
+		afterEach(() => {
+			vi.restoreAllMocks()
+		})
+
+		const collections = [
+			makeCollection('root'),
+			makeCollection('child', ['root'], 'root'),
+		]
+
+		it('restores the saved open collections on mount', () => {
+			window.localStorage.setItem(STORAGE_KEY, '["root"]')
+			loadCollections(collections)
+			const { result } = renderHook(() => useCollectionTree())
+
+			expect([...result.current.openCollectionIds]).toEqual(['root'])
+		})
+
+		it('keeps the open collections across an unmount and remount', () => {
+			loadCollections(collections)
+			const first = renderHook(() => useCollectionTree())
+
+			act(() => {
+				first.result.current.setCollectionOpen(
+					collectionId('root'),
+					true,
+				)
+			})
+			first.unmount()
+
+			const { result } = renderHook(() => useCollectionTree())
+
+			expect([...result.current.openCollectionIds]).toEqual(['root'])
+		})
+
+		it('saves an empty set after collapse-all', () => {
+			window.localStorage.setItem(STORAGE_KEY, '["root"]')
+			loadCollections(collections)
+			const { result } = renderHook(() => useCollectionTree())
+
+			act(() => {
+				result.current.collapseAll()
+			})
+
+			expect(storedOpenIds()).toEqual([])
+		})
+
+		it('keeps the saved collections while the list loads', () => {
+			window.localStorage.setItem(STORAGE_KEY, '["root","child"]')
+			startLoading()
+			const { result, rerender } = renderHook(() => useCollectionTree())
+
+			expect(storedOpenIds()).toEqual(['root', 'child'])
+
+			loadCollections(collections)
+			rerender()
+
+			expect(storedOpenIds()).toEqual(['root', 'child'])
+			expect([...result.current.openCollectionIds]).toEqual([
+				'root',
+				'child',
+			])
+		})
+
+		it('drops deleted collections once the list loads', () => {
+			window.localStorage.setItem(STORAGE_KEY, '["root","deleted"]')
+			loadCollections(collections)
+			const { result } = renderHook(() => useCollectionTree())
+
+			expect([...result.current.openCollectionIds]).toEqual(['root'])
+			expect(storedOpenIds()).toEqual(['root'])
+		})
+
+		it('drops a collection deleted while it is open', () => {
+			loadCollections(collections)
+			const { result, rerender } = renderHook(() => useCollectionTree())
+
+			act(() => {
+				result.current.setCollectionOpen(collectionId('child'), true)
+			})
+			loadCollections([makeCollection('root')])
+			rerender()
+
+			expect(result.current.openCollectionIds.size).toBe(0)
+			expect(storedOpenIds()).toEqual([])
+		})
+
+		it('saves changes while the query errors with its last data', () => {
+			loadCollections(collections)
+			const { result } = renderHook(() => useCollectionTree())
+
+			failQuery()
+			act(() => {
+				result.current.setCollectionOpen(collectionId('root'), true)
+			})
+
+			expect(storedOpenIds()).toEqual(['root'])
+		})
+
+		it('saves the selection path alongside restored collections', () => {
+			window.localStorage.setItem(STORAGE_KEY, '["other"]')
+			selectCollection('child')
+			loadCollections([...collections, makeCollection('other')])
+			renderHook(() => useCollectionTree())
+
+			expect(storedOpenIds()).toEqual(['other', 'root', 'child'])
+		})
+
+		it('does not save again when a refetch leaves the saved set unchanged', () => {
+			window.localStorage.setItem(STORAGE_KEY, '["root"]')
+			loadCollections(collections)
+			const { rerender } = renderHook(() => useCollectionTree())
+			const setItem = vi.spyOn(window.localStorage, 'setItem')
+
+			loadCollections([
+				makeCollection('root'),
+				makeCollection('child', ['root'], 'root'),
+			])
+			rerender()
+
+			expect(setItem).not.toHaveBeenCalled()
+		})
+
+		it('ignores malformed saved state', () => {
+			window.localStorage.setItem(STORAGE_KEY, '{"root":true}')
+			loadCollections(collections)
+			const { result } = renderHook(() => useCollectionTree())
+
+			expect(result.current.openCollectionIds.size).toBe(0)
 		})
 	})
 })
