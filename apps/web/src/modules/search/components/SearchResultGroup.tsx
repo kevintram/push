@@ -3,6 +3,7 @@ import { ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
 
 import { Button } from '~/components/ui/Button'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { scrollFade } from '~/styles/scrollFade'
 import {
 	fontSizes,
 	fontWeights,
@@ -21,6 +22,13 @@ const styles = stylex.create({
 		paddingBlockEnd: spacing.sm,
 		paddingBlockStart: spacing.lg,
 	},
+	// An expanded group fills the results area and scrolls only its list, so
+	// the header stays put above the scroll fade instead of under it.
+	sectionExpanded: {
+		blockSize: '100%',
+		display: 'flex',
+		flexDirection: 'column',
+	},
 	header: {
 		paddingBlock: spacing.xs,
 		// Matches the inline padding of a result link so the heading sits on
@@ -29,12 +37,6 @@ const styles = stylex.create({
 		alignItems: 'center',
 		display: 'flex',
 		minBlockSize: '32px',
-	},
-	headerExpanded: {
-		backgroundColor: semanticColors.surfaceRaised,
-		insetBlockStart: 0,
-		position: 'sticky',
-		zIndex: 1,
 	},
 	title: {
 		color: semanticColors.textSecondary,
@@ -58,6 +60,12 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 	},
+	listExpanded: {
+		flexGrow: 1,
+		minBlockSize: 0,
+		overflowX: 'hidden',
+		overflowY: 'auto',
+	},
 })
 
 /** `results` is never empty: the dialog drops a group with no hits. */
@@ -79,13 +87,14 @@ export function SearchResultGroup({
 	const headingId = `search-${label.toLowerCase()}-heading`
 
 	return (
-		<section aria-labelledby={headingId} {...stylex.props(styles.section)}>
-			<div
-				{...stylex.props(
-					styles.header,
-					expanded && styles.headerExpanded,
-				)}
-			>
+		<section
+			aria-labelledby={headingId}
+			{...stylex.props(
+				styles.section,
+				expanded && styles.sectionExpanded,
+			)}
+		>
+			<div {...stylex.props(styles.header)}>
 				<h2 id={headingId} {...stylex.props(styles.title)}>
 					{`${label} (${results.length})`}
 				</h2>
@@ -114,7 +123,12 @@ export function SearchResultGroup({
 				) : null}
 			</div>
 
-			<ul {...stylex.props(styles.list)}>
+			<ul
+				{...stylex.props(
+					styles.list,
+					expanded && [styles.listExpanded, scrollFade.y],
+				)}
+			>
 				{visibleResults.map(result => (
 					<SearchResultItem key={result.id} result={result} />
 				))}

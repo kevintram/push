@@ -302,7 +302,17 @@ export function SearchDialog({ tooltipSide = 'bottom' }: SearchDialogProps) {
 					</Tooltip>
 				</div>
 
-				<div {...stylex.props(styles.results, scrollFade.y)}>
+				{/*
+				An expanded group scrolls and fades its own list. Drop the fade
+				here rather than trust it to idle: Chrome keeps the last scroll
+				position's fade after the content stops overflowing.
+				*/}
+				<div
+					{...stylex.props(
+						styles.results,
+						!expandedGroup && scrollFade.y,
+					)}
+				>
 					{!hasQuery ? (
 						<p {...stylex.props(styles.status)}>
 							Search collections and cards
