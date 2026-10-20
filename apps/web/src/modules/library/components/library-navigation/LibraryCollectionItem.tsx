@@ -12,6 +12,7 @@ import {
 	TreeItemCollapsibleTrigger,
 	TreeItemContent,
 	TreeItemLabel,
+	useHoldPopoverOpen,
 } from '~/components/ui'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 
@@ -76,6 +77,7 @@ export function LibraryCollectionItem({
 }: LibraryCollectionItemProps) {
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+	useHoldPopoverOpen(isMoveDialogOpen || isDeleteDialogOpen)
 	const collectionTitle = title.trim() || 'Untitled'
 	const navigate = useNavigate()
 	const matchRoute = useMatchRoute()

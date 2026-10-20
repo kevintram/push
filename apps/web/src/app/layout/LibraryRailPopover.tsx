@@ -3,7 +3,13 @@ import { useMatchRoute } from '@tanstack/react-router'
 import { Library } from 'lucide-react'
 
 import { SidebarItem } from '~/components/sidebar'
-import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui'
+import {
+	Popover,
+	PopoverContent,
+	PopoverHoldContext,
+	PopoverTrigger,
+	useHoldablePopover,
+} from '~/components/ui'
 import { LibraryNavigation } from '~/modules/library/components/library-navigation/LibraryNavigation'
 import { appSidebar, spacing } from '~/styles/tokens.stylex'
 
@@ -25,9 +31,12 @@ const styles = stylex.create({
 export function LibraryRailPopover() {
 	const matchRoute = useMatchRoute()
 	const isActive = Boolean(matchRoute({ to: '/library', fuzzy: true }))
+	// The tree's menus and dialogs portal outside the popup, so using them
+	// reads as leaving or pressing outside it. They hold it open instead.
+	const { open, onOpenChange, popupRef, hold } = useHoldablePopover()
 
 	return (
-		<Popover>
+		<Popover open={open} onOpenChange={onOpenChange}>
 			<PopoverTrigger
 				delay={0}
 				openOnHover
@@ -45,10 +54,13 @@ export function LibraryRailPopover() {
 				// Keeps the top edge on the trigger instead of shifting the
 				// full-height popup up to fit.
 				collisionAvoidance={{ align: 'none' }}
+				ref={popupRef}
 				side='right'
 				xstyle={styles.content}
 			>
-				<LibraryNavigation />
+				<PopoverHoldContext value={hold}>
+					<LibraryNavigation />
+				</PopoverHoldContext>
 			</PopoverContent>
 		</Popover>
 	)

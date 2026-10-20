@@ -1,5 +1,5 @@
 import { FolderInput, Plus, Trash2 } from 'lucide-react'
-import type { ReactElement } from 'react'
+import { type ReactElement, useState } from 'react'
 
 import {
 	ContextMenu,
@@ -7,6 +7,7 @@ import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 	ContextMenuTrigger,
+	useHoldPopoverOpen,
 } from '~/components/ui'
 import { iconSizes, iconWeights } from '~/styles/tokens.stylex'
 
@@ -23,8 +24,11 @@ export function LibraryCollectionContextMenu({
 	onMove,
 	onDelete,
 }: LibraryCollectionContextMenuProps) {
+	const [open, setOpen] = useState(false)
+	useHoldPopoverOpen(open)
+
 	return (
-		<ContextMenu>
+		<ContextMenu onOpenChange={setOpen}>
 			<ContextMenuTrigger render={trigger} />
 			<ContextMenuContent>
 				<ContextMenuItem onClick={onCreateSubcollection}>

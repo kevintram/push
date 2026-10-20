@@ -1,0 +1,98 @@
+import {
+	createContext,
+	use,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from 'react'
+
+/** Holds the enclosing popover open; returns the matching release. */
+type HoldPopoverOpen = () => () => void
+
+export const PopoverHoldContext = createContext<HoldPopoverOpen | null>(null)
+
+/**
+ * Keeps the enclosing hover popover open while `active`, for menus and
+ * dialogs that portal outside it and would otherwise close it, unmounting
+ * themselves. Does nothing outside a `PopoverHoldContext`.
+ */
+export function useHoldPopoverOpen(active: boolean) {
+	const hold = use(PopoverHoldContext)
+	useEffect(() => (active && hold ? hold() : undefined), [active, hold])
+}
+
+/**
+ * Open state for a hover popover whose content can hold it open through
+ * `PopoverHoldContext`. A close requested while held waits for the last
+ * release. Base UI stops tracking hover once a close is refused, so the
+ * deferred close then happens on the first pointer move outside `popupRef`.
+ *
+ * Base UI only keeps a hover popover open for popups nested in its own
+ * floating tree. Context menus start their own tree and dialogs aren't in
+ * one, so both would close it without this.
+ */
+export function useHoldablePopover() {
+	const [open, setOpen] = useState(false)
+	const popupRef = useRef<HTMLDivElement>(null)
+	const holdCount = useRef(0)
+	const isCloseDeferred = useRef(false)
+	const stopWatchingPointer = useRef<(() => void) | undefined>(undefined)
+
+	const changeOpen = useCallback((nextOpen: boolean) => {
+		stopWatchingPointer.current?.()
+		stopWatchingPointer.current = undefined
+		setOpen(nextOpen)
+	}, [])
+
+	useEffect(() => () => stopWatchingPointer.current?.(), [])
+
+	const hold = useCallback<HoldPopoverOpen>(() => {
+		holdCount.current += 1
+		return () => {
+			holdCount.current -= 1
+			// Waits a task so a menu item that opens a dialog hands its hold
+			// to the dialog before the deferred close runs.
+			setTimeout(() => {
+				if (holdCount.current > 0 || !isCloseDeferred.current) return
+				isCloseDeferred.current = false
+				const closeOutsidePopup = (event: PointerEvent) => {
+					const rect = popupRef.current?.getBoundingClientRect()
+					if (rect && isPointInRect(event, rect)) return
+					changeOpen(false)
+				}
+				document.addEventListener('pointermove', closeOutsidePopup)
+				stopWatchingPointer.current = () =>
+					document.removeEventListener(
+						'pointermove',
+						closeOutsidePopup,
+					)
+			})
+		}
+	}, [changeOpen])
+
+	const onOpenChange = useCallback(
+		(nextOpen: boolean) => {
+			if (!nextOpen && holdCount.current > 0) {
+				isCloseDeferred.current = true
+				return
+			}
+			changeOpen(nextOpen)
+		},
+		[changeOpen],
+	)
+
+	return { open, onOpenChange, popupRef, hold }
+}
+
+function isPointInRect(
+	{ clientX, clientY }: PointerEvent,
+	{ left, right, top, bottom }: DOMRect,
+) {
+	return (
+		clientX >= left &&
+		clientX <= right &&
+		clientY >= top &&
+		clientY <= bottom
+	)
+}
