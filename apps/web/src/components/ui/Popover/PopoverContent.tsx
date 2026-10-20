@@ -15,6 +15,8 @@ export interface PopoverContentProps extends Omit<
 	>['collisionAvoidance']
 	side?: React.ComponentProps<typeof Popover.Positioner>['side']
 	sideOffset?: React.ComponentProps<typeof Popover.Positioner>['sideOffset']
+	/** Overrides semantic colors inside the popup, which portals out of any themed ancestor. */
+	theme?: stylex.Theme<typeof semanticColors>
 	xstyle?: stylex.StyleXStyles
 }
 
@@ -55,6 +57,7 @@ export function PopoverContent({
 	collisionAvoidance,
 	side = 'bottom',
 	sideOffset = 4,
+	theme,
 	xstyle,
 	...props
 }: PopoverContentProps) {
@@ -69,7 +72,7 @@ export function PopoverContent({
 				{...stylex.props(styles.positioner)}
 			>
 				<Popover.Popup
-					{...stylex.props(styles.popup, xstyle)}
+					{...stylex.props(theme, styles.popup, xstyle)}
 					{...props}
 				/>
 			</Popover.Positioner>

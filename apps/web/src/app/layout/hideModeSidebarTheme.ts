@@ -29,3 +29,16 @@ export const hideModeSidebarTheme = stylex.createTheme(semanticColors, {
 	borderSubtle: whiteAlpha.s10,
 	borderFocus: blue.s300,
 })
+
+// The hide-mode sidebar background, for the shell and for sidebar popups that
+// portal out of it. Pair with hideModeSidebarTheme on the same element.
+export const hideModeSidebarStyles = stylex.create({
+	surface: {
+		backgroundColor: { [DARK]: slate.s900, default: slate.s700 },
+	},
+	// Drops the popup border to the theme's subtle step so it doesn't glow
+	// against the dark fill.
+	popup: {
+		borderColor: semanticColors.borderSubtle,
+	},
+})
