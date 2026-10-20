@@ -13,9 +13,6 @@ const DARK = '@media (prefers-color-scheme: dark)'
 export const hideModeSidebarTheme = stylex.createTheme(semanticColors, {
 	// Opaque so the drag chip hides the rows under it.
 	surfaceTertiary: { default: slate.s600, [DARK]: slate.s800 },
-	// The rail popover's fill. Matches AppShell's hideModeShell so the popover
-	// reads as part of the sidebar.
-	surfaceRaised: { default: slate.s700, [DARK]: slate.s900 },
 	// Light, to sit behind the dark textOnInverse below.
 	surfaceInverse: slate.s100,
 	surfaceTransparentHover: whiteAlpha.s10,
@@ -34,4 +31,12 @@ export const hideModeSidebarTheme = stylex.createTheme(semanticColors, {
 	borderPrimary: whiteAlpha.s10,
 	borderSubtle: whiteAlpha.s10,
 	borderFocus: blue.s300,
+})
+
+// The hide-mode sidebar fill. Shared by the shell and the library rail popover,
+// which portals out of the sidebar.
+export const hideModeSidebarStyles = stylex.create({
+	surface: {
+		backgroundColor: { [DARK]: slate.s900, default: slate.s700 },
+	},
 })
