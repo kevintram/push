@@ -1,5 +1,4 @@
 import * as stylex from '@stylexjs/stylex'
-import { useMatchRoute } from '@tanstack/react-router'
 import { Library } from 'lucide-react'
 
 import { SidebarItem } from '~/components/sidebar'
@@ -29,8 +28,6 @@ const styles = stylex.create({
  * stay reachable without expanding the sidebar.
  */
 export function LibraryRailPopover() {
-	const matchRoute = useMatchRoute()
-	const isActive = Boolean(matchRoute({ to: '/library', fuzzy: true }))
 	// The tree's menus, dialogs, and drags read as leaving or pressing
 	// outside the popup, so they hold it open instead.
 	const { open, onOpenChange, popupRef, hold } = useHoldablePopover()
@@ -41,12 +38,7 @@ export function LibraryRailPopover() {
 				delay={0}
 				openOnHover
 				render={
-					<SidebarItem
-						active={isActive}
-						aria-label='Library'
-						icon={Library}
-						iconOnly
-					/>
+					<SidebarItem aria-label='Library' icon={Library} iconOnly />
 				}
 			/>
 			<PopoverContent

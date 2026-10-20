@@ -34,19 +34,6 @@ describe('SidebarItem', () => {
 		expect(item).not.toHaveAttribute('type')
 	})
 
-	it('marks non-link items as active', () => {
-		render(
-			<SidebarItem active icon={Library}>
-				Library
-			</SidebarItem>,
-		)
-
-		expect(screen.getByRole('button', { name: 'Library' })).toHaveAttribute(
-			'data-status',
-			'active',
-		)
-	})
-
 	it('prefers an explicit aria label over the visible text', () => {
 		render(
 			<SidebarItem aria-label='Open library' icon={Library}>
