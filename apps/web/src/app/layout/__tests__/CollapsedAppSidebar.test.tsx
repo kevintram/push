@@ -17,7 +17,6 @@ import { CollapsedAppSidebar } from '../CollapsedAppSidebar'
 
 vi.mock('@tanstack/react-router', async importOriginal => ({
 	...(await importOriginal<typeof import('@tanstack/react-router')>()),
-	useMatchRoute: () => () => false,
 	Link: ({
 		children,
 		to,

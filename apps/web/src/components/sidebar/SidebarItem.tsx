@@ -22,11 +22,6 @@ export interface SidebarItemProps extends Omit<
 	/** Drops the label and draws a round icon, as in the collapsed rail. */
 	iconOnly?: boolean
 	/**
-	 * Marks non-link items as current. Links get `data-status` from TanStack
-	 * Router, so they never need to pass this.
-	 */
-	active?: boolean
-	/**
 	 * `ghost` uses sidebar item colors; `secondary` and `outline` mirror the
 	 * corresponding Button variants.
 	 */
@@ -142,7 +137,6 @@ const styles = stylex.create({
 })
 
 export function SidebarItem({
-	active,
 	children,
 	disabled,
 	icon: Icon,
@@ -192,8 +186,5 @@ export function SidebarItem({
 		),
 		ref,
 		render,
-		// Links get `data-status` from TanStack Router; this mirrors it for
-		// buttons so one set of active styles covers both.
-		state: { slot: 'sidebar-item', status: active ? 'active' : undefined },
 	})
 }
