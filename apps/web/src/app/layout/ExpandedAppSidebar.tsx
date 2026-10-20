@@ -11,7 +11,13 @@ import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { ReviewNavigation } from '~/modules/reviews/components/review-navigation/ReviewNavigation'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
-import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
+import {
+	appSidebar,
+	fontSizes,
+	fontWeights,
+	layout,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 import { SIDEBAR_HOTKEY } from './sidebarHotkey'
 
@@ -24,7 +30,7 @@ const styles = stylex.create({
 		blockSize: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-		inlineSize: '240px',
+		inlineSize: appSidebar.width,
 	},
 	brandRow: {
 		alignItems: 'center',

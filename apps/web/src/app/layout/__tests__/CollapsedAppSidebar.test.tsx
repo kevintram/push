@@ -17,6 +17,7 @@ import { CollapsedAppSidebar } from '../CollapsedAppSidebar'
 
 vi.mock('@tanstack/react-router', async importOriginal => ({
 	...(await importOriginal<typeof import('@tanstack/react-router')>()),
+	useMatchRoute: () => () => false,
 	Link: ({
 		children,
 		to,
@@ -35,6 +36,13 @@ vi.mock('@tanstack/react-router', async importOriginal => ({
 vi.mock('~/modules/reviews/components/HideModeButton', () => ({
 	HideModeButton: () => <button aria-label='Hide mode' type='button' />,
 }))
+
+vi.mock(
+	'~/modules/library/components/library-navigation/LibraryNavigation',
+	() => ({
+		LibraryNavigation: () => <nav aria-label='Library collections' />,
+	}),
+)
 
 vi.mock('~/modules/search/components/SearchDialog', () => ({
 	SearchDialog: () => <button aria-label='Search' type='button' />,
@@ -93,8 +101,8 @@ describe('CollapsedAppSidebar', () => {
 		)
 	}
 
-	it('renders the ordered icon rail without Library', () => {
-		const { container } = renderSidebar()
+	it('renders the ordered icon rail', () => {
+		renderSidebar()
 
 		const toggle = screen.getByRole('button', { name: 'Expand sidebar' })
 		const hideMode = screen.getByRole('button', { name: 'Hide mode' })
@@ -103,6 +111,7 @@ describe('CollapsedAppSidebar', () => {
 		const newLink = screen.getByRole('link', { name: 'New' })
 		const late = screen.getByRole('link', { name: 'Late' })
 		const flagged = screen.getByRole('link', { name: 'Flagged' })
+		const library = screen.getByRole('button', { name: 'Library' })
 		const settings = screen.getByRole('link', { name: 'Settings' })
 
 		expect(toggle).toBeEnabled()
@@ -126,10 +135,29 @@ describe('CollapsedAppSidebar', () => {
 		expect(flagged).toHaveAttribute('href', '/review/flagged')
 		expect(settings).toHaveAttribute('href', '/settings')
 		expect(settings).toHaveAttribute('data-exact', 'true')
-		expect(container).not.toHaveTextContent('Library')
 		expect(
-			screen.queryByRole('navigation', { name: /library/i }),
+			flagged.compareDocumentPosition(library) &
+				Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy()
+		expect(
+			library.compareDocumentPosition(settings) &
+				Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy()
+	})
+
+	it('opens the library tree from the Library button', async () => {
+		const user = userEvent.setup()
+		renderSidebar()
+
+		expect(
+			screen.queryByRole('navigation', { name: 'Library collections' }),
 		).not.toBeInTheDocument()
+		await user.click(screen.getByRole('button', { name: 'Library' }))
+		expect(
+			await screen.findByRole('navigation', {
+				name: 'Library collections',
+			}),
+		).toBeInTheDocument()
 	})
 
 	it('uses base labels and hides dots for empty queues', () => {

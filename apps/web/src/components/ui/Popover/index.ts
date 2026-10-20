@@ -4,3 +4,8 @@ export { PopoverContent, type PopoverContentProps } from './PopoverContent'
 
 export const Popover = PopoverPrimitive.Root
 export const PopoverTrigger = PopoverPrimitive.Trigger
+export {
+	PopoverHoldContext,
+	useHoldablePopover,
+	useHoldPopoverOpen,
+} from './PopoverHold'

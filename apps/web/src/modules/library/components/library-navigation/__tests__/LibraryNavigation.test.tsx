@@ -28,6 +28,7 @@ vi.mock('@dnd-kit/react', () => ({
 		mocks.onDragEnd = onDragEnd
 		return children
 	},
+	DragOverlay: () => null,
 }))
 
 vi.mock('@tanstack/react-query', () => ({
