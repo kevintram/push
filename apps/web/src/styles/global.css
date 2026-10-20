@@ -49,22 +49,11 @@
 
 	/*
 	 * The desktop app scrolls inside its panels. Clip the viewport so it can't
-	 * rubber-band, and stop panels from chaining scroll into their ancestors.
-	 * Unlike root overscroll-behavior: none, this keeps each panel's own bounce
-	 * in Chrome. Touch devices keep pull-to-refresh.
-	 *
-	 * Textareas are left out. A textarea is always a scroll container, even
-	 * when `field-sizing: content` means it never overflows, and Chrome applies
-	 * `contain` anyway. Wheeling over one would then scroll nothing instead of
-	 * the panel it sits in.
+	 * rubber-band. Touch devices keep pull-to-refresh.
 	 */
 	@media (pointer: fine) {
 		html {
 			overflow-y: clip;
-		}
-
-		*:not(textarea) {
-			overscroll-behavior-y: contain;
 		}
 	}
 
