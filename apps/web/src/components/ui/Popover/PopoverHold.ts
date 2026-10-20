@@ -29,8 +29,8 @@ export function useHoldPopoverOpen(active: boolean) {
  * deferred close then happens on the first pointer move outside `popupRef`.
  *
  * Base UI only keeps a hover popover open for popups nested in its own
- * floating tree. Context menus start their own tree and dialogs aren't in
- * one, so both would close it without this.
+ * floating tree. Context menus start their own tree, and dialogs and dnd-kit
+ * drags aren't in one, so all three would close it without this.
  */
 export function useHoldablePopover() {
 	const [open, setOpen] = useState(false)

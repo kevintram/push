@@ -1,5 +1,8 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { DragDropProvider } from '@dnd-kit/react'
+import { use, useRef } from 'react'
+
+import { PopoverHoldContext } from '~/components/ui'
 
 import { useUpdateCollection } from '../../api/collectionQueries'
 import { LibraryNavigationContent } from './LibraryNavigationContent'
@@ -19,10 +22,20 @@ export function LibraryNavigation() {
 		revealSelection,
 	} = useCollectionTree()
 	const updateCollection = useUpdateCollection()
+	// Dragging reads as leaving an enclosing hover popover, so the drag holds
+	// it open. Held on drag start rather than in an effect, before the next
+	// pointer move can close it.
+	const holdPopoverOpen = use(PopoverHoldContext)
+	const releasePopover = useRef<(() => void) | undefined>(undefined)
 
 	return (
 		<DragDropProvider
+			onDragStart={() => {
+				releasePopover.current = holdPopoverOpen?.()
+			}}
 			onDragEnd={event => {
+				releasePopover.current?.()
+				releasePopover.current = undefined
 				if (event.canceled) return
 
 				const { source, target } = event.operation

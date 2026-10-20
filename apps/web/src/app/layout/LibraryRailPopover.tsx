@@ -31,8 +31,8 @@ const styles = stylex.create({
 export function LibraryRailPopover() {
 	const matchRoute = useMatchRoute()
 	const isActive = Boolean(matchRoute({ to: '/library', fuzzy: true }))
-	// The tree's menus and dialogs portal outside the popup, so using them
-	// reads as leaving or pressing outside it. They hold it open instead.
+	// The tree's menus, dialogs, and drags read as leaving or pressing
+	// outside the popup, so they hold it open instead.
 	const { open, onOpenChange, popupRef, hold } = useHoldablePopover()
 
 	return (
