@@ -13,10 +13,7 @@ import { LibraryNavigation } from '~/modules/library/components/library-navigati
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { appSidebar, spacing } from '~/styles/tokens.stylex'
 
-import {
-	hideModeSidebarStyles,
-	hideModeSidebarTheme,
-} from './hideModeSidebarTheme'
+import { hideModeSidebarTheme } from './hideModeSidebarTheme'
 
 const styles = stylex.create({
 	// Runs from the trigger to the bottom of the viewport.
@@ -35,7 +32,6 @@ const styles = stylex.create({
  */
 export function LibraryRailPopover() {
 	const { hideMode } = useHideMode()
-	const isHideMode = hideMode === 'on'
 	// The tree's menus, dialogs, and drags read as leaving or pressing
 	// outside the popup, so they hold it open instead.
 	const { open, onOpenChange, popupRef, hold } = useHoldablePopover()
@@ -56,14 +52,10 @@ export function LibraryRailPopover() {
 				collisionAvoidance={{ align: 'none' }}
 				ref={popupRef}
 				side='right'
-				// The popup portals out of the themed sidebar, so it takes the
-				// hide-mode palette and fill itself.
-				theme={isHideMode ? hideModeSidebarTheme : undefined}
-				xstyle={[
-					styles.content,
-					isHideMode && hideModeSidebarStyles.surface,
-					isHideMode && hideModeSidebarStyles.popup,
-				]}
+				// Portals out of the themed sidebar, so it applies the theme
+				// itself.
+				theme={hideMode === 'on' ? hideModeSidebarTheme : undefined}
+				xstyle={styles.content}
 			>
 				<PopoverHoldContext value={hold}>
 					<LibraryNavigation />

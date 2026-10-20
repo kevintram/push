@@ -6,16 +6,14 @@ import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 
 import { collectionQueries } from '~/modules/library/api/collectionQueries'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
+import { slate } from '~/styles/colors/primitives.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { breakpoints, layout, radii } from '~/styles/tokens.stylex'
 import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import { CollapsedAppSidebar } from './CollapsedAppSidebar'
 import { ExpandedAppSidebar } from './ExpandedAppSidebar'
-import {
-	hideModeSidebarStyles,
-	hideModeSidebarTheme,
-} from './hideModeSidebarTheme'
+import { hideModeSidebarTheme } from './hideModeSidebarTheme'
 import { SIDEBAR_HOTKEY } from './sidebarHotkey'
 
 const SIDEBAR_STORAGE_KEY = 'appSidebarExpanded'
@@ -30,6 +28,13 @@ const styles = stylex.create({
 		height: '100svh',
 
 		backgroundColor: semanticColors.surfaceSunken,
+	},
+	// Matches surfaceRaised in hideModeSidebarTheme.
+	hideModeShell: {
+		backgroundColor: {
+			default: slate.s700,
+			'@media (prefers-color-scheme: dark)': slate.s900,
+		},
 	},
 	sidebar: {
 		color: semanticColors.textPrimary,
@@ -122,10 +127,7 @@ export function AppShell({ children }: AppShellProps) {
 	return (
 		<div
 			data-hide-mode={isHideMode ? 'on' : 'off'}
-			{...stylex.props(
-				styles.shell,
-				isHideMode && hideModeSidebarStyles.surface,
-			)}
+			{...stylex.props(styles.shell, isHideMode && styles.hideModeShell)}
 		>
 			<nav
 				id={SIDEBAR_ID}
