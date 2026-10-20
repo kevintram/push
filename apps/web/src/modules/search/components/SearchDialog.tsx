@@ -303,11 +303,17 @@ export function SearchDialog({ tooltipSide = 'bottom' }: SearchDialogProps) {
 				</div>
 
 				{/*
-				An expanded group scrolls and fades its own list. Drop the fade
-				here rather than trust it to idle: Chrome keeps the last scroll
-				position's fade after the content stops overflowing.
+				Chrome keeps the old scroll position's fade when content
+				shrinks to fit while scrolled. A new `key` makes React replace
+				this element instead of reusing it, discarding its scroll
+				position, focus and animations.
+
+				An expanded group scrolls and fades its own list, so drop the
+				fade here instead of remounting, which would drop focus from
+				the expand button.
 				*/}
 				<div
+					key={query}
 					{...stylex.props(
 						styles.results,
 						!expandedGroup && scrollFade.y,
