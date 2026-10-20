@@ -10,6 +10,9 @@ export interface PopoverContentProps extends Omit<
 > {
 	align?: React.ComponentProps<typeof Popover.Positioner>['align']
 	alignOffset?: React.ComponentProps<typeof Popover.Positioner>['alignOffset']
+	collisionAvoidance?: React.ComponentProps<
+		typeof Popover.Positioner
+	>['collisionAvoidance']
 	side?: React.ComponentProps<typeof Popover.Positioner>['side']
 	sideOffset?: React.ComponentProps<typeof Popover.Positioner>['sideOffset']
 	xstyle?: stylex.StyleXStyles
@@ -49,6 +52,7 @@ const styles = stylex.create({
 export function PopoverContent({
 	align = 'center',
 	alignOffset,
+	collisionAvoidance,
 	side = 'bottom',
 	sideOffset = 4,
 	xstyle,
@@ -59,6 +63,7 @@ export function PopoverContent({
 			<Popover.Positioner
 				align={align}
 				alignOffset={alignOffset}
+				collisionAvoidance={collisionAvoidance}
 				side={side}
 				sideOffset={sideOffset}
 				{...stylex.props(styles.positioner)}
