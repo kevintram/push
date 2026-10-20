@@ -23,6 +23,7 @@ type DroppableInput = {
 }
 
 const dnd = vi.hoisted(() => ({
+	draggableElements: new Map<string, HTMLElement>(),
 	draggableInputs: [] as Array<DraggableInput>,
 	draggingIds: new Set<string>(),
 	droppableInputs: [] as Array<DroppableInput>,
@@ -33,7 +34,9 @@ vi.mock('@dnd-kit/react', () => ({
 	useDraggable: (input: DraggableInput) => {
 		dnd.draggableInputs.push(input)
 		return {
-			ref: vi.fn(),
+			ref: (element: HTMLElement | null) => {
+				if (element) dnd.draggableElements.set(input.id, element)
+			},
 			handleRef: vi.fn(),
 			isDragging: dnd.draggingIds.has(input.id),
 		}
@@ -136,6 +139,7 @@ function disabledByCollection() {
 
 describe('CollectionLink drag and drop', () => {
 	beforeEach(() => {
+		dnd.draggableElements.clear()
 		dnd.draggableInputs.length = 0
 		dnd.droppableInputs.length = 0
 		dnd.draggingIds.clear()
@@ -157,6 +161,20 @@ describe('CollectionLink drag and drop', () => {
 			'parent',
 			'child',
 		])
+	})
+
+	it('drags only the collection row, not its subtree', () => {
+		render(
+			<TestLibraryCollectionItem
+				{...collection('parent', [collection('child')])}
+			/>,
+		)
+
+		const parentElement = dnd.draggableElements.get('parent')
+		expect(parentElement).toHaveAttribute('data-slot', 'tree-item-content')
+		expect(parentElement).not.toContainElement(
+			dnd.draggableElements.get('child') ?? null,
+		)
 	})
 
 	it('disables the dragged collection and all descendant drop targets', () => {

@@ -41,8 +41,9 @@ const collectionPointerSensor = PointerSensor.configure({
 })
 
 const styles = stylex.create({
+	// Dims the row and its subtree, since the whole branch moves with it.
 	containerDragging: {
-		backgroundColor: semanticColors.surfaceSecondary,
+		opacity: 0.5,
 	},
 	containerIsDropTarget: {
 		backgroundColor: semanticColors.surfaceTransparentHover,
@@ -92,6 +93,7 @@ export function LibraryCollectionItem({
 	} = useDraggable({
 		id: `${_id}`,
 		sensors: [collectionPointerSensor],
+		data: { title: collectionTitle },
 	})
 	// Disable this subtree's drop targets when dragging
 	// (otherwise we could drop subtree root onto descendant)
@@ -102,17 +104,19 @@ export function LibraryCollectionItem({
 		disabled: isDropDisabled,
 	})
 
-	// Combined ref for both `draggableElementRef` and `draggableHandleRef`.
+	// The row is the drag element, drag handle, and drop target.
 	//
-	// Need both because dnd-kit won't allow drag on interactive element unless
-	// it uses handleRef and you just need draggableElementRef mark what you're
-	// actually dragging.
-	const combinedDraggableRef = useCallback(
+	// The drag overlay takes the drag element's size, so using the row rather
+	// than the whole item keeps it to one row instead of the open subtree.
+	// The row is also the handle because dnd-kit only starts drags from the
+	// label link when it sits inside a handle.
+	const rowRef = useCallback(
 		(element: HTMLElement | null) => {
 			draggableElementRef(element)
 			draggableHandleRef(element)
+			droppableElementRef(element)
 		},
-		[draggableElementRef, draggableHandleRef],
+		[draggableElementRef, draggableHandleRef, droppableElementRef],
 	)
 
 	const isActive = Boolean(
@@ -167,7 +171,6 @@ export function LibraryCollectionItem({
 
 	return (
 		<TreeItem
-			ref={combinedDraggableRef}
 			collapsible={hasChildren}
 			open={openCollectionIds.has(_id)}
 			onOpenChange={open => onCollectionOpenChange(_id, open)}
@@ -177,7 +180,7 @@ export function LibraryCollectionItem({
 				isDropTarget && styles.containerIsDropTarget,
 			]}
 		>
-			<TreeItemContent ref={droppableElementRef}>
+			<TreeItemContent ref={rowRef}>
 				<TreeItemCollapsibleTrigger
 					aria-label={`Toggle ${collectionTitle}`}
 				/>

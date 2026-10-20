@@ -5,6 +5,7 @@ import { use, useRef } from 'react'
 import { PopoverHoldContext } from '~/components/ui'
 
 import { useUpdateCollection } from '../../api/collectionQueries'
+import { LibraryCollectionDragOverlay } from './LibraryCollectionDragOverlay'
 import { LibraryNavigationContent } from './LibraryNavigationContent'
 import { useCollectionTree } from './useCollectionTree'
 
@@ -69,6 +70,7 @@ export function LibraryNavigation() {
 				hiddenSelection={hiddenSelection}
 				onRevealSelection={revealSelection}
 			/>
+			<LibraryCollectionDragOverlay />
 		</DragDropProvider>
 	)
 }
