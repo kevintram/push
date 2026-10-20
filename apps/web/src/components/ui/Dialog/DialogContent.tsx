@@ -37,7 +37,7 @@ const styles = stylex.create({
 		inlineSize: '100%',
 		maxInlineSize: '32rem',
 
-		borderColor: semanticColors.borderPrimary,
+		borderColor: semanticColors.borderSubtle,
 		borderRadius: radii.xl,
 		borderStyle: 'solid',
 		borderWidth: '1px',
