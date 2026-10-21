@@ -30,13 +30,15 @@ const styles = stylex.create({
 export function LibraryRailPopover() {
 	// The tree's menus, dialogs, and drags read as leaving or pressing
 	// outside the popup, so they hold it open instead.
-	const { open, onOpenChange, popupRef, hold } = useHoldablePopover()
+	const { open, onOpenChange, popupRef, triggerRef, hold } =
+		useHoldablePopover()
 
 	return (
 		<Popover open={open} onOpenChange={onOpenChange}>
 			<PopoverTrigger
 				delay={0}
 				openOnHover
+				ref={triggerRef}
 				render={
 					<SidebarItem aria-label='Library' icon={Library} iconOnly />
 				}

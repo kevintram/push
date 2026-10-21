@@ -26,7 +26,9 @@ export function useHoldPopoverOpen(active: boolean) {
  * Open state for a hover popover whose content can hold it open through
  * `PopoverHoldContext`. A close requested while held waits for the last
  * release. Base UI stops tracking hover once a close is refused, so the
- * deferred close then happens on the first pointer move outside `popupRef`.
+ * deferred close then happens on the first pointer move outside both
+ * `popupRef` and `triggerRef`. Closing over the trigger would leave it shut,
+ * since Base UI only opens on the trigger's `mouseenter`.
  *
  * Base UI only keeps a hover popover open for popups nested in its own
  * floating tree. Context menus start their own tree, and dialogs and dnd-kit
@@ -35,6 +37,7 @@ export function useHoldPopoverOpen(active: boolean) {
 export function useHoldablePopover() {
 	const [open, setOpen] = useState(false)
 	const popupRef = useRef<HTMLDivElement>(null)
+	const triggerRef = useRef<HTMLButtonElement>(null)
 	const holdCount = useRef(0)
 	const isCloseDeferred = useRef(false)
 	const stopWatchingPointer = useRef<(() => void) | undefined>(undefined)
@@ -56,16 +59,26 @@ export function useHoldablePopover() {
 			setTimeout(() => {
 				if (holdCount.current > 0 || !isCloseDeferred.current) return
 				isCloseDeferred.current = false
-				const closeOutsidePopup = (event: PointerEvent) => {
-					const rect = popupRef.current?.getBoundingClientRect()
-					if (rect && isPointInRect(event, rect)) return
+				const closeOutsidePopupAndTrigger = (event: PointerEvent) => {
+					const isOverPopupOrTrigger = [popupRef, triggerRef].some(
+						({ current }) =>
+							current &&
+							isPointInRect(
+								event,
+								current.getBoundingClientRect(),
+							),
+					)
+					if (isOverPopupOrTrigger) return
 					changeOpen(false)
 				}
-				document.addEventListener('pointermove', closeOutsidePopup)
+				document.addEventListener(
+					'pointermove',
+					closeOutsidePopupAndTrigger,
+				)
 				stopWatchingPointer.current = () =>
 					document.removeEventListener(
 						'pointermove',
-						closeOutsidePopup,
+						closeOutsidePopupAndTrigger,
 					)
 			})
 		}
@@ -82,7 +95,7 @@ export function useHoldablePopover() {
 		[changeOpen],
 	)
 
-	return { open, onOpenChange, popupRef, hold }
+	return { open, onOpenChange, popupRef, triggerRef, hold }
 }
 
 function isPointInRect(

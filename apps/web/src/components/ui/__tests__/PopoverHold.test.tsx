@@ -8,13 +8,17 @@ describe('useHoldablePopover', () => {
 		vi.useRealTimers()
 	})
 
-	// Opens a popover whose popup spans (0, 0) to (100, 100).
+	// Opens a popover whose popup spans (0, 0) to (100, 100), beside a
+	// trigger spanning (-50, 0) to (-10, 40).
 	function renderOpenPopover() {
 		vi.useFakeTimers()
 		const popup = document.createElement('div')
 		popup.getBoundingClientRect = () => new DOMRect(0, 0, 100, 100)
+		const trigger = document.createElement('button')
+		trigger.getBoundingClientRect = () => new DOMRect(-50, 0, 40, 40)
 		const { result } = renderHook(() => useHoldablePopover())
 		result.current.popupRef.current = popup
+		result.current.triggerRef.current = trigger
 		act(() => result.current.onOpenChange(true))
 		return result
 	}
@@ -57,6 +61,18 @@ describe('useHoldablePopover', () => {
 		movePointer(50, 50)
 		expect(result.current.open).toBe(true)
 		movePointer(200, 200)
+		expect(result.current.open).toBe(false)
+	})
+
+	it('defers the close while the pointer is over the trigger', () => {
+		const result = renderOpenPopover()
+		const releaseHold = result.current.hold()
+		act(() => result.current.onOpenChange(false))
+		release(releaseHold)
+
+		movePointer(-30, 20)
+		expect(result.current.open).toBe(true)
+		movePointer(-30, 200)
 		expect(result.current.open).toBe(false)
 	})
 
