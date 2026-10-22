@@ -50,7 +50,7 @@ const styles = stylex.create({
 		gap: spacing.sm,
 		alignItems: 'center',
 		display: 'flex',
-		fontSize: fontSizes.xl,
+		fontSize: fontSizes['2xl'],
 		fontWeight: fontWeights.semibold,
 		minInlineSize: 0,
 	},
