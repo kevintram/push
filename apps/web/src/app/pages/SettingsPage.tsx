@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { fontWeights, layout, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
 
 import { AccountSettingsSection } from './AccountSettingsSection'
 
@@ -32,7 +32,7 @@ const styles = stylex.create({
 	title: {
 		margin: 0,
 
-		fontSize: '2rem',
+		fontSize: fontSizes['3xl'],
 		fontWeight: fontWeights.bold,
 		letterSpacing: '-0.04em',
 		lineHeight: 1.1,
