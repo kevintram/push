@@ -42,8 +42,9 @@ type SubcollectionsPanelProps = {
 export function SubcollectionsPanel({
 	collectionId,
 }: SubcollectionsPanelProps) {
-	// The full collection list is already loaded and subscribed by the library
-	// route, so filtering it here costs nothing beyond the parent's own render.
+	// The full collection list is already loaded by the collection route and
+	// subscribed by the app shell, so filtering it here costs nothing beyond the
+	// parent's own render.
 	const { data: collections } = useSuspenseQuery(collectionQueries.list())
 	const subcollections = useMemo(
 		() =>
