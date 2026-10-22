@@ -35,7 +35,48 @@ function collection(id: string, title = id): Collection {
 	}
 }
 
+// Reads the trail as labels, with `/` for separators and `…` for the overflow
+// menu, so separator placement is asserted alongside the items.
+function trail() {
+	const list = screen
+		.getByRole('navigation', { name: 'Collection path' })
+		.querySelector('[data-slot="breadcrumb-list"]')!
+	return Array.from(list.children, item =>
+		item.getAttribute('data-slot') === 'breadcrumb-separator'
+			? '/'
+			: item.textContent || '…',
+	)
+}
+
 describe('CollectionPathBreadcrumbs', () => {
+	it.each([
+		{ name: 'no collections', titles: [], expected: ['Current'] },
+		{
+			name: 'one collection',
+			titles: ['one'],
+			expected: ['one', '/', 'Current'],
+		},
+		{
+			name: 'the full trail at the boundary',
+			titles: ['one', 'two', 'three'],
+			expected: ['one', '/', 'two', '/', 'three', '/', 'Current'],
+		},
+		{
+			name: 'a collapsed trail',
+			titles: ['one', 'two', 'three', 'four'],
+			expected: ['…', '/', 'four', '/', 'Current'],
+		},
+	])('places separators between items for $name', ({ titles, expected }) => {
+		render(
+			<CollectionPathBreadcrumbs
+				collections={titles.map(title => collection(title))}
+				currentLabel='Current'
+			/>,
+		)
+
+		expect(trail()).toEqual(expected)
+	})
+
 	it('renders the complete trail at the four-item boundary', () => {
 		render(
 			<CollectionPathBreadcrumbs

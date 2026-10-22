@@ -46,7 +46,7 @@ function collectionDetail(collections: Array<Collection>): CollectionDetail {
 }
 
 function renderBreadcrumbs(
-	collection: CollectionDetail,
+	collection: CollectionDetail | undefined,
 	onOpenChange = vi.fn(),
 ) {
 	return render(
@@ -60,7 +60,57 @@ function renderBreadcrumbs(
 	)
 }
 
+// Reads the trail as labels, with `/` for separators and `…` for the overflow
+// menu, so separator placement is asserted alongside the items.
+function trail() {
+	const list = screen
+		.getByRole('navigation', { name: 'Review location' })
+		.querySelector('[data-slot="breadcrumb-list"]')!
+	return Array.from(list.children, item =>
+		item.getAttribute('data-slot') === 'breadcrumb-separator'
+			? '/'
+			: item.textContent || '…',
+	)
+}
+
 describe('ReviewDialogBreadcrumbs', () => {
+	it.each([
+		{
+			name: 'no collection',
+			ids: undefined,
+			expected: ['Card', '/', 'Reviews'],
+		},
+		{
+			name: 'one collection',
+			ids: ['collection'],
+			expected: ['collection', '/', 'Card', '/', 'Reviews'],
+		},
+		{
+			name: 'the full trail at the boundary',
+			ids: ['ancestor', 'collection'],
+			expected: [
+				'ancestor',
+				'/',
+				'collection',
+				'/',
+				'Card',
+				'/',
+				'Reviews',
+			],
+		},
+		{
+			name: 'a collapsed trail',
+			ids: ['root', 'ancestor', 'collection'],
+			expected: ['…', '/', 'Card', '/', 'Reviews'],
+		},
+	])('places separators between items for $name', ({ ids, expected }) => {
+		renderBreadcrumbs(
+			ids && collectionDetail(ids.map(id => collection(id))),
+		)
+
+		expect(trail()).toEqual(expected)
+	})
+
 	it('keeps one collection visible when the complete trail fits', () => {
 		const breadcrumb = renderBreadcrumbs(
 			collectionDetail([collection('collection')]),
