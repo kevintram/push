@@ -11,6 +11,7 @@ import {
 } from '~/components/ui'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {
+	buttonSizes,
 	fontSizes,
 	fontWeights,
 	iconSizes,
@@ -39,6 +40,7 @@ export const REVIEW_QUEUE_SIDEBAR_ID = 'review-queue-sidebar'
 const styles = stylex.create({
 	header: {
 		gap: spacing.sm,
+		paddingInline: spacing.md,
 		alignItems: 'center',
 		display: 'flex',
 		flexShrink: 0,
@@ -68,6 +70,9 @@ const styles = stylex.create({
 		alignItems: 'center',
 		display: 'flex',
 		flexShrink: 0,
+		// Pulls the ghost buttons into the padding by their own inset so their
+		// glyphs, not their hidden hover areas, sit on the content edge.
+		marginInlineEnd: `calc((${buttonSizes.medium} - ${iconSizes.sm}) / -2)`,
 	},
 })
 
