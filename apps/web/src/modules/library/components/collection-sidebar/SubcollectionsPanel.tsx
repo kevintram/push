@@ -62,7 +62,7 @@ export function SubcollectionsPanel({
 			{
 				onSuccess: newCollectionId =>
 					void navigate({
-						to: '/library/$collectionId',
+						to: '/collection/$collectionId',
 						params: { collectionId: newCollectionId },
 					}),
 			},

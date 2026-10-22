@@ -26,14 +26,14 @@ describe('searchResults', () => {
 
 		expect(buildCollectionResults([collection])).toMatchObject([
 			{
-				pathText: 'Library / Science / Biology',
+				pathText: 'Science / Biology',
 				secondaryText: 'Foundations',
 				title: 'Biology',
 			},
 		])
 		expect(buildCardResults([card], 'mitosis')).toMatchObject([
 			{
-				pathText: 'Library / Science / Biology / What is mitosis?',
+				pathText: 'Science / Biology / What is mitosis?',
 				secondaryText: 'Cell division',
 				title: 'What is mitosis?',
 			},
@@ -54,7 +54,7 @@ describe('searchResults', () => {
 		])
 	})
 
-	it('renders Library / title for a root collection and Library / Root / Card for a root-collection card', () => {
+	it('renders the title for a root collection and Root / Card for a root-collection card', () => {
 		const rootCollection: CollectionSearchResult = {
 			_id: collectionId,
 			description: '',
@@ -70,10 +70,10 @@ describe('searchResults', () => {
 		}
 
 		expect(buildCollectionResults([rootCollection])).toMatchObject([
-			{ pathText: 'Library / Root' },
+			{ pathText: 'Root' },
 		])
 		expect(buildCardResults([rootCard], '')).toMatchObject([
-			{ pathText: 'Library / Root / Card' },
+			{ pathText: 'Root / Card' },
 		])
 	})
 
@@ -87,7 +87,7 @@ describe('searchResults', () => {
 		}
 
 		expect(buildCardResults([card], '')).toMatchObject([
-			{ pathText: 'Library / Untitled / Biology / Card' },
+			{ pathText: 'Untitled / Biology / Card' },
 		])
 	})
 })

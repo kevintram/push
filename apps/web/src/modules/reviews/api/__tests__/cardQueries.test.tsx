@@ -54,7 +54,7 @@ describe('useDeleteCard', () => {
 
 		await waitFor(() => {
 			expect(navigate).toHaveBeenCalledWith({
-				to: '/library/$collectionId',
+				to: '/collection/$collectionId',
 				params: { collectionId },
 			})
 		})

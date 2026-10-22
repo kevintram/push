@@ -55,18 +55,18 @@ export function useDeleteCollection() {
 			// if deleted collection is currently open
 			if (
 				matchRoute({
-					to: '/library/$collectionId',
+					to: '/collection/$collectionId',
 					params: { collectionId: _id },
 				})
 			) {
-				// navigate to parent if has one, library otherwise
+				// navigate to parent if has one, review otherwise
 				void navigate(
 					parentId !== undefined
 						? {
-								to: '/library/$collectionId',
+								to: '/collection/$collectionId',
 								params: { collectionId: parentId },
 							}
-						: { to: '/library' },
+						: { to: '/review' },
 				)
 			}
 		},

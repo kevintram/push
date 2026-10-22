@@ -69,7 +69,7 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 			{
 				onSuccess: collectionId =>
 					void navigate({
-						to: '/library/$collectionId',
+						to: '/collection/$collectionId',
 						params: { collectionId },
 					}),
 			},
@@ -89,7 +89,7 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 				<ContextMenuTrigger
 					render={
 						<Link
-							to='/library/$collectionId'
+							to='/collection/$collectionId'
 							params={{ collectionId: _id }}
 							aria-label={collectionTitle}
 							{...stylex.props(styles.item)}

@@ -762,11 +762,15 @@ describe('v2 app setup', () => {
 			name: 'New review workspace',
 		})
 		await user.click(
-			within(workspace).getByRole('link', { name: 'Library' }),
+			within(workspace).getByRole('link', {
+				name: 'Learning TypeScript',
+			}),
 		)
 
 		await waitFor(() =>
-			expect(router.state.location.pathname).toBe('/library'),
+			expect(router.state.location.pathname).toBe(
+				`/collection/${collectionId}`,
+			),
 		)
 	})
 
@@ -996,16 +1000,18 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
-	it('renders the blank library index route', async () => {
-		renderRoute('/library')
+	it.each(['/library', '/collection'])(
+		'renders the not found route at %s',
+		async path => {
+			renderRoute(path)
 
-		await screen.findByRole('navigation', { name: 'primary' })
-		expect(
-			screen.queryByRole('navigation', { name: 'Library collections' }),
-		).not.toBeInTheDocument()
-	})
+			expect(
+				await screen.findByRole('heading', { name: 'Page not found' }),
+			).toBeInTheDocument()
+		},
+	)
 
-	it('renders a collection breadcrumb from the library through its ancestors', async () => {
+	it('renders a collection breadcrumb through its ancestors', async () => {
 		const root: Doc<'collections'> = {
 			...collection,
 			_id: 'collection-root' as Id<'collections'>,
@@ -1018,27 +1024,27 @@ describe('v2 app setup', () => {
 			title: 'Languages',
 		}
 
-		renderRoute(`/library/${collectionId}`, { ancestors: [root, parent] })
+		renderRoute(`/collection/${collectionId}`, {
+			ancestors: [root, parent],
+		})
 
 		const breadcrumb = await screen.findByRole('navigation', {
 			name: 'Collection path',
 		})
 		const links = within(breadcrumb).getAllByRole('link')
 		expect(links.map(link => link.textContent)).toEqual([
-			'Library',
 			'Programming',
 			'Languages',
 		])
-		expect(links[0]).toHaveAttribute('href', '/library')
-		expect(links[1]).toHaveAttribute('href', `/library/${root._id}`)
-		expect(links[2]).toHaveAttribute('href', `/library/${parent._id}`)
+		expect(links[0]).toHaveAttribute('href', `/collection/${root._id}`)
+		expect(links[1]).toHaveAttribute('href', `/collection/${parent._id}`)
 		expect(
 			within(breadcrumb).getByText('Learning TypeScript'),
 		).toHaveAttribute('aria-current', 'page')
 	})
 
 	it('renders the shared error page when a collection does not exist', async () => {
-		renderRoute(`/library/${collectionId}`, {
+		renderRoute(`/collection/${collectionId}`, {
 			missingCollection: true,
 		})
 
@@ -1071,13 +1077,11 @@ describe('v2 app setup', () => {
 		})
 		const links = within(breadcrumb).getAllByRole('link')
 		expect(links.map(link => link.textContent)).toEqual([
-			'Library',
 			'Programming',
 			'Learning TypeScript',
 		])
-		expect(links[0]).toHaveAttribute('href', '/library')
-		expect(links[1]).toHaveAttribute('href', `/library/${root._id}`)
-		expect(links[2]).toHaveAttribute('href', `/library/${collectionId}`)
+		expect(links[0]).toHaveAttribute('href', `/collection/${root._id}`)
+		expect(links[1]).toHaveAttribute('href', `/collection/${collectionId}`)
 		expect(
 			within(breadcrumb).getByText('What problem do generics solve?'),
 		).toHaveAttribute('aria-current', 'page')

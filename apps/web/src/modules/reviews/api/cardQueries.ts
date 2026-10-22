@@ -40,7 +40,7 @@ export function useDeleteCard() {
 				})
 			) {
 				void navigate({
-					to: '/library/$collectionId',
+					to: '/collection/$collectionId',
 					params: { collectionId },
 				})
 			}

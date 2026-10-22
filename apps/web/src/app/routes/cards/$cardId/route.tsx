@@ -33,7 +33,7 @@ export const Route = createFileRoute('/cards/$cardId')({
 			// The breadcrumb trail is keyed by the card's collection id, so it can
 			// only be fired once the card lands. That second hop buys not
 			// shipping the user's whole collection list to a route outside
-			// `/library`, which has no other use for it.
+			// `/collection`, which has no other use for it.
 			card.then(({ collectionId }) =>
 				queryClient.ensureQueryData(
 					collectionQueries.detail(collectionId, {

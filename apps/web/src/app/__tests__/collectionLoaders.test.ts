@@ -1,8 +1,7 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { describe, expect, it, vi } from 'vitest'
 
-import { Route as CollectionRoute } from '~/app/routes/library/$collectionId'
-import { Route as LibraryRoute } from '~/app/routes/library/route'
+import { Route as CollectionRoute } from '~/app/routes/collection/$collectionId'
 import { collectionQueries } from '~/modules/library/api/collectionQueries'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 
@@ -28,18 +27,7 @@ function createLoaderContext(isAuthenticated: boolean): LoaderContext {
 	}
 }
 
-describe('authenticated library loaders', () => {
-	it('does not load the collection list before Convex authenticates', async () => {
-		const context = createLoaderContext(false)
-		const loader = LibraryRoute.options.loader as unknown as (args: {
-			context: LoaderContext
-		}) => Promise<unknown> | unknown
-
-		await loader({ context })
-
-		expect(context.queryClient.ensureQueryData).not.toHaveBeenCalled()
-	})
-
+describe('authenticated collection loaders', () => {
 	it('does not load a collection before Convex authenticates', async () => {
 		const context = createLoaderContext(false)
 		const loader = CollectionRoute.options.loader as unknown as (args: {
@@ -52,19 +40,7 @@ describe('authenticated library loaders', () => {
 		expect(context.queryClient.ensureQueryData).not.toHaveBeenCalled()
 	})
 
-	it('warms the collection list after Convex authenticates', async () => {
-		const context = createLoaderContext(true)
-		context.queryClient.ensureQueryData.mockResolvedValue([])
-		const loader = LibraryRoute.options.loader as unknown as (args: {
-			context: LoaderContext
-		}) => Promise<unknown>
-
-		await loader({ context })
-
-		expect(context.queryClient.ensureQueryData).toHaveBeenCalledOnce()
-	})
-
-	it('warms collection detail and cards after Convex authenticates', async () => {
+	it('warms the collection list, detail, and cards after Convex authenticates', async () => {
 		const context = createLoaderContext(true)
 		context.queryClient.ensureQueryData.mockResolvedValue([])
 		const loader = CollectionRoute.options.loader as unknown as (args: {
@@ -75,7 +51,10 @@ describe('authenticated library loaders', () => {
 
 		await loader({ context, params: { collectionId } })
 
-		expect(context.queryClient.ensureQueryData).toHaveBeenCalledTimes(2)
+		expect(context.queryClient.ensureQueryData).toHaveBeenCalledTimes(3)
+		expect(context.queryClient.ensureQueryData).toHaveBeenCalledWith(
+			collectionQueries.list(),
+		)
 		expect(context.queryClient.ensureQueryData).toHaveBeenCalledWith(
 			collectionQueries.detail(collectionId, { expandPath: true }),
 		)

@@ -118,7 +118,7 @@ export function LibraryNavigationContent({
 			{
 				onSuccess: collectionId =>
 					navigate({
-						to: '/library/$collectionId',
+						to: '/collection/$collectionId',
 						params: { collectionId },
 					}),
 			},

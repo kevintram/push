@@ -136,14 +136,16 @@ describe('SearchDialog', () => {
 		renderDialog()
 		await search(user)
 
-		expect(screen.queryByText('Collection 3')).not.toBeInTheDocument()
+		expect(
+			screen.queryByText('Collection description 3'),
+		).not.toBeInTheDocument()
 
 		await user.click(
 			screen.getAllByRole('button', { name: 'View all' })[0]!,
 		)
 
 		expect(screen.getAllByRole('link')).toHaveLength(4)
-		expect(screen.getByText('Collection 3')).toBeInTheDocument()
+		expect(screen.getByText('Collection description 3')).toBeInTheDocument()
 		expect(
 			screen.queryByRole('heading', { name: 'Cards (4)' }),
 		).not.toBeInTheDocument()
@@ -195,10 +197,8 @@ describe('SearchDialog', () => {
 		await user.type(getSearchbox(), 'collection')
 		await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(2))
 
-		const sciencePath = screen.getByText('Library / Science / Shared title')
-		const humanitiesPath = screen.getByText(
-			'Library / Humanities / Shared title',
-		)
+		const sciencePath = screen.getByText('Science / Shared title')
+		const humanitiesPath = screen.getByText('Humanities / Shared title')
 		const scienceLink = sciencePath.closest('a')
 		const humanitiesLink = humanitiesPath.closest('a')
 
@@ -273,7 +273,7 @@ describe('SearchDialog', () => {
 
 		await user.click(screen.getByRole('button', { name: 'Search' }))
 		expect(getSearchbox()).toHaveValue('collection')
-		expect(screen.getByText('Collection 3')).toBeInTheDocument()
+		expect(screen.getByText('Collection description 3')).toBeInTheDocument()
 		expect(
 			screen.queryByRole('heading', { name: 'Cards (4)' }),
 		).not.toBeInTheDocument()

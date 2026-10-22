@@ -43,7 +43,7 @@ export function CollectionPathBreadcrumbs({
 	onNavigate,
 }: CollectionPathBreadcrumbsProps) {
 	const shouldCollapseCollections =
-		collections.length + 2 > MAX_VISIBLE_BREADCRUMB_ITEMS
+		collections.length + 1 > MAX_VISIBLE_BREADCRUMB_ITEMS
 	const visibleCollections = shouldCollapseCollections
 		? collections.slice(-1)
 		: collections
@@ -54,16 +54,8 @@ export function CollectionPathBreadcrumbs({
 	return (
 		<Breadcrumb aria-label='Collection path'>
 			<BreadcrumbList>
-				<BreadcrumbItem>
-					<BreadcrumbLink
-						render={<Link to='/library' onClick={onNavigate} />}
-					>
-						Library
-					</BreadcrumbLink>
-				</BreadcrumbItem>
 				{shouldCollapseCollections && (
 					<>
-						<BreadcrumbSeparator />
 						<BreadcrumbItem>
 							<DropdownMenu>
 								<DropdownMenuTrigger
@@ -85,7 +77,7 @@ export function CollectionPathBreadcrumbs({
 												key={collection._id}
 												render={
 													<Link
-														to='/library/$collectionId'
+														to='/collection/$collectionId'
 														params={{
 															collectionId:
 																collection._id,
@@ -108,14 +100,16 @@ export function CollectionPathBreadcrumbs({
 						</BreadcrumbItem>
 					</>
 				)}
-				{visibleCollections.map(collection => (
+				{visibleCollections.map((collection, index) => (
 					<Fragment key={collection._id}>
-						<BreadcrumbSeparator />
+						{(shouldCollapseCollections || index > 0) && (
+							<BreadcrumbSeparator />
+						)}
 						<BreadcrumbItem>
 							<BreadcrumbLink
 								render={
 									<Link
-										to='/library/$collectionId'
+										to='/collection/$collectionId'
 										params={{
 											collectionId: collection._id,
 										}}
@@ -128,7 +122,7 @@ export function CollectionPathBreadcrumbs({
 						</BreadcrumbItem>
 					</Fragment>
 				))}
-				<BreadcrumbSeparator />
+				{collections.length > 0 && <BreadcrumbSeparator />}
 				<BreadcrumbItem>
 					<BreadcrumbPage>
 						{formatBreadcrumbLabel(currentLabel)}

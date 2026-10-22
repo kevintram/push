@@ -77,9 +77,31 @@ describe('ReviewDialogBreadcrumbs', () => {
 		breadcrumb.unmount()
 	})
 
+	it('keeps two collections visible when the complete trail fits', () => {
+		renderBreadcrumbs(
+			collectionDetail([
+				collection('ancestor'),
+				collection('collection'),
+			]),
+		)
+
+		const navigation = screen.getByRole('navigation', {
+			name: 'Review location',
+		})
+		expect(
+			within(navigation).getByRole('button', { name: 'ancestor' }),
+		).toBeInTheDocument()
+		expect(
+			within(navigation).queryByRole('button', {
+				name: 'Show collection path',
+			}),
+		).not.toBeInTheDocument()
+	})
+
 	it('moves all collections into a purpose-specific overflow menu', () => {
 		renderBreadcrumbs(
 			collectionDetail([
+				collection('root'),
 				collection('ancestor'),
 				collection('collection'),
 			]),
@@ -106,6 +128,9 @@ describe('ReviewDialogBreadcrumbs', () => {
 
 		const menu = screen.getByRole('menu')
 		expect(
+			within(menu).getByRole('button', { name: 'root' }),
+		).toBeInTheDocument()
+		expect(
 			within(menu).getByRole('button', { name: 'ancestor' }),
 		).toBeInTheDocument()
 		expect(
@@ -120,16 +145,17 @@ describe('ReviewDialogBreadcrumbs', () => {
 			onOpenChange,
 		)
 
-		for (const label of ['Library', 'collection', 'Card', 'Reviews']) {
+		for (const label of ['collection', 'Card', 'Reviews']) {
 			fireEvent.click(screen.getByRole('button', { name: label }))
 		}
 
-		expect(onOpenChange.mock.calls.length).toBeGreaterThanOrEqual(4)
+		expect(onOpenChange.mock.calls.length).toBeGreaterThanOrEqual(3)
 		expect(onOpenChange).toHaveBeenLastCalledWith(false, expect.anything())
 
 		const collapsedOnOpenChange = vi.fn()
 		renderBreadcrumbs(
 			collectionDetail([
+				collection('root'),
 				collection('ancestor'),
 				collection('collection'),
 			]),
