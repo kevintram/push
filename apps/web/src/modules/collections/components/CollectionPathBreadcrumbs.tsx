@@ -17,7 +17,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '~/components/ui'
-import { type Collection } from '~/modules/library/types/collection.types'
+import { type Collection } from '~/modules/collections/types/collection.types'
 
 const MAX_VISIBLE_BREADCRUMB_ITEMS = 4
 

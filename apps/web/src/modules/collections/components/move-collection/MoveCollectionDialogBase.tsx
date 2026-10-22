@@ -11,8 +11,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '~/components/ui'
-import { collectionQueries } from '~/modules/library/api/collectionQueries'
-import { treeifyCollections } from '~/modules/library/utils/treeifyCollections'
+import { collectionQueries } from '~/modules/collections/api/collectionQueries'
+import { treeifyCollections } from '~/modules/collections/utils/treeifyCollections'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import { radii, spacing } from '~/styles/tokens.stylex'
@@ -50,17 +50,17 @@ type CommonMoveCollectionDialogBaseProps = {
 	title: string
 }
 
-// Discriminated union so callers that don't allow library-root selection
+// Discriminated union so callers that don't allow collections-root selection
 // can't receive a null destination in onMove.
 type MoveCollectionDialogBaseProps = CommonMoveCollectionDialogBaseProps &
 	(
 		| {
-				allowLibraryRoot: true
+				allowRoot: true
 				initialDestination: Id<'collections'> | null
 				onMove: (destination: Id<'collections'> | null) => void
 		  }
 		| {
-				allowLibraryRoot?: false
+				allowRoot?: false
 				initialDestination: Id<'collections'>
 				onMove: (destination: Id<'collections'>) => void
 		  }
@@ -93,7 +93,7 @@ export function MoveCollectionDialogBase(props: MoveCollectionDialogBaseProps) {
 		if (!isPending) onOpenChange(open)
 	}
 	const handleMove = () => {
-		if (props.allowLibraryRoot) {
+		if (props.allowRoot) {
 			props.onMove(selectedDestination)
 		} else if (selectedDestination !== null) {
 			props.onMove(selectedDestination)
@@ -129,9 +129,7 @@ export function MoveCollectionDialogBase(props: MoveCollectionDialogBaseProps) {
 							</p>
 						) : (
 							<MoveCollectionTree
-								allowLibraryRoot={
-									props.allowLibraryRoot ?? false
-								}
+								allowRoot={props.allowRoot ?? false}
 								excludeCollectionId={excludeCollectionId}
 								onSelect={setSelectedDestination}
 								selectedDestination={selectedDestination}

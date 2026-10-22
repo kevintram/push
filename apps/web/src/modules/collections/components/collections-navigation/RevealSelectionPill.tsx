@@ -91,7 +91,7 @@ type RevealSelectionPillProps = {
 
 /**
  * Names the selected collection while a collapsed branch hides it in the
- * library tree and reveals it when clicked. It floats over the bottom edge of
+ * collection tree and reveals it when clicked. It floats over the bottom edge of
  * its positioned container.
  */
 export function RevealSelectionPill({
@@ -101,7 +101,7 @@ export function RevealSelectionPill({
 	return (
 		<button
 			type='button'
-			aria-label={`Show ${title} in library`}
+			aria-label={`Show ${title} in collections`}
 			onClick={onClick}
 			{...stylex.props(styles.pill)}
 		>

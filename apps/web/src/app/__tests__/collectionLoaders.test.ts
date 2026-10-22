@@ -2,7 +2,7 @@ import type { Id } from '@convex/_generated/dataModel'
 import { describe, expect, it, vi } from 'vitest'
 
 import { Route as CollectionRoute } from '~/app/routes/collection/$collectionId'
-import { collectionQueries } from '~/modules/library/api/collectionQueries'
+import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 
 type LoaderContext = {

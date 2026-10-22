@@ -22,7 +22,7 @@ import {
 } from '../../api/collectionQueries'
 import { type CollectionWithChildren } from '../../types/collection.types'
 import { MoveCollectionDialog } from '../MoveCollectionDialog'
-import { LibraryCollectionContextMenu } from './LibraryCollectionContextMenu'
+import { CollectionContextMenu } from './CollectionContextMenu'
 
 const collectionPointerSensor = PointerSensor.configure({
 	// sensor configuration so links can still be clicked while we do drag and drop
@@ -50,7 +50,7 @@ const styles = stylex.create({
 	},
 })
 
-type LibraryCollectionItemProps = CollectionWithChildren & {
+type CollectionTreeItemProps = CollectionWithChildren & {
 	/** IDs of collections whose branches are currently open in the sidebar. */
 	openCollectionIds: ReadonlySet<Id<'collections'>>
 	/** Updates the controlled open state for this collection. */
@@ -67,7 +67,7 @@ export type CollectionOpenChangeHandler = (
 	open: boolean,
 ) => void
 
-export function LibraryCollectionItem({
+export function CollectionTreeItem({
 	_id,
 	title,
 	childCollections,
@@ -75,7 +75,7 @@ export function LibraryCollectionItem({
 	openCollectionIds,
 	onCollectionOpenChange,
 	dropDisabled = false,
-}: LibraryCollectionItemProps) {
+}: CollectionTreeItemProps) {
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	useHoldPopoverOpen(isMoveDialogOpen || isDeleteDialogOpen)
@@ -184,7 +184,7 @@ export function LibraryCollectionItem({
 				<TreeItemCollapsibleTrigger
 					aria-label={`Toggle ${collectionTitle}`}
 				/>
-				<LibraryCollectionContextMenu
+				<CollectionContextMenu
 					trigger={
 						<TreeItemLabel
 							render={
@@ -208,7 +208,7 @@ export function LibraryCollectionItem({
 
 			<TreeItemChildren>
 				{childCollections.map(child => (
-					<LibraryCollectionItem
+					<CollectionTreeItem
 						key={child._id}
 						{...child}
 						openCollectionIds={openCollectionIds}

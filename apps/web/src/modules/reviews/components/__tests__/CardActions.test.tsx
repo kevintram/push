@@ -5,7 +5,7 @@ import { DateTime } from 'luxon'
 import type { ComponentProps } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Collection } from '~/modules/library/types/collection.types'
+import type { Collection } from '~/modules/collections/types/collection.types'
 
 import { CardActions } from '../CardActions'
 
@@ -51,7 +51,7 @@ const collections = [
 
 const COLLECTION_LIST_KEY = ['convex', 'collections', 'list']
 
-vi.mock('~/modules/library/api/collectionQueries', () => ({
+vi.mock('~/modules/collections/api/collectionQueries', () => ({
 	collectionQueries: {
 		list: () => ({
 			queryKey: COLLECTION_LIST_KEY,

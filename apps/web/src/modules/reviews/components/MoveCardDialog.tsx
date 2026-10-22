@@ -1,7 +1,7 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { toast } from 'sonner'
 
-import { MoveCollectionDialogBase } from '~/modules/library/components/move-collection'
+import { MoveCollectionDialogBase } from '~/modules/collections/components/move-collection'
 
 import { useUpdateCard } from '../api/cardQueries'
 import type { Card } from '../types/review.types'

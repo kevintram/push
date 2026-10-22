@@ -2,7 +2,7 @@ import { act, render } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { LibraryNavigation } from '../LibraryNavigation'
+import { CollectionsNavigation } from '../CollectionsNavigation'
 
 type TestDragEndEvent = {
 	canceled: boolean
@@ -44,15 +44,15 @@ vi.mock('../../../api/collectionQueries', () => ({
 	useUpdateCollection: () => ({ mutate: mocks.updateCollection }),
 }))
 
-vi.mock('../LibraryNavigationContent', () => ({
-	LibraryNavigationContent: () => <div>Library sidebar content</div>,
+vi.mock('../CollectionsNavigationContent', () => ({
+	CollectionsNavigationContent: () => <div>Collections sidebar content</div>,
 }))
 
 function finishDrag(event: TestDragEndEvent) {
 	act(() => mocks.onDragEnd?.(event))
 }
 
-describe('LibraryNavigation drag and drop', () => {
+describe('CollectionsNavigation drag and drop', () => {
 	beforeEach(() => {
 		window.localStorage.clear()
 		mocks.onDragEnd = undefined
@@ -60,7 +60,7 @@ describe('LibraryNavigation drag and drop', () => {
 	})
 
 	it('reparents a collection when dropped onto another collection', () => {
-		render(<LibraryNavigation />)
+		render(<CollectionsNavigation />)
 
 		finishDrag({
 			canceled: false,
@@ -76,14 +76,14 @@ describe('LibraryNavigation drag and drop', () => {
 		})
 	})
 
-	it('moves a collection to the root when dropped onto the library header', () => {
-		render(<LibraryNavigation />)
+	it('moves a collection to the root when dropped onto the Collections header', () => {
+		render(<CollectionsNavigation />)
 
 		finishDrag({
 			canceled: false,
 			operation: {
 				source: { id: 'source-collection' },
-				target: { id: 'library-root' },
+				target: { id: 'collections-root' },
 			},
 		})
 
@@ -129,7 +129,7 @@ describe('LibraryNavigation drag and drop', () => {
 			},
 		},
 	])('does not update a collection when $name', ({ event }) => {
-		render(<LibraryNavigation />)
+		render(<CollectionsNavigation />)
 
 		finishDrag(event)
 

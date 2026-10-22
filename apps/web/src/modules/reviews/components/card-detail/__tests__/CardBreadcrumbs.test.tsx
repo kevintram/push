@@ -13,11 +13,11 @@ vi.mock('@tanstack/react-query', () => ({
 	useSuspenseQuery: mocks.useSuspenseQuery,
 }))
 
-vi.mock('~/modules/library/api/collectionQueries', () => ({
+vi.mock('~/modules/collections/api/collectionQueries', () => ({
 	collectionQueries: { detail: mocks.detail },
 }))
 
-vi.mock('~/modules/library/components/CollectionPathBreadcrumbs', () => ({
+vi.mock('~/modules/collections/components/CollectionPathBreadcrumbs', () => ({
 	CollectionPathBreadcrumbs: mocks.collectionPathBreadcrumbs,
 }))
 

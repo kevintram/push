@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import type { Ref } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { collectionQueries } from '~/modules/library/api/collectionQueries'
+import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { HideModeProvider } from '~/modules/reviews/hide-mode/HideModeProvider'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
@@ -42,7 +42,7 @@ vi.mock('../ExpandedAppSidebar', () => ({
 				ref={toggleRef}
 				type='button'
 			/>
-			<div>Library</div>
+			<div>Collections</div>
 		</div>
 	),
 }))
@@ -102,7 +102,7 @@ describe('AppShell', () => {
 		expect(shell).toHaveAttribute('data-hide-mode', 'off')
 	})
 
-	it('subscribes to the library list while collapsed', () => {
+	it('subscribes to the collection list while collapsed', () => {
 		const { queryClient } = renderShell()
 
 		expect(screen.getByTestId('icon-only-rail')).toBeInTheDocument()
@@ -124,7 +124,7 @@ describe('AppShell', () => {
 		expect(collapseToggle).toHaveAttribute('aria-controls', 'app-sidebar')
 		expect(window.localStorage.getItem(SIDEBAR_STORAGE_KEY)).toBe('true')
 		expect(screen.getByTestId('expanded-sidebar')).toHaveTextContent(
-			'Library',
+			'Collections',
 		)
 		expect(
 			screen.getByRole('navigation', { name: 'primary' }),

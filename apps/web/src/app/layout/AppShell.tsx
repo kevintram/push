@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 
-import { collectionQueries } from '~/modules/library/api/collectionQueries'
+import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { slate } from '~/styles/colors/primitives.stylex'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
@@ -67,8 +67,8 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
 	const { hideMode } = useHideMode()
-	// Keeps the library list subscribed while the sidebar is collapsed, so
-	// expanding it renders the tree from cache instead of an empty library.
+	// Keeps the collection list subscribed while the sidebar is collapsed, so
+	// expanding it renders the tree from cache instead of an empty collection tree.
 	// The shell never reads the data, so it opts out of re-rendering on it.
 	useQuery({ ...collectionQueries.list(), notifyOnChangeProps: [] })
 	const isHideMode = hideMode === 'on'

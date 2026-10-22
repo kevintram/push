@@ -18,7 +18,7 @@ import { REVIEW_LINKS } from '~/modules/reviews/reviewLinks'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import { layout, spacing } from '~/styles/tokens.stylex'
 
-import { LibraryRailPopover } from './LibraryRailPopover'
+import { CollectionsRailPopover } from './CollectionsRailPopover'
 import { SIDEBAR_HOTKEY } from './sidebarHotkey'
 
 const styles = stylex.create({
@@ -122,7 +122,7 @@ export function CollapsedAppSidebar({
 				})}
 			</div>
 
-			<LibraryRailPopover />
+			<CollectionsRailPopover />
 
 			<div aria-hidden='true' {...stylex.props(styles.spacer)} />
 			<Tooltip>

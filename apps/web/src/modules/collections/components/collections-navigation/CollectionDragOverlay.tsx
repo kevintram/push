@@ -6,7 +6,7 @@ import { appSidebar, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	// dnd-kit sizes the overlay to the dragged row; this fills it. The overlay
-	// element stays unstyled because it sits in the library's flex layout even
+	// element stays unstyled because it sits in the collection tree's flex layout even
 	// between drags, where padding on it would take up width.
 	row: {
 		alignItems: 'center',
@@ -36,7 +36,7 @@ const styles = stylex.create({
 })
 
 /** Renders a minimal, opaque title chip in place of the dragged collection. */
-export function LibraryCollectionDragOverlay() {
+export function CollectionDragOverlay() {
 	return (
 		<DragOverlay>
 			{source => (

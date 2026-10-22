@@ -2,7 +2,7 @@ import type { Id } from '@convex/_generated/dataModel'
 import { createFileRoute } from '@tanstack/react-router'
 
 import { CollectionPage } from '~/app/pages/CollectionPage'
-import { collectionQueries } from '~/modules/library/api/collectionQueries'
+import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 
 export const Route = createFileRoute('/collection/$collectionId')({

@@ -6,9 +6,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '~/components/ui'
 
 import type { CollectionWithChildren } from '../../../types/collection.types'
-import { LibraryNavigationContent } from '../LibraryNavigationContent'
+import { CollectionsNavigationContent } from '../CollectionsNavigationContent'
 
-const STORAGE_KEY = 'libraryNavigationOpen'
+const STORAGE_KEY = 'collectionsNavigationOpen'
 
 const mocks = vi.hoisted(() => ({
 	droppableRef: vi.fn<(element: HTMLElement | null) => void>(),
@@ -36,11 +36,11 @@ vi.mock('../../../api/collectionQueries', () => ({
 
 // Stands in for the real row, which needs the router and drag and drop. The
 // selected row's link is marked the way the router marks the active link.
-vi.mock('../LibraryCollectionItem', () => ({
-	LibraryCollectionItem: ({ _id, title }: CollectionWithChildren) => (
+vi.mock('../CollectionTreeItem', () => ({
+	CollectionTreeItem: ({ _id, title }: CollectionWithChildren) => (
 		<li>
 			<a
-				href={`/library/${_id}`}
+				href={`/collection/${_id}`}
 				aria-current={_id === 'selected-id' ? 'page' : undefined}
 			>
 				{title}
@@ -64,7 +64,7 @@ function makeCollection(id: string, title: string): CollectionWithChildren {
 
 const hiddenSelection = makeCollection('selected-id', 'Spanish verbs')
 
-describe('LibraryNavigationContent', () => {
+describe('CollectionsNavigationContent', () => {
 	beforeEach(() => {
 		window.localStorage.clear()
 		mocks.droppableRef.mockClear()
@@ -74,7 +74,7 @@ describe('LibraryNavigationContent', () => {
 
 	it('keeps the header as the root drop target', () => {
 		render(
-			<LibraryNavigationContent
+			<CollectionsNavigationContent
 				collections={[]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
@@ -83,7 +83,9 @@ describe('LibraryNavigationContent', () => {
 			/>,
 		)
 
-		expect(mocks.useDroppable).toHaveBeenCalledWith({ id: 'library-root' })
+		expect(mocks.useDroppable).toHaveBeenCalledWith({
+			id: 'collections-root',
+		})
 		const dropTarget = mocks.droppableRef.mock.calls.at(-1)?.[0]
 		expect(dropTarget).toContainElement(
 			screen.getByRole('button', { name: 'Collapse all' }),
@@ -96,7 +98,7 @@ describe('LibraryNavigationContent', () => {
 	it('collapses and expands the collection list from its section header', async () => {
 		const user = userEvent.setup()
 		render(
-			<LibraryNavigationContent
+			<CollectionsNavigationContent
 				collections={[]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
@@ -106,25 +108,27 @@ describe('LibraryNavigationContent', () => {
 		)
 
 		await user.click(
-			screen.getByRole('button', { name: 'Collapse Library' }),
+			screen.getByRole('button', { name: 'Collapse Collections' }),
 		)
 		expect(
-			screen.queryByRole('navigation', { name: 'Library collections' }),
+			screen.queryByRole('navigation', { name: 'Collection tree' }),
 		).not.toBeInTheDocument()
 		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('false')
 
-		await user.click(screen.getByRole('button', { name: 'Expand Library' }))
+		await user.click(
+			screen.getByRole('button', { name: 'Expand Collections' }),
+		)
 		expect(
-			screen.getByRole('navigation', { name: 'Library collections' }),
+			screen.getByRole('navigation', { name: 'Collection tree' }),
 		).toBeInTheDocument()
 		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('true')
 	})
 
-	it('restores the collapsed library section preference', () => {
+	it('restores the collapsed Collections section preference', () => {
 		window.localStorage.setItem(STORAGE_KEY, 'false')
 
 		render(
-			<LibraryNavigationContent
+			<CollectionsNavigationContent
 				collections={[]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
@@ -134,18 +138,18 @@ describe('LibraryNavigationContent', () => {
 		)
 
 		expect(
-			screen.getByRole('button', { name: 'Expand Library' }),
+			screen.getByRole('button', { name: 'Expand Collections' }),
 		).toHaveAttribute('aria-expanded', 'false')
 		expect(
-			screen.queryByRole('navigation', { name: 'Library collections' }),
+			screen.queryByRole('navigation', { name: 'Collection tree' }),
 		).not.toBeInTheDocument()
 	})
 
-	it('keeps collapse-all independent from the Library section', async () => {
+	it('keeps collapse-all independent from the Collections section', async () => {
 		const user = userEvent.setup()
 		const onCollapseAll = vi.fn()
 		render(
-			<LibraryNavigationContent
+			<CollectionsNavigationContent
 				collections={[]}
 				openCollectionIds={
 					new Set(['collection-id' as Id<'collections'>])
@@ -159,18 +163,18 @@ describe('LibraryNavigationContent', () => {
 		await user.click(screen.getByRole('button', { name: 'Collapse all' }))
 		expect(onCollapseAll).toHaveBeenCalledOnce()
 		expect(
-			screen.getByRole('button', { name: 'Collapse Library' }),
+			screen.getByRole('button', { name: 'Collapse Collections' }),
 		).toHaveAttribute('aria-expanded', 'true')
 		expect(
-			screen.getByRole('navigation', { name: 'Library collections' }),
+			screen.getByRole('navigation', { name: 'Collection tree' }),
 		).toBeInTheDocument()
 	})
 
-	it('shows tooltips for the library actions', async () => {
+	it('shows tooltips for the Collections actions', async () => {
 		const user = userEvent.setup()
 		render(
 			<TooltipProvider delay={0}>
-				<LibraryNavigationContent
+				<CollectionsNavigationContent
 					collections={[]}
 					openCollectionIds={
 						new Set(['collection-id' as Id<'collections'>])
@@ -201,7 +205,7 @@ describe('LibraryNavigationContent', () => {
 
 	it('highlights the whole sidebar when the header is the drop target', () => {
 		const { rerender } = render(
-			<LibraryNavigationContent
+			<CollectionsNavigationContent
 				collections={[]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
@@ -209,12 +213,12 @@ describe('LibraryNavigationContent', () => {
 				onRevealSelection={vi.fn()}
 			/>,
 		)
-		const sidebar = screen.getByRole('region', { name: 'Library' })
+		const sidebar = screen.getByRole('region', { name: 'Collections' })
 		const restingClassName = sidebar.className
 
 		mocks.isDropTarget = true
 		rerender(
-			<LibraryNavigationContent
+			<CollectionsNavigationContent
 				collections={[]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
@@ -228,7 +232,7 @@ describe('LibraryNavigationContent', () => {
 
 	it('shows no reveal pill while the selection is visible', () => {
 		render(
-			<LibraryNavigationContent
+			<CollectionsNavigationContent
 				collections={[hiddenSelection]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
@@ -238,7 +242,7 @@ describe('LibraryNavigationContent', () => {
 		)
 
 		expect(
-			screen.queryByRole('button', { name: /in library$/ }),
+			screen.queryByRole('button', { name: /in collections$/ }),
 		).not.toBeInTheDocument()
 	})
 
@@ -246,7 +250,7 @@ describe('LibraryNavigationContent', () => {
 		const user = userEvent.setup()
 		const onRevealSelection = vi.fn()
 		render(
-			<LibraryNavigationContent
+			<CollectionsNavigationContent
 				collections={[hiddenSelection]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
@@ -257,7 +261,7 @@ describe('LibraryNavigationContent', () => {
 		)
 
 		const pill = screen.getByRole('button', {
-			name: 'Show Spanish verbs in library',
+			name: 'Show Spanish verbs in collections',
 		})
 		expect(pill).toHaveTextContent('Spanish verbs')
 
@@ -271,7 +275,7 @@ describe('LibraryNavigationContent', () => {
 
 	it('labels an untitled hidden selection', () => {
 		render(
-			<LibraryNavigationContent
+			<CollectionsNavigationContent
 				collections={[]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
@@ -282,14 +286,16 @@ describe('LibraryNavigationContent', () => {
 		)
 
 		expect(
-			screen.getByRole('button', { name: 'Show Untitled in library' }),
+			screen.getByRole('button', {
+				name: 'Show Untitled in collections',
+			}),
 		).toBeInTheDocument()
 	})
 
-	it('hides the reveal pill while the Library section is collapsed', async () => {
+	it('hides the reveal pill while the Collections section is collapsed', async () => {
 		const user = userEvent.setup()
 		render(
-			<LibraryNavigationContent
+			<CollectionsNavigationContent
 				collections={[]}
 				openCollectionIds={new Set()}
 				onCollectionOpenChange={vi.fn()}
@@ -300,11 +306,11 @@ describe('LibraryNavigationContent', () => {
 		)
 
 		await user.click(
-			screen.getByRole('button', { name: 'Collapse Library' }),
+			screen.getByRole('button', { name: 'Collapse Collections' }),
 		)
 
 		expect(
-			screen.queryByRole('button', { name: /in library$/ }),
+			screen.queryByRole('button', { name: /in collections$/ }),
 		).not.toBeInTheDocument()
 	})
 })

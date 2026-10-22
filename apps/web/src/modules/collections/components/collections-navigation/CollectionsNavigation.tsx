@@ -5,15 +5,15 @@ import { use, useRef } from 'react'
 import { PopoverHoldContext } from '~/components/ui'
 
 import { useUpdateCollection } from '../../api/collectionQueries'
-import { LibraryCollectionDragOverlay } from './LibraryCollectionDragOverlay'
-import { LibraryNavigationContent } from './LibraryNavigationContent'
+import { CollectionDragOverlay } from './CollectionDragOverlay'
+import { CollectionsNavigationContent } from './CollectionsNavigationContent'
 import { useCollectionTree } from './useCollectionTree'
 
 /**
- * Owns the library tree and the drag-and-drop provider boundary. The content
+ * Owns the collection tree and the drag-and-drop provider boundary. The content
  * remains a child so its droppable hook runs beneath this provider.
  */
-export function LibraryNavigation() {
+export function CollectionsNavigation() {
 	const {
 		rootCollections,
 		openCollectionIds,
@@ -49,7 +49,7 @@ export function LibraryNavigation() {
 					return
 				}
 
-				if (target.id === 'library-root') {
+				if (target.id === 'collections-root') {
 					updateCollection.mutate({
 						collectionId: source.id as Id<'collections'>,
 						parentId: null,
@@ -62,7 +62,7 @@ export function LibraryNavigation() {
 				}
 			}}
 		>
-			<LibraryNavigationContent
+			<CollectionsNavigationContent
 				collections={rootCollections}
 				openCollectionIds={openCollectionIds}
 				onCollectionOpenChange={setCollectionOpen}
@@ -70,7 +70,7 @@ export function LibraryNavigation() {
 				hiddenSelection={hiddenSelection}
 				onRevealSelection={revealSelection}
 			/>
-			<LibraryCollectionDragOverlay />
+			<CollectionDragOverlay />
 		</DragDropProvider>
 	)
 }
