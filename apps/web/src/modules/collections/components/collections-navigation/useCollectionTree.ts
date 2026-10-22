@@ -26,7 +26,7 @@ export type CollectionTree = {
 
 // IDs never contain NUL, so it is a safe separator.
 const KEY_SEPARATOR = '\0'
-const OPEN_COLLECTIONS_STORAGE_KEY = 'openCollectionIds'
+const OPEN_COLLECTIONS_STORAGE_KEY = 'collectionsNavigationOpenIds'
 
 function readStoredOpenCollectionIds(): ReadonlySet<CollectionId> {
 	return new Set(

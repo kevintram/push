@@ -28,7 +28,7 @@ vi.mock('../../../api/collectionQueries', () => ({
 	collectionQueries: { list: () => ({}) },
 }))
 
-const STORAGE_KEY = 'openCollectionIds'
+const STORAGE_KEY = 'collectionsNavigationOpenIds'
 
 const collectionId = (id: string) => id as Id<'collections'>
 

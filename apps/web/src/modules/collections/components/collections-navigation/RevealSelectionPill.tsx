@@ -101,7 +101,7 @@ export function RevealSelectionPill({
 	return (
 		<button
 			type='button'
-			aria-label={`Show ${title} in collections`}
+			aria-label={`Show ${title} in Collections`}
 			onClick={onClick}
 			{...stylex.props(styles.pill)}
 		>

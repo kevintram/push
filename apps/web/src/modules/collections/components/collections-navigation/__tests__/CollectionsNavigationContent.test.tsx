@@ -242,7 +242,7 @@ describe('CollectionsNavigationContent', () => {
 		)
 
 		expect(
-			screen.queryByRole('button', { name: /in collections$/ }),
+			screen.queryByRole('button', { name: /in Collections$/ }),
 		).not.toBeInTheDocument()
 	})
 
@@ -261,7 +261,7 @@ describe('CollectionsNavigationContent', () => {
 		)
 
 		const pill = screen.getByRole('button', {
-			name: 'Show Spanish verbs in collections',
+			name: 'Show Spanish verbs in Collections',
 		})
 		expect(pill).toHaveTextContent('Spanish verbs')
 
@@ -287,7 +287,7 @@ describe('CollectionsNavigationContent', () => {
 
 		expect(
 			screen.getByRole('button', {
-				name: 'Show Untitled in collections',
+				name: 'Show Untitled in Collections',
 			}),
 		).toBeInTheDocument()
 	})
@@ -310,7 +310,7 @@ describe('CollectionsNavigationContent', () => {
 		)
 
 		expect(
-			screen.queryByRole('button', { name: /in collections$/ }),
+			screen.queryByRole('button', { name: /in Collections$/ }),
 		).not.toBeInTheDocument()
 	})
 })
