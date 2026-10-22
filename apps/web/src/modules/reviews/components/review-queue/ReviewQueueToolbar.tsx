@@ -17,8 +17,8 @@ import {
 } from './reviewQueueKeybindings'
 
 type ReviewQueueToolbarProps = {
-	index: number
-	cardCount: number
+	canGoPrevious: boolean
+	canGoNext: boolean
 	queueSidebarOpen: boolean
 	queueSidebarToggleRef?: React.Ref<HTMLButtonElement>
 	onPrevious: () => void
@@ -42,8 +42,8 @@ const styles = stylex.create({
 })
 
 export function ReviewQueueToolbar({
-	index,
-	cardCount,
+	canGoPrevious,
+	canGoNext,
 	queueSidebarOpen,
 	queueSidebarToggleRef,
 	onPrevious,
@@ -62,7 +62,7 @@ export function ReviewQueueToolbar({
 								shape='round'
 								variant='ghost'
 								size='medium'
-								disabled={index >= cardCount - 1}
+								disabled={!canGoNext}
 								onClick={onNext}
 							>
 								<ChevronDown size={iconSizes.sm} />
@@ -83,7 +83,7 @@ export function ReviewQueueToolbar({
 								shape='round'
 								variant='ghost'
 								size='medium'
-								disabled={index <= 0}
+								disabled={!canGoPrevious}
 								onClick={onPrevious}
 							>
 								<ChevronUp size={iconSizes.sm} />

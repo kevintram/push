@@ -10,8 +10,8 @@ describe('ReviewQueueToolbar', () => {
 		const view = render(
 			<TooltipProvider delay={0}>
 				<ReviewQueueToolbar
-					index={0}
-					cardCount={2}
+					canGoPrevious={false}
+					canGoNext
 					queueSidebarOpen
 					onPrevious={() => {}}
 					onNext={() => {}}
@@ -32,8 +32,8 @@ describe('ReviewQueueToolbar', () => {
 	it('exposes the queue state and controls the sidebar accessibly', () => {
 		const view = render(
 			<ReviewQueueToolbar
-				index={0}
-				cardCount={2}
+				canGoPrevious={false}
+				canGoNext
 				queueSidebarOpen
 				onPrevious={() => {}}
 				onNext={() => {}}
@@ -49,8 +49,8 @@ describe('ReviewQueueToolbar', () => {
 
 		view.rerender(
 			<ReviewQueueToolbar
-				index={0}
-				cardCount={2}
+				canGoPrevious={false}
+				canGoNext
 				queueSidebarOpen={false}
 				onPrevious={() => {}}
 				onNext={() => {}}
