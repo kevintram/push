@@ -5,23 +5,17 @@ import type {
 } from '@convex/validators/collections'
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
-import { Fragment } from 'react'
 
 import {
-	Breadcrumb,
 	BreadcrumbItem,
 	BreadcrumbLink,
-	BreadcrumbList,
 	BreadcrumbSeparator,
-	DialogClose,
 } from '~/components/ui'
+import { CollectionPathBreadcrumbs } from '~/modules/collections/components/CollectionPathBreadcrumbs'
 import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcrumbLabel'
 import { breakpoints } from '~/styles/tokens.stylex'
 
 import type { Card } from '../types/review.types'
-import { ReviewDialogCollectionOverflowMenu } from './ReviewDialogCollectionOverflowMenu'
-
-const MAX_VISIBLE_BREADCRUMB_ITEMS = 4
 
 const styles = stylex.create({
 	desktopOnly: {
@@ -36,98 +30,55 @@ type ReviewDialogBreadcrumbsProps = {
 	card: Card | undefined
 	cardId: Id<'cards'>
 	collection: CollectionDetail | undefined
+	/** Called when any breadcrumb link is clicked. */
+	onNavigate: () => void
 }
 
 export function ReviewDialogBreadcrumbs({
 	card,
 	cardId,
 	collection,
+	onNavigate,
 }: ReviewDialogBreadcrumbsProps) {
 	const collections = collection
 		? [...(collection.path as Array<Collection>), collection as Collection]
 		: []
-	const shouldCollapseCollections =
-		// Full breadcrumb count: collections + card + Reviews.
-		collections.length + 2 > MAX_VISIBLE_BREADCRUMB_ITEMS
-	const visibleCollections = shouldCollapseCollections ? [] : collections
-	const overflowCollections = shouldCollapseCollections ? collections : []
 
 	// TODO(2): Add a mobile breadcrumb presentation.
 	return (
-		<Breadcrumb aria-label='Review location' xstyle={styles.desktopOnly}>
-			<BreadcrumbList>
-				{shouldCollapseCollections && (
-					<>
-						<BreadcrumbItem>
-							<ReviewDialogCollectionOverflowMenu
-								collections={overflowCollections}
-							/>
-						</BreadcrumbItem>
-						<BreadcrumbSeparator />
-					</>
-				)}
-				{visibleCollections.map(collection => (
-					<Fragment key={collection._id}>
-						<BreadcrumbItem>
-							<DialogClose
-								nativeButton={false}
-								render={
-									<BreadcrumbLink
-										render={
-											<Link
-												to='/collection/$collectionId'
-												params={{
-													collectionId:
-														collection._id,
-												}}
-											/>
-										}
-									/>
-								}
-							>
-								{formatBreadcrumbLabel(collection.title)}
-							</DialogClose>
-						</BreadcrumbItem>
-						<BreadcrumbSeparator />
-					</Fragment>
-				))}
-
+		<div {...stylex.props(styles.desktopOnly)}>
+			<CollectionPathBreadcrumbs
+				collections={collections}
+				onNavigate={onNavigate}
+			>
 				<BreadcrumbItem>
-					<DialogClose
-						nativeButton={false}
+					<BreadcrumbLink
 						render={
-							<BreadcrumbLink
-								render={
-									<Link
-										to='/cards/$cardId'
-										params={{ cardId }}
-									/>
-								}
+							<Link
+								to='/cards/$cardId'
+								params={{ cardId }}
+								onClick={onNavigate}
 							/>
 						}
 					>
 						{formatBreadcrumbLabel(card?.primaryText ?? 'Card')}
-					</DialogClose>
+					</BreadcrumbLink>
 				</BreadcrumbItem>
 				<BreadcrumbSeparator />
 				<BreadcrumbItem>
-					<DialogClose
-						nativeButton={false}
+					<BreadcrumbLink
 						render={
-							<BreadcrumbLink
-								render={
-									<Link
-										to='/cards/$cardId/reviews'
-										params={{ cardId }}
-									/>
-								}
+							<Link
+								to='/cards/$cardId/reviews'
+								params={{ cardId }}
+								onClick={onNavigate}
 							/>
 						}
 					>
 						Reviews
-					</DialogClose>
+					</BreadcrumbLink>
 				</BreadcrumbItem>
-			</BreadcrumbList>
-		</Breadcrumb>
+			</CollectionPathBreadcrumbs>
+		</div>
 	)
 }

@@ -244,6 +244,7 @@ export function Review({ review }: ReviewProps) {
 					descriptionField={descriptionField}
 					isOpen={isOpen}
 					notesField={notesField}
+					onClose={() => handleOpenChange(false)}
 					onDelete={() => setIsDeleteDialogOpen(true)}
 					onSetDate={setDate}
 					onSetRating={setRating}

@@ -1,7 +1,9 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import type { ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
+
+import { BreadcrumbItem, BreadcrumbPage } from '~/components/ui'
 
 import type { Collection } from '../../types/collection.types'
 import { CollectionPathBreadcrumbs } from '../CollectionPathBreadcrumbs'
@@ -48,6 +50,21 @@ function trail() {
 	)
 }
 
+function Trail({
+	currentLabel,
+	...props
+}: Omit<ComponentProps<typeof CollectionPathBreadcrumbs>, 'children'> & {
+	currentLabel: string
+}) {
+	return (
+		<CollectionPathBreadcrumbs {...props}>
+			<BreadcrumbItem>
+				<BreadcrumbPage>{currentLabel}</BreadcrumbPage>
+			</BreadcrumbItem>
+		</CollectionPathBreadcrumbs>
+	)
+}
+
 describe('CollectionPathBreadcrumbs', () => {
 	it.each([
 		{ name: 'no collections', titles: [], expected: ['Current'] },
@@ -68,7 +85,7 @@ describe('CollectionPathBreadcrumbs', () => {
 		},
 	])('places separators between items for $name', ({ titles, expected }) => {
 		render(
-			<CollectionPathBreadcrumbs
+			<Trail
 				collections={titles.map(title => collection(title))}
 				currentLabel='Current'
 			/>,
@@ -79,7 +96,7 @@ describe('CollectionPathBreadcrumbs', () => {
 
 	it('renders the complete trail at the four-item boundary', () => {
 		render(
-			<CollectionPathBreadcrumbs
+			<Trail
 				collections={[
 					collection('one'),
 					collection('two'),
@@ -110,7 +127,7 @@ describe('CollectionPathBreadcrumbs', () => {
 
 	it('collapses older collections and puts only hidden collections in the overflow menu', () => {
 		render(
-			<CollectionPathBreadcrumbs
+			<Trail
 				collections={[
 					collection('one'),
 					collection('two'),
@@ -152,21 +169,23 @@ describe('CollectionPathBreadcrumbs', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('uses Untitled for blank labels', () => {
+	it('uses Untitled for blank collection titles', () => {
 		render(
-			<CollectionPathBreadcrumbs
+			<Trail
 				collections={[collection('blank', '  ')]}
-				currentLabel=' '
+				currentLabel='Current'
 			/>,
 		)
 
-		expect(screen.getAllByText('Untitled')).toHaveLength(2)
+		expect(
+			screen.getByRole('link', { name: 'Untitled' }),
+		).toBeInTheDocument()
 	})
 
 	it('calls onNavigate from visible and overflow links', () => {
 		const onNavigate = vi.fn()
 		render(
-			<CollectionPathBreadcrumbs
+			<Trail
 				collections={[
 					collection('one'),
 					collection('two'),

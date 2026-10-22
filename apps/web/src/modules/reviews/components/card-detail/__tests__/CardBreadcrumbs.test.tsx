@@ -1,12 +1,15 @@
 import type { Id } from '@convex/_generated/dataModel'
 import type { Collection } from '@convex/validators/collections'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
 	detail: vi.fn(),
 	useSuspenseQuery: vi.fn(),
-	collectionPathBreadcrumbs: vi.fn((_props: unknown) => null),
+	collectionPathBreadcrumbs: vi.fn(
+		({ children }: { children?: ReactNode }) => children,
+	),
 }))
 
 vi.mock('@tanstack/react-query', () => ({
@@ -47,7 +50,7 @@ describe('CardBreadcrumbs', () => {
 		mocks.collectionPathBreadcrumbs.mockClear()
 	})
 
-	it('fetches the expanded collection and delegates the complete path', () => {
+	it('fetches the expanded collection and delegates the complete path and card', () => {
 		const collectionId = 'current' as Id<'collections'>
 		const onNavigate = vi.fn()
 
@@ -73,9 +76,12 @@ describe('CardBreadcrumbs', () => {
 					expect.objectContaining({ _id: 'ancestor' }),
 					expect.objectContaining({ _id: 'current' }),
 				],
-				currentLabel: 'A card',
 				onNavigate,
 			}),
+		)
+		expect(screen.getByText('A card')).toHaveAttribute(
+			'aria-current',
+			'page',
 		)
 	})
 })

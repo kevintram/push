@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
-import { Fragment } from 'react'
+import { Fragment, type ReactNode } from 'react'
 
 import {
 	Breadcrumb,
@@ -8,7 +8,6 @@ import {
 	BreadcrumbItem,
 	BreadcrumbLink,
 	BreadcrumbList,
-	BreadcrumbPage,
 	BreadcrumbSeparator,
 	Button,
 	DropdownMenu,
@@ -29,14 +28,17 @@ const styles = stylex.create({
 })
 
 type CollectionPathBreadcrumbsProps = {
+	/** Root-first collections. */
 	collections: Array<Collection>
-	currentLabel: string
+	/** Breadcrumb items after the collections, such as the current page. */
+	children: ReactNode
+	/** Called when any collection link, visible or hidden, is clicked. */
 	onNavigate?: () => void
 }
 
 export function CollectionPathBreadcrumbs({
 	collections,
-	currentLabel,
+	children,
 	onNavigate,
 }: CollectionPathBreadcrumbsProps) {
 	const shouldCollapseCollections =
@@ -118,11 +120,7 @@ export function CollectionPathBreadcrumbs({
 						<BreadcrumbSeparator />
 					</Fragment>
 				))}
-				<BreadcrumbItem>
-					<BreadcrumbPage>
-						{formatBreadcrumbLabel(currentLabel)}
-					</BreadcrumbPage>
-				</BreadcrumbItem>
+				{children}
 			</BreadcrumbList>
 		</Breadcrumb>
 	)
