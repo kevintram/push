@@ -101,7 +101,7 @@ const variants = stylex.create({
 		},
 	},
 	outline: {
-		borderColor: colorsSemantic.borderSubtle,
+		borderColor: colorsSemantic.borderPrimary,
 		backgroundColor: {
 			default: colorsSemantic.surfaceInteractiveSecondary,
 			':hover': colorsSemantic.surfaceInteractiveSecondaryHover,

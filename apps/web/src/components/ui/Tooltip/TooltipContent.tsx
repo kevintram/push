@@ -20,7 +20,7 @@ const styles = stylex.create({
 		paddingBlock: '6px',
 		paddingInline: spacing.sm,
 
-		borderColor: colorsSemantic.borderSubtle,
+		borderColor: colorsSemantic.borderPrimary,
 		borderRadius: radii.xs,
 		borderStyle: 'solid',
 		borderWidth: '1px',

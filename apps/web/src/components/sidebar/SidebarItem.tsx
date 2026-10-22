@@ -120,7 +120,7 @@ const styles = stylex.create({
 		},
 	},
 	outline: {
-		borderColor: colorsSemantic.borderSubtle,
+		borderColor: colorsSemantic.borderPrimary,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		backgroundColor: {

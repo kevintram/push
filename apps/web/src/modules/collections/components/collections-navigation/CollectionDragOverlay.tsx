@@ -19,7 +19,7 @@ const styles = stylex.create({
 	// Shaped like a tooltip. Tertiary rather than raised, which matches the
 	// sidebar's own background.
 	chip: {
-		borderColor: colorsSemantic.borderSubtle,
+		borderColor: colorsSemantic.borderPrimary,
 		borderRadius: radii.xs,
 		borderStyle: 'solid',
 		borderWidth: '1px',

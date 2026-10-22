@@ -72,7 +72,7 @@ const variants = stylex.create({
 		color: colorsSemantic.textInteractive,
 	},
 	outline: {
-		borderColor: colorsSemantic.borderSubtle,
+		borderColor: colorsSemantic.borderPrimary,
 		backgroundColor: colorsSemantic.surfaceInteractiveSecondary,
 		color: colorsSemantic.textInteractive,
 	},
