@@ -19,7 +19,6 @@ function buildPathText(
 	title: string,
 ): string {
 	return [
-		'Library',
 		...pathTitles.map(pathTitle => pathTitle.trim() || UNTITLED),
 		title,
 	].join(' / ')

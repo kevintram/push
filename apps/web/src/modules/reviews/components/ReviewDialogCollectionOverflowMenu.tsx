@@ -52,7 +52,7 @@ export function ReviewDialogCollectionOverflowMenu({
 								<DropdownMenuItem
 									render={
 										<Link
-											to='/library/$collectionId'
+											to='/collection/$collectionId'
 											params={{
 												collectionId: collection._id,
 											}}

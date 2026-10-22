@@ -121,7 +121,7 @@ export function LibraryCollectionItem({
 
 	const isActive = Boolean(
 		matchRoute({
-			to: '/library/$collectionId',
+			to: '/collection/$collectionId',
 			params: { collectionId: _id },
 			fuzzy: false,
 			includeSearch: true,
@@ -134,7 +134,7 @@ export function LibraryCollectionItem({
 			{
 				onSuccess: collectionId =>
 					navigate({
-						to: '/library/$collectionId',
+						to: '/collection/$collectionId',
 						params: { collectionId },
 					}),
 			},
@@ -189,7 +189,7 @@ export function LibraryCollectionItem({
 						<TreeItemLabel
 							render={
 								<Link
-									to='/library/$collectionId'
+									to='/collection/$collectionId'
 									params={{ collectionId: _id }}
 									activeOptions={{ exact: true }}
 									aria-label={collectionTitle}

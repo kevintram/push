@@ -46,7 +46,7 @@ function collectionDetail(collections: Array<Collection>): CollectionDetail {
 }
 
 function renderBreadcrumbs(
-	collection: CollectionDetail,
+	collection: CollectionDetail | undefined,
 	onOpenChange = vi.fn(),
 ) {
 	return render(
@@ -60,7 +60,57 @@ function renderBreadcrumbs(
 	)
 }
 
+// Reads the trail as labels, with `/` for separators and `…` for the overflow
+// menu, so separator placement is asserted alongside the items.
+function trail() {
+	const list = screen
+		.getByRole('navigation', { name: 'Review location' })
+		.querySelector('[data-slot="breadcrumb-list"]')!
+	return Array.from(list.children, item =>
+		item.getAttribute('data-slot') === 'breadcrumb-separator'
+			? '/'
+			: item.textContent || '…',
+	)
+}
+
 describe('ReviewDialogBreadcrumbs', () => {
+	it.each([
+		{
+			name: 'no collection',
+			ids: undefined,
+			expected: ['Card', '/', 'Reviews'],
+		},
+		{
+			name: 'one collection',
+			ids: ['collection'],
+			expected: ['collection', '/', 'Card', '/', 'Reviews'],
+		},
+		{
+			name: 'the full trail at the boundary',
+			ids: ['ancestor', 'collection'],
+			expected: [
+				'ancestor',
+				'/',
+				'collection',
+				'/',
+				'Card',
+				'/',
+				'Reviews',
+			],
+		},
+		{
+			name: 'a collapsed trail',
+			ids: ['root', 'ancestor', 'collection'],
+			expected: ['…', '/', 'Card', '/', 'Reviews'],
+		},
+	])('places separators between items for $name', ({ ids, expected }) => {
+		renderBreadcrumbs(
+			ids && collectionDetail(ids.map(id => collection(id))),
+		)
+
+		expect(trail()).toEqual(expected)
+	})
+
 	it('keeps one collection visible when the complete trail fits', () => {
 		const breadcrumb = renderBreadcrumbs(
 			collectionDetail([collection('collection')]),
@@ -77,9 +127,31 @@ describe('ReviewDialogBreadcrumbs', () => {
 		breadcrumb.unmount()
 	})
 
+	it('keeps two collections visible when the complete trail fits', () => {
+		renderBreadcrumbs(
+			collectionDetail([
+				collection('ancestor'),
+				collection('collection'),
+			]),
+		)
+
+		const navigation = screen.getByRole('navigation', {
+			name: 'Review location',
+		})
+		expect(
+			within(navigation).getByRole('button', { name: 'ancestor' }),
+		).toBeInTheDocument()
+		expect(
+			within(navigation).queryByRole('button', {
+				name: 'Show collection path',
+			}),
+		).not.toBeInTheDocument()
+	})
+
 	it('moves all collections into a purpose-specific overflow menu', () => {
 		renderBreadcrumbs(
 			collectionDetail([
+				collection('root'),
 				collection('ancestor'),
 				collection('collection'),
 			]),
@@ -106,6 +178,9 @@ describe('ReviewDialogBreadcrumbs', () => {
 
 		const menu = screen.getByRole('menu')
 		expect(
+			within(menu).getByRole('button', { name: 'root' }),
+		).toBeInTheDocument()
+		expect(
 			within(menu).getByRole('button', { name: 'ancestor' }),
 		).toBeInTheDocument()
 		expect(
@@ -120,16 +195,17 @@ describe('ReviewDialogBreadcrumbs', () => {
 			onOpenChange,
 		)
 
-		for (const label of ['Library', 'collection', 'Card', 'Reviews']) {
+		for (const label of ['collection', 'Card', 'Reviews']) {
 			fireEvent.click(screen.getByRole('button', { name: label }))
 		}
 
-		expect(onOpenChange.mock.calls.length).toBeGreaterThanOrEqual(4)
+		expect(onOpenChange.mock.calls.length).toBeGreaterThanOrEqual(3)
 		expect(onOpenChange).toHaveBeenLastCalledWith(false, expect.anything())
 
 		const collapsedOnOpenChange = vi.fn()
 		renderBreadcrumbs(
 			collectionDetail([
+				collection('root'),
 				collection('ancestor'),
 				collection('collection'),
 			]),

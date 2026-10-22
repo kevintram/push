@@ -126,7 +126,7 @@ const styles = stylex.create({
 })
 
 export function CollectionPage() {
-	const { collectionId } = useParams({ from: '/library/$collectionId' })
+	const { collectionId } = useParams({ from: '/collection/$collectionId' })
 	const [{ data: collection }, { data: cards }] = useSuspenseQueries({
 		queries: [
 			queryOptions(

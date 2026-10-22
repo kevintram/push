@@ -35,11 +35,56 @@ function collection(id: string, title = id): Collection {
 	}
 }
 
+// Reads the trail as labels, with `/` for separators and `…` for the overflow
+// menu, so separator placement is asserted alongside the items.
+function trail() {
+	const list = screen
+		.getByRole('navigation', { name: 'Collection path' })
+		.querySelector('[data-slot="breadcrumb-list"]')!
+	return Array.from(list.children, item =>
+		item.getAttribute('data-slot') === 'breadcrumb-separator'
+			? '/'
+			: item.textContent || '…',
+	)
+}
+
 describe('CollectionPathBreadcrumbs', () => {
+	it.each([
+		{ name: 'no collections', titles: [], expected: ['Current'] },
+		{
+			name: 'one collection',
+			titles: ['one'],
+			expected: ['one', '/', 'Current'],
+		},
+		{
+			name: 'the full trail at the boundary',
+			titles: ['one', 'two', 'three'],
+			expected: ['one', '/', 'two', '/', 'three', '/', 'Current'],
+		},
+		{
+			name: 'a collapsed trail',
+			titles: ['one', 'two', 'three', 'four'],
+			expected: ['…', '/', 'four', '/', 'Current'],
+		},
+	])('places separators between items for $name', ({ titles, expected }) => {
+		render(
+			<CollectionPathBreadcrumbs
+				collections={titles.map(title => collection(title))}
+				currentLabel='Current'
+			/>,
+		)
+
+		expect(trail()).toEqual(expected)
+	})
+
 	it('renders the complete trail at the four-item boundary', () => {
 		render(
 			<CollectionPathBreadcrumbs
-				collections={[collection('one'), collection('two')]}
+				collections={[
+					collection('one'),
+					collection('two'),
+					collection('three'),
+				]}
 				currentLabel='Current'
 			/>,
 		)
@@ -49,7 +94,7 @@ describe('CollectionPathBreadcrumbs', () => {
 		})
 		expect(within(breadcrumb).getAllByRole('link')).toHaveLength(3)
 		expect(
-			within(breadcrumb).getByRole('link', { name: 'Library' }),
+			within(breadcrumb).getByRole('link', { name: 'three' }),
 		).toBeInTheDocument()
 		expect(
 			within(breadcrumb).getByRole('link', { name: 'one' }),
@@ -70,6 +115,7 @@ describe('CollectionPathBreadcrumbs', () => {
 					collection('one'),
 					collection('two'),
 					collection('three'),
+					collection('four'),
 				]}
 				currentLabel='Current'
 			/>,
@@ -79,7 +125,7 @@ describe('CollectionPathBreadcrumbs', () => {
 			name: 'Collection path',
 		})
 		expect(
-			within(breadcrumb).getByRole('link', { name: 'three' }),
+			within(breadcrumb).getByRole('link', { name: 'four' }),
 		).toBeInTheDocument()
 		expect(
 			within(breadcrumb).queryByRole('link', { name: 'one' }),
@@ -99,7 +145,10 @@ describe('CollectionPathBreadcrumbs', () => {
 			within(menu).getByRole('menuitem', { name: 'two' }),
 		).toBeInTheDocument()
 		expect(
-			within(menu).queryByRole('menuitem', { name: 'three' }),
+			within(menu).getByRole('menuitem', { name: 'three' }),
+		).toBeInTheDocument()
+		expect(
+			within(menu).queryByRole('menuitem', { name: 'four' }),
 		).not.toBeInTheDocument()
 	})
 
@@ -114,7 +163,7 @@ describe('CollectionPathBreadcrumbs', () => {
 		expect(screen.getAllByText('Untitled')).toHaveLength(2)
 	})
 
-	it('calls onNavigate from library, visible, and overflow links', () => {
+	it('calls onNavigate from visible and overflow links', () => {
 		const onNavigate = vi.fn()
 		render(
 			<CollectionPathBreadcrumbs
@@ -122,19 +171,19 @@ describe('CollectionPathBreadcrumbs', () => {
 					collection('one'),
 					collection('two'),
 					collection('three'),
+					collection('four'),
 				]}
 				currentLabel='Current'
 				onNavigate={onNavigate}
 			/>,
 		)
 
-		fireEvent.click(screen.getByRole('link', { name: 'Library' }))
-		fireEvent.click(screen.getByRole('link', { name: 'three' }))
+		fireEvent.click(screen.getByRole('link', { name: 'four' }))
 		fireEvent.click(
 			screen.getByRole('button', { name: 'Show hidden collections' }),
 		)
 		fireEvent.click(screen.getByRole('menuitem', { name: 'one' }))
 
-		expect(onNavigate).toHaveBeenCalledTimes(3)
+		expect(onNavigate).toHaveBeenCalledTimes(2)
 	})
 })

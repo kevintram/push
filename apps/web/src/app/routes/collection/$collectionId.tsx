@@ -5,7 +5,7 @@ import { CollectionPage } from '~/app/pages/CollectionPage'
 import { collectionQueries } from '~/modules/library/api/collectionQueries'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 
-export const Route = createFileRoute('/library/$collectionId')({
+export const Route = createFileRoute('/collection/$collectionId')({
 	component: CollectionPage,
 	// The path segment is only ever a collection document id, so brand it once here
 	// instead of casting at every consumer.
@@ -21,6 +21,9 @@ export const Route = createFileRoute('/library/$collectionId')({
 		if (!auth.isAuthenticated) return
 
 		await Promise.all([
+			queryClient.ensureQueryData(
+				collectionQueries.children(params.collectionId),
+			),
 			queryClient.ensureQueryData(
 				collectionQueries.detail(params.collectionId, {
 					expandPath: true,

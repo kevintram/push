@@ -22,6 +22,18 @@ export const list = query({
 	},
 })
 
+export const listChildren = query({
+	args: {
+		collectionId: v.id('collections'),
+	},
+	returns: v.array(collectionRead),
+	handler: async (ctx, args) => {
+		const { subject: userId } = await requireIdentity(ctx)
+
+		return await Collections.listChildren(ctx, userId, args.collectionId)
+	},
+})
+
 export const get = query({
 	args: {
 		collectionId: v.id('collections'),

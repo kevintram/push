@@ -32,6 +32,23 @@ export async function list(
 		.collect()
 }
 
+export async function listChildren(
+	ctx: QueryCtx,
+	userId: string,
+	collectionId: Id<'collections'>,
+): Promise<Array<Doc<'collections'>>> {
+	await requireUserOwns(ctx, userId, collectionId)
+
+	const children = await ctx.db
+		.query('collections')
+		.withIndex('by_parentId', q => q.eq('parentId', collectionId))
+		.collect()
+
+	// Children share their parent's owner given well-formed data. The check
+	// keeps a malformed foreign child from leaking through an owned parent.
+	return children.filter(child => child.ownerId === userId)
+}
+
 export async function get(
 	ctx: QueryCtx,
 	userId: string,

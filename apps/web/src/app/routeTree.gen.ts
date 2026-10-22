@@ -13,15 +13,13 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as FlaggedRouteImport } from './routes/flagged'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as ReviewRouteRouteImport } from './routes/review/route'
-import { Route as LibraryRouteRouteImport } from './routes/library/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReviewIndexRouteImport } from './routes/review/index'
-import { Route as LibraryIndexRouteImport } from './routes/library/index'
 import { Route as ReviewNewRouteImport } from './routes/review/new'
 import { Route as ReviewLateRouteImport } from './routes/review/late'
 import { Route as ReviewFlaggedRouteImport } from './routes/review/flagged'
 import { Route as ReviewDueRouteImport } from './routes/review/due'
-import { Route as LibraryCollectionIdRouteImport } from './routes/library/$collectionId'
+import { Route as CollectionCollectionIdRouteImport } from './routes/collection/$collectionId'
 import { Route as CardsCardIdRouteRouteImport } from './routes/cards/$cardId/route'
 import { Route as CardsCardIdIndexRouteImport } from './routes/cards/$cardId/index'
 import { Route as CardsCardIdReviewsRouteImport } from './routes/cards/$cardId/reviews'
@@ -46,11 +44,6 @@ const ReviewRouteRoute = ReviewRouteRouteImport.update({
   path: '/review',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LibraryRouteRoute = LibraryRouteRouteImport.update({
-  id: '/library',
-  path: '/library',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -60,11 +53,6 @@ const ReviewIndexRoute = ReviewIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ReviewRouteRoute,
-} as any)
-const LibraryIndexRoute = LibraryIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => LibraryRouteRoute,
 } as any)
 const ReviewNewRoute = ReviewNewRouteImport.update({
   id: '/new',
@@ -86,10 +74,10 @@ const ReviewDueRoute = ReviewDueRouteImport.update({
   path: '/due',
   getParentRoute: () => ReviewRouteRoute,
 } as any)
-const LibraryCollectionIdRoute = LibraryCollectionIdRouteImport.update({
-  id: '/$collectionId',
-  path: '/$collectionId',
-  getParentRoute: () => LibraryRouteRoute,
+const CollectionCollectionIdRoute = CollectionCollectionIdRouteImport.update({
+  id: '/collection/$collectionId',
+  path: '/collection/$collectionId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CardsCardIdRouteRoute = CardsCardIdRouteRouteImport.update({
   id: '/cards/$cardId',
@@ -109,18 +97,16 @@ const CardsCardIdReviewsRoute = CardsCardIdReviewsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/library': typeof LibraryRouteRouteWithChildren
   '/review': typeof ReviewRouteRouteWithChildren
   '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
   '/settings': typeof SettingsRoute
   '/cards/$cardId': typeof CardsCardIdRouteRouteWithChildren
-  '/library/$collectionId': typeof LibraryCollectionIdRoute
+  '/collection/$collectionId': typeof CollectionCollectionIdRoute
   '/review/due': typeof ReviewDueRoute
   '/review/flagged': typeof ReviewFlaggedRoute
   '/review/late': typeof ReviewLateRoute
   '/review/new': typeof ReviewNewRoute
-  '/library/': typeof LibraryIndexRoute
   '/review/': typeof ReviewIndexRoute
   '/cards/$cardId/reviews': typeof CardsCardIdReviewsRoute
   '/cards/$cardId/': typeof CardsCardIdIndexRoute
@@ -130,12 +116,11 @@ export interface FileRoutesByTo {
   '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
   '/settings': typeof SettingsRoute
-  '/library/$collectionId': typeof LibraryCollectionIdRoute
+  '/collection/$collectionId': typeof CollectionCollectionIdRoute
   '/review/due': typeof ReviewDueRoute
   '/review/flagged': typeof ReviewFlaggedRoute
   '/review/late': typeof ReviewLateRoute
   '/review/new': typeof ReviewNewRoute
-  '/library': typeof LibraryIndexRoute
   '/review': typeof ReviewIndexRoute
   '/cards/$cardId/reviews': typeof CardsCardIdReviewsRoute
   '/cards/$cardId': typeof CardsCardIdIndexRoute
@@ -143,18 +128,16 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/library': typeof LibraryRouteRouteWithChildren
   '/review': typeof ReviewRouteRouteWithChildren
   '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
   '/settings': typeof SettingsRoute
   '/cards/$cardId': typeof CardsCardIdRouteRouteWithChildren
-  '/library/$collectionId': typeof LibraryCollectionIdRoute
+  '/collection/$collectionId': typeof CollectionCollectionIdRoute
   '/review/due': typeof ReviewDueRoute
   '/review/flagged': typeof ReviewFlaggedRoute
   '/review/late': typeof ReviewLateRoute
   '/review/new': typeof ReviewNewRoute
-  '/library/': typeof LibraryIndexRoute
   '/review/': typeof ReviewIndexRoute
   '/cards/$cardId/reviews': typeof CardsCardIdReviewsRoute
   '/cards/$cardId/': typeof CardsCardIdIndexRoute
@@ -163,18 +146,16 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/library'
     | '/review'
     | '/design-system'
     | '/flagged'
     | '/settings'
     | '/cards/$cardId'
-    | '/library/$collectionId'
+    | '/collection/$collectionId'
     | '/review/due'
     | '/review/flagged'
     | '/review/late'
     | '/review/new'
-    | '/library/'
     | '/review/'
     | '/cards/$cardId/reviews'
     | '/cards/$cardId/'
@@ -184,30 +165,27 @@ export interface FileRouteTypes {
     | '/design-system'
     | '/flagged'
     | '/settings'
-    | '/library/$collectionId'
+    | '/collection/$collectionId'
     | '/review/due'
     | '/review/flagged'
     | '/review/late'
     | '/review/new'
-    | '/library'
     | '/review'
     | '/cards/$cardId/reviews'
     | '/cards/$cardId'
   id:
     | '__root__'
     | '/'
-    | '/library'
     | '/review'
     | '/design-system'
     | '/flagged'
     | '/settings'
     | '/cards/$cardId'
-    | '/library/$collectionId'
+    | '/collection/$collectionId'
     | '/review/due'
     | '/review/flagged'
     | '/review/late'
     | '/review/new'
-    | '/library/'
     | '/review/'
     | '/cards/$cardId/reviews'
     | '/cards/$cardId/'
@@ -215,12 +193,12 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  LibraryRouteRoute: typeof LibraryRouteRouteWithChildren
   ReviewRouteRoute: typeof ReviewRouteRouteWithChildren
   DesignSystemRoute: typeof DesignSystemRoute
   FlaggedRoute: typeof FlaggedRoute
   SettingsRoute: typeof SettingsRoute
   CardsCardIdRouteRoute: typeof CardsCardIdRouteRouteWithChildren
+  CollectionCollectionIdRoute: typeof CollectionCollectionIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -253,13 +231,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReviewRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/library': {
-      id: '/library'
-      path: '/library'
-      fullPath: '/library'
-      preLoaderRoute: typeof LibraryRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -273,13 +244,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/review/'
       preLoaderRoute: typeof ReviewIndexRouteImport
       parentRoute: typeof ReviewRouteRoute
-    }
-    '/library/': {
-      id: '/library/'
-      path: '/'
-      fullPath: '/library/'
-      preLoaderRoute: typeof LibraryIndexRouteImport
-      parentRoute: typeof LibraryRouteRoute
     }
     '/review/new': {
       id: '/review/new'
@@ -309,12 +273,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReviewDueRouteImport
       parentRoute: typeof ReviewRouteRoute
     }
-    '/library/$collectionId': {
-      id: '/library/$collectionId'
-      path: '/$collectionId'
-      fullPath: '/library/$collectionId'
-      preLoaderRoute: typeof LibraryCollectionIdRouteImport
-      parentRoute: typeof LibraryRouteRoute
+    '/collection/$collectionId': {
+      id: '/collection/$collectionId'
+      path: '/collection/$collectionId'
+      fullPath: '/collection/$collectionId'
+      preLoaderRoute: typeof CollectionCollectionIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/cards/$cardId': {
       id: '/cards/$cardId'
@@ -339,20 +303,6 @@ declare module '@tanstack/react-router' {
     }
   }
 }
-
-interface LibraryRouteRouteChildren {
-  LibraryCollectionIdRoute: typeof LibraryCollectionIdRoute
-  LibraryIndexRoute: typeof LibraryIndexRoute
-}
-
-const LibraryRouteRouteChildren: LibraryRouteRouteChildren = {
-  LibraryCollectionIdRoute: LibraryCollectionIdRoute,
-  LibraryIndexRoute: LibraryIndexRoute,
-}
-
-const LibraryRouteRouteWithChildren = LibraryRouteRoute._addFileChildren(
-  LibraryRouteRouteChildren,
-)
 
 interface ReviewRouteRouteChildren {
   ReviewDueRoute: typeof ReviewDueRoute
@@ -389,12 +339,12 @@ const CardsCardIdRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  LibraryRouteRoute: LibraryRouteRouteWithChildren,
   ReviewRouteRoute: ReviewRouteRouteWithChildren,
   DesignSystemRoute: DesignSystemRoute,
   FlaggedRoute: FlaggedRoute,
   SettingsRoute: SettingsRoute,
   CardsCardIdRouteRoute: CardsCardIdRouteRouteWithChildren,
+  CollectionCollectionIdRoute: CollectionCollectionIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

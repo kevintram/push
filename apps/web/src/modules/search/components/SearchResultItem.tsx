@@ -86,7 +86,7 @@ export function SearchResultItem({ result }: SearchResultItemProps) {
 						<Link
 							params={{ collectionId: result.id }}
 							role='link'
-							to='/library/$collectionId'
+							to='/collection/$collectionId'
 						/>
 					}
 					{...stylex.props(styles.link)}

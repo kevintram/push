@@ -43,7 +43,7 @@ export function CollectionPathBreadcrumbs({
 	onNavigate,
 }: CollectionPathBreadcrumbsProps) {
 	const shouldCollapseCollections =
-		collections.length + 2 > MAX_VISIBLE_BREADCRUMB_ITEMS
+		collections.length + 1 > MAX_VISIBLE_BREADCRUMB_ITEMS
 	const visibleCollections = shouldCollapseCollections
 		? collections.slice(-1)
 		: collections
@@ -54,16 +54,8 @@ export function CollectionPathBreadcrumbs({
 	return (
 		<Breadcrumb aria-label='Collection path'>
 			<BreadcrumbList>
-				<BreadcrumbItem>
-					<BreadcrumbLink
-						render={<Link to='/library' onClick={onNavigate} />}
-					>
-						Library
-					</BreadcrumbLink>
-				</BreadcrumbItem>
 				{shouldCollapseCollections && (
 					<>
-						<BreadcrumbSeparator />
 						<BreadcrumbItem>
 							<DropdownMenu>
 								<DropdownMenuTrigger
@@ -85,7 +77,7 @@ export function CollectionPathBreadcrumbs({
 												key={collection._id}
 												render={
 													<Link
-														to='/library/$collectionId'
+														to='/collection/$collectionId'
 														params={{
 															collectionId:
 																collection._id,
@@ -106,16 +98,16 @@ export function CollectionPathBreadcrumbs({
 								</DropdownMenuContent>
 							</DropdownMenu>
 						</BreadcrumbItem>
+						<BreadcrumbSeparator />
 					</>
 				)}
 				{visibleCollections.map(collection => (
 					<Fragment key={collection._id}>
-						<BreadcrumbSeparator />
 						<BreadcrumbItem>
 							<BreadcrumbLink
 								render={
 									<Link
-										to='/library/$collectionId'
+										to='/collection/$collectionId'
 										params={{
 											collectionId: collection._id,
 										}}
@@ -126,9 +118,9 @@ export function CollectionPathBreadcrumbs({
 								{formatBreadcrumbLabel(collection.title)}
 							</BreadcrumbLink>
 						</BreadcrumbItem>
+						<BreadcrumbSeparator />
 					</Fragment>
 				))}
-				<BreadcrumbSeparator />
 				<BreadcrumbItem>
 					<BreadcrumbPage>
 						{formatBreadcrumbLabel(currentLabel)}

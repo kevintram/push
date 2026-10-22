@@ -25,6 +25,9 @@ describe('collections', () => {
 			'Unauthenticated',
 		)
 		await expect(
+			t.query(api.collections.listChildren, { collectionId }),
+		).rejects.toThrow('Unauthenticated')
+		await expect(
 			t.query(api.collections.get, { expandPath: false, collectionId }),
 		).rejects.toThrow('Unauthenticated')
 		await expect(
@@ -378,6 +381,70 @@ describe('collections', () => {
 				collection => collection.ownerId === userAIdentity.subject,
 			),
 		).toBe(true)
+	})
+
+	it('lists only the direct children of a collection, oldest first', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const rootId = await asUserA.mutation(api.collections.create, {
+			title: 'Root',
+		})
+		const firstChildId = await asUserA.mutation(api.collections.create, {
+			parentId: rootId,
+			title: 'First child',
+		})
+		await asUserA.mutation(api.collections.create, {
+			parentId: rootId,
+			title: 'Second child',
+		})
+		await asUserA.mutation(api.collections.create, {
+			parentId: firstChildId,
+			title: 'Grandchild',
+		})
+		await asUserA.mutation(api.collections.create, { title: 'Other root' })
+
+		const children = await asUserA.query(api.collections.listChildren, {
+			collectionId: rootId,
+		})
+
+		expect(children.map(child => child.title)).toEqual([
+			'First child',
+			'Second child',
+		])
+	})
+
+	it('refuses to list children of a foreign-owned collection and hides foreign-owned children', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const asUserB = t.withIdentity(userBIdentity)
+		const rootId = await asUserA.mutation(api.collections.create, {
+			title: 'Root',
+		})
+		await asUserA.mutation(api.collections.create, {
+			parentId: rootId,
+			title: 'Owned child',
+		})
+		await t.run(async ctx =>
+			ctx.db.insert('collections', {
+				description: '',
+				ownerId: userBIdentity.subject,
+				parentId: rootId,
+				path: [rootId],
+				searchText: 'Foreign child',
+				title: 'Foreign child',
+			}),
+		)
+
+		await expect(
+			asUserB.query(api.collections.listChildren, {
+				collectionId: rootId,
+			}),
+		).rejects.toThrow('Collection not found')
+		await expect(
+			asUserA.query(api.collections.listChildren, {
+				collectionId: rootId,
+			}),
+		).resolves.toEqual([expect.objectContaining({ title: 'Owned child' })])
 	})
 
 	it('creates collections with defaults and supplied parent fields', async () => {

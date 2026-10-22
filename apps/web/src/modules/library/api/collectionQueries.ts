@@ -14,6 +14,8 @@ import { getErrorMessage } from '~/utils/error'
 // subscribes twice.
 export const collectionQueries = {
 	list: () => convexQuery(api.collections.list, {}),
+	children: (collectionId: Id<'collections'>) =>
+		convexQuery(api.collections.listChildren, { collectionId }),
 	search: (query: string) => convexQuery(api.collections.search, { query }),
 	detail: (
 		collectionId: Id<'collections'>,
@@ -55,18 +57,18 @@ export function useDeleteCollection() {
 			// if deleted collection is currently open
 			if (
 				matchRoute({
-					to: '/library/$collectionId',
+					to: '/collection/$collectionId',
 					params: { collectionId: _id },
 				})
 			) {
-				// navigate to parent if has one, library otherwise
+				// navigate to parent if has one, review otherwise
 				void navigate(
 					parentId !== undefined
 						? {
-								to: '/library/$collectionId',
+								to: '/collection/$collectionId',
 								params: { collectionId: parentId },
 							}
-						: { to: '/library' },
+						: { to: '/review' },
 				)
 			}
 		},

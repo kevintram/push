@@ -50,8 +50,8 @@ export function ReviewDialogBreadcrumbs({
 		? [...(collection.path as Array<Collection>), collection as Collection]
 		: []
 	const shouldCollapseCollections =
-		// Full breadcrumb count: Library + collections + card + Reviews.
-		collections.length + 3 > MAX_VISIBLE_BREADCRUMB_ITEMS
+		// Full breadcrumb count: collections + card + Reviews.
+		collections.length + 2 > MAX_VISIBLE_BREADCRUMB_ITEMS
 	const visibleCollections = shouldCollapseCollections ? [] : collections
 	const overflowCollections = shouldCollapseCollections ? collections : []
 
@@ -59,30 +59,18 @@ export function ReviewDialogBreadcrumbs({
 	return (
 		<Breadcrumb aria-label='Review location' xstyle={styles.desktopOnly}>
 			<BreadcrumbList>
-				<BreadcrumbItem>
-					<DialogClose
-						nativeButton={false}
-						render={
-							<BreadcrumbLink render={<Link to='/library' />} />
-						}
-					>
-						Library
-					</DialogClose>
-				</BreadcrumbItem>
-
 				{shouldCollapseCollections && (
 					<>
-						<BreadcrumbSeparator />
 						<BreadcrumbItem>
 							<ReviewDialogCollectionOverflowMenu
 								collections={overflowCollections}
 							/>
 						</BreadcrumbItem>
+						<BreadcrumbSeparator />
 					</>
 				)}
 				{visibleCollections.map(collection => (
 					<Fragment key={collection._id}>
-						<BreadcrumbSeparator />
 						<BreadcrumbItem>
 							<DialogClose
 								nativeButton={false}
@@ -90,7 +78,7 @@ export function ReviewDialogBreadcrumbs({
 									<BreadcrumbLink
 										render={
 											<Link
-												to='/library/$collectionId'
+												to='/collection/$collectionId'
 												params={{
 													collectionId:
 														collection._id,
@@ -103,10 +91,10 @@ export function ReviewDialogBreadcrumbs({
 								{formatBreadcrumbLabel(collection.title)}
 							</DialogClose>
 						</BreadcrumbItem>
+						<BreadcrumbSeparator />
 					</Fragment>
 				))}
 
-				<BreadcrumbSeparator />
 				<BreadcrumbItem>
 					<DialogClose
 						nativeButton={false}
