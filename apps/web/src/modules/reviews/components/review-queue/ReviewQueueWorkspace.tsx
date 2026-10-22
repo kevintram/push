@@ -164,7 +164,6 @@ export function ReviewQueueWorkspace({
 
 	const visibleCards = filterCardsByType(cards, filter)
 	const {
-		index,
 		currentCard,
 		canGoPrevious,
 		canGoNext,
@@ -217,8 +216,10 @@ export function ReviewQueueWorkspace({
 						)}
 					>
 						<ReviewQueueToolbar
-							index={index}
-							cardCount={visibleCards.length}
+							title={title}
+							count={cards.length}
+							canGoPrevious={canGoPrevious}
+							canGoNext={canGoNext}
 							queueSidebarOpen={queueSidebarOpen}
 							queueSidebarToggleRef={queueSidebarToggleRef}
 							onPrevious={goPrevious}
@@ -262,7 +263,6 @@ export function ReviewQueueWorkspace({
 				{queueSidebarOpen && (
 					<ReviewQueueSidebar
 						cards={visibleCards}
-						title={title}
 						today={today}
 						currentCardId={currentCard?._id ?? null}
 						onCardClick={selectCard}

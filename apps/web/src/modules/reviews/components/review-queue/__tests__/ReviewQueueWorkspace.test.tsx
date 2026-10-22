@@ -27,7 +27,7 @@ describe('ReviewQueueWorkspace', () => {
 			/>,
 		)
 
-		const sidebar = screen.getByRole('complementary', { name: 'Due cards' })
+		const sidebar = screen.getByRole('complementary', { name: 'Queue' })
 		const closeButton = screen.getByRole('button', {
 			name: 'Close queue',
 			expanded: true,
@@ -47,14 +47,14 @@ describe('ReviewQueueWorkspace', () => {
 		})
 		expect(openButton).toHaveAttribute('aria-expanded', 'false')
 		expect(
-			screen.queryByRole('complementary', { name: 'Due cards' }),
+			screen.queryByRole('complementary', { name: 'Queue' }),
 		).not.toBeInTheDocument()
 
 		await user.click(openButton)
 		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('true')
 
 		expect(
-			screen.getByRole('complementary', { name: 'Due cards' }),
+			screen.getByRole('complementary', { name: 'Queue' }),
 		).toBeInTheDocument()
 		expect(
 			screen.getByRole('button', { name: 'Close queue', expanded: true }),
@@ -71,7 +71,7 @@ describe('ReviewQueueWorkspace', () => {
 			/>,
 		)
 
-		const sidebar = screen.getByRole('complementary', { name: 'Due cards' })
+		const sidebar = screen.getByRole('complementary', { name: 'Queue' })
 
 		await user.click(
 			within(sidebar).getByRole('button', { name: 'Close queue' }),
@@ -79,7 +79,7 @@ describe('ReviewQueueWorkspace', () => {
 		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('false')
 
 		expect(
-			screen.queryByRole('complementary', { name: 'Due cards' }),
+			screen.queryByRole('complementary', { name: 'Queue' }),
 		).not.toBeInTheDocument()
 
 		const openButton = screen.getByRole('button', { name: 'Open queue' })
@@ -89,7 +89,7 @@ describe('ReviewQueueWorkspace', () => {
 		await user.click(openButton)
 
 		expect(
-			screen.getByRole('complementary', { name: 'Due cards' }),
+			screen.getByRole('complementary', { name: 'Queue' }),
 		).toBeInTheDocument()
 		expect(
 			screen.getByRole('button', { name: 'Close queue', expanded: true }),
@@ -118,7 +118,7 @@ describe('ReviewQueueWorkspace', () => {
 		)
 
 		expect(
-			screen.queryByRole('complementary', { name: 'Due cards' }),
+			screen.queryByRole('complementary', { name: 'Queue' }),
 		).not.toBeInTheDocument()
 		expect(
 			screen.getByRole('button', { name: 'Open queue' }),
@@ -150,12 +150,12 @@ describe('ReviewQueueWorkspace', () => {
 		await user.click(screen.getByRole('button', { name: 'Open queue' }))
 		await user.click(
 			within(
-				screen.getByRole('complementary', { name: 'Due cards' }),
+				screen.getByRole('complementary', { name: 'Queue' }),
 			).getByRole('button', { name: 'Close queue' }),
 		)
 
 		expect(
-			screen.queryByRole('complementary', { name: 'Due cards' }),
+			screen.queryByRole('complementary', { name: 'Queue' }),
 		).not.toBeInTheDocument()
 		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('true')
 	})
@@ -187,7 +187,7 @@ describe('ReviewQueueWorkspace', () => {
 		)
 
 		expect(
-			screen.getByRole('complementary', { name: 'Due cards' }),
+			screen.getByRole('complementary', { name: 'Queue' }),
 		).toBeInTheDocument()
 
 		act(() => {
@@ -195,7 +195,7 @@ describe('ReviewQueueWorkspace', () => {
 		})
 
 		expect(
-			screen.queryByRole('complementary', { name: 'Due cards' }),
+			screen.queryByRole('complementary', { name: 'Queue' }),
 		).not.toBeInTheDocument()
 		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('true')
 	})
@@ -227,7 +227,7 @@ describe('ReviewQueueWorkspace', () => {
 
 			render(<ReviewQueueWorkspace {...props} title={title} />)
 			expect(
-				screen.getByRole('complementary', { name: `${title} cards` }),
+				screen.getByRole('complementary', { name: 'Queue' }),
 			).toBeInTheDocument()
 		},
 	)
@@ -242,7 +242,7 @@ describe('ReviewQueueWorkspace', () => {
 			/>,
 		)
 		expect(
-			screen.getByRole('complementary', { name: 'Due cards' }),
+			screen.getByRole('complementary', { name: 'Queue' }),
 		).toBeInTheDocument()
 	})
 
@@ -269,7 +269,7 @@ describe('ReviewQueueWorkspace', () => {
 		).toBeInTheDocument()
 		await user.click(screen.getByRole('button', { name: 'Open queue' }))
 		expect(
-			screen.getByRole('complementary', { name: 'Due cards' }),
+			screen.getByRole('complementary', { name: 'Queue' }),
 		).toBeInTheDocument()
 	})
 })

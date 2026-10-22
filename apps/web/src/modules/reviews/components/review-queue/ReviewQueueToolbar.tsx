@@ -9,7 +9,14 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { iconSizes } from '~/styles/tokens.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
+import {
+	buttonSizes,
+	fontSizes,
+	fontWeights,
+	iconSizes,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 import {
 	REVIEW_QUEUE_NEXT_HOTKEY,
@@ -17,8 +24,10 @@ import {
 } from './reviewQueueKeybindings'
 
 type ReviewQueueToolbarProps = {
-	index: number
-	cardCount: number
+	title: string
+	count: number
+	canGoPrevious: boolean
+	canGoNext: boolean
 	queueSidebarOpen: boolean
 	queueSidebarToggleRef?: React.Ref<HTMLButtonElement>
 	onPrevious: () => void
@@ -30,20 +39,48 @@ export const REVIEW_QUEUE_SIDEBAR_ID = 'review-queue-sidebar'
 
 const styles = stylex.create({
 	header: {
+		gap: spacing.sm,
+		paddingInline: spacing.md,
 		alignItems: 'center',
 		display: 'flex',
 		flexShrink: 0,
-		justifyContent: 'flex-end',
+		justifyContent: 'space-between',
+	},
+	titleText: {
+		gap: spacing.sm,
+		alignItems: 'center',
+		display: 'flex',
+		fontSize: fontSizes.xl,
+		fontWeight: fontWeights.semibold,
+		minInlineSize: 0,
+	},
+	titleLabel: {
+		overflow: 'hidden',
+		minInlineSize: 0,
+		textOverflow: 'ellipsis',
+		whiteSpace: 'nowrap',
+	},
+	count: {
+		color: semanticColors.textSecondary,
+		flexShrink: 0,
+		fontSize: fontSizes.md,
+		fontWeight: fontWeights.regular,
 	},
 	headerButtonCluster: {
 		alignItems: 'center',
 		display: 'flex',
+		flexShrink: 0,
+		// Pulls the ghost buttons into the padding by their own inset so their
+		// glyphs, not their hidden hover areas, sit on the content edge.
+		marginInlineEnd: `calc((${buttonSizes.medium} - ${iconSizes.sm}) / -2)`,
 	},
 })
 
 export function ReviewQueueToolbar({
-	index,
-	cardCount,
+	title,
+	count,
+	canGoPrevious,
+	canGoNext,
 	queueSidebarOpen,
 	queueSidebarToggleRef,
 	onPrevious,
@@ -52,6 +89,12 @@ export function ReviewQueueToolbar({
 }: ReviewQueueToolbarProps) {
 	return (
 		<header {...stylex.props(styles.header)}>
+			<h1 {...stylex.props(styles.titleText)}>
+				<span {...stylex.props(styles.titleLabel)}>{title}</span>
+				<span aria-hidden='true' {...stylex.props(styles.count)}>
+					{count}
+				</span>
+			</h1>
 			<div {...stylex.props(styles.headerButtonCluster)}>
 				<Tooltip>
 					<TooltipTrigger
@@ -62,7 +105,7 @@ export function ReviewQueueToolbar({
 								shape='round'
 								variant='ghost'
 								size='medium'
-								disabled={index >= cardCount - 1}
+								disabled={!canGoNext}
 								onClick={onNext}
 							>
 								<ChevronDown size={iconSizes.sm} />
@@ -83,7 +126,7 @@ export function ReviewQueueToolbar({
 								shape='round'
 								variant='ghost'
 								size='medium'
-								disabled={index <= 0}
+								disabled={!canGoPrevious}
 								onClick={onPrevious}
 							>
 								<ChevronUp size={iconSizes.sm} />

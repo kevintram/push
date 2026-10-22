@@ -1,5 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { X } from 'lucide-react'
+import { useId } from 'react'
 
 import {
 	Button,
@@ -30,7 +31,6 @@ import { REVIEW_QUEUE_SIDEBAR_ID } from './ReviewQueueToolbar'
 type ReviewQueueSidebarProps = {
 	cards: ReadonlyArray<Card>
 	currentCardId: Card['_id'] | null
-	title: string
 	today: DateString
 	filter: CardTypeFilter
 	onCardClick: (cardId: Card['_id']) => void
@@ -77,30 +77,12 @@ const styles = stylex.create({
 		justifyContent: 'space-between',
 	},
 	titleText: {
-		gap: spacing.sm,
-		alignItems: 'baseline',
-		display: 'flex',
 		fontSize: fontSizes.xl,
 		fontWeight: fontWeights.semibold,
-		minInlineSize: 0,
 	},
 	closeButton: {
 		flexShrink: 0,
 		marginInlineEnd: `calc(${spacing.xs} * -1)`,
-	},
-	titleLabel: {
-		overflow: 'hidden',
-		minInlineSize: 0,
-		textOverflow: 'ellipsis',
-		whiteSpace: 'nowrap',
-	},
-	count: {
-		color: semanticColors.textSecondary,
-		flexShrink: 0,
-		fontSize: fontSizes.sm,
-		fontWeight: fontWeights.regular,
-		insetBlockStart: '-1px',
-		position: 'relative',
 	},
 	list: {
 		paddingInline: spacing.md,
@@ -119,32 +101,25 @@ const styles = stylex.create({
 export function ReviewQueueSidebar({
 	cards,
 	currentCardId,
-	title,
 	today,
 	filter,
 	onCardClick,
 	onFilterChange,
 	onClose,
 }: ReviewQueueSidebarProps) {
+	const headingId = useId()
+
 	return (
 		<aside
 			id={REVIEW_QUEUE_SIDEBAR_ID}
-			aria-label={`${title} cards`}
+			aria-labelledby={headingId}
 			{...stylex.props(styles.panel)}
 		>
 			<div {...stylex.props(styles.header)}>
 				<div {...stylex.props(styles.titleRow)}>
-					<h1 {...stylex.props(styles.titleText)}>
-						<span {...stylex.props(styles.titleLabel)}>
-							{title}
-						</span>
-						<span
-							aria-hidden='true'
-							{...stylex.props(styles.count)}
-						>
-							{cards.length}
-						</span>
-					</h1>
+					<h2 id={headingId} {...stylex.props(styles.titleText)}>
+						Queue
+					</h2>
 					<Tooltip>
 						<TooltipTrigger
 							render={
