@@ -9,7 +9,13 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { iconSizes } from '~/styles/tokens.stylex'
+import { semanticColors } from '~/styles/colors/semantic.stylex'
+import {
+	fontSizes,
+	fontWeights,
+	iconSizes,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 import {
 	REVIEW_QUEUE_NEXT_HOTKEY,
@@ -17,6 +23,8 @@ import {
 } from './reviewQueueKeybindings'
 
 type ReviewQueueToolbarProps = {
+	title: string
+	count: number
 	canGoPrevious: boolean
 	canGoNext: boolean
 	queueSidebarOpen: boolean
@@ -30,18 +38,42 @@ export const REVIEW_QUEUE_SIDEBAR_ID = 'review-queue-sidebar'
 
 const styles = stylex.create({
 	header: {
+		gap: spacing.sm,
 		alignItems: 'center',
 		display: 'flex',
 		flexShrink: 0,
-		justifyContent: 'flex-end',
+		justifyContent: 'space-between',
+	},
+	titleText: {
+		gap: spacing.sm,
+		alignItems: 'center',
+		display: 'flex',
+		fontSize: fontSizes.xl,
+		fontWeight: fontWeights.semibold,
+		minInlineSize: 0,
+	},
+	titleLabel: {
+		overflow: 'hidden',
+		minInlineSize: 0,
+		textOverflow: 'ellipsis',
+		whiteSpace: 'nowrap',
+	},
+	count: {
+		color: semanticColors.textSecondary,
+		flexShrink: 0,
+		fontSize: fontSizes.md,
+		fontWeight: fontWeights.regular,
 	},
 	headerButtonCluster: {
 		alignItems: 'center',
 		display: 'flex',
+		flexShrink: 0,
 	},
 })
 
 export function ReviewQueueToolbar({
+	title,
+	count,
 	canGoPrevious,
 	canGoNext,
 	queueSidebarOpen,
@@ -52,6 +84,12 @@ export function ReviewQueueToolbar({
 }: ReviewQueueToolbarProps) {
 	return (
 		<header {...stylex.props(styles.header)}>
+			<h1 {...stylex.props(styles.titleText)}>
+				<span {...stylex.props(styles.titleLabel)}>{title}</span>
+				<span aria-hidden='true' {...stylex.props(styles.count)}>
+					{count}
+				</span>
+			</h1>
 			<div {...stylex.props(styles.headerButtonCluster)}>
 				<Tooltip>
 					<TooltipTrigger

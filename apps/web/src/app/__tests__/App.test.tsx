@@ -308,7 +308,7 @@ describe('v2 app setup', () => {
 		})
 
 		const lateQueue = await screen.findByRole('complementary', {
-			name: 'Late cards',
+			name: 'Queue',
 		})
 		expect(
 			within(lateQueue).getAllByRole('button', {
@@ -343,7 +343,7 @@ describe('v2 app setup', () => {
 		renderRoute('/review/new', { newCards: [flashcard, practiceCard] })
 
 		const sidebar = await screen.findByRole('complementary', {
-			name: 'New cards',
+			name: 'Queue',
 		})
 		expect(
 			within(sidebar).getByRole('button', {
@@ -355,7 +355,8 @@ describe('v2 app setup', () => {
 				name: 'Select Practice prompt',
 			}),
 		).toBeInTheDocument()
-		expect(within(sidebar).getByText('2')).toBeInTheDocument()
+		const heading = screen.getByRole('heading', { level: 1, name: 'New' })
+		expect(heading).toHaveTextContent('2')
 
 		await user.click(
 			within(sidebar).getByRole('radio', { name: 'Flashcards' }),
@@ -371,7 +372,8 @@ describe('v2 app setup', () => {
 				name: 'Select Practice prompt',
 			}),
 		).not.toBeInTheDocument()
-		expect(within(sidebar).getByText('1')).toBeInTheDocument()
+		// The toolbar count is the queue total, not the filtered count.
+		expect(heading).toHaveTextContent('2')
 	})
 
 	it('filters the flagged review queue by card type', async () => {
@@ -394,7 +396,7 @@ describe('v2 app setup', () => {
 		})
 
 		const sidebar = await screen.findByRole('complementary', {
-			name: 'Flagged cards',
+			name: 'Queue',
 		})
 		expect(
 			within(sidebar).getByRole('button', {
@@ -534,7 +536,7 @@ describe('v2 app setup', () => {
 		})
 
 		const sidebar = await screen.findByRole('complementary', {
-			name: 'New cards',
+			name: 'Queue',
 		})
 		const firstCardButton = within(sidebar).getByRole('button', {
 			name: 'Select What problem do generics solve?',
@@ -573,7 +575,7 @@ describe('v2 app setup', () => {
 		})
 
 		const sidebar = await screen.findByRole('complementary', {
-			name: 'New cards',
+			name: 'Queue',
 		})
 		const firstCardButton = within(sidebar).getByRole('button', {
 			name: 'Select What problem do generics solve?',
@@ -606,7 +608,7 @@ describe('v2 app setup', () => {
 		renderRoute('/review/new', { newCards: [card, secondCard] })
 
 		const sidebar = await screen.findByRole('complementary', {
-			name: 'New cards',
+			name: 'Queue',
 		})
 		expect(
 			within(sidebar).getByRole('button', {
@@ -688,7 +690,7 @@ describe('v2 app setup', () => {
 		})
 
 		await screen.findByRole('button', { name: 'Next card' })
-		const sidebar = screen.getByRole('complementary', { name: 'New cards' })
+		const sidebar = screen.getByRole('complementary', { name: 'Queue' })
 		const firstCardButton = within(sidebar).getByRole('button', {
 			name: 'Select What problem do generics solve?',
 		})
@@ -852,7 +854,7 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 		expect(screen.getByText('No cards to review.')).toBeInTheDocument()
 		expect(screen.getByText('No cards.')).toBeInTheDocument()
-		const sidebar = screen.getByRole('complementary', { name: 'New cards' })
+		const sidebar = screen.getByRole('complementary', { name: 'Queue' })
 		expect(
 			within(sidebar).queryAllByRole('button', { name: /^Select / }),
 		).toHaveLength(0)

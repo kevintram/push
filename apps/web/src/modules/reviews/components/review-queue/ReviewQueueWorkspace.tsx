@@ -216,6 +216,8 @@ export function ReviewQueueWorkspace({
 						)}
 					>
 						<ReviewQueueToolbar
+							title={title}
+							count={cards.length}
 							canGoPrevious={canGoPrevious}
 							canGoNext={canGoNext}
 							queueSidebarOpen={queueSidebarOpen}
@@ -261,7 +263,6 @@ export function ReviewQueueWorkspace({
 				{queueSidebarOpen && (
 					<ReviewQueueSidebar
 						cards={visibleCards}
-						title={title}
 						today={today}
 						currentCardId={currentCard?._id ?? null}
 						onCardClick={selectCard}

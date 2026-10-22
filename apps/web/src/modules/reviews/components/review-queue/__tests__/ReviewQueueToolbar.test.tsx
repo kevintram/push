@@ -10,6 +10,8 @@ describe('ReviewQueueToolbar', () => {
 		const view = render(
 			<TooltipProvider delay={0}>
 				<ReviewQueueToolbar
+					title='Due'
+					count={2}
 					canGoPrevious={false}
 					canGoNext
 					queueSidebarOpen
@@ -32,6 +34,8 @@ describe('ReviewQueueToolbar', () => {
 	it('exposes the queue state and controls the sidebar accessibly', () => {
 		const view = render(
 			<ReviewQueueToolbar
+				title='Due'
+				count={2}
 				canGoPrevious={false}
 				canGoNext
 				queueSidebarOpen
@@ -49,6 +53,8 @@ describe('ReviewQueueToolbar', () => {
 
 		view.rerender(
 			<ReviewQueueToolbar
+				title='Due'
+				count={2}
 				canGoPrevious={false}
 				canGoNext
 				queueSidebarOpen={false}
