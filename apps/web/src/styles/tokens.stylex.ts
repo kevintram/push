@@ -87,7 +87,7 @@ export const appSidebar = stylex.defineConsts({
 	// Lands a row's leading icon where a row-height icon button centers its
 	// glyph.
 	rowInset: `calc((${sidebarRowHeight} - ${sidebarIconSize}) / 2)`,
-	// The expanded sidebar, and the library popover beside the collapsed rail.
+	// The expanded sidebar, and the popover beside the collapsed rail.
 	width: '240px',
 })
 

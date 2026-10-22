@@ -14,7 +14,7 @@ vi.mock('@tanstack/react-query', () => ({
 	useQuery: () => ({ data: undefined }),
 }))
 
-vi.mock('~/modules/library/api/collectionQueries', () => ({
+vi.mock('~/modules/collections/api/collectionQueries', () => ({
 	collectionQueries: {
 		detail: () => ({
 			queryKey: ['collection'],

@@ -7,7 +7,7 @@ import {
 	TreeItemContent,
 	TreeItemLabel,
 } from '~/components/ui'
-import type { CollectionWithChildren } from '~/modules/library/types/collection.types'
+import type { CollectionWithChildren } from '~/modules/collections/types/collection.types'
 
 type MoveCollectionItemProps = CollectionWithChildren & {
 	onSelect: (collectionId: Id<'collections'>) => void

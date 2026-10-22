@@ -15,7 +15,7 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
-import { collectionQueries } from '~/modules/library/api/collectionQueries'
+import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { semanticColors } from '~/styles/colors/semantic.stylex'
 import {

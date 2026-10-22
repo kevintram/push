@@ -49,7 +49,7 @@ const styles = stylex.create({
 			default: semanticColors.surfaceTransparent,
 			':focus-visible': semanticColors.borderFocus,
 		},
-		// Inset to match the library tree's rows, which share the sidebar.
+		// Inset to match the collection tree's rows, which share the sidebar.
 		outlineOffset: '-2px',
 		outlineStyle: 'solid',
 		outlineWidth: '2px',

@@ -6,7 +6,7 @@ import type { Ref } from 'react'
 
 import { SidebarItem } from '~/components/sidebar'
 import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
-import { LibraryNavigation } from '~/modules/library/components/library-navigation/LibraryNavigation'
+import { CollectionsNavigation } from '~/modules/collections/components/collections-navigation/CollectionsNavigation'
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { ReviewNavigation } from '~/modules/reviews/components/review-navigation/ReviewNavigation'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
@@ -54,7 +54,7 @@ const styles = stylex.create({
 		display: 'flex',
 		marginInlineStart: 'auto',
 	},
-	library: {
+	collections: {
 		display: 'flex',
 		flexBasis: 0,
 		flexGrow: 1,
@@ -105,8 +105,8 @@ export function ExpandedAppSidebar({
 				</div>
 			</div>
 			<ReviewNavigation />
-			<div {...stylex.props(styles.library)}>
-				<LibraryNavigation />
+			<div {...stylex.props(styles.collections)}>
+				<CollectionsNavigation />
 			</div>
 			<SidebarItem
 				icon={Settings}

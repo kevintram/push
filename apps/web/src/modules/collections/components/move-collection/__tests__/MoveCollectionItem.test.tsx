@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import type { CollectionWithChildren } from '~/modules/library/types/collection.types'
+import type { CollectionWithChildren } from '~/modules/collections/types/collection.types'
 
 import { MoveCollectionItem } from '../MoveCollectionItem'
 

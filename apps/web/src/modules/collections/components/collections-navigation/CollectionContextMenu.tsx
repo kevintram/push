@@ -11,19 +11,19 @@ import {
 } from '~/components/ui'
 import { iconSizes, iconWeights } from '~/styles/tokens.stylex'
 
-type LibraryCollectionContextMenuProps = {
+type CollectionContextMenuProps = {
 	trigger: ReactElement
 	onCreateSubcollection: () => void
 	onMove: () => void
 	onDelete: () => void
 }
 
-export function LibraryCollectionContextMenu({
+export function CollectionContextMenu({
 	trigger,
 	onCreateSubcollection,
 	onMove,
 	onDelete,
-}: LibraryCollectionContextMenuProps) {
+}: CollectionContextMenuProps) {
 	const [open, setOpen] = useState(false)
 	useHoldPopoverOpen(open)
 

@@ -25,11 +25,11 @@ import { useCreateCollection } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
 import {
 	type CollectionOpenChangeHandler,
-	LibraryCollectionItem,
-} from './LibraryCollectionItem'
+	CollectionTreeItem,
+} from './CollectionTreeItem'
 import { RevealSelectionPill } from './RevealSelectionPill'
 
-const LIBRARY_NAVIGATION_STORAGE_KEY = 'libraryNavigationOpen'
+const COLLECTIONS_NAVIGATION_STORAGE_KEY = 'collectionsNavigationOpen'
 
 const styles = stylex.create({
 	container: {
@@ -79,7 +79,7 @@ const styles = stylex.create({
 	},
 })
 
-type LibraryNavigationContentProps = {
+type CollectionsNavigationContentProps = {
 	collections: ReadonlyArray<CollectionWithChildren>
 	openCollectionIds: ReadonlySet<Id<'collections'>>
 	onCollectionOpenChange: CollectionOpenChangeHandler
@@ -94,23 +94,24 @@ type LibraryNavigationContentProps = {
  * entire sidebar while its ref is attached to the header element as the root
  * drop target.
  */
-export function LibraryNavigationContent({
+export function CollectionsNavigationContent({
 	collections,
 	openCollectionIds,
 	onCollectionOpenChange,
 	onCollapseAll,
 	hiddenSelection,
 	onRevealSelection,
-}: LibraryNavigationContentProps) {
+}: CollectionsNavigationContentProps) {
 	const createCollection = useCreateCollection()
 	const navigate = useNavigate()
 	const scrollAreaRef = useRef<HTMLDivElement>(null)
 	const [isOpen, setIsOpen] = useState(() =>
-		readStoredBoolean(LIBRARY_NAVIGATION_STORAGE_KEY, true),
+		readStoredBoolean(COLLECTIONS_NAVIGATION_STORAGE_KEY, true),
 	)
 
-	const { ref: libraryRootRef, isDropTarget: libraryRootIsDropTarget } =
-		useDroppable({ id: 'library-root' })
+	const { ref: rootRef, isDropTarget: rootIsDropTarget } = useDroppable({
+		id: 'collections-root',
+	})
 
 	const handleCreateCollection = useCallback(() => {
 		createCollection.mutate(
@@ -127,7 +128,7 @@ export function LibraryNavigationContent({
 
 	const handleOpenChange = useCallback((open: boolean) => {
 		setIsOpen(open)
-		writeStoredBoolean(LIBRARY_NAVIGATION_STORAGE_KEY, open)
+		writeStoredBoolean(COLLECTIONS_NAVIGATION_STORAGE_KEY, open)
 	}, [])
 
 	// The pill unmounts once the selection is revealed, so focus moves to its
@@ -147,15 +148,17 @@ export function LibraryNavigationContent({
 	return (
 		<SidebarCollapsibleItem
 			open={isOpen}
-			aria-label='Library'
+			aria-label='Collections'
 			onOpenChange={handleOpenChange}
 			xstyle={[
 				styles.container,
-				libraryRootIsDropTarget && styles.containerIsDropTarget,
+				rootIsDropTarget && styles.containerIsDropTarget,
 			]}
 		>
-			<SidebarCollapsibleHeader ref={libraryRootRef}>
-				<SidebarCollapsibleTrigger>Library</SidebarCollapsibleTrigger>
+			<SidebarCollapsibleHeader ref={rootRef}>
+				<SidebarCollapsibleTrigger>
+					Collections
+				</SidebarCollapsibleTrigger>
 				<SidebarCollapsibleActions>
 					<Tooltip>
 						<TooltipTrigger
@@ -188,7 +191,7 @@ export function LibraryNavigationContent({
 			</SidebarCollapsibleHeader>
 			<div {...stylex.props(styles.listArea)}>
 				<SidebarCollapsibleContent
-					render={<nav aria-label='Library collections' />}
+					render={<nav aria-label='Collection tree' />}
 					xstyle={styles.nav}
 				>
 					<div
@@ -202,7 +205,7 @@ export function LibraryNavigationContent({
 							}
 						>
 							{collections.map(collection => (
-								<LibraryCollectionItem
+								<CollectionTreeItem
 									key={collection._id}
 									{...collection}
 									openCollectionIds={openCollectionIds}

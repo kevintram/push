@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import type { CollectionWithChildren } from '~/modules/library/types/collection.types'
+import type { CollectionWithChildren } from '~/modules/collections/types/collection.types'
 
 import { MoveCollectionTree } from '../MoveCollectionTree'
 
@@ -46,10 +46,10 @@ describe('MoveCollectionTree', () => {
 		expect(screen.getByRole('button', { name: 'B' })).toBeInTheDocument()
 	})
 
-	it('renders a selectable Library root when allowLibraryRoot is true', () => {
+	it('renders a selectable root when allowRoot is true', () => {
 		render(
 			<MoveCollectionTree
-				allowLibraryRoot
+				allowRoot
 				onSelect={vi.fn()}
 				selectedDestination={null}
 				collections={[collection('A')]}
@@ -57,11 +57,11 @@ describe('MoveCollectionTree', () => {
 		)
 
 		expect(
-			screen.getByRole('button', { name: 'Library' }),
+			screen.getByRole('button', { name: 'Collections' }),
 		).toBeInTheDocument()
 	})
 
-	it('does not render Library root by default', () => {
+	it('does not render the root by default', () => {
 		render(
 			<MoveCollectionTree
 				onSelect={vi.fn()}
@@ -71,16 +71,16 @@ describe('MoveCollectionTree', () => {
 		)
 
 		expect(
-			screen.queryByRole('button', { name: 'Library' }),
+			screen.queryByRole('button', { name: 'Collections' }),
 		).not.toBeInTheDocument()
 	})
 
-	it('calls onSelect with null when Library root is clicked', async () => {
+	it('calls onSelect with null when the root is clicked', async () => {
 		const onSelect = vi.fn()
 
 		render(
 			<MoveCollectionTree
-				allowLibraryRoot
+				allowRoot
 				onSelect={onSelect}
 				selectedDestination={'A' as Id<'collections'>}
 				collections={[collection('A')]}
@@ -89,25 +89,24 @@ describe('MoveCollectionTree', () => {
 
 		await userEvent
 			.setup()
-			.click(screen.getByRole('button', { name: 'Library' }))
+			.click(screen.getByRole('button', { name: 'Collections' }))
 
 		expect(onSelect).toHaveBeenCalledWith(null)
 	})
 
-	it('marks the Library root as selected when destination is null', () => {
+	it('marks the root as selected when destination is null', () => {
 		render(
 			<MoveCollectionTree
-				allowLibraryRoot
+				allowRoot
 				onSelect={vi.fn()}
 				selectedDestination={null}
 				collections={[collection('A')]}
 			/>,
 		)
 
-		expect(screen.getByRole('button', { name: 'Library' })).toHaveAttribute(
-			'aria-pressed',
-			'true',
-		)
+		expect(
+			screen.getByRole('button', { name: 'Collections' }),
+		).toHaveAttribute('aria-pressed', 'true')
 	})
 
 	it('excludes the specified collection and its entire subtree', async () => {

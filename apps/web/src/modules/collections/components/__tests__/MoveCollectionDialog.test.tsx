@@ -3,7 +3,7 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Collection } from '~/modules/library/types/collection.types'
+import type { Collection } from '~/modules/collections/types/collection.types'
 
 import { MoveCollectionDialog } from '../MoveCollectionDialog'
 
@@ -42,7 +42,7 @@ const collections: ReadonlyArray<Collection> = [
 const languages = collections[0] as Collection
 const spanish = collections[1] as Collection
 
-vi.mock('~/modules/library/api/collectionQueries', () => ({
+vi.mock('~/modules/collections/api/collectionQueries', () => ({
 	collectionQueries: {
 		list: () => ({
 			queryKey: ['convex', 'collections', 'list'],
@@ -91,7 +91,7 @@ describe('MoveCollectionDialog', () => {
 		)
 	})
 
-	it('moves a nested collection to Library root with parentId null', async () => {
+	it('moves a nested collection to the root with parentId null', async () => {
 		const user = userEvent.setup()
 
 		render(
@@ -102,7 +102,7 @@ describe('MoveCollectionDialog', () => {
 			/>,
 		)
 
-		await user.click(screen.getByRole('button', { name: 'Library' }))
+		await user.click(screen.getByRole('button', { name: 'Collections' }))
 		await user.click(screen.getByRole('button', { name: 'Move' }))
 
 		expect(updateMutate).toHaveBeenCalledWith(

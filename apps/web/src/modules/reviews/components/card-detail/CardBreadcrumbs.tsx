@@ -2,8 +2,8 @@ import type { Id } from '@convex/_generated/dataModel'
 import type { Collection } from '@convex/validators/collections'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
-import { collectionQueries } from '~/modules/library/api/collectionQueries'
-import { CollectionPathBreadcrumbs } from '~/modules/library/components/CollectionPathBreadcrumbs'
+import { collectionQueries } from '~/modules/collections/api/collectionQueries'
+import { CollectionPathBreadcrumbs } from '~/modules/collections/components/CollectionPathBreadcrumbs'
 
 type CardBreadcrumbsProps = {
 	primaryText: string

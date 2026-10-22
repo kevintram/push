@@ -21,10 +21,10 @@ import {
 	collectionQueries,
 	useDeleteCollection,
 	useUpdateCollection,
-} from '~/modules/library/api/collectionQueries'
-import { CollectionSidebar } from '~/modules/library/components/collection-sidebar/CollectionSidebar'
-import { CollectionPathBreadcrumbs } from '~/modules/library/components/CollectionPathBreadcrumbs'
-import { MoveCollectionDialog } from '~/modules/library/components/MoveCollectionDialog'
+} from '~/modules/collections/api/collectionQueries'
+import { CollectionSidebar } from '~/modules/collections/components/collection-sidebar/CollectionSidebar'
+import { CollectionPathBreadcrumbs } from '~/modules/collections/components/CollectionPathBreadcrumbs'
+import { MoveCollectionDialog } from '~/modules/collections/components/MoveCollectionDialog'
 import { cardQueries, useCreateCard } from '~/modules/reviews/api/cardQueries'
 import { CardItemLink } from '~/modules/reviews/components/CardItemLink'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'

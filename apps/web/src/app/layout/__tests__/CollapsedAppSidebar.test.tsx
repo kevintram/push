@@ -37,9 +37,9 @@ vi.mock('~/modules/reviews/components/HideModeButton', () => ({
 }))
 
 vi.mock(
-	'~/modules/library/components/library-navigation/LibraryNavigation',
+	'~/modules/collections/components/collections-navigation/CollectionsNavigation',
 	() => ({
-		LibraryNavigation: () => <nav aria-label='Library collections' />,
+		CollectionsNavigation: () => <nav aria-label='Collection tree' />,
 	}),
 )
 
@@ -110,7 +110,7 @@ describe('CollapsedAppSidebar', () => {
 		const newLink = screen.getByRole('link', { name: 'New' })
 		const late = screen.getByRole('link', { name: 'Late' })
 		const flagged = screen.getByRole('link', { name: 'Flagged' })
-		const library = screen.getByRole('button', { name: 'Library' })
+		const collections = screen.getByRole('button', { name: 'Collections' })
 		const settings = screen.getByRole('link', { name: 'Settings' })
 
 		expect(toggle).toBeEnabled()
@@ -135,26 +135,26 @@ describe('CollapsedAppSidebar', () => {
 		expect(settings).toHaveAttribute('href', '/settings')
 		expect(settings).toHaveAttribute('data-exact', 'true')
 		expect(
-			flagged.compareDocumentPosition(library) &
+			flagged.compareDocumentPosition(collections) &
 				Node.DOCUMENT_POSITION_FOLLOWING,
 		).toBeTruthy()
 		expect(
-			library.compareDocumentPosition(settings) &
+			collections.compareDocumentPosition(settings) &
 				Node.DOCUMENT_POSITION_FOLLOWING,
 		).toBeTruthy()
 	})
 
-	it('opens the library tree from the Library button', async () => {
+	it('opens the collection tree from the Collections button', async () => {
 		const user = userEvent.setup()
 		renderSidebar()
 
 		expect(
-			screen.queryByRole('navigation', { name: 'Library collections' }),
+			screen.queryByRole('navigation', { name: 'Collection tree' }),
 		).not.toBeInTheDocument()
-		await user.click(screen.getByRole('button', { name: 'Library' }))
+		await user.click(screen.getByRole('button', { name: 'Collections' }))
 		expect(
 			await screen.findByRole('navigation', {
-				name: 'Library collections',
+				name: 'Collection tree',
 			}),
 		).toBeInTheDocument()
 	})

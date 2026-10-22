@@ -9,7 +9,7 @@ import {
 	PopoverTrigger,
 	useHoldablePopover,
 } from '~/components/ui'
-import { LibraryNavigation } from '~/modules/library/components/library-navigation/LibraryNavigation'
+import { CollectionsNavigation } from '~/modules/collections/components/collections-navigation/CollectionsNavigation'
 import { appSidebar, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -24,10 +24,10 @@ const styles = stylex.create({
 })
 
 /**
- * Opens the library tree beside the collapsed rail on hover, so collections
+ * Opens the collection tree beside the collapsed rail on hover, so collections
  * stay reachable without expanding the sidebar.
  */
-export function LibraryRailPopover() {
+export function CollectionsRailPopover() {
 	// The tree's menus, dialogs, and drags read as leaving or pressing
 	// outside the popup, so they hold it open instead.
 	const { open, onOpenChange, popupRef, hold } = useHoldablePopover()
@@ -38,7 +38,11 @@ export function LibraryRailPopover() {
 				delay={0}
 				openOnHover
 				render={
-					<SidebarItem aria-label='Library' icon={Library} iconOnly />
+					<SidebarItem
+						aria-label='Collections'
+						icon={Library}
+						iconOnly
+					/>
 				}
 			/>
 			<PopoverContent
@@ -51,7 +55,7 @@ export function LibraryRailPopover() {
 				xstyle={styles.content}
 			>
 				<PopoverHoldContext value={hold}>
-					<LibraryNavigation />
+					<CollectionsNavigation />
 				</PopoverHoldContext>
 			</PopoverContent>
 		</Popover>

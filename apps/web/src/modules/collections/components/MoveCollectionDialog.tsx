@@ -1,7 +1,7 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { toast } from 'sonner'
 
-import { useUpdateCollection } from '~/modules/library/api/collectionQueries'
+import { useUpdateCollection } from '~/modules/collections/api/collectionQueries'
 
 import { MoveCollectionDialogBase } from './move-collection'
 
@@ -33,7 +33,7 @@ export function MoveCollectionDialog({
 
 	return (
 		<MoveCollectionDialogBase
-			allowLibraryRoot
+			allowRoot
 			excludeCollectionId={collectionId}
 			initialDestination={parentId ?? null}
 			isPending={updateCollection.isPending}

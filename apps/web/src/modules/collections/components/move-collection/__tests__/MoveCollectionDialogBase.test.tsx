@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Collection } from '~/modules/library/types/collection.types'
+import type { Collection } from '~/modules/collections/types/collection.types'
 
 import { MoveCollectionDialogBase } from '../MoveCollectionDialogBase'
 
@@ -50,10 +50,10 @@ let queryState: QueryState
 
 type CollectionOnlyDialogProps = Extract<
 	React.ComponentProps<typeof MoveCollectionDialogBase>,
-	{ allowLibraryRoot?: false }
+	{ allowRoot?: false }
 >
 
-vi.mock('~/modules/library/api/collectionQueries', () => ({
+vi.mock('~/modules/collections/api/collectionQueries', () => ({
 	collectionQueries: {
 		list: () => ({
 			queryKey: COLLECTION_LIST_KEY,
@@ -173,11 +173,11 @@ describe('MoveCollectionDialogBase', () => {
 		expect(onOpenChange).not.toHaveBeenCalled()
 	})
 
-	it('calls onMove with null when Library root is selected', async () => {
+	it('calls onMove with null when the root is selected', async () => {
 		const onMove = vi.fn()
 		render(
 			<MoveCollectionDialogBase
-				allowLibraryRoot
+				allowRoot
 				initialDestination={'collection-1' as Id<'collections'>}
 				isPending={false}
 				onMove={onMove}
@@ -187,7 +187,7 @@ describe('MoveCollectionDialogBase', () => {
 		)
 		const user = userEvent.setup()
 
-		await user.click(screen.getByRole('button', { name: 'Library' }))
+		await user.click(screen.getByRole('button', { name: 'Collections' }))
 		await user.click(screen.getByRole('button', { name: 'Move' }))
 
 		expect(onMove).toHaveBeenCalledWith(null)

@@ -6,7 +6,7 @@ import { cloneElement } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { CollectionWithChildren } from '../../../types/collection.types'
-import { LibraryCollectionItem } from '../LibraryCollectionItem'
+import { CollectionTreeItem } from '../CollectionTreeItem'
 
 type DraggableInput = {
 	id: string
@@ -119,11 +119,11 @@ function collection(
 
 const closedCollectionIds = new Set<Id<'collections'>>()
 
-function TestLibraryCollectionItem(
+function TestCollectionTreeItem(
 	props: CollectionWithChildren & { dropDisabled?: boolean },
 ) {
 	return (
-		<LibraryCollectionItem
+		<CollectionTreeItem
 			{...props}
 			openCollectionIds={closedCollectionIds}
 			onCollectionOpenChange={() => {}}
@@ -148,7 +148,7 @@ describe('CollectionLink drag and drop', () => {
 
 	it('registers every collection as a draggable and drop target using its collection ID', () => {
 		render(
-			<TestLibraryCollectionItem
+			<TestCollectionTreeItem
 				{...collection('parent', [collection('child')])}
 			/>,
 		)
@@ -165,7 +165,7 @@ describe('CollectionLink drag and drop', () => {
 
 	it('drags only the collection row, not its subtree', () => {
 		render(
-			<TestLibraryCollectionItem
+			<TestCollectionTreeItem
 				{...collection('parent', [collection('child')])}
 			/>,
 		)
@@ -182,12 +182,12 @@ describe('CollectionLink drag and drop', () => {
 
 		render(
 			<ul>
-				<TestLibraryCollectionItem
+				<TestCollectionTreeItem
 					{...collection('parent', [
 						collection('child', [collection('grandchild')]),
 					])}
 				/>
-				<TestLibraryCollectionItem {...collection('sibling')} />
+				<TestCollectionTreeItem {...collection('sibling')} />
 			</ul>,
 		)
 
@@ -201,7 +201,7 @@ describe('CollectionLink drag and drop', () => {
 
 	it('propagates an inherited disabled state through the entire subtree', () => {
 		render(
-			<TestLibraryCollectionItem
+			<TestCollectionTreeItem
 				{...collection('parent', [
 					collection('child', [collection('grandchild')]),
 				])}
@@ -218,13 +218,13 @@ describe('CollectionLink drag and drop', () => {
 
 	it('applies a visual state while a collection is being dragged', () => {
 		const rendered = render(
-			<TestLibraryCollectionItem {...collection('collection')} />,
+			<TestCollectionTreeItem {...collection('collection')} />,
 		)
 		const defaultClassName = screen.getByRole('listitem').className
 
 		dnd.draggingIds.add('collection')
 		rendered.rerender(
-			<TestLibraryCollectionItem {...collection('collection')} />,
+			<TestCollectionTreeItem {...collection('collection')} />,
 		)
 
 		expect(screen.getByRole('listitem').className).not.toBe(
@@ -234,13 +234,13 @@ describe('CollectionLink drag and drop', () => {
 
 	it('applies a visual state while a collection is the active drop target', () => {
 		const rendered = render(
-			<TestLibraryCollectionItem {...collection('collection')} />,
+			<TestCollectionTreeItem {...collection('collection')} />,
 		)
 		const defaultClassName = screen.getByRole('listitem').className
 
 		dnd.dropTargetIds.add('collection')
 		rendered.rerender(
-			<TestLibraryCollectionItem {...collection('collection')} />,
+			<TestCollectionTreeItem {...collection('collection')} />,
 		)
 
 		expect(screen.getByRole('listitem').className).not.toBe(
@@ -249,7 +249,7 @@ describe('CollectionLink drag and drop', () => {
 	})
 
 	it('requires pointer movement before activating mouse and pen drags', () => {
-		render(<TestLibraryCollectionItem {...collection('collection')} />)
+		render(<TestCollectionTreeItem {...collection('collection')} />)
 		const sensor = dnd.draggableInputs[0]?.sensors?.[0]
 		const activate = sensor?.options?.activationConstraints
 
@@ -272,7 +272,7 @@ describe('CollectionLink drag and drop', () => {
 	})
 
 	it('uses a delay and movement tolerance before activating touch drags', () => {
-		render(<TestLibraryCollectionItem {...collection('collection')} />)
+		render(<TestCollectionTreeItem {...collection('collection')} />)
 		const sensor = dnd.draggableInputs[0]?.sensors?.[0]
 		const activate = sensor?.options?.activationConstraints
 
@@ -288,7 +288,7 @@ describe('CollectionLink drag and drop', () => {
 	})
 
 	it('exposes a Move action in the context menu', () => {
-		render(<TestLibraryCollectionItem {...collection('collection')} />)
+		render(<TestCollectionTreeItem {...collection('collection')} />)
 
 		expect(screen.getByText('Move')).toBeInTheDocument()
 	})

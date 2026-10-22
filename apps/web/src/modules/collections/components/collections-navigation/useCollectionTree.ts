@@ -8,7 +8,7 @@ import { readStoredStringArray, writeStoredValue } from '~/utils/storage'
 import { collectionQueries } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
 import { treeifyCollections } from '../../utils/treeifyCollections'
-import type { CollectionOpenChangeHandler } from './LibraryCollectionItem'
+import type { CollectionOpenChangeHandler } from './CollectionTreeItem'
 
 type CollectionId = Id<'collections'>
 
@@ -26,7 +26,7 @@ export type CollectionTree = {
 
 // IDs never contain NUL, so it is a safe separator.
 const KEY_SEPARATOR = '\0'
-const OPEN_COLLECTIONS_STORAGE_KEY = 'libraryOpenCollectionIds'
+const OPEN_COLLECTIONS_STORAGE_KEY = 'collectionsNavigationOpenIds'
 
 function readStoredOpenCollectionIds(): ReadonlySet<CollectionId> {
 	return new Set(
@@ -37,7 +37,7 @@ function readStoredOpenCollectionIds(): ReadonlySet<CollectionId> {
 }
 
 /**
- * The library tree: the user's collections as a forest, plus which of its
+ * The collection tree: the user's collections as a forest, plus which of its
  * branches are open. It stays empty while the collection list loads so the
  * persistent app sidebar never blocks the current route.
  *
@@ -54,7 +54,7 @@ export function useCollectionTree(): CollectionTree {
 	// `AppShell` keeps this query subscribed while the sidebar is collapsed, so
 	// the list is usually cached by the time the tree mounts. Keep the shell
 	// usable while a cold load is still in flight.
-	// TODO(2): Handle query errors so a failed request isn't shown as an empty library.
+	// TODO(2): Handle query errors so a failed request isn't shown as an empty tree.
 	const { data } = useQuery(collectionQueries.list())
 	// A query error keeps the last data, so check for data, not success.
 	const isLoaded = data !== undefined

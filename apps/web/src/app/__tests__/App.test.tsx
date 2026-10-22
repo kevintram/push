@@ -21,7 +21,7 @@ import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
-import { collectionQueries } from '~/modules/library/api/collectionQueries'
+import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { dueQueries } from '~/modules/reviews/api/dueQueries'
 import { reviewQueries } from '~/modules/reviews/api/reviewQueries'
@@ -921,7 +921,7 @@ describe('v2 app setup', () => {
 			within(primaryNavigation).getByRole('link', { name: 'Settings' }),
 		).toBeInTheDocument()
 		expect(
-			within(primaryNavigation).queryByText('Library'),
+			within(primaryNavigation).queryByText('Collections'),
 		).not.toBeInTheDocument()
 
 		await user.click(
@@ -939,7 +939,7 @@ describe('v2 app setup', () => {
 		expect(collapseToggle).toHaveFocus()
 		expect(
 			within(expandedNavigation).getByRole('navigation', {
-				name: 'Library collections',
+				name: 'Collection tree',
 			}),
 		).toBeInTheDocument()
 		expect(window.localStorage.getItem('appSidebarExpanded')).toBe('true')
@@ -950,7 +950,7 @@ describe('v2 app setup', () => {
 			screen.getByRole('button', { name: 'Expand sidebar' }),
 		).toHaveFocus()
 		expect(
-			screen.queryByRole('navigation', { name: 'Library collections' }),
+			screen.queryByRole('navigation', { name: 'Collection tree' }),
 		).not.toBeInTheDocument()
 	})
 
@@ -1122,7 +1122,7 @@ describe('v2 app setup', () => {
 			within(breadcrumb).getByText('What problem do generics solve?'),
 		).toHaveAttribute('aria-current', 'page')
 		expect(
-			screen.queryByRole('navigation', { name: 'Library collections' }),
+			screen.queryByRole('navigation', { name: 'Collection tree' }),
 		).not.toBeInTheDocument()
 	})
 

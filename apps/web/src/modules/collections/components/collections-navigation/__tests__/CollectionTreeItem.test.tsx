@@ -5,7 +5,7 @@ import { cloneElement } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { CollectionWithChildren } from '../../../types/collection.types'
-import { LibraryCollectionItem } from '../LibraryCollectionItem'
+import { CollectionTreeItem } from '../CollectionTreeItem'
 
 const mocks = vi.hoisted(() => ({
 	activeCollectionId: undefined as string | undefined,
@@ -80,7 +80,7 @@ function renderItem(
 ) {
 	render(
 		<ul>
-			<LibraryCollectionItem
+			<CollectionTreeItem
 				{...props}
 				openCollectionIds={new Set(openIds as Array<Id<'collections'>>)}
 				onCollectionOpenChange={mocks.onCollectionOpenChange}
@@ -94,7 +94,7 @@ function clickLabel(name: string, init?: MouseEventInit) {
 	return fireEvent.click(screen.getByLabelText(name), init)
 }
 
-describe('LibraryCollectionItem label click', () => {
+describe('CollectionTreeItem label click', () => {
 	beforeEach(() => {
 		mocks.activeCollectionId = undefined
 		mocks.onCollectionOpenChange.mockClear()

@@ -8,12 +8,12 @@ import {
 	TreeItemContent,
 	TreeItemLabel,
 } from '~/components/ui'
-import type { CollectionWithChildren } from '~/modules/library/types/collection.types'
+import type { CollectionWithChildren } from '~/modules/collections/types/collection.types'
 
 import { MoveCollectionItem } from './MoveCollectionItem'
 
 type MoveCollectionTreeProps = {
-	allowLibraryRoot?: boolean
+	allowRoot?: boolean
 	excludeCollectionId?: Id<'collections'>
 	onSelect: (destination: Id<'collections'> | null) => void
 	selectedDestination: Id<'collections'> | null
@@ -21,7 +21,7 @@ type MoveCollectionTreeProps = {
 }
 
 export function MoveCollectionTree({
-	allowLibraryRoot = false,
+	allowRoot = false,
 	excludeCollectionId,
 	onSelect,
 	selectedDestination,
@@ -35,19 +35,19 @@ export function MoveCollectionTree({
 		[collections, excludeCollectionId],
 	)
 
-	const isLibrarySelected = selectedDestination === null
+	const isRootSelected = selectedDestination === null
 
 	return (
 		<Tree>
-			{allowLibraryRoot ? (
-				<TreeItem selected={isLibrarySelected}>
+			{allowRoot ? (
+				<TreeItem selected={isRootSelected}>
 					<TreeItemContent>
-						<TreeItemCollapsibleTrigger aria-label='Toggle Library' />
+						<TreeItemCollapsibleTrigger aria-label='Toggle Collections' />
 						<TreeItemLabel
-							aria-pressed={isLibrarySelected}
+							aria-pressed={isRootSelected}
 							onClick={() => onSelect(null)}
 						>
-							Library
+							Collections
 						</TreeItemLabel>
 					</TreeItemContent>
 				</TreeItem>
