@@ -3,7 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 
 import { SidebarPanel } from '~/components/SidebarPanel'
 import { Button } from '~/components/ui'
@@ -42,16 +42,8 @@ type SubcollectionsPanelProps = {
 export function SubcollectionsPanel({
 	collectionId,
 }: SubcollectionsPanelProps) {
-	// The full collection list is already loaded by the collection route and
-	// subscribed by the app shell, so filtering it here costs nothing beyond the
-	// parent's own render.
-	const { data: collections } = useSuspenseQuery(collectionQueries.list())
-	const subcollections = useMemo(
-		() =>
-			collections.filter(
-				collection => collection.parentId === collectionId,
-			),
-		[collections, collectionId],
+	const { data: subcollections } = useSuspenseQuery(
+		collectionQueries.children(collectionId),
 	)
 
 	const createCollection = useCreateCollection()

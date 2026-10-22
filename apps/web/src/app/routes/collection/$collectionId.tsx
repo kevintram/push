@@ -21,8 +21,9 @@ export const Route = createFileRoute('/collection/$collectionId')({
 		if (!auth.isAuthenticated) return
 
 		await Promise.all([
-			// The subcollections panel filters the full list for children.
-			queryClient.ensureQueryData(collectionQueries.list()),
+			queryClient.ensureQueryData(
+				collectionQueries.children(params.collectionId),
+			),
 			queryClient.ensureQueryData(
 				collectionQueries.detail(params.collectionId, {
 					expandPath: true,

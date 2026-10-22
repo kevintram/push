@@ -158,6 +158,12 @@ function renderRoute(
 	queryClient.setQueryData(collectionQueries.list().queryKey, [
 		...collectionsById.values(),
 	])
+	queryClient.setQueryData(
+		collectionQueries.children(collectionId).queryKey,
+		[...collectionsById.values()].filter(
+			entry => entry.parentId === collectionId,
+		),
+	)
 	queryClient.setQueryData(dueQueries.listDue(today).queryKey, dueEntries)
 	queryClient.setQueryData(dueQueries.listLate(today).queryKey, lateEntries)
 	queryClient.setQueryData(
@@ -1041,6 +1047,34 @@ describe('v2 app setup', () => {
 		expect(
 			within(breadcrumb).getByText('Learning TypeScript'),
 		).toHaveAttribute('aria-current', 'page')
+	})
+
+	it('lists only direct children in the subcollections panel', async () => {
+		const child: Doc<'collections'> = {
+			...collection,
+			_id: 'collection-child' as Id<'collections'>,
+			parentId: collectionId,
+			title: 'Generics',
+		}
+		const unrelated: Doc<'collections'> = {
+			...collection,
+			_id: 'collection-unrelated' as Id<'collections'>,
+			title: 'Unrelated',
+		}
+
+		renderRoute(`/collection/${collectionId}`, {
+			collections: [child, unrelated],
+		})
+
+		const panel = await screen.findByRole('region', {
+			name: 'Subcollections',
+		})
+		expect(
+			within(panel).getByRole('link', { name: 'Generics' }),
+		).toHaveAttribute('href', `/collection/${child._id}`)
+		expect(
+			within(panel).queryByRole('link', { name: 'Unrelated' }),
+		).not.toBeInTheDocument()
 	})
 
 	it('renders the shared error page when a collection does not exist', async () => {

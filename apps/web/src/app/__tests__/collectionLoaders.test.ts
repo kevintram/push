@@ -40,7 +40,7 @@ describe('authenticated collection loaders', () => {
 		expect(context.queryClient.ensureQueryData).not.toHaveBeenCalled()
 	})
 
-	it('warms the collection list, detail, and cards after Convex authenticates', async () => {
+	it('warms collection children, detail, and cards after Convex authenticates', async () => {
 		const context = createLoaderContext(true)
 		context.queryClient.ensureQueryData.mockResolvedValue([])
 		const loader = CollectionRoute.options.loader as unknown as (args: {
@@ -53,7 +53,7 @@ describe('authenticated collection loaders', () => {
 
 		expect(context.queryClient.ensureQueryData).toHaveBeenCalledTimes(3)
 		expect(context.queryClient.ensureQueryData).toHaveBeenCalledWith(
-			collectionQueries.list(),
+			collectionQueries.children(collectionId),
 		)
 		expect(context.queryClient.ensureQueryData).toHaveBeenCalledWith(
 			collectionQueries.detail(collectionId, { expandPath: true }),

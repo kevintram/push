@@ -14,6 +14,8 @@ import { getErrorMessage } from '~/utils/error'
 // subscribes twice.
 export const collectionQueries = {
 	list: () => convexQuery(api.collections.list, {}),
+	children: (collectionId: Id<'collections'>) =>
+		convexQuery(api.collections.listChildren, { collectionId }),
 	search: (query: string) => convexQuery(api.collections.search, { query }),
 	detail: (
 		collectionId: Id<'collections'>,
