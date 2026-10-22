@@ -90,7 +90,17 @@ describe('ReviewDialogBreadcrumbs', () => {
 		{
 			name: 'a collapsed path',
 			ids: ['root', 'grandparent', 'ancestor', 'collection'],
-			expected: ['…', '/', 'collection', '/', 'Card', '/', 'Reviews'],
+			expected: [
+				'root',
+				'/',
+				'…',
+				'/',
+				'collection',
+				'/',
+				'Card',
+				'/',
+				'Reviews',
+			],
 		},
 	])(
 		'ends the trail with the card and reviews for $name',
@@ -108,14 +118,14 @@ describe('ReviewDialogBreadcrumbs', () => {
 			onNavigate,
 		)
 
-		for (const label of ['collection', 'Card', 'Reviews']) {
+		for (const label of ['root', 'collection', 'Card', 'Reviews']) {
 			fireEvent.click(screen.getByRole('link', { name: label }))
 		}
 		fireEvent.click(
 			screen.getByRole('button', { name: 'Show hidden collections' }),
 		)
-		fireEvent.click(screen.getByRole('menuitem', { name: 'root' }))
+		fireEvent.click(screen.getByRole('menuitem', { name: 'ancestor' }))
 
-		expect(onNavigate).toHaveBeenCalledTimes(4)
+		expect(onNavigate).toHaveBeenCalledTimes(5)
 	})
 })

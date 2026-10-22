@@ -16,9 +16,8 @@ import {
 	DropdownMenuTrigger,
 } from '~/components/ui'
 import { type Collection } from '~/modules/collections/types/collection.types'
+import { collapseCollectionPath } from '~/modules/collections/utils/collapseCollectionPath'
 import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcrumbLabel'
-
-const MAX_VISIBLE_BREADCRUMB_ITEMS = 4
 
 const styles = stylex.create({
 	link: {
@@ -40,19 +39,34 @@ export function CollectionPathBreadcrumbs({
 	children,
 	onNavigate,
 }: CollectionPathBreadcrumbsProps) {
-	const shouldCollapseCollections =
-		collections.length + 1 > MAX_VISIBLE_BREADCRUMB_ITEMS
-	const visibleCollections = shouldCollapseCollections
-		? collections.slice(-1)
-		: collections
-	const overflowCollections = shouldCollapseCollections
-		? collections.slice(0, -1)
-		: []
+	const { head, hidden, tail } = collapseCollectionPath(collections)
+
+	const renderCollection = (collection: Collection) => (
+		<Fragment key={collection._id}>
+			<BreadcrumbItem>
+				<BreadcrumbLink
+					render={
+						<Link
+							to='/collection/$collectionId'
+							params={{
+								collectionId: collection._id,
+							}}
+							onClick={onNavigate}
+						/>
+					}
+				>
+					{formatBreadcrumbLabel(collection.title)}
+				</BreadcrumbLink>
+			</BreadcrumbItem>
+			<BreadcrumbSeparator />
+		</Fragment>
+	)
 
 	return (
 		<Breadcrumb aria-label='Collection path'>
 			<BreadcrumbList>
-				{shouldCollapseCollections && (
+				{head.map(renderCollection)}
+				{hidden.length > 0 && (
 					<>
 						<BreadcrumbItem>
 							<DropdownMenu>
@@ -63,7 +77,7 @@ export function CollectionPathBreadcrumbs({
 								/>
 								<DropdownMenuContent align='start'>
 									<DropdownMenuGroup>
-										{overflowCollections.map(collection => (
+										{hidden.map(collection => (
 											<DropdownMenuItem
 												key={collection._id}
 												render={
@@ -92,26 +106,7 @@ export function CollectionPathBreadcrumbs({
 						<BreadcrumbSeparator />
 					</>
 				)}
-				{visibleCollections.map(collection => (
-					<Fragment key={collection._id}>
-						<BreadcrumbItem>
-							<BreadcrumbLink
-								render={
-									<Link
-										to='/collection/$collectionId'
-										params={{
-											collectionId: collection._id,
-										}}
-										onClick={onNavigate}
-									/>
-								}
-							>
-								{formatBreadcrumbLabel(collection.title)}
-							</BreadcrumbLink>
-						</BreadcrumbItem>
-						<BreadcrumbSeparator />
-					</Fragment>
-				))}
+				{tail.map(renderCollection)}
 				{children}
 			</BreadcrumbList>
 		</Breadcrumb>

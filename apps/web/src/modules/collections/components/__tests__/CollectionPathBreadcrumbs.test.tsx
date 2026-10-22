@@ -43,11 +43,14 @@ function trail() {
 	const list = screen
 		.getByRole('navigation', { name: 'Collection path' })
 		.querySelector('[data-slot="breadcrumb-list"]')!
-	return Array.from(list.children, item =>
-		item.getAttribute('data-slot') === 'breadcrumb-separator'
-			? '/'
-			: item.textContent || '…',
-	)
+	return Array.from(list.children, item => {
+		if (item.getAttribute('data-slot') === 'breadcrumb-separator') {
+			return '/'
+		}
+		return item.querySelector('[data-slot="breadcrumb-ellipsis"]')
+			? '…'
+			: item.textContent
+	})
 }
 
 function Trail({
@@ -81,7 +84,12 @@ describe('CollectionPathBreadcrumbs', () => {
 		{
 			name: 'a collapsed trail',
 			titles: ['one', 'two', 'three', 'four'],
-			expected: ['…', '/', 'four', '/', 'Current'],
+			expected: ['one', '/', '…', '/', 'four', '/', 'Current'],
+		},
+		{
+			name: 'a deeper collapsed trail',
+			titles: ['one', 'two', 'three', 'four', 'five'],
+			expected: ['one', '/', '…', '/', 'five', '/', 'Current'],
 		},
 	])('places separators between items for $name', ({ titles, expected }) => {
 		render(
@@ -125,7 +133,7 @@ describe('CollectionPathBreadcrumbs', () => {
 		)
 	})
 
-	it('collapses older collections and puts only hidden collections in the overflow menu', () => {
+	it('keeps the root and parent visible and puts the middle collections in the overflow menu', () => {
 		render(
 			<Trail
 				collections={[
@@ -142,22 +150,25 @@ describe('CollectionPathBreadcrumbs', () => {
 			name: 'Collection path',
 		})
 		expect(
+			within(breadcrumb).getByRole('link', { name: 'one' }),
+		).toBeInTheDocument()
+		expect(
 			within(breadcrumb).getByRole('link', { name: 'four' }),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).queryByRole('link', { name: 'one' }),
+			within(breadcrumb).queryByRole('link', { name: 'two' }),
 		).not.toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Show hidden collections' }),
-		).toBeInTheDocument()
+			within(breadcrumb).queryByRole('link', { name: 'three' }),
+		).not.toBeInTheDocument()
 
 		fireEvent.click(
 			screen.getByRole('button', { name: 'Show hidden collections' }),
 		)
 		const menu = screen.getByRole('menu')
 		expect(
-			within(menu).getByRole('menuitem', { name: 'one' }),
-		).toBeInTheDocument()
+			within(menu).queryByRole('menuitem', { name: 'one' }),
+		).not.toBeInTheDocument()
 		expect(
 			within(menu).getByRole('menuitem', { name: 'two' }),
 		).toBeInTheDocument()
@@ -201,7 +212,7 @@ describe('CollectionPathBreadcrumbs', () => {
 		fireEvent.click(
 			screen.getByRole('button', { name: 'Show hidden collections' }),
 		)
-		fireEvent.click(screen.getByRole('menuitem', { name: 'one' }))
+		fireEvent.click(screen.getByRole('menuitem', { name: 'two' }))
 
 		expect(onNavigate).toHaveBeenCalledTimes(2)
 	})
