@@ -1,23 +1,23 @@
 import * as stylex from '@stylexjs/stylex'
 import { MoreHorizontal } from 'lucide-react'
 
-import { iconSizes } from '~/styles/tokens.stylex'
+import { iconSizes, spacing } from '~/styles/tokens.stylex'
+
+import { Button, type ButtonProps } from '../Button/Button'
 
 export interface BreadcrumbEllipsisProps extends Omit<
-	React.ComponentProps<'span'>,
-	'aria-hidden' | 'children' | 'className' | 'role' | 'style'
+	ButtonProps,
+	'children' | 'iconOnly' | 'size' | 'variant'
 > {
-	xstyle?: stylex.StyleXStyles
+	/** Names the hidden items, e.g. "Show hidden collections". */
+	'aria-label': string
 }
 
 const styles = stylex.create({
-	// A 24px box around the glyph.
+	// Pulls the hitbox partway into the list gap so the glyph sits closer to
+	// its separators while the focus ring still clears them.
 	ellipsis: {
-		alignItems: 'center',
-		blockSize: '1.5rem',
-		display: 'flex',
-		inlineSize: '1.5rem',
-		justifyContent: 'center',
+		marginInline: `calc(${spacing['2xs']} * -1)`,
 	},
 	icon: {
 		blockSize: iconSizes.sm,
@@ -25,19 +25,22 @@ const styles = stylex.create({
 	},
 })
 
+// BreadcrumbEllipsis stands in for hidden items. Pass it as a menu trigger's
+// `render` prop.
 export function BreadcrumbEllipsis({
 	xstyle,
 	...props
 }: BreadcrumbEllipsisProps) {
 	return (
-		<span
-			aria-hidden='true'
+		<Button
 			data-slot='breadcrumb-ellipsis'
-			role='presentation'
-			{...stylex.props(styles.ellipsis, xstyle)}
+			iconOnly
+			size='micro'
+			variant='ghost'
+			xstyle={[styles.ellipsis, xstyle]}
 			{...props}
 		>
 			<MoreHorizontal aria-hidden='true' {...stylex.props(styles.icon)} />
-		</span>
+		</Button>
 	)
 }

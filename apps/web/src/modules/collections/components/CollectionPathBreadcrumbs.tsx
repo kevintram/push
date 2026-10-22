@@ -9,7 +9,6 @@ import {
 	BreadcrumbLink,
 	BreadcrumbList,
 	BreadcrumbSeparator,
-	Button,
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuGroup,
@@ -59,16 +58,9 @@ export function CollectionPathBreadcrumbs({
 							<DropdownMenu>
 								<DropdownMenuTrigger
 									render={
-										<Button
-											aria-label='Show hidden collections'
-											iconOnly
-											size='small'
-											variant='ghost'
-										/>
+										<BreadcrumbEllipsis aria-label='Show hidden collections' />
 									}
-								>
-									<BreadcrumbEllipsis />
-								</DropdownMenuTrigger>
+								/>
 								<DropdownMenuContent align='start'>
 									<DropdownMenuGroup>
 										{overflowCollections.map(collection => (
