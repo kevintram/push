@@ -1,5 +1,5 @@
 import type { Id } from '@convex/_generated/dataModel'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -45,7 +45,11 @@ vi.mock('../ReviewDatePicker', () => ({
 }))
 
 vi.mock('../ReviewDialogBreadcrumbs', () => ({
-	ReviewDialogBreadcrumbs: () => <nav>Breadcrumbs</nav>,
+	ReviewDialogBreadcrumbs: ({ onNavigate }: { onNavigate: () => void }) => (
+		<button onClick={onNavigate} type='button'>
+			Breadcrumb link
+		</button>
+	),
 }))
 
 vi.mock('../ReviewDurability', () => ({
@@ -89,6 +93,7 @@ function ReviewDialogHarness({ onDelete }: { onDelete: () => void }) {
 					descriptionField={descriptionField}
 					isOpen={isOpen}
 					notesField={notesField}
+					onClose={() => setIsOpen(false)}
 					onDelete={onDelete}
 					onSetDate={vi.fn<(value: DateString | null) => void>()}
 					onSetRating={vi.fn()}
@@ -153,5 +158,21 @@ describe('ReviewDialog', () => {
 		expect(
 			screen.getByRole('button', { name: 'Expand review' }),
 		).toHaveAttribute('aria-expanded', 'false')
+	})
+
+	it('closes when a breadcrumb navigates', async () => {
+		const user = userEvent.setup()
+
+		render(<ReviewDialogHarness onDelete={vi.fn()} />)
+
+		await user.click(
+			screen.getByRole('button', { name: 'Breadcrumb link' }),
+		)
+
+		await waitFor(() =>
+			expect(
+				screen.queryByRole('textbox', { name: 'Review description' }),
+			).not.toBeInTheDocument(),
+		)
 	})
 })

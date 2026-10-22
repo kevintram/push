@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
-import { Fragment } from 'react'
+import { Fragment, type ReactNode } from 'react'
 
 import {
 	Breadcrumb,
@@ -8,9 +8,7 @@ import {
 	BreadcrumbItem,
 	BreadcrumbLink,
 	BreadcrumbList,
-	BreadcrumbPage,
 	BreadcrumbSeparator,
-	Button,
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuGroup,
@@ -18,12 +16,8 @@ import {
 	DropdownMenuTrigger,
 } from '~/components/ui'
 import { type Collection } from '~/modules/collections/types/collection.types'
-
-const MAX_VISIBLE_BREADCRUMB_ITEMS = 4
-
-function formatBreadcrumbLabel(value: string) {
-	return value.trim() || 'Untitled'
-}
+import { collapseCollectionPath } from '~/modules/collections/utils/collapseCollectionPath'
+import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcrumbLabel'
 
 const styles = stylex.create({
 	link: {
@@ -32,47 +26,58 @@ const styles = stylex.create({
 })
 
 type CollectionPathBreadcrumbsProps = {
+	/** Root-first collections. */
 	collections: Array<Collection>
-	currentLabel: string
+	/** Breadcrumb items after the collections, such as the current page. */
+	children: ReactNode
+	/** Called when any collection link, visible or hidden, is clicked. */
 	onNavigate?: () => void
 }
 
 export function CollectionPathBreadcrumbs({
 	collections,
-	currentLabel,
+	children,
 	onNavigate,
 }: CollectionPathBreadcrumbsProps) {
-	const shouldCollapseCollections =
-		collections.length + 1 > MAX_VISIBLE_BREADCRUMB_ITEMS
-	const visibleCollections = shouldCollapseCollections
-		? collections.slice(-1)
-		: collections
-	const overflowCollections = shouldCollapseCollections
-		? collections.slice(0, -1)
-		: []
+	const { head, hidden, tail } = collapseCollectionPath(collections)
+
+	const renderCollection = (collection: Collection) => (
+		<Fragment key={collection._id}>
+			<BreadcrumbItem>
+				<BreadcrumbLink
+					render={
+						<Link
+							to='/collection/$collectionId'
+							params={{
+								collectionId: collection._id,
+							}}
+							onClick={onNavigate}
+						/>
+					}
+				>
+					{formatBreadcrumbLabel(collection.title)}
+				</BreadcrumbLink>
+			</BreadcrumbItem>
+			<BreadcrumbSeparator />
+		</Fragment>
+	)
 
 	return (
 		<Breadcrumb aria-label='Collection path'>
 			<BreadcrumbList>
-				{shouldCollapseCollections && (
+				{head.map(renderCollection)}
+				{hidden.length > 0 && (
 					<>
 						<BreadcrumbItem>
 							<DropdownMenu>
 								<DropdownMenuTrigger
 									render={
-										<Button
-											aria-label='Show hidden collections'
-											iconOnly
-											size='small'
-											variant='ghost'
-										/>
+										<BreadcrumbEllipsis aria-label='Show hidden collections' />
 									}
-								>
-									<BreadcrumbEllipsis />
-								</DropdownMenuTrigger>
+								/>
 								<DropdownMenuContent align='start'>
 									<DropdownMenuGroup>
-										{overflowCollections.map(collection => (
+										{hidden.map(collection => (
 											<DropdownMenuItem
 												key={collection._id}
 												render={
@@ -101,31 +106,8 @@ export function CollectionPathBreadcrumbs({
 						<BreadcrumbSeparator />
 					</>
 				)}
-				{visibleCollections.map(collection => (
-					<Fragment key={collection._id}>
-						<BreadcrumbItem>
-							<BreadcrumbLink
-								render={
-									<Link
-										to='/collection/$collectionId'
-										params={{
-											collectionId: collection._id,
-										}}
-										onClick={onNavigate}
-									/>
-								}
-							>
-								{formatBreadcrumbLabel(collection.title)}
-							</BreadcrumbLink>
-						</BreadcrumbItem>
-						<BreadcrumbSeparator />
-					</Fragment>
-				))}
-				<BreadcrumbItem>
-					<BreadcrumbPage>
-						{formatBreadcrumbLabel(currentLabel)}
-					</BreadcrumbPage>
-				</BreadcrumbItem>
+				{tail.map(renderCollection)}
+				{children}
 			</BreadcrumbList>
 		</Breadcrumb>
 	)

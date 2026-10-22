@@ -68,15 +68,12 @@ describe('Breadcrumb', () => {
 		expect(separator).toHaveTextContent('/')
 	})
 
-	it('supports custom separators and a presentational ellipsis', () => {
+	it('supports custom separators', () => {
 		const { container } = render(
 			<BreadcrumbList>
 				<BreadcrumbSeparator>
 					<Slash data-testid='custom-separator' />
 				</BreadcrumbSeparator>
-				<BreadcrumbItem>
-					<BreadcrumbEllipsis />
-				</BreadcrumbItem>
 			</BreadcrumbList>,
 		)
 
@@ -84,9 +81,14 @@ describe('Breadcrumb', () => {
 		expect(
 			container.querySelector('[data-slot="breadcrumb-separator"]'),
 		).toHaveAttribute('aria-hidden', 'true')
+	})
+
+	it('renders the ellipsis as a labeled button', () => {
+		render(<BreadcrumbEllipsis aria-label='Show hidden items' />)
+
 		expect(
-			container.querySelector('[data-slot="breadcrumb-ellipsis"]'),
-		).toHaveAttribute('aria-hidden', 'true')
+			screen.getByRole('button', { name: 'Show hidden items' }),
+		).toHaveAttribute('data-slot', 'breadcrumb-ellipsis')
 	})
 
 	it('supports Base UI render composition', () => {

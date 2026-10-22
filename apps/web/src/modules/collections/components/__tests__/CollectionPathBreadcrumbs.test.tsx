@@ -1,7 +1,9 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import type { ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
+
+import { BreadcrumbItem, BreadcrumbPage } from '~/components/ui'
 
 import type { Collection } from '../../types/collection.types'
 import { CollectionPathBreadcrumbs } from '../CollectionPathBreadcrumbs'
@@ -41,10 +43,28 @@ function trail() {
 	const list = screen
 		.getByRole('navigation', { name: 'Collection path' })
 		.querySelector('[data-slot="breadcrumb-list"]')!
-	return Array.from(list.children, item =>
-		item.getAttribute('data-slot') === 'breadcrumb-separator'
-			? '/'
-			: item.textContent || '…',
+	return Array.from(list.children, item => {
+		if (item.getAttribute('data-slot') === 'breadcrumb-separator') {
+			return '/'
+		}
+		return item.querySelector('[data-slot="breadcrumb-ellipsis"]')
+			? '…'
+			: item.textContent
+	})
+}
+
+function Trail({
+	currentLabel,
+	...props
+}: Omit<ComponentProps<typeof CollectionPathBreadcrumbs>, 'children'> & {
+	currentLabel: string
+}) {
+	return (
+		<CollectionPathBreadcrumbs {...props}>
+			<BreadcrumbItem>
+				<BreadcrumbPage>{currentLabel}</BreadcrumbPage>
+			</BreadcrumbItem>
+		</CollectionPathBreadcrumbs>
 	)
 }
 
@@ -64,11 +84,16 @@ describe('CollectionPathBreadcrumbs', () => {
 		{
 			name: 'a collapsed trail',
 			titles: ['one', 'two', 'three', 'four'],
-			expected: ['…', '/', 'four', '/', 'Current'],
+			expected: ['one', '/', '…', '/', 'four', '/', 'Current'],
+		},
+		{
+			name: 'a deeper collapsed trail',
+			titles: ['one', 'two', 'three', 'four', 'five'],
+			expected: ['one', '/', '…', '/', 'five', '/', 'Current'],
 		},
 	])('places separators between items for $name', ({ titles, expected }) => {
 		render(
-			<CollectionPathBreadcrumbs
+			<Trail
 				collections={titles.map(title => collection(title))}
 				currentLabel='Current'
 			/>,
@@ -79,7 +104,7 @@ describe('CollectionPathBreadcrumbs', () => {
 
 	it('renders the complete trail at the four-item boundary', () => {
 		render(
-			<CollectionPathBreadcrumbs
+			<Trail
 				collections={[
 					collection('one'),
 					collection('two'),
@@ -108,9 +133,9 @@ describe('CollectionPathBreadcrumbs', () => {
 		)
 	})
 
-	it('collapses older collections and puts only hidden collections in the overflow menu', () => {
+	it('keeps the root and parent visible and puts the middle collections in the overflow menu', () => {
 		render(
-			<CollectionPathBreadcrumbs
+			<Trail
 				collections={[
 					collection('one'),
 					collection('two'),
@@ -125,22 +150,25 @@ describe('CollectionPathBreadcrumbs', () => {
 			name: 'Collection path',
 		})
 		expect(
+			within(breadcrumb).getByRole('link', { name: 'one' }),
+		).toBeInTheDocument()
+		expect(
 			within(breadcrumb).getByRole('link', { name: 'four' }),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).queryByRole('link', { name: 'one' }),
+			within(breadcrumb).queryByRole('link', { name: 'two' }),
 		).not.toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Show hidden collections' }),
-		).toBeInTheDocument()
+			within(breadcrumb).queryByRole('link', { name: 'three' }),
+		).not.toBeInTheDocument()
 
 		fireEvent.click(
 			screen.getByRole('button', { name: 'Show hidden collections' }),
 		)
 		const menu = screen.getByRole('menu')
 		expect(
-			within(menu).getByRole('menuitem', { name: 'one' }),
-		).toBeInTheDocument()
+			within(menu).queryByRole('menuitem', { name: 'one' }),
+		).not.toBeInTheDocument()
 		expect(
 			within(menu).getByRole('menuitem', { name: 'two' }),
 		).toBeInTheDocument()
@@ -152,21 +180,23 @@ describe('CollectionPathBreadcrumbs', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('uses Untitled for blank labels', () => {
+	it('uses Untitled for blank collection titles', () => {
 		render(
-			<CollectionPathBreadcrumbs
+			<Trail
 				collections={[collection('blank', '  ')]}
-				currentLabel=' '
+				currentLabel='Current'
 			/>,
 		)
 
-		expect(screen.getAllByText('Untitled')).toHaveLength(2)
+		expect(
+			screen.getByRole('link', { name: 'Untitled' }),
+		).toBeInTheDocument()
 	})
 
 	it('calls onNavigate from visible and overflow links', () => {
 		const onNavigate = vi.fn()
 		render(
-			<CollectionPathBreadcrumbs
+			<Trail
 				collections={[
 					collection('one'),
 					collection('two'),
@@ -182,7 +212,7 @@ describe('CollectionPathBreadcrumbs', () => {
 		fireEvent.click(
 			screen.getByRole('button', { name: 'Show hidden collections' }),
 		)
-		fireEvent.click(screen.getByRole('menuitem', { name: 'one' }))
+		fireEvent.click(screen.getByRole('menuitem', { name: 'two' }))
 
 		expect(onNavigate).toHaveBeenCalledTimes(2)
 	})

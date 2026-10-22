@@ -306,6 +306,8 @@ type ReviewDialogProps = {
 	descriptionField: EditableField
 	isOpen: boolean
 	notesField: EditableField
+	/** Closes the dialog, e.g. when a breadcrumb navigates away. */
+	onClose: () => void
 	onDelete: () => void
 	onSetDate: (value: DateString | null) => void
 	onSetRating: (rating: Rating | null) => void
@@ -316,6 +318,7 @@ export function ReviewDialog({
 	descriptionField,
 	isOpen,
 	notesField,
+	onClose,
 	onDelete,
 	onSetDate,
 	onSetRating,
@@ -356,6 +359,7 @@ export function ReviewDialog({
 					card={card}
 					cardId={review.cardId}
 					collection={collection}
+					onNavigate={onClose}
 				/>
 				<div {...stylex.props(styles.headerActions)}>
 					<Button

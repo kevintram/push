@@ -7,6 +7,8 @@ import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
 import {
+	BreadcrumbItem,
+	BreadcrumbPage,
 	Button,
 	DropdownMenu,
 	DropdownMenuContent,
@@ -25,6 +27,7 @@ import {
 import { CollectionSidebar } from '~/modules/collections/components/collection-sidebar/CollectionSidebar'
 import { CollectionPathBreadcrumbs } from '~/modules/collections/components/CollectionPathBreadcrumbs'
 import { MoveCollectionDialog } from '~/modules/collections/components/MoveCollectionDialog'
+import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcrumbLabel'
 import { cardQueries, useCreateCard } from '~/modules/reviews/api/cardQueries'
 import { CardItemLink } from '~/modules/reviews/components/CardItemLink'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
@@ -206,8 +209,13 @@ export function CollectionPage() {
 				<div {...stylex.props(styles.breadcrumbs)}>
 					<CollectionPathBreadcrumbs
 						collections={collection.path as Array<Collection>}
-						currentLabel={title.value}
-					/>
+					>
+						<BreadcrumbItem>
+							<BreadcrumbPage>
+								{formatBreadcrumbLabel(title.value)}
+							</BreadcrumbPage>
+						</BreadcrumbItem>
+					</CollectionPathBreadcrumbs>
 				</div>
 				<div {...stylex.props(styles.toolbarActions)}>
 					<DropdownMenu>

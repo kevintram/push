@@ -9,6 +9,11 @@ import {
 	BreadcrumbList,
 	BreadcrumbPage,
 	BreadcrumbSeparator,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
 } from '~/components/ui'
 import { neutral } from '~/styles/colors/primitives.stylex'
 
@@ -97,7 +102,23 @@ export function BreadcrumbSection() {
 							</BreadcrumbItem>
 							<BreadcrumbSeparator />
 							<BreadcrumbItem>
-								<BreadcrumbEllipsis />
+								<DropdownMenu>
+									<DropdownMenuTrigger
+										render={
+											<BreadcrumbEllipsis aria-label='Show hidden items' />
+										}
+									/>
+									<DropdownMenuContent align='start'>
+										<DropdownMenuGroup>
+											<DropdownMenuItem>
+												TypeScript
+											</DropdownMenuItem>
+											<DropdownMenuItem>
+												Types
+											</DropdownMenuItem>
+										</DropdownMenuGroup>
+									</DropdownMenuContent>
+								</DropdownMenu>
 							</BreadcrumbItem>
 							<BreadcrumbSeparator />
 							<BreadcrumbItem>
