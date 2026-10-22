@@ -12,16 +12,13 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '~/components/ui'
+import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcrumbLabel'
 
 const styles = stylex.create({
 	link: {
 		textDecoration: 'none',
 	},
 })
-
-function formatBreadcrumbLabel(value: string) {
-	return value.trim() || 'Untitled'
-}
 
 export function ReviewDialogCollectionOverflowMenu({
 	collections,

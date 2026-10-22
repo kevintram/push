@@ -15,6 +15,7 @@ import {
 	BreadcrumbSeparator,
 	DialogClose,
 } from '~/components/ui'
+import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcrumbLabel'
 import { breakpoints } from '~/styles/tokens.stylex'
 
 import type { Card } from '../types/review.types'
@@ -35,10 +36,6 @@ type ReviewDialogBreadcrumbsProps = {
 	card: Card | undefined
 	cardId: Id<'cards'>
 	collection: CollectionDetail | undefined
-}
-
-function formatBreadcrumbLabel(value: string) {
-	return value.trim() || 'Untitled'
 }
 
 export function ReviewDialogBreadcrumbs({

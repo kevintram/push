@@ -18,12 +18,9 @@ import {
 	DropdownMenuTrigger,
 } from '~/components/ui'
 import { type Collection } from '~/modules/collections/types/collection.types'
+import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcrumbLabel'
 
 const MAX_VISIBLE_BREADCRUMB_ITEMS = 4
-
-function formatBreadcrumbLabel(value: string) {
-	return value.trim() || 'Untitled'
-}
 
 const styles = stylex.create({
 	link: {
