@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Loader } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -41,7 +41,7 @@ const styles = stylex.create({
 		animationIterationCount: 'infinite',
 		animationName: spin,
 		animationTimingFunction: 'linear',
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		display: 'flex',
 		justifyContent: 'center',
 		height: graphicSizes.md,

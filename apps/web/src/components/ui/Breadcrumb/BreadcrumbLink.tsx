@@ -2,7 +2,7 @@ import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import * as stylex from '@stylexjs/stylex'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 
 export interface BreadcrumbLinkProps extends Omit<
 	useRender.ComponentProps<'a'>,
@@ -15,13 +15,13 @@ const styles = stylex.create({
 	link: {
 		textDecoration: 'none',
 		color: {
-			default: semanticColors.textInteractive,
-			':hover': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':hover': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 		outlineColor: {
-			default: semanticColors.surfaceTransparent,
-			':focus-visible': semanticColors.borderFocus,
+			default: colorsSemantic.surfaceTransparent,
+			':focus-visible': colorsSemantic.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',

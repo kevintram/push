@@ -31,8 +31,8 @@ import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcr
 import { cardQueries, useCreateCard } from '~/modules/reviews/api/cardQueries'
 import { CardItemLink } from '~/modules/reviews/components/CardItemLink'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
-import { baseColors } from '~/styles/colors/primitives.stylex'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { baseColors } from '~/styles/colors/colorsPrimitive.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import {
 	fontSizes,
@@ -115,7 +115,7 @@ const styles = stylex.create({
 		marginBlock: spacing.md,
 	},
 	cardsHeaderText: {
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		fontSize: fontSizes.md,
 	},
 	cardsList: {

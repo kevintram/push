@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { type ReactNode } from 'react'
 
-import { neutral } from '~/styles/colors/primitives.stylex'
+import { neutral } from '~/styles/colors/colorsPrimitive.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'

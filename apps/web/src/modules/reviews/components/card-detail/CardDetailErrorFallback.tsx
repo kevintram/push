@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import type { FallbackProps } from 'react-error-boundary'
 
 import { Button } from '~/components/ui'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -18,7 +18,7 @@ const styles = stylex.create({
 
 		fontSize: fontSizes.sm,
 	},
-	message: { color: semanticColors.textSecondary },
+	message: { color: colorsSemantic.textSecondary },
 })
 
 /**

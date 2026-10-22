@@ -10,13 +10,13 @@ import {
 	red,
 	rose,
 	whiteAlpha,
-} from './primitives.stylex'
+} from './colorsPrimitive.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
 
 // Semantic color tokens, tier 2 of the color system. Components consume these
-// tokens directly; each token references primitives.stylex.ts.
-export const semanticColors = stylex.defineVars({
+// tokens directly; each token references colorsPrimitive.stylex.ts.
+export const colorsSemantic = stylex.defineVars({
 	// Surface
 	// Structural surfaces
 	// The default application canvas and content background.

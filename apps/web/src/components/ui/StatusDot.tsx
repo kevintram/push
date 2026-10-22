@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 
 export interface StatusDotProps {
 	xstyle?: stylex.StyleXStyles
@@ -9,7 +9,7 @@ export interface StatusDotProps {
 const styles = stylex.create({
 	dot: {
 		borderRadius: '50%',
-		backgroundColor: semanticColors.textPrimary,
+		backgroundColor: colorsSemantic.textPrimary,
 		blockSize: '6px',
 		flexShrink: 0,
 		inlineSize: '6px',

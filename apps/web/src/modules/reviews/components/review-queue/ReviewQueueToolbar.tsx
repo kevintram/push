@@ -9,7 +9,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	buttonSizes,
 	fontSizes,
@@ -61,7 +61,7 @@ const styles = stylex.create({
 		whiteSpace: 'nowrap',
 	},
 	count: {
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		flexShrink: 0,
 		fontSize: fontSizes.md,
 		fontWeight: fontWeights.regular,

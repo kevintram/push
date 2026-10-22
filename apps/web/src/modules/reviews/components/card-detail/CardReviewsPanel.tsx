@@ -4,7 +4,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 
 import { SidebarPanel } from '~/components/SidebarPanel'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
 import { reviewQueries } from '../../api/reviewQueries'
@@ -17,9 +17,9 @@ const styles = stylex.create({
 	seeAll: {
 		textDecoration: 'none',
 		color: {
-			default: semanticColors.textInteractive,
-			':hover': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':hover': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 		fontSize: fontSizes.sm,
 	},

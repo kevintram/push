@@ -23,7 +23,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { amber, orange, violet } from '~/styles/colors/primitives.stylex'
+import { amber, orange, violet } from '~/styles/colors/colorsPrimitive.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { useCardActions } from '../hooks/useCardActions'

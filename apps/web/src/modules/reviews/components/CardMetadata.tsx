@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Anvil, Calendar, Sparkles } from 'lucide-react'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -46,7 +46,7 @@ const styles = stylex.create({
 	item: {
 		gap: spacing.xs,
 		alignItems: 'center',
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		display: 'inline-flex',
 		fontWeight: fontWeights.semibold,
 		whiteSpace: 'nowrap',
@@ -65,10 +65,10 @@ const styles = stylex.create({
 		zIndex: 1,
 	},
 	overdue: {
-		color: semanticColors.textDanger,
+		color: colorsSemantic.textDanger,
 	},
 	today: {
-		color: semanticColors.textToday,
+		color: colorsSemantic.textToday,
 	},
 })
 

@@ -15,7 +15,7 @@ import {
 	SidebarItem,
 } from '~/components/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger, Tree } from '~/components/ui'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import { scrollFadeVars } from '~/styles/scrollFade.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
@@ -49,7 +49,7 @@ const styles = stylex.create({
 		minHeight: 0,
 	},
 	containerIsDropTarget: {
-		backgroundColor: semanticColors.surfaceTransparentHover,
+		backgroundColor: colorsSemantic.surfaceTransparentHover,
 	},
 	nav: {
 		paddingBlock: 0,

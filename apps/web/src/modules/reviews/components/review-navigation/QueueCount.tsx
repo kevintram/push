@@ -1,11 +1,11 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, fontWeights } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	count: {
-		color: semanticColors.textTertiary,
+		color: colorsSemantic.textTertiary,
 		fontSize: fontSizes.xs,
 		fontVariantNumeric: 'tabular-nums',
 		fontWeight: fontWeights.semibold,

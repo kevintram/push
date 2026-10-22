@@ -6,8 +6,8 @@ import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 
 import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
-import { slate } from '~/styles/colors/primitives.stylex'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { slate } from '~/styles/colors/colorsPrimitive.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { breakpoints, layout, radii } from '~/styles/tokens.stylex'
 import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
@@ -27,7 +27,7 @@ const styles = stylex.create({
 
 		height: '100svh',
 
-		backgroundColor: semanticColors.surfaceSunken,
+		backgroundColor: colorsSemantic.surfaceSunken,
 	},
 	hideModeShell: {
 		backgroundColor: {
@@ -36,7 +36,7 @@ const styles = stylex.create({
 		},
 	},
 	sidebar: {
-		color: semanticColors.textPrimary,
+		color: colorsSemantic.textPrimary,
 		flexShrink: 0,
 		overflowY: 'hidden',
 	},
@@ -53,10 +53,10 @@ const styles = stylex.create({
 		overflowY: 'auto',
 
 		borderRadius: radii.xl,
-		backgroundColor: semanticColors.surfacePrimary,
+		backgroundColor: colorsSemantic.surfacePrimary,
 		boxShadow: {
 			default: 'none',
-			[breakpoints.desktop]: `0 0 4px ${semanticColors.shadowPrimary}`,
+			[breakpoints.desktop]: `0 0 4px ${colorsSemantic.shadowPrimary}`,
 		},
 	},
 })

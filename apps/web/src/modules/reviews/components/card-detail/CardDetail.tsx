@@ -16,7 +16,7 @@ import {
 import { useToday } from '~/hooks/useToday'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, layout, spacing } from '~/styles/tokens.stylex'
 import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
@@ -103,7 +103,7 @@ const styles = stylex.create({
 		},
 	},
 	tabs: {
-		backgroundColor: semanticColors.surfaceTransparent,
+		backgroundColor: colorsSemantic.surfaceTransparent,
 	},
 	content: {
 		gap: spacing.lg,

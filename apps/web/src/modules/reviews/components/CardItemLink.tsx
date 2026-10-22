@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
@@ -23,15 +23,15 @@ const styles = stylex.create({
 		borderRadius: radii.lg,
 
 		backgroundColor: {
-			':hover': semanticColors.surfaceTransparentHover,
+			':hover': colorsSemantic.surfaceTransparentHover,
 		},
 
-		color: semanticColors.textPrimary,
+		color: colorsSemantic.textPrimary,
 	},
 	active: {
 		backgroundColor: {
-			default: semanticColors.surfaceTransparentActive,
-			':hover': semanticColors.surfaceTransparentActive,
+			default: colorsSemantic.surfaceTransparentActive,
+			':hover': colorsSemantic.surfaceTransparentActive,
 		},
 	},
 	inner: {
@@ -44,7 +44,7 @@ const styles = stylex.create({
 		fontWeight: fontWeights.semibold,
 
 		textDecoration: 'none',
-		color: semanticColors.textPrimary,
+		color: colorsSemantic.textPrimary,
 
 		// Stretched-link trick
 		'::after': {

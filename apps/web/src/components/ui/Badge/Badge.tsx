@@ -2,7 +2,7 @@ import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import * as stylex from '@stylexjs/stylex'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -28,8 +28,8 @@ const styles = stylex.create({
 		whiteSpace: 'nowrap',
 
 		outlineColor: {
-			default: semanticColors.surfaceTransparent,
-			':focus-visible': semanticColors.borderFocus,
+			default: colorsSemantic.surfaceTransparent,
+			':focus-visible': colorsSemantic.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
@@ -62,29 +62,29 @@ const styles = stylex.create({
 // so adopting the variant/color split is the remaining piece.
 const variants = stylex.create({
 	solid: {
-		borderColor: semanticColors.surfaceInverse,
-		backgroundColor: semanticColors.surfaceInverse,
-		color: semanticColors.textOnInverse,
+		borderColor: colorsSemantic.surfaceInverse,
+		backgroundColor: colorsSemantic.surfaceInverse,
+		color: colorsSemantic.textOnInverse,
 	},
 	secondary: {
-		borderColor: semanticColors.surfaceTransparent,
-		backgroundColor: semanticColors.surfaceInteractiveSecondary,
-		color: semanticColors.textInteractive,
+		borderColor: colorsSemantic.surfaceTransparent,
+		backgroundColor: colorsSemantic.surfaceInteractiveSecondary,
+		color: colorsSemantic.textInteractive,
 	},
 	outline: {
-		borderColor: semanticColors.borderSubtle,
-		backgroundColor: semanticColors.surfaceInteractiveSecondary,
-		color: semanticColors.textInteractive,
+		borderColor: colorsSemantic.borderSubtle,
+		backgroundColor: colorsSemantic.surfaceInteractiveSecondary,
+		color: colorsSemantic.textInteractive,
 	},
 	ghost: {
-		borderColor: semanticColors.surfaceTransparent,
-		backgroundColor: semanticColors.surfaceTransparent,
-		color: semanticColors.textInteractive,
+		borderColor: colorsSemantic.surfaceTransparent,
+		backgroundColor: colorsSemantic.surfaceTransparent,
+		color: colorsSemantic.textInteractive,
 	},
 	danger: {
-		borderColor: semanticColors.surfaceTransparent,
-		backgroundColor: semanticColors.surfaceInteractiveDanger,
-		color: semanticColors.textOnDanger,
+		borderColor: colorsSemantic.surfaceTransparent,
+		backgroundColor: colorsSemantic.surfaceInteractiveDanger,
+		color: colorsSemantic.textOnDanger,
 	},
 })
 
@@ -92,50 +92,50 @@ const interactiveVariants = stylex.create({
 	solid: {},
 	secondary: {
 		backgroundColor: {
-			default: semanticColors.surfaceInteractiveSecondary,
-			':hover': semanticColors.surfaceInteractiveSecondaryHover,
-			':active': semanticColors.surfaceInteractiveSecondaryActive,
+			default: colorsSemantic.surfaceInteractiveSecondary,
+			':hover': colorsSemantic.surfaceInteractiveSecondaryHover,
+			':active': colorsSemantic.surfaceInteractiveSecondaryActive,
 		},
 		color: {
-			default: semanticColors.textInteractive,
-			':hover': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':hover': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 	},
 	outline: {
 		backgroundColor: {
-			default: semanticColors.surfaceInteractiveSecondary,
-			':hover': semanticColors.surfaceInteractiveSecondaryHover,
-			':active': semanticColors.surfaceInteractiveSecondaryActive,
+			default: colorsSemantic.surfaceInteractiveSecondary,
+			':hover': colorsSemantic.surfaceInteractiveSecondaryHover,
+			':active': colorsSemantic.surfaceInteractiveSecondaryActive,
 		},
 		color: {
-			default: semanticColors.textInteractive,
-			':hover': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':hover': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 	},
 	ghost: {
 		backgroundColor: {
-			default: semanticColors.surfaceTransparent,
-			':hover': semanticColors.surfaceTransparentHover,
-			':active': semanticColors.surfaceTransparentActive,
+			default: colorsSemantic.surfaceTransparent,
+			':hover': colorsSemantic.surfaceTransparentHover,
+			':active': colorsSemantic.surfaceTransparentActive,
 		},
 		color: {
-			default: semanticColors.textInteractive,
-			':hover': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':hover': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 	},
 	danger: {
 		backgroundColor: {
-			default: semanticColors.surfaceInteractiveDanger,
-			':hover': semanticColors.surfaceInteractiveDangerHover,
-			':active': semanticColors.surfaceInteractiveDangerActive,
+			default: colorsSemantic.surfaceInteractiveDanger,
+			':hover': colorsSemantic.surfaceInteractiveDangerHover,
+			':active': colorsSemantic.surfaceInteractiveDangerActive,
 		},
 		color: {
-			default: semanticColors.textOnDanger,
-			':hover': semanticColors.textOnDanger,
-			':active': semanticColors.textOnDanger,
+			default: colorsSemantic.textOnDanger,
+			':hover': colorsSemantic.textOnDanger,
+			':active': colorsSemantic.textOnDanger,
 		},
 	},
 })

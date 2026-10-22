@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 export interface KbdProps extends Omit<
@@ -16,9 +16,9 @@ const styles = stylex.create({
 
 		borderRadius: radii.xs,
 		alignItems: 'center',
-		backgroundColor: semanticColors.surfaceRaised,
+		backgroundColor: colorsSemantic.surfaceRaised,
 		blockSize: '20px',
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		columnGap: spacing.xs,
 		display: 'inline-flex',
 		fontFamily: 'inherit',

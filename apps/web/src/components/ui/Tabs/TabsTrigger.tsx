@@ -1,7 +1,7 @@
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
 import * as stylex from '@stylexjs/stylex'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 import { type TabsVariant, useTabsVariant } from './TabsContext'
@@ -16,20 +16,20 @@ const styles = stylex.create({
 		paddingBlock: spacing.sm,
 		paddingInline: spacing.md,
 
-		borderColor: semanticColors.surfaceTransparent,
+		borderColor: colorsSemantic.surfaceTransparent,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		gap: spacing.sm,
 		textDecoration: 'none',
 		alignItems: 'center',
-		backgroundColor: semanticColors.surfaceTransparent,
+		backgroundColor: colorsSemantic.surfaceTransparent,
 		color: {
-			default: semanticColors.textInteractive,
-			':is([data-active])': semanticColors.textInteractiveActive,
-			':is([data-disabled])': semanticColors.textDisabled,
-			':is([data-disabled]:hover)': semanticColors.textDisabled,
-			':hover': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':is([data-active])': colorsSemantic.textInteractiveActive,
+			':is([data-disabled])': colorsSemantic.textDisabled,
+			':is([data-disabled]:hover)': colorsSemantic.textDisabled,
+			':hover': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 		cursor: {
 			default: 'pointer',
@@ -41,8 +41,8 @@ const styles = stylex.create({
 		justifyContent: 'center',
 		lineHeight: 1,
 		outlineColor: {
-			default: semanticColors.surfaceTransparent,
-			':focus-visible': semanticColors.borderFocus,
+			default: colorsSemantic.surfaceTransparent,
+			':focus-visible': colorsSemantic.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
@@ -56,26 +56,26 @@ const styles = stylex.create({
 	default: {
 		borderRadius: radii.lg,
 		backgroundColor: {
-			default: semanticColors.surfaceTransparent,
-			':is([data-active])': semanticColors.surfaceTransparentHover,
+			default: colorsSemantic.surfaceTransparent,
+			':is([data-active])': colorsSemantic.surfaceTransparentHover,
 		},
 		boxShadow: {
 			default: 'none',
-			':is([data-active])': `0 1px 2px ${semanticColors.shadowPrimary}`,
+			':is([data-active])': `0 1px 2px ${colorsSemantic.shadowPrimary}`,
 		},
 	},
 	line: {
 		borderRadius: 0,
 		borderBlockEndColor: {
-			default: semanticColors.surfaceTransparent,
-			':is([data-active])': semanticColors.borderBrand,
+			default: colorsSemantic.surfaceTransparent,
+			':is([data-active])': colorsSemantic.borderBrand,
 			':is([data-orientation="vertical"])':
-				semanticColors.surfaceTransparent,
+				colorsSemantic.surfaceTransparent,
 		},
 		borderInlineEndColor: {
-			default: semanticColors.surfaceTransparent,
+			default: colorsSemantic.surfaceTransparent,
 			':is([data-active][data-orientation="vertical"])':
-				semanticColors.borderBrand,
+				colorsSemantic.borderBrand,
 		},
 		marginBlockEnd: {
 			default: '-1px',

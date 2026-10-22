@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Loader } from 'lucide-react'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { graphicSizes } from '~/styles/tokens.stylex'
 
 const spin = stylex.keyframes({
@@ -25,7 +25,7 @@ const styles = stylex.create({
 		animationIterationCount: 'infinite',
 		animationName: spin,
 		animationTimingFunction: 'linear',
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		height: graphicSizes.md,
 		width: graphicSizes.md,
 	},

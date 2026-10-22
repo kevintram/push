@@ -2,7 +2,7 @@ import { Menu } from '@base-ui/react/menu'
 import * as stylex from '@stylexjs/stylex'
 import { Check } from 'lucide-react'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -18,13 +18,13 @@ const styles = stylex.create({
 		borderRadius: radii.xs,
 		outline: 'none',
 		backgroundColor: {
-			default: semanticColors.surfaceTransparent,
-			':is([data-highlighted])': semanticColors.surfaceTransparentHover,
+			default: colorsSemantic.surfaceTransparent,
+			':is([data-highlighted])': colorsSemantic.surfaceTransparentHover,
 		},
 		color: {
-			default: semanticColors.textInteractive,
-			':is([data-highlighted])': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':is([data-highlighted])': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 		cursor: 'default',
 		fontSize: fontSizes.sm,

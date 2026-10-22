@@ -15,7 +15,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '~/components/ui'
-import { neutral } from '~/styles/colors/primitives.stylex'
+import { neutral } from '~/styles/colors/colorsPrimitive.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
 import {

@@ -13,7 +13,7 @@ import {
 } from '~/components/ui'
 import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { treeifyCollections } from '~/modules/collections/utils/treeifyCollections'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
@@ -26,7 +26,7 @@ const styles = stylex.create({
 	// The border sits on a wrapper so the scroll fade dissolves the tree rows
 	// without fading the border.
 	collectionTreeFrame: {
-		borderColor: semanticColors.borderPrimary,
+		borderColor: colorsSemantic.borderPrimary,
 		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
@@ -39,7 +39,7 @@ const styles = stylex.create({
 	status: {
 		margin: 0,
 		padding: spacing.sm,
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 	},
 })
 

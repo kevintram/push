@@ -17,7 +17,7 @@ import {
 } from '~/components/ui'
 import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	breakpoints,
 	fontSizes,
@@ -82,7 +82,7 @@ const styles = stylex.create({
 		overflow: 'hidden',
 		paddingBlock: spacing.md,
 		paddingInline: spacing.md,
-		backgroundColor: semanticColors.surfacePrimary,
+		backgroundColor: colorsSemantic.surfacePrimary,
 		display: 'flex',
 		flexDirection: 'column',
 		inlineSize: '100%',
@@ -192,7 +192,7 @@ const styles = stylex.create({
 	ratingControl: {
 		borderRadius: radii.md,
 		alignSelf: 'flex-start',
-		backgroundColor: semanticColors.surfaceTransparent,
+		backgroundColor: colorsSemantic.surfaceTransparent,
 	},
 	editor: {
 		gap: spacing.sm,

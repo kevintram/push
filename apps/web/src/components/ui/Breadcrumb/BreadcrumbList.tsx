@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
 export interface BreadcrumbListProps extends Omit<
@@ -16,7 +16,7 @@ const styles = stylex.create({
 
 		listStyle: 'none',
 		alignItems: 'center',
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		display: 'flex',
 		flexWrap: 'wrap',
 		fontSize: fontSizes.sm,

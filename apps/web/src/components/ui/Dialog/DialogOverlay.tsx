@@ -1,7 +1,7 @@
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import * as stylex from '@stylexjs/stylex'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 
 export interface DialogOverlayProps extends Omit<
 	DialogPrimitive.Backdrop.Props,
@@ -17,7 +17,7 @@ const styles = stylex.create({
 		zIndex: 50,
 
 		backdropFilter: 'blur(2px)',
-		backgroundColor: semanticColors.surfaceBackdrop,
+		backgroundColor: colorsSemantic.surfaceBackdrop,
 		opacity: {
 			default: 1,
 			':is([data-starting-style], [data-ending-style])': 0,

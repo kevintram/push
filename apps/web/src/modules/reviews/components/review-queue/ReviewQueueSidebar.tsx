@@ -13,8 +13,8 @@ import { CardTypeFilterBadges } from '~/modules/reviews/components/card-type-fil
 import { CardItem } from '~/modules/reviews/components/CardItem'
 import type { Card } from '~/modules/reviews/types/review.types'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
-import { baseColors } from '~/styles/colors/primitives.stylex'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { baseColors } from '~/styles/colors/colorsPrimitive.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import {
 	breakpoints,
@@ -41,18 +41,18 @@ type ReviewQueueSidebarProps = {
 const styles = stylex.create({
 	panel: {
 		borderColor: {
-			default: semanticColors.borderSubtle,
+			default: colorsSemantic.borderSubtle,
 			'@media (prefers-color-scheme: dark)': baseColors.transparent,
 		},
 		borderRadius: radii['2xl'],
 		borderStyle: 'solid',
 		borderWidth: 1,
 		overflow: 'hidden',
-		backgroundColor: semanticColors.surfacePrimary,
+		backgroundColor: colorsSemantic.surfacePrimary,
 		blockSize: '100%',
 		boxShadow: {
 			default: 'none',
-			[breakpoints.desktop]: `0 0 4px ${semanticColors.shadowSubtle}`,
+			[breakpoints.desktop]: `0 0 4px ${colorsSemantic.shadowSubtle}`,
 		},
 		display: 'flex',
 		flexDirection: 'column',
@@ -93,7 +93,7 @@ const styles = stylex.create({
 		overflowY: 'auto',
 	},
 	empty: {
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		fontSize: fontSizes.sm,
 	},
 })

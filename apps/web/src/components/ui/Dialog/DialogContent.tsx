@@ -2,7 +2,7 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import * as stylex from '@stylexjs/stylex'
 import { X } from 'lucide-react'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { DialogOverlay } from './DialogOverlay'
@@ -37,14 +37,14 @@ const styles = stylex.create({
 		inlineSize: '100%',
 		maxInlineSize: '32rem',
 
-		borderColor: semanticColors.borderSubtle,
+		borderColor: colorsSemantic.borderSubtle,
 		borderRadius: radii.xl,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		outline: 'none',
-		backgroundColor: semanticColors.surfaceRaised,
-		boxShadow: `0 16px 48px ${semanticColors.shadowStrong}`,
-		color: semanticColors.textPrimary,
+		backgroundColor: colorsSemantic.surfaceRaised,
+		boxShadow: `0 16px 48px ${colorsSemantic.shadowStrong}`,
+		color: colorsSemantic.textPrimary,
 		opacity: {
 			default: 1,
 			':is([data-starting-style], [data-ending-style])': 0,
@@ -71,20 +71,20 @@ const styles = stylex.create({
 		inlineSize: '32px',
 		justifyContent: 'center',
 
-		borderColor: semanticColors.surfaceTransparent,
+		borderColor: colorsSemantic.surfaceTransparent,
 		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		backgroundColor: {
-			default: semanticColors.surfaceTransparent,
-			':hover': semanticColors.surfaceTransparentHover,
-			':active': semanticColors.surfaceTransparentActive,
+			default: colorsSemantic.surfaceTransparent,
+			':hover': colorsSemantic.surfaceTransparentHover,
+			':active': colorsSemantic.surfaceTransparentActive,
 		},
 		color: 'inherit',
 		cursor: 'pointer',
 		outlineColor: {
-			default: semanticColors.surfaceTransparent,
-			':focus-visible': semanticColors.borderFocus,
+			default: colorsSemantic.surfaceTransparent,
+			':focus-visible': colorsSemantic.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',

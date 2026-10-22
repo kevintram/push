@@ -11,7 +11,7 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from '~/components/ui'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import {
@@ -38,12 +38,12 @@ const styles = stylex.create({
 		borderRadius: radii.md,
 		backgroundColor: {
 			default: 'transparent',
-			':hover': semanticColors.surfaceTransparentHover,
-			':active': semanticColors.surfaceTransparentActive,
+			':hover': colorsSemantic.surfaceTransparentHover,
+			':active': colorsSemantic.surfaceTransparentActive,
 		},
 
 		textDecoration: 'none',
-		color: semanticColors.textPrimary,
+		color: colorsSemantic.textPrimary,
 		fontSize: fontSizes.sm,
 		textOverflow: 'ellipsis',
 		whiteSpace: 'nowrap',
