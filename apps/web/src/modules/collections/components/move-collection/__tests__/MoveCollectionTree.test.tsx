@@ -46,7 +46,7 @@ describe('MoveCollectionTree', () => {
 		expect(screen.getByRole('button', { name: 'B' })).toBeInTheDocument()
 	})
 
-	it('renders a selectable Collections root when allowRoot is true', () => {
+	it('renders a selectable root when allowRoot is true', () => {
 		render(
 			<MoveCollectionTree
 				allowRoot
@@ -61,7 +61,7 @@ describe('MoveCollectionTree', () => {
 		).toBeInTheDocument()
 	})
 
-	it('does not render Collections root by default', () => {
+	it('does not render the root by default', () => {
 		render(
 			<MoveCollectionTree
 				onSelect={vi.fn()}
@@ -75,7 +75,7 @@ describe('MoveCollectionTree', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('calls onSelect with null when Collections root is clicked', async () => {
+	it('calls onSelect with null when the root is clicked', async () => {
 		const onSelect = vi.fn()
 
 		render(
@@ -94,7 +94,7 @@ describe('MoveCollectionTree', () => {
 		expect(onSelect).toHaveBeenCalledWith(null)
 	})
 
-	it('marks the Collections root as selected when destination is null', () => {
+	it('marks the root as selected when destination is null', () => {
 		render(
 			<MoveCollectionTree
 				allowRoot

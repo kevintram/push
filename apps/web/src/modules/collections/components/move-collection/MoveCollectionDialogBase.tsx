@@ -50,7 +50,7 @@ type CommonMoveCollectionDialogBaseProps = {
 	title: string
 }
 
-// Discriminated union so callers that don't allow collections-root selection
+// Discriminated union so callers that don't allow root selection
 // can't receive a null destination in onMove.
 type MoveCollectionDialogBaseProps = CommonMoveCollectionDialogBaseProps &
 	(

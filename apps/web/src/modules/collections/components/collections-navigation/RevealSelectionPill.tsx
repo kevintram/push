@@ -91,8 +91,8 @@ type RevealSelectionPillProps = {
 
 /**
  * Names the selected collection while a collapsed branch hides it in the
- * collection tree and reveals it when clicked. It floats over the bottom edge of
- * its positioned container.
+ * collection tree and reveals it when clicked. It floats over the bottom edge
+ * of its positioned container.
  */
 export function RevealSelectionPill({
 	title,

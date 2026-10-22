@@ -54,7 +54,7 @@ export function useCollectionTree(): CollectionTree {
 	// `AppShell` keeps this query subscribed while the sidebar is collapsed, so
 	// the list is usually cached by the time the tree mounts. Keep the shell
 	// usable while a cold load is still in flight.
-	// TODO(2): Handle query errors so a failed request isn't shown as an empty collection tree.
+	// TODO(2): Handle query errors so a failed request isn't shown as an empty tree.
 	const { data } = useQuery(collectionQueries.list())
 	// A query error keeps the last data, so check for data, not success.
 	const isLoaded = data !== undefined

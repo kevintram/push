@@ -173,7 +173,7 @@ describe('MoveCollectionDialogBase', () => {
 		expect(onOpenChange).not.toHaveBeenCalled()
 	})
 
-	it('calls onMove with null when Collections root is selected', async () => {
+	it('calls onMove with null when the root is selected', async () => {
 		const onMove = vi.fn()
 		render(
 			<MoveCollectionDialogBase

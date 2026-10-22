@@ -68,7 +68,7 @@ type AppShellProps = {
 export function AppShell({ children }: AppShellProps) {
 	const { hideMode } = useHideMode()
 	// Keeps the collection list subscribed while the sidebar is collapsed, so
-	// expanding it renders the tree from cache instead of an empty collection tree.
+	// expanding it renders the tree from cache instead of an empty one.
 	// The shell never reads the data, so it opts out of re-rendering on it.
 	useQuery({ ...collectionQueries.list(), notifyOnChangeProps: [] })
 	const isHideMode = hideMode === 'on'

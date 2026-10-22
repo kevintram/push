@@ -91,7 +91,7 @@ describe('MoveCollectionDialog', () => {
 		)
 	})
 
-	it('moves a nested collection to Collections root with parentId null', async () => {
+	it('moves a nested collection to the root with parentId null', async () => {
 		const user = userEvent.setup()
 
 		render(
