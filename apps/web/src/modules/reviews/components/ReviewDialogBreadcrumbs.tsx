@@ -60,15 +60,17 @@ export function ReviewDialogBreadcrumbs({
 		<Breadcrumb aria-label='Review location' xstyle={styles.desktopOnly}>
 			<BreadcrumbList>
 				{shouldCollapseCollections && (
-					<BreadcrumbItem>
-						<ReviewDialogCollectionOverflowMenu
-							collections={overflowCollections}
-						/>
-					</BreadcrumbItem>
+					<>
+						<BreadcrumbItem>
+							<ReviewDialogCollectionOverflowMenu
+								collections={overflowCollections}
+							/>
+						</BreadcrumbItem>
+						<BreadcrumbSeparator />
+					</>
 				)}
-				{visibleCollections.map((collection, index) => (
+				{visibleCollections.map(collection => (
 					<Fragment key={collection._id}>
-						{index > 0 && <BreadcrumbSeparator />}
 						<BreadcrumbItem>
 							<DialogClose
 								nativeButton={false}
@@ -89,10 +91,10 @@ export function ReviewDialogBreadcrumbs({
 								{formatBreadcrumbLabel(collection.title)}
 							</DialogClose>
 						</BreadcrumbItem>
+						<BreadcrumbSeparator />
 					</Fragment>
 				))}
 
-				{collections.length > 0 && <BreadcrumbSeparator />}
 				<BreadcrumbItem>
 					<DialogClose
 						nativeButton={false}

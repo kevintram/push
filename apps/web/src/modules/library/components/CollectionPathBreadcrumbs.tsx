@@ -98,13 +98,11 @@ export function CollectionPathBreadcrumbs({
 								</DropdownMenuContent>
 							</DropdownMenu>
 						</BreadcrumbItem>
+						<BreadcrumbSeparator />
 					</>
 				)}
-				{visibleCollections.map((collection, index) => (
+				{visibleCollections.map(collection => (
 					<Fragment key={collection._id}>
-						{(shouldCollapseCollections || index > 0) && (
-							<BreadcrumbSeparator />
-						)}
 						<BreadcrumbItem>
 							<BreadcrumbLink
 								render={
@@ -120,9 +118,9 @@ export function CollectionPathBreadcrumbs({
 								{formatBreadcrumbLabel(collection.title)}
 							</BreadcrumbLink>
 						</BreadcrumbItem>
+						<BreadcrumbSeparator />
 					</Fragment>
 				))}
-				{collections.length > 0 && <BreadcrumbSeparator />}
 				<BreadcrumbItem>
 					<BreadcrumbPage>
 						{formatBreadcrumbLabel(currentLabel)}
