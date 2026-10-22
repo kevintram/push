@@ -23,7 +23,7 @@ const styles = stylex.create({
 	title: {
 		margin: 0,
 
-		fontSize: '1.5rem',
+		fontSize: fontSizes['2xl'],
 		fontWeight: fontWeights.bold,
 		letterSpacing: '-0.025em',
 		lineHeight: 1,

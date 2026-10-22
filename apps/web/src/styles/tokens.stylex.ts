@@ -10,6 +10,8 @@ export const fontSizes = stylex.defineVars({
 	md: '1rem',
 	lg: '1.125rem',
 	xl: '1.25rem',
+	'2xl': '1.5rem',
+	'3xl': '2rem',
 })
 
 export const fontWeights = stylex.defineVars({

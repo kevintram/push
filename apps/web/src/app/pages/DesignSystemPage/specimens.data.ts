@@ -9,6 +9,8 @@ export const fontSizeSpecimens: Array<ScaleSpecimen> = [
 	{ name: 'md', value: '1rem' },
 	{ name: 'lg', value: '1.125rem' },
 	{ name: 'xl', value: '1.25rem' },
+	{ name: '2xl', value: '1.5rem' },
+	{ name: '3xl', value: '2rem' },
 ]
 
 export const fontWeightSpecimens: Array<ScaleSpecimen> = [
