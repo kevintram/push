@@ -26,7 +26,7 @@ const styles = stylex.create({
 	// The border sits on a wrapper so the scroll fade dissolves the tree rows
 	// without fading the border.
 	collectionTreeFrame: {
-		borderColor: colorsSemantic.borderPrimary,
+		borderColor: colorsSemantic.borderSubtle,
 		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
