@@ -23,11 +23,5 @@ export const SidebarCollapsibleHeader = forwardRef<
 	HTMLDivElement,
 	SidebarCollapsibleHeaderProps
 >(function SidebarCollapsibleHeader({ xstyle, ...props }, ref) {
-	return (
-		<div
-			ref={ref}
-			{...stylex.props(stylex.defaultMarker(), styles.header, xstyle)}
-			{...props}
-		/>
-	)
+	return <div ref={ref} {...stylex.props(styles.header, xstyle)} {...props} />
 })

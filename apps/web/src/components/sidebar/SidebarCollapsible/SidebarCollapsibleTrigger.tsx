@@ -44,11 +44,6 @@ const styles = stylex.create({
 		blockSize: appSidebar.iconSize,
 		flexShrink: 0,
 		inlineSize: appSidebar.iconSize,
-		opacity: {
-			default: 0,
-			[stylex.when.ancestor(':focus-within')]: 1,
-			[stylex.when.ancestor(':hover')]: 1,
-		},
 	},
 	chevronCollapsed: {
 		transform: 'rotate(-90deg)',
