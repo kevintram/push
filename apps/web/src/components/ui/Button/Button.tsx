@@ -223,6 +223,7 @@ const sizeVariants = stylex.create({
 		fontSize: fontSizes.sm,
 	},
 	small: {
+		gap: spacing.xs,
 		paddingInline: spacing.sm,
 		blockSize: buttonSizes.small,
 	},
