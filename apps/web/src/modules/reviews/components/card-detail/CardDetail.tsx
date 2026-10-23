@@ -26,7 +26,7 @@ import { CardBreadcrumbs } from './CardBreadcrumbs'
 import { CardOverview } from './CardOverview'
 import { CardReviews } from './CardReviews'
 import { CardSidebar } from './CardSidebar'
-import { CreateReviewButton } from './CreateReviewButton'
+import { NewReviewButton } from './NewReviewButton'
 import { ReviewComposerDock } from './ReviewComposerDock'
 
 export type CardTab = 'overview' | 'reviews'
@@ -197,7 +197,7 @@ export function CardDetail({
 						</TabsList>
 					</Tabs>
 					<div {...stylex.props(styles.secondaryToolbarActions)}>
-						<CreateReviewButton />
+						<NewReviewButton />
 						<Tooltip>
 							<TooltipTrigger
 								render={

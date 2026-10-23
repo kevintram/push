@@ -84,8 +84,19 @@ function notes() {
 	return screen.getByRole('textbox', { name: 'Review notes' })
 }
 
+// The minimized dock's title shares this name, and comes after the toolbar.
+function newReviewToggle() {
+	const [toggle] = screen.getAllByRole('button', { name: 'New review' })
+	if (!toggle) throw new Error('New review toggle not found')
+	return toggle
+}
+
+function submitButton() {
+	return screen.getByRole('button', { name: 'Create review' })
+}
+
 function openDock() {
-	fireEvent.click(screen.getByRole('button', { name: 'Create review' }))
+	fireEvent.click(newReviewToggle())
 	return screen.getByRole('region', { name: 'New review' })
 }
 
@@ -211,7 +222,7 @@ describe('CardDetail review composer', () => {
 		).toBeInTheDocument()
 	})
 
-	it('opens the docked composer from Create review', () => {
+	it('opens the docked composer from New review', () => {
 		render(detail('overview'))
 		expect(queryDock()).not.toBeInTheDocument()
 
@@ -223,7 +234,7 @@ describe('CardDetail review composer', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('offers Create review on Reviews without an inline composer', () => {
+	it('offers New review on Reviews without an inline composer', () => {
 		render(detail('reviews'))
 		expect(
 			screen.queryByRole('form', { name: 'Add review' }),
@@ -245,22 +256,26 @@ describe('CardDetail review composer', () => {
 			screen.queryByRole('textbox', { name: 'Review description' }),
 		).not.toBeInTheDocument()
 
-		fireEvent.click(screen.getByRole('button', { name: 'New review' }))
+		fireEvent.click(
+			within(
+				screen.getByRole('region', { name: 'New review' }),
+			).getByRole('button', { name: 'New review' }),
+		)
 		expect(description()).toHaveValue('Keep me')
 	})
 
-	it('toggles between open and minimized from Create review', () => {
+	it('toggles between open and minimized from New review', () => {
 		render(detail('overview'))
 		openDock()
 		fireEvent.change(description(), { target: { value: 'Keep me' } })
 
-		fireEvent.click(screen.getByRole('button', { name: 'Create review' }))
+		fireEvent.click(newReviewToggle())
 		expect(
 			screen.queryByRole('textbox', { name: 'Review description' }),
 		).not.toBeInTheDocument()
 		expect(queryDock()).toBeInTheDocument()
 
-		fireEvent.click(screen.getByRole('button', { name: 'Create review' }))
+		fireEvent.click(newReviewToggle())
 		expect(description()).toHaveValue('Keep me')
 	})
 
@@ -344,7 +359,7 @@ describe('CardDetail review composer', () => {
 		render(detail('overview'))
 		openDock()
 		fireEvent.change(description(), { target: { value: 'Submit me' } })
-		fireEvent.click(screen.getByRole('button', { name: 'Create' }))
+		fireEvent.click(submitButton())
 
 		const callbacks = mutation.mutate.mock.calls[0]?.[1]
 		act(() => callbacks.onSuccess())
@@ -391,12 +406,12 @@ describe('CardDetail review composer', () => {
 		fireEvent.change(description(), {
 			target: { value: 'Submit across tabs' },
 		})
-		fireEvent.click(screen.getByRole('button', { name: 'Create' }))
+		fireEvent.click(submitButton())
 		const callbacks = mutation.mutate.mock.calls[0]?.[1]
 		mutation.isPending = true
 		view.rerender(detail('reviews'))
 		expect(description()).toBeDisabled()
-		expect(screen.getByRole('button', { name: 'Create' })).toBeDisabled()
+		expect(submitButton()).toBeDisabled()
 		expect(description()).toHaveValue('Submit across tabs')
 		mutation.isPending = false
 		act(() => callbacks.onSuccess())
@@ -411,7 +426,7 @@ describe('CardDetail review composer', () => {
 		fireEvent.change(description(), {
 			target: { value: 'Keep on failure' },
 		})
-		fireEvent.click(screen.getByRole('button', { name: 'Create' }))
+		fireEvent.click(submitButton())
 		const callbacks = mutation.mutate.mock.calls[0]?.[1]
 		act(() => callbacks.onError())
 		expect(description()).toHaveValue('Keep on failure')
@@ -428,7 +443,7 @@ describe('CardDetail review composer', () => {
 		expect(
 			screen.getByRole('button', { name: 'Date 2026-09-01' }),
 		).toBeInTheDocument()
-		fireEvent.click(screen.getByRole('button', { name: 'Create' }))
+		fireEvent.click(submitButton())
 		expect(mutation.mutate).toHaveBeenCalledWith(
 			{
 				cardId: firstCard,

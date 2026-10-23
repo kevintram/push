@@ -1174,7 +1174,7 @@ describe('v2 app setup', () => {
 			screen.queryByRole('form', { name: 'Add review' }),
 		).not.toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Create review' }),
+			screen.getByRole('button', { name: 'New review' }),
 		).toBeInTheDocument()
 		expect(screen.getByRole('tab', { name: 'Reviews' })).toHaveAttribute(
 			'aria-selected',
@@ -1196,7 +1196,7 @@ describe('v2 app setup', () => {
 			within(sidebar).queryByRole('form', { name: 'Add review' }),
 		).not.toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Create review' }),
+			screen.getByRole('button', { name: 'New review' }),
 		).toBeInTheDocument()
 		expect(
 			within(sidebar).getByRole('region', { name: 'Reviews' }),

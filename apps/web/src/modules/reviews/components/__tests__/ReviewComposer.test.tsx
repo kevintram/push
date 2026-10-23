@@ -85,7 +85,7 @@ describe('ReviewComposer', () => {
 			screen.getByRole('textbox', { name: 'Review description' }),
 			{ target: { value: 'A review' } },
 		)
-		await user.hover(screen.getByRole('button', { name: 'Create' }))
+		await user.hover(screen.getByRole('button', { name: 'Create review' }))
 
 		const tooltip = await screen.findByRole('tooltip')
 		expect(tooltip).toHaveTextContent('Create review')
@@ -102,7 +102,7 @@ describe('ReviewComposer', () => {
 			screen.getByRole('textbox', { name: 'Review description' }),
 			{ target: { value: 'A review' } },
 		)
-		await user.click(screen.getByRole('button', { name: 'Create' }))
+		await user.click(screen.getByRole('button', { name: 'Create review' }))
 
 		expect(onSuccess).toHaveBeenCalledOnce()
 	})
@@ -117,7 +117,7 @@ describe('ReviewComposer', () => {
 			name: 'Review description',
 		})
 		fireEvent.change(description, { target: { value: 'Keep this draft' } })
-		await user.click(screen.getByRole('button', { name: 'Create' }))
+		await user.click(screen.getByRole('button', { name: 'Create review' }))
 
 		expect(onSuccess).not.toHaveBeenCalled()
 		expect(description).toHaveValue('Keep this draft')

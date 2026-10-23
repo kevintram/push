@@ -6,11 +6,11 @@ import { iconSizes } from '~/styles/tokens.stylex'
 
 import { useReviewComposerState } from '../reviewComposerContext'
 
-type CreateReviewButtonProps = {
+type NewReviewButtonProps = {
 	xstyle?: stylex.StyleXStyles
 }
 
-export function CreateReviewButton({ xstyle }: CreateReviewButtonProps) {
+export function NewReviewButton({ xstyle }: NewReviewButtonProps) {
 	const { dockState, setDockState } = useReviewComposerState()
 
 	return (
@@ -24,7 +24,7 @@ export function CreateReviewButton({ xstyle }: CreateReviewButtonProps) {
 			xstyle={xstyle}
 		>
 			<SquarePen aria-hidden='true' size={iconSizes.sm} />
-			Create review
+			New review
 		</Button>
 	)
 }

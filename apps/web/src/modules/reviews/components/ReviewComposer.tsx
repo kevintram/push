@@ -206,7 +206,7 @@ export function ReviewComposer({
 								disabled={isSubmitDisabled}
 								type='submit'
 							>
-								Create
+								Create review
 							</Button>
 						}
 					/>
