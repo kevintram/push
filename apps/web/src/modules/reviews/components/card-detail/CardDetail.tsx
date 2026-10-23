@@ -22,11 +22,12 @@ import { iconSizes, layout, spacing } from '~/styles/tokens.stylex'
 
 import { CardActions } from '../CardActions'
 import { ReviewComposerProvider } from '../ReviewComposerProvider'
-import { AddReviewPopover } from './AddReviewPopover'
 import { CardBreadcrumbs } from './CardBreadcrumbs'
 import { CardOverview } from './CardOverview'
 import { CardReviews } from './CardReviews'
 import { CardSidebar } from './CardSidebar'
+import { CreateReviewButton } from './CreateReviewButton'
+import { ReviewComposerDock } from './ReviewComposerDock'
 
 export type CardTab = 'overview' | 'reviews'
 
@@ -57,6 +58,7 @@ const styles = stylex.create({
 		blockSize: '100%',
 		containerType: 'inline-size',
 		inlineSize: '100%',
+		position: 'relative',
 
 		display: 'flex',
 		flexDirection: 'column',
@@ -124,15 +126,6 @@ const styles = stylex.create({
 		},
 		position: 'relative',
 		zIndex: 1,
-	},
-	reviewFallback: {
-		display: {
-			default: 'flex',
-			'@container (min-width: 640px)': 'none',
-		},
-	},
-	reviewFallbackClosed: {
-		display: 'flex',
 	},
 })
 
@@ -204,15 +197,7 @@ export function CardDetail({
 						</TabsList>
 					</Tabs>
 					<div {...stylex.props(styles.secondaryToolbarActions)}>
-						{activeTab === 'overview' && (
-							<AddReviewPopover
-								xstyle={
-									sidebarOpen
-										? styles.reviewFallback
-										: styles.reviewFallbackClosed
-								}
-							/>
-						)}
+						<CreateReviewButton />
 						<Tooltip>
 							<TooltipTrigger
 								render={
@@ -262,6 +247,7 @@ export function CardDetail({
 						/>
 					)}
 				</div>
+				<ReviewComposerDock />
 			</div>
 		</ReviewComposerProvider>
 	)

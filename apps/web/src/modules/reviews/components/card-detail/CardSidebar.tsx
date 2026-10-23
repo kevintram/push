@@ -7,7 +7,7 @@ import type { DateString } from '~/types/date'
 
 import type { CardSrsState } from '../../types/review.types'
 import { CardPropertiesPanel } from './CardPropertiesPanel'
-import { CardSidebarReviews } from './CardSidebarReviews'
+import { CardReviewsPanel } from './CardReviewsPanel'
 
 const styles = stylex.create({
 	container: {
@@ -43,7 +43,7 @@ export function CardSidebar({
 			aria-label='Card details'
 			{...stylex.props(styles.container, scrollFade.y, xstyle)}
 		>
-			{showReviews && <CardSidebarReviews cardId={cardId} key={cardId} />}
+			{showReviews && <CardReviewsPanel cardId={cardId} />}
 			<CardPropertiesPanel {...srsState} today={today} />
 		</aside>
 	)

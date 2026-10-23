@@ -77,7 +77,7 @@ describe('ReviewComposer', () => {
 		expect(mutate).not.toHaveBeenCalled()
 	})
 
-	it('displays the Add review shortcut in the Add button tooltip', async () => {
+	it('displays the shortcut in the Create button tooltip', async () => {
 		const user = userEvent.setup()
 		renderComposer()
 
@@ -85,26 +85,11 @@ describe('ReviewComposer', () => {
 			screen.getByRole('textbox', { name: 'Review description' }),
 			{ target: { value: 'A review' } },
 		)
-		await user.hover(screen.getByRole('button', { name: 'Add' }))
+		await user.hover(screen.getByRole('button', { name: 'Create' }))
 
 		const tooltip = await screen.findByRole('tooltip')
-		expect(tooltip).toHaveTextContent('Add review')
+		expect(tooltip).toHaveTextContent('Create review')
 		expect(tooltip.querySelector('kbd')).toHaveTextContent('↵')
-	})
-
-	it('shows Cancel and resets the draft when a cancel callback is provided', async () => {
-		const user = userEvent.setup()
-		const onCancel = vi.fn()
-		renderComposer({ onCancel })
-
-		const description = screen.getByRole('textbox', {
-			name: 'Review description',
-		})
-		fireEvent.change(description, { target: { value: 'Draft review' } })
-		await user.click(screen.getByRole('button', { name: 'Cancel' }))
-
-		expect(onCancel).toHaveBeenCalledOnce()
-		expect(description).toHaveValue('')
 	})
 
 	it('notifies the parent only after a successful create', async () => {
@@ -117,7 +102,7 @@ describe('ReviewComposer', () => {
 			screen.getByRole('textbox', { name: 'Review description' }),
 			{ target: { value: 'A review' } },
 		)
-		await user.click(screen.getByRole('button', { name: 'Add' }))
+		await user.click(screen.getByRole('button', { name: 'Create' }))
 
 		expect(onSuccess).toHaveBeenCalledOnce()
 	})
@@ -132,7 +117,7 @@ describe('ReviewComposer', () => {
 			name: 'Review description',
 		})
 		fireEvent.change(description, { target: { value: 'Keep this draft' } })
-		await user.click(screen.getByRole('button', { name: 'Add' }))
+		await user.click(screen.getByRole('button', { name: 'Create' }))
 
 		expect(onSuccess).not.toHaveBeenCalled()
 		expect(description).toHaveValue('Keep this draft')

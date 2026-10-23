@@ -17,10 +17,18 @@ export const emptyReviewDraft: ReviewDraft = {
 	rating: null,
 	date: null,
 }
+/** Where the card's docked composer is showing, if at all. */
+export type ReviewComposerDockState =
+	| 'closed'
+	| 'open'
+	| 'minimized'
+	| 'expanded'
 export type ReviewComposerState = {
 	draft: ReviewDraft
 	isPending: boolean
 	isDirty: boolean
+	dockState: ReviewComposerDockState
+	setDockState: (value: ReviewComposerDockState) => void
 	setDescription: (value: string) => void
 	setNotes: (value: string) => void
 	setRating: (value: Rating | null) => void

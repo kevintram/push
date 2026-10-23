@@ -7,6 +7,7 @@ import { useCreateReview } from '../api/reviewQueries'
 import {
 	emptyReviewDraft,
 	ReviewComposerContext,
+	type ReviewComposerDockState,
 	type ReviewComposerProviderProps,
 	type ReviewComposerState,
 } from './reviewComposerContext'
@@ -16,6 +17,8 @@ export function ReviewComposerProvider({
 	children,
 }: ReviewComposerProviderProps) {
 	const [draft, setDraft] = useState(emptyReviewDraft)
+	const [dockState, setDockState] =
+		useState<ReviewComposerDockState>('closed')
 	const { isPending, mutate } = useCreateReview()
 	const isDirty =
 		draft.description !== '' ||
@@ -27,6 +30,8 @@ export function ReviewComposerProvider({
 			draft,
 			isPending,
 			isDirty,
+			dockState,
+			setDockState,
 			setDescription: value =>
 				setDraft(p => ({ ...p, description: value })),
 			setNotes: value => setDraft(p => ({ ...p, notes: value })),
@@ -63,7 +68,7 @@ export function ReviewComposerProvider({
 				)
 			},
 		}),
-		[cardId, draft, isDirty, isPending, mutate],
+		[cardId, draft, dockState, isDirty, isPending, mutate],
 	)
 	return (
 		<ReviewComposerContext.Provider value={state}>

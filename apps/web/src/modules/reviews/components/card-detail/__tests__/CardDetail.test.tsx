@@ -84,22 +84,18 @@ function notes() {
 	return screen.getByRole('textbox', { name: 'Review notes' })
 }
 
-function fallbackForm() {
-	const forms = screen.getAllByRole('form', { name: 'Add review' })
-	const fallback = forms.at(-1)
-	if (!fallback) throw new Error('Expected the fallback form to be open')
-	return fallback
+function openDock() {
+	fireEvent.click(screen.getByRole('button', { name: 'Create review' }))
+	return screen.getByRole('region', { name: 'New review' })
 }
 
-function fallbackDescription() {
-	return within(fallbackForm()).getByRole('textbox', {
-		name: 'Review description',
-	})
+function queryDock() {
+	return screen.queryByRole('region', { name: 'New review' })
 }
 
-function expectFallbackClosed() {
-	expect(screen.queryAllByRole('form', { name: 'Add review' })).toHaveLength(
-		0,
+function closeDock() {
+	fireEvent.click(
+		screen.getByRole('button', { name: 'Close review composer' }),
 	)
 }
 
@@ -215,211 +211,209 @@ describe('CardDetail review composer', () => {
 		).toBeInTheDocument()
 	})
 
-	it('hands the shared draft to the fallback popover when the sidebar closes', () => {
-		const view = render(detail('overview'))
-		fireEvent.change(description(), {
-			target: { value: 'Keep this draft' },
-		})
-		fireEvent.click(screen.getByRole('button', { name: 'Hide details' }))
-
-		const fallbackTrigger = screen.getByRole('button', {
-			name: 'Add review',
-		})
-		fireEvent.click(fallbackTrigger)
-		expect(fallbackDescription()).toHaveValue('Keep this draft')
-		expect(fallbackDescription()).toHaveFocus()
-
-		fireEvent.click(fallbackTrigger)
-		expectFallbackClosed()
-
-		fireEvent.click(screen.getByRole('button', { name: 'Show details' }))
-		expect(description()).toHaveValue('Keep this draft')
-		view.unmount()
-	})
-
-	it('preserves the shared draft when the fallback is dismissed', () => {
+	it('opens the docked composer from Create review', () => {
 		render(detail('overview'))
-		fireEvent.click(screen.getByRole('button', { name: 'Hide details' }))
-		const fallbackTrigger = screen.getByRole('button', {
-			name: 'Add review',
-		})
-		fireEvent.click(fallbackTrigger)
-		fireEvent.change(fallbackDescription(), {
-			target: { value: 'Keep on dismiss' },
-		})
+		expect(queryDock()).not.toBeInTheDocument()
 
-		fireEvent.keyDown(document, { key: 'Escape' })
-		expectFallbackClosed()
-
-		fireEvent.click(fallbackTrigger)
-		expect(fallbackDescription()).toHaveValue('Keep on dismiss')
-	})
-
-	it('resets and closes the fallback popover on Cancel', () => {
-		render(detail('overview'))
-		fireEvent.click(screen.getByRole('button', { name: 'Hide details' }))
-		const fallbackTrigger = screen.getByRole('button', {
-			name: 'Add review',
-		})
-		fireEvent.click(fallbackTrigger)
-		fireEvent.change(fallbackDescription(), {
-			target: { value: 'Discard me' },
-		})
-		fireEvent.click(
-			within(fallbackForm()).getByRole('button', { name: 'Cancel' }),
-		)
-
-		expectFallbackClosed()
-		fireEvent.click(fallbackTrigger)
-		expect(fallbackDescription()).toHaveValue('')
-	})
-
-	it('closes the fallback popover after successful submission', () => {
-		render(detail('overview'))
-		fireEvent.click(screen.getByRole('button', { name: 'Hide details' }))
-		const fallbackTrigger = screen.getByRole('button', {
-			name: 'Add review',
-		})
-		fireEvent.click(fallbackTrigger)
-		fireEvent.change(fallbackDescription(), {
-			target: { value: 'Submit me' },
-		})
-		fireEvent.click(
-			within(fallbackForm()).getByRole('button', { name: 'Add' }),
-		)
-
-		const callbacks = mutation.mutate.mock.calls[0]?.[1]
-		act(() => callbacks.onSuccess())
-		expectFallbackClosed()
-		fireEvent.click(fallbackTrigger)
-		expect(fallbackDescription()).toHaveValue('')
-	})
-
-	it('does not render the fallback on Reviews', () => {
-		render(detail('reviews'))
-
+		const dock = openDock()
+		expect(within(dock).getByRole('form', { name: 'Add review' }))
+		expect(description()).toHaveFocus()
 		expect(
-			screen.queryByRole('button', { name: 'Add review' }),
+			within(dock).queryByRole('button', { name: 'Cancel' }),
 		).not.toBeInTheDocument()
 	})
 
-	it('shares content in both directions', () => {
+	it('offers Create review on Reviews without an inline composer', () => {
+		render(detail('reviews'))
+		expect(
+			screen.queryByRole('form', { name: 'Add review' }),
+		).not.toBeInTheDocument()
+
+		openDock()
+		expect(description()).toHaveFocus()
+	})
+
+	it('keeps the draft while minimized and restores from the title', () => {
+		render(detail('overview'))
+		openDock()
+		fireEvent.change(description(), { target: { value: 'Keep me' } })
+
+		fireEvent.click(
+			screen.getByRole('button', { name: 'Minimize review composer' }),
+		)
+		expect(
+			screen.queryByRole('textbox', { name: 'Review description' }),
+		).not.toBeInTheDocument()
+
+		fireEvent.click(screen.getByRole('button', { name: 'New review' }))
+		expect(description()).toHaveValue('Keep me')
+	})
+
+	it('closes an empty composer without asking', () => {
+		render(detail('overview'))
+		openDock()
+		closeDock()
+
+		expect(queryDock()).not.toBeInTheDocument()
+		expect(
+			screen.queryByRole('dialog', { name: 'Discard review?' }),
+		).not.toBeInTheDocument()
+	})
+
+	it('asks before discarding a draft on close', () => {
+		render(detail('overview'))
+		openDock()
+		fireEvent.change(description(), { target: { value: 'Maybe keep' } })
+
+		closeDock()
+		const prompt = screen.getByRole('dialog', { name: 'Discard review?' })
+		fireEvent.click(within(prompt).getByRole('button', { name: 'Cancel' }))
+		expect(description()).toHaveValue('Maybe keep')
+
+		closeDock()
+		fireEvent.click(
+			within(
+				screen.getByRole('dialog', { name: 'Discard review?' }),
+			).getByRole('button', { name: 'Discard' }),
+		)
+		expect(queryDock()).not.toBeInTheDocument()
+		openDock()
+		expect(description()).toHaveValue('')
+	})
+
+	it('moves the draft between the dock and the expanded dialog', () => {
+		render(detail('overview'))
+		openDock()
+		fireEvent.change(description(), { target: { value: 'Grow me' } })
+
+		fireEvent.click(
+			screen.getByRole('button', { name: 'Expand review composer' }),
+		)
+		const dialog = screen.getByRole('dialog', { name: 'New review' })
+		expect(
+			within(dialog).getByRole('textbox', { name: 'Review description' }),
+		).toHaveValue('Grow me')
+
+		fireEvent.click(
+			within(dialog).getByRole('button', {
+				name: 'Collapse review composer',
+			}),
+		)
+		expect(
+			screen.queryByRole('dialog', { name: 'New review' }),
+		).not.toBeInTheDocument()
+		expect(description()).toHaveValue('Grow me')
+	})
+
+	it('asks before discarding from the expanded dialog', () => {
+		render(detail('overview'))
+		openDock()
+		fireEvent.change(description(), { target: { value: 'Expanded draft' } })
+		fireEvent.click(
+			screen.getByRole('button', { name: 'Expand review composer' }),
+		)
+
+		closeDock()
+		fireEvent.click(
+			within(
+				screen.getByRole('dialog', { name: 'Discard review?' }),
+			).getByRole('button', { name: 'Discard' }),
+		)
+		expect(
+			screen.queryByRole('dialog', { name: 'New review' }),
+		).not.toBeInTheDocument()
+		expect(queryDock()).not.toBeInTheDocument()
+	})
+
+	it('closes the dock after a successful create', () => {
+		render(detail('overview'))
+		openDock()
+		fireEvent.change(description(), { target: { value: 'Submit me' } })
+		fireEvent.click(screen.getByRole('button', { name: 'Create' }))
+
+		const callbacks = mutation.mutate.mock.calls[0]?.[1]
+		act(() => callbacks.onSuccess())
+		expect(queryDock()).not.toBeInTheDocument()
+		openDock()
+		expect(description()).toHaveValue('')
+	})
+
+	it('keeps the dock and its draft across tabs', () => {
 		const view = render(detail('overview'))
+		openDock()
 		fireEvent.change(description(), {
-			target: { value: 'Started in sidebar' },
+			target: { value: 'Started on Overview' },
 		})
 		fireEvent.change(notes(), { target: { value: 'Shared notes' } })
 
 		view.rerender(detail('reviews'))
-		expect(description()).toHaveValue('Started in sidebar')
+		expect(description()).toHaveValue('Started on Overview')
 		expect(notes()).toHaveValue('Shared notes')
-		fireEvent.change(description(), {
-			target: { value: 'Updated in reviews' },
-		})
-
-		view.rerender(detail('overview'))
-		expect(description()).toHaveValue('Updated in reviews')
-		expect(notes()).toHaveValue('Shared notes')
-	})
-
-	it('offers Cancel only once the draft has content', () => {
-		render(detail('overview'))
-		expect(
-			screen.queryByRole('button', { name: 'Cancel' }),
-		).not.toBeInTheDocument()
-
-		fireEvent.change(description(), { target: { value: 'A draft' } })
-		expect(
-			screen.getByRole('button', { name: 'Cancel' }),
-		).toBeInTheDocument()
-	})
-
-	it('clears both placements on Cancel', () => {
-		const view = render(detail('overview'))
-		fireEvent.change(description(), { target: { value: 'To cancel' } })
-		fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
-		expect(description()).toHaveValue('')
-		view.rerender(detail('reviews'))
-		expect(description()).toHaveValue('')
-	})
-
-	it('clears both placements when cancelling from Reviews', () => {
-		const view = render(detail('overview'))
-		fireEvent.change(description(), {
-			target: { value: 'Cancel from Reviews' },
-		})
-		view.rerender(detail('reviews'))
-		fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
-		expect(description()).toHaveValue('')
-		view.rerender(detail('overview'))
-		expect(description()).toHaveValue('')
 	})
 
 	it('discards content when changing cards or leaving CardDetail', () => {
-		const view = render(detail('reviews'))
+		const view = render(detail('overview'))
+		openDock()
 		fireEvent.change(description(), {
 			target: { value: 'First card only' },
 		})
-		view.rerender(detail('reviews', secondCard))
-		expect(description()).toHaveValue('')
-		fireEvent.change(description(), {
-			target: { value: 'Second card only' },
-		})
-		view.rerender(detail('reviews'))
+		view.rerender(detail('overview', secondCard))
+		expect(queryDock()).not.toBeInTheDocument()
+		openDock()
 		expect(description()).toHaveValue('')
 		fireEvent.change(description(), {
 			target: { value: 'Discard on leave' },
 		})
 		view.unmount()
-		render(detail('reviews'))
+		render(detail('overview'))
+		openDock()
 		expect(description()).toHaveValue('')
 	})
-	it('keeps submission pending across tabs and clears on success after switching', () => {
+
+	it('keeps submission pending across tabs and closes on success', () => {
 		const view = render(detail('overview'))
+		openDock()
 		fireEvent.change(description(), {
 			target: { value: 'Submit across tabs' },
 		})
-		fireEvent.click(screen.getByRole('button', { name: 'Add' }))
+		fireEvent.click(screen.getByRole('button', { name: 'Create' }))
 		const callbacks = mutation.mutate.mock.calls[0]?.[1]
 		mutation.isPending = true
 		view.rerender(detail('reviews'))
 		expect(description()).toBeDisabled()
-		expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled()
+		expect(screen.getByRole('button', { name: 'Create' })).toBeDisabled()
 		expect(description()).toHaveValue('Submit across tabs')
 		mutation.isPending = false
 		act(() => callbacks.onSuccess())
-		expect(description()).toHaveValue('')
-		view.rerender(detail('overview'))
+		expect(queryDock()).not.toBeInTheDocument()
+		openDock()
 		expect(description()).toHaveValue('')
 	})
 
-	it('retains content after a failed submission on another tab', () => {
-		const view = render(detail('reviews'))
+	it('retains content after a failed submission', () => {
+		render(detail('reviews'))
+		openDock()
 		fireEvent.change(description(), {
 			target: { value: 'Keep on failure' },
 		})
-		fireEvent.click(screen.getByRole('button', { name: 'Add' }))
+		fireEvent.click(screen.getByRole('button', { name: 'Create' }))
 		const callbacks = mutation.mutate.mock.calls[0]?.[1]
-		view.rerender(detail('overview'))
 		act(() => callbacks.onError())
 		expect(description()).toHaveValue('Keep on failure')
 	})
-	it('shares rating and date, including a rating-only review', () => {
-		const view = render(detail('reviews'))
+
+	it('submits rating and date, including a rating-only review', () => {
+		render(detail('overview'))
+		openDock()
 		fireEvent.click(screen.getByRole('button', { name: 'Rating none' }))
-		view.rerender(detail('overview'))
-		expect(
-			screen.getByRole('button', { name: 'Rating 3' }),
-		).toBeInTheDocument()
 		fireEvent.click(screen.getByRole('button', { name: /^Date / }))
-		view.rerender(detail('reviews'))
 		expect(
 			screen.getByRole('button', { name: 'Rating 3' }),
 		).toBeInTheDocument()
 		expect(
 			screen.getByRole('button', { name: 'Date 2026-09-01' }),
 		).toBeInTheDocument()
-		fireEvent.click(screen.getByRole('button', { name: 'Add' }))
+		fireEvent.click(screen.getByRole('button', { name: 'Create' }))
 		expect(mutation.mutate).toHaveBeenCalledWith(
 			{
 				cardId: firstCard,

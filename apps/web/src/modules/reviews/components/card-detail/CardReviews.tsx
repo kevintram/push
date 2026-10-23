@@ -2,13 +2,11 @@ import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
-import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
-import { layout, radii, spacing } from '~/styles/tokens.stylex'
+import { layout, spacing } from '~/styles/tokens.stylex'
 
 import { reviewQueries } from '../../api/reviewQueries'
 import { Review } from '../Review'
-import { ReviewComposer } from '../ReviewComposer'
 
 const styles = stylex.create({
 	container: {
@@ -31,12 +29,6 @@ const styles = stylex.create({
 		width: '100%',
 	},
 	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
-	composerSurface: {
-		padding: spacing.md,
-		borderRadius: radii.xl,
-		backgroundColor: colorsSemantic.surfaceRaised,
-		boxShadow: `0 2px 8px ${colorsSemantic.shadowStrong}`,
-	},
 })
 
 type CardReviewsProps = {
@@ -49,9 +41,6 @@ export function CardReviews({ cardId }: CardReviewsProps) {
 	return (
 		<div {...stylex.props(styles.container, scrollFade.y)}>
 			<div {...stylex.props(styles.content)}>
-				<div {...stylex.props(styles.composerSurface)}>
-					<ReviewComposer />
-				</div>
 				<div {...stylex.props(styles.list)}>
 					{reviews.map(review => (
 						<Review key={review._id} review={review} />

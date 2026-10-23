@@ -174,6 +174,8 @@ export const colorsSemantic = stylex.defineVars({
 	borderPrimary: { default: neutral.s300, [DARK]: neutral.s700 },
 	// A low-emphasis boundary for gentle visual separation.
 	borderSubtle: { default: neutral.s200, [DARK]: neutral.s800 },
+	// A boundary around a contrast-reversed surface.
+	borderOnInverse: { default: neutral.s700, [DARK]: neutral.s300 },
 	// The boundary color that identifies keyboard or input focus.
 	borderFocus: { default: blue.s600, [DARK]: blue.s500 },
 	// A boundary that communicates brand identity or brand emphasis.
