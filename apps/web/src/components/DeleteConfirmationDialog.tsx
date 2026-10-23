@@ -17,6 +17,7 @@ const styles = stylex.create({
 })
 
 type DeleteConfirmationDialogProps = {
+	confirmLabel?: string
 	description: string
 	isPending: boolean
 	onConfirm: () => void
@@ -26,6 +27,7 @@ type DeleteConfirmationDialogProps = {
 }
 
 export function DeleteConfirmationDialog({
+	confirmLabel = 'Delete',
 	description,
 	isPending,
 	onConfirm,
@@ -53,7 +55,7 @@ export function DeleteConfirmationDialog({
 						disabled={isPending}
 						onClick={onConfirm}
 					>
-						Delete
+						{confirmLabel}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
