@@ -48,7 +48,7 @@ const styles = stylex.create({
 	},
 	titleText: {
 		gap: spacing.sm,
-		alignItems: 'center',
+		alignItems: 'baseline',
 		display: 'flex',
 		fontSize: fontSizes['2xl'],
 		fontWeight: fontWeights.semibold,
@@ -65,6 +65,9 @@ const styles = stylex.create({
 		flexShrink: 0,
 		fontSize: fontSizes.md,
 		fontWeight: fontWeights.regular,
+		// move 1px up for visual balance
+		insetBlockStart: '-1px',
+		position: 'relative',
 	},
 	headerButtonCluster: {
 		alignItems: 'center',
