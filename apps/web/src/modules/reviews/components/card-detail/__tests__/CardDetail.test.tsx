@@ -249,6 +249,21 @@ describe('CardDetail review composer', () => {
 		expect(description()).toHaveValue('Keep me')
 	})
 
+	it('toggles between open and minimized from Create review', () => {
+		render(detail('overview'))
+		openDock()
+		fireEvent.change(description(), { target: { value: 'Keep me' } })
+
+		fireEvent.click(screen.getByRole('button', { name: 'Create review' }))
+		expect(
+			screen.queryByRole('textbox', { name: 'Review description' }),
+		).not.toBeInTheDocument()
+		expect(queryDock()).toBeInTheDocument()
+
+		fireEvent.click(screen.getByRole('button', { name: 'Create review' }))
+		expect(description()).toHaveValue('Keep me')
+	})
+
 	it('closes an empty composer without asking', () => {
 		render(detail('overview'))
 		openDock()
