@@ -111,20 +111,18 @@ const styles = stylex.create({
 })
 
 type ReviewComposerProps = {
-	autoFocusDescription?: boolean
-	onSuccess?: () => void
+	/** The control to focus when the composer mounts. */
+	autoFocus?: 'description' | 'rating'
 }
 
 /**
  * Fills its container. Cancelling belongs to the window around it, such as
  * the docked composer or its dialog.
  */
-export function ReviewComposer({
-	autoFocusDescription = false,
-	onSuccess,
-}: ReviewComposerProps) {
+export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 	const formRef = useRef<HTMLFormElement>(null)
 	const descriptionRef = useRef<HTMLTextAreaElement>(null)
+	const ratingRef = useRef<HTMLButtonElement>(null)
 	const {
 		draft,
 		isDirty,
@@ -138,12 +136,13 @@ export function ReviewComposer({
 	const isSubmitDisabled = !isDirty || isPending
 
 	useEffect(() => {
-		if (autoFocusDescription) descriptionRef.current?.focus()
-	}, [autoFocusDescription])
+		if (autoFocus === 'description') descriptionRef.current?.focus()
+		else if (autoFocus === 'rating') ratingRef.current?.focus()
+	}, [autoFocus])
 
 	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
-		if (!isSubmitDisabled) submit(onSuccess)
+		if (!isSubmitDisabled) submit()
 	}
 
 	const submitWithHotkey = () => formRef.current?.requestSubmit()
@@ -165,6 +164,7 @@ export function ReviewComposer({
 						disabled={isPending}
 						onSetRating={setRating}
 						rating={draft.rating ?? undefined}
+						ref={ratingRef}
 					/>
 				</div>
 			</aside>

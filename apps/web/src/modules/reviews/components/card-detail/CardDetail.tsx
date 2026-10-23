@@ -21,6 +21,7 @@ import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, layout, spacing } from '~/styles/tokens.stylex'
 
 import { CardActions } from '../CardActions'
+import type { ReviewComposerDockProps } from '../reviewComposerContext'
 import { ReviewComposerProvider } from '../ReviewComposerProvider'
 import { CardBreadcrumbs } from './CardBreadcrumbs'
 import { CardOverview } from './CardOverview'
@@ -33,7 +34,7 @@ export type CardTab = 'overview' | 'reviews'
 
 const DETAILS_SIDEBAR_STORAGE_KEY = 'cardDetailSidebarOpen'
 
-type CardDetailBaseProps = {
+type CardDetailBaseProps = ReviewComposerDockProps & {
 	cardId: Id<'cards'>
 	activeTab: CardTab
 	showGoToCard?: boolean
@@ -136,6 +137,8 @@ export function CardDetail({
 	tabLinks,
 	showGoToCard = false,
 	onNavigate,
+	defaultDockState,
+	onDockStateChange,
 }: CardDetailProps) {
 	const { data: card } = useSuspenseQuery(cardQueries.detail(cardId))
 	const today = useToday()
@@ -151,7 +154,12 @@ export function CardDetail({
 	}
 
 	return (
-		<ReviewComposerProvider cardId={cardId} key={cardId}>
+		<ReviewComposerProvider
+			cardId={cardId}
+			defaultDockState={defaultDockState}
+			key={cardId}
+			onDockStateChange={onDockStateChange}
+		>
 			<div {...stylex.props(styles.container)}>
 				<header {...stylex.props(styles.toolbar)}>
 					<div {...stylex.props(styles.breadcrumbs)}>

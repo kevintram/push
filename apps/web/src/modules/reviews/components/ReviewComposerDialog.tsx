@@ -33,7 +33,6 @@ type ReviewComposerDialogProps = {
 	onCollapse: () => void
 	onClose: () => void
 	onMinimize: () => void
-	onSuccess: () => void
 	/** Dialogs that must stack above this one, such as a discard prompt. */
 	children?: ReactNode
 }
@@ -42,7 +41,6 @@ export function ReviewComposerDialog({
 	onCollapse,
 	onClose,
 	onMinimize,
-	onSuccess,
 	children,
 }: ReviewComposerDialogProps) {
 	const titleId = useId()
@@ -67,10 +65,7 @@ export function ReviewComposerDialog({
 					titleId={titleId}
 				/>
 				<div {...stylex.props(styles.body)}>
-					<ReviewComposer
-						autoFocusDescription
-						onSuccess={onSuccess}
-					/>
+					<ReviewComposer autoFocus='description' />
 				</div>
 				{children}
 			</DialogContent>

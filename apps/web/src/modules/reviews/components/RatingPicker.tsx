@@ -34,6 +34,7 @@ type RatingPickerProps = {
 	disabled?: boolean
 	onSetRating: (rating: Rating | null) => void
 	rating: Rating | undefined
+	ref?: React.Ref<HTMLButtonElement>
 	xstyle?: StyleXStyles
 }
 
@@ -41,6 +42,7 @@ export function RatingPicker({
 	disabled = false,
 	onSetRating,
 	rating,
+	ref,
 	xstyle,
 }: RatingPickerProps) {
 	const current = getRating(rating)
@@ -50,6 +52,7 @@ export function RatingPicker({
 		<DropdownMenu>
 			<DropdownMenuTrigger
 				aria-label={current?.label ?? 'Uncompleted'}
+				ref={ref}
 				render={
 					<Button
 						iconOnly

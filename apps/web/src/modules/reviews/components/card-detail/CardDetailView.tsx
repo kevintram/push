@@ -1,9 +1,10 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { useState } from 'react'
 
+import type { ReviewComposerDockProps } from '../reviewComposerContext'
 import { CardDetail, type CardTab } from './CardDetail'
 
-type CardDetailViewProps = {
+type CardDetailViewProps = ReviewComposerDockProps & {
 	cardId: Id<'cards'>
 	showGoToCard?: boolean
 	onNavigate?: () => void
@@ -13,6 +14,7 @@ export function CardDetailView({
 	cardId,
 	showGoToCard = false,
 	onNavigate,
+	...dockProps
 }: CardDetailViewProps) {
 	const [activeTab, setActiveTab] = useState<CardTab>('overview')
 
@@ -23,6 +25,7 @@ export function CardDetailView({
 			onTabChange={setActiveTab}
 			showGoToCard={showGoToCard}
 			onNavigate={onNavigate}
+			{...dockProps}
 		/>
 	)
 }

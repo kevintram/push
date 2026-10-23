@@ -92,26 +92,24 @@ describe('ReviewComposer', () => {
 		expect(tooltip.querySelector('kbd')).toHaveTextContent('↵')
 	})
 
-	it('notifies the parent only after a successful create', async () => {
+	it('clears the draft after a successful create', async () => {
 		const user = userEvent.setup()
-		const onSuccess = vi.fn()
 		mutate.mockImplementation((_args, options) => options.onSuccess())
-		renderComposer({ onSuccess })
+		renderComposer()
 
-		fireEvent.change(
-			screen.getByRole('textbox', { name: 'Review description' }),
-			{ target: { value: 'A review' } },
-		)
+		const description = screen.getByRole('textbox', {
+			name: 'Review description',
+		})
+		fireEvent.change(description, { target: { value: 'A review' } })
 		await user.click(screen.getByRole('button', { name: 'Create review' }))
 
-		expect(onSuccess).toHaveBeenCalledOnce()
+		expect(description).toHaveValue('')
 	})
 
-	it('preserves the draft and does not notify the parent when creation fails', async () => {
+	it('preserves the draft when creation fails', async () => {
 		const user = userEvent.setup()
-		const onSuccess = vi.fn()
 		mutate.mockImplementation((_args, options) => options.onError())
-		renderComposer({ onSuccess })
+		renderComposer()
 
 		const description = screen.getByRole('textbox', {
 			name: 'Review description',
@@ -119,7 +117,6 @@ describe('ReviewComposer', () => {
 		fireEvent.change(description, { target: { value: 'Keep this draft' } })
 		await user.click(screen.getByRole('button', { name: 'Create review' }))
 
-		expect(onSuccess).not.toHaveBeenCalled()
 		expect(description).toHaveValue('Keep this draft')
 	})
 })

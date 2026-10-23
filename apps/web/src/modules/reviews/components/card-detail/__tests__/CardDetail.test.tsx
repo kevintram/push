@@ -36,11 +36,13 @@ vi.mock('../../RatingPicker', () => ({
 	RatingPicker: ({
 		rating,
 		onSetRating,
+		ref,
 	}: {
 		rating?: number
 		onSetRating: (value: number) => void
+		ref?: React.Ref<HTMLButtonElement>
 	}) => (
-		<button type='button' onClick={() => onSetRating(3)}>
+		<button type='button' onClick={() => onSetRating(3)} ref={ref}>
 			Rating {rating ?? 'none'}
 		</button>
 	),
@@ -78,6 +80,10 @@ function detail(tab: CardTab, cardId = firstCard, showGoToCard = false) {
 
 function description() {
 	return screen.getByRole('textbox', { name: 'Review description' })
+}
+
+function ratingPicker() {
+	return screen.getByRole('button', { name: /^Rating / })
 }
 
 function notes() {
@@ -228,7 +234,7 @@ describe('CardDetail review composer', () => {
 
 		const dock = openDock()
 		expect(within(dock).getByRole('form', { name: 'Add review' }))
-		expect(description()).toHaveFocus()
+		expect(ratingPicker()).toHaveFocus()
 		expect(
 			within(dock).queryByRole('button', { name: 'Cancel' }),
 		).not.toBeInTheDocument()
@@ -241,7 +247,37 @@ describe('CardDetail review composer', () => {
 		).not.toBeInTheDocument()
 
 		openDock()
-		expect(description()).toHaveFocus()
+		expect(ratingPicker()).toHaveFocus()
+	})
+
+	it('starts where the caller left the dock and reports moves', () => {
+		const onDockStateChange = vi.fn()
+		render(
+			<TooltipProvider delay={0}>
+				<CardDetail
+					cardId={firstCard}
+					activeTab='overview'
+					onTabChange={() => {}}
+					defaultDockState='open'
+					onDockStateChange={onDockStateChange}
+				/>
+			</TooltipProvider>,
+		)
+		expect(queryDock()).toBeInTheDocument()
+		expect(ratingPicker()).toHaveFocus()
+
+		fireEvent.click(newReviewToggle())
+		expect(onDockStateChange).toHaveBeenLastCalledWith('minimized')
+		fireEvent.click(newReviewToggle())
+		expect(onDockStateChange).toHaveBeenLastCalledWith('open')
+
+		// Creating a review closes the dock without hiding it for later cards.
+		onDockStateChange.mockClear()
+		fireEvent.change(description(), { target: { value: 'Submit me' } })
+		fireEvent.click(submitButton())
+		act(() => mutation.mutate.mock.calls[0]?.[1].onSuccess())
+		expect(queryDock()).not.toBeInTheDocument()
+		expect(onDockStateChange).not.toHaveBeenCalled()
 	})
 
 	it('keeps the draft while minimized and restores from the title', () => {

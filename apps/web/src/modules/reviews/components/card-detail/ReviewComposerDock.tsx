@@ -92,7 +92,6 @@ export function ReviewComposerDock() {
 				onCollapse={() => setDockState('open')}
 				onClose={requestClose}
 				onMinimize={() => setDockState('minimized')}
-				onSuccess={close}
 			>
 				{discardDialog}
 			</ReviewComposerDialog>
@@ -121,10 +120,7 @@ export function ReviewComposerDock() {
 						titleId={titleId}
 					/>
 					<div {...stylex.props(styles.body)}>
-						<ReviewComposer
-							autoFocusDescription
-							onSuccess={close}
-						/>
+						<ReviewComposer autoFocus='rating' />
 					</div>
 				</>
 			)}
