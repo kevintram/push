@@ -2,8 +2,11 @@ import * as stylex from '@stylexjs/stylex'
 import { type ReactNode, useCallback, useState } from 'react'
 
 import { Button } from '~/components/ui'
+import { neutral } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { radii } from '~/styles/tokens.stylex'
+
+const DARK = '@media (prefers-color-scheme: dark)'
 
 type HideableProps = {
 	children?: ReactNode
@@ -24,6 +27,8 @@ const styles = stylex.create({
 	childrenHidden: {
 		visibility: 'hidden',
 	},
+	// A filled surface, unlike a plain outline button, so the hidden content
+	// reads as covered.
 	overlay: {
 		borderColor: colorsSemantic.borderSubtle,
 		borderRadius: radii['3xl'],
@@ -34,6 +39,17 @@ const styles = stylex.create({
 		alignItems: 'center',
 		display: 'flex',
 		justifyContent: 'center',
+
+		backgroundColor: {
+			[DARK]: {
+				default: neutral.s900,
+				':hover': neutral.s800,
+				':active': neutral.s700,
+			},
+			default: neutral.s100,
+			':hover': neutral.s200,
+			':active': neutral.s300,
+		},
 	},
 })
 
