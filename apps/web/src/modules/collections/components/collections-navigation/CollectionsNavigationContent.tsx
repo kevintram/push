@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 import { useNavigate } from '@tanstack/react-router'
 import { ChevronsDownUp, Plus } from 'lucide-react'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef } from 'react'
 import { flushSync } from 'react-dom'
 
 import {
@@ -15,11 +15,11 @@ import {
 	SidebarItem,
 } from '~/components/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger, Tree } from '~/components/ui'
+import { usePersistedBoolean } from '~/hooks/usePersistedBoolean'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import { scrollFadeVars } from '~/styles/scrollFade.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
-import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import { useCreateCollection } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
@@ -105,8 +105,9 @@ export function CollectionsNavigationContent({
 	const createCollection = useCreateCollection()
 	const navigate = useNavigate()
 	const scrollAreaRef = useRef<HTMLDivElement>(null)
-	const [isOpen, setIsOpen] = useState(() =>
-		readStoredBoolean(COLLECTIONS_NAVIGATION_STORAGE_KEY, true),
+	const [isOpen, setIsOpen] = usePersistedBoolean(
+		COLLECTIONS_NAVIGATION_STORAGE_KEY,
+		true,
 	)
 
 	const { ref: rootRef, isDropTarget: rootIsDropTarget } = useDroppable({
@@ -126,11 +127,6 @@ export function CollectionsNavigationContent({
 		)
 	}, [navigate, createCollection])
 
-	const handleOpenChange = useCallback((open: boolean) => {
-		setIsOpen(open)
-		writeStoredBoolean(COLLECTIONS_NAVIGATION_STORAGE_KEY, open)
-	}, [])
-
 	// The pill unmounts once the selection is revealed, so focus moves to its
 	// label instead of falling back to the document. Committing any opened
 	// branch synchronously makes that label focusable right away.
@@ -149,7 +145,7 @@ export function CollectionsNavigationContent({
 		<SidebarCollapsibleItem
 			open={isOpen}
 			aria-label='Collections'
-			onOpenChange={handleOpenChange}
+			onOpenChange={setIsOpen}
 			xstyle={[
 				styles.container,
 				rootIsDropTarget && styles.containerIsDropTarget,

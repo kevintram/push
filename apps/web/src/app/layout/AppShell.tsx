@@ -2,14 +2,14 @@ import * as stylex from '@stylexjs/stylex'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useRef } from 'react'
 
+import { usePersistedBoolean } from '~/hooks/usePersistedBoolean'
 import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { slate } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { breakpoints, layout, radii } from '~/styles/tokens.stylex'
-import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import { CollapsedAppSidebar } from './CollapsedAppSidebar'
 import { ExpandedAppSidebar } from './ExpandedAppSidebar'
@@ -72,17 +72,13 @@ export function AppShell({ children }: AppShellProps) {
 	// The shell never reads the data, so it opts out of re-rendering on it.
 	useQuery({ ...collectionQueries.list(), notifyOnChangeProps: [] })
 	const isHideMode = hideMode === 'on'
-	const [isSidebarExpanded, setIsSidebarExpanded] = useState(() =>
-		readStoredBoolean(SIDEBAR_STORAGE_KEY, false),
+	const [isSidebarExpanded, setSidebarExpanded] = usePersistedBoolean(
+		SIDEBAR_STORAGE_KEY,
+		false,
 	)
 	const collapsedToggleRef = useRef<HTMLButtonElement>(null)
 	const expandedToggleRef = useRef<HTMLButtonElement>(null)
 	const pendingFocusTarget = useRef<'expanded' | 'collapsed' | null>(null)
-
-	const setSidebarExpanded = useCallback((nextExpanded: boolean) => {
-		setIsSidebarExpanded(nextExpanded)
-		writeStoredBoolean(SIDEBAR_STORAGE_KEY, nextExpanded)
-	}, [])
 
 	const toggleSidebar = useCallback(() => {
 		const nextExpanded = !isSidebarExpanded
