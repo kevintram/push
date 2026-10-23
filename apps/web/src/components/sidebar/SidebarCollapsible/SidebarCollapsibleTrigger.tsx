@@ -40,15 +40,16 @@ const styles = stylex.create({
 		textAlign: 'start',
 	},
 	content: {
-		gap: spacing.xs,
-		alignItems: 'baseline',
-		display: 'flex',
 		minInlineSize: 0,
 	},
+	// `middle` centers the chevron on the label's x-height, the one point
+	// that stays fixed as the collapsed state rotates it.
 	chevron: {
 		blockSize: appSidebar.iconSize,
-		flexShrink: 0,
+		display: 'inline',
 		inlineSize: appSidebar.iconSize,
+		marginInlineStart: spacing.xs,
+		verticalAlign: 'middle',
 	},
 	chevronCollapsed: {
 		transform: 'rotate(-90deg)',
