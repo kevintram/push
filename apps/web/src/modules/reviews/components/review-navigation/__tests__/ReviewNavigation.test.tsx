@@ -175,13 +175,13 @@ describe('ReviewNavigation', () => {
 			screen.getByRole('button', { name: 'Collapse Review' }),
 		)
 		expect(
-			screen.queryByRole('navigation', { name: 'review sections' }),
+			screen.queryByRole('navigation', { name: 'Review sections' }),
 		).not.toBeInTheDocument()
 		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('false')
 
 		await user.click(screen.getByRole('button', { name: 'Expand Review' }))
 		expect(
-			screen.getByRole('navigation', { name: 'review sections' }),
+			screen.getByRole('navigation', { name: 'Review sections' }),
 		).toBeInTheDocument()
 		expect(window.localStorage.getItem(STORAGE_KEY)).toBe('true')
 	})
@@ -195,7 +195,7 @@ describe('ReviewNavigation', () => {
 			screen.getByRole('button', { name: 'Expand Review' }),
 		).toHaveAttribute('aria-expanded', 'false')
 		expect(
-			screen.queryByRole('navigation', { name: 'review sections' }),
+			screen.queryByRole('navigation', { name: 'Review sections' }),
 		).not.toBeInTheDocument()
 	})
 })

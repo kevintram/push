@@ -2,7 +2,7 @@ import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { PanelRight } from 'lucide-react'
-import { type ReactElement, useId, useState } from 'react'
+import { type ReactElement, useId } from 'react'
 
 import {
 	Button,
@@ -13,12 +13,12 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
+import { usePersistedBoolean } from '~/hooks/usePersistedBoolean'
 import { useToday } from '~/hooks/useToday'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, layout, spacing } from '~/styles/tokens.stylex'
-import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import { CardActions } from '../CardActions'
 import { ReviewComposerProvider } from '../ReviewComposerProvider'
@@ -147,15 +147,14 @@ export function CardDetail({
 	const { data: card } = useSuspenseQuery(cardQueries.detail(cardId))
 	const today = useToday()
 	const srsState = deriveCardSrsState(card, today)
-	const [sidebarOpen, setSidebarOpen] = useState(() =>
-		readStoredBoolean(DETAILS_SIDEBAR_STORAGE_KEY, true),
+	const [sidebarOpen, setSidebarOpen] = usePersistedBoolean(
+		DETAILS_SIDEBAR_STORAGE_KEY,
+		true,
 	)
 	const sidebarId = useId()
 
 	const toggleSidebar = () => {
-		const nextOpen = !sidebarOpen
-		setSidebarOpen(nextOpen)
-		writeStoredBoolean(DETAILS_SIDEBAR_STORAGE_KEY, nextOpen)
+		setSidebarOpen(!sidebarOpen)
 	}
 
 	return (

@@ -8,9 +8,9 @@ import {
 	SidebarCollapsibleTrigger,
 	SidebarItem,
 } from '~/components/sidebar'
+import { usePersistedBoolean } from '~/hooks/usePersistedBoolean'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { REVIEW_LINKS } from '~/modules/reviews/reviewLinks'
-import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
 import { QueueCount } from './QueueCount'
 
@@ -25,20 +25,22 @@ const styles = stylex.create({
 
 export function ReviewNavigation() {
 	const queues = useReviewQueueCounts()
+	const [isOpen, setIsOpen] = usePersistedBoolean(
+		REVIEW_NAVIGATION_STORAGE_KEY,
+		true,
+	)
 
 	return (
 		<SidebarCollapsibleItem
-			defaultOpen={readStoredBoolean(REVIEW_NAVIGATION_STORAGE_KEY, true)}
+			open={isOpen}
 			aria-label='Review'
-			onOpenChange={open =>
-				writeStoredBoolean(REVIEW_NAVIGATION_STORAGE_KEY, open)
-			}
+			onOpenChange={setIsOpen}
 		>
 			<SidebarCollapsibleHeader>
 				<SidebarCollapsibleTrigger>Review</SidebarCollapsibleTrigger>
 			</SidebarCollapsibleHeader>
 			<SidebarCollapsibleContent
-				render={<nav aria-label='review sections' />}
+				render={<nav aria-label='Review sections' />}
 				xstyle={styles.items}
 			>
 				{REVIEW_LINKS.map(({ icon, label, queueKey, to }) => (

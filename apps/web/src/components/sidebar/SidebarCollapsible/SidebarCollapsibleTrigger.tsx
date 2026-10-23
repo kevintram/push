@@ -15,7 +15,6 @@ import {
 const styles = stylex.create({
 	trigger: {
 		borderWidth: 0,
-		gap: spacing.xs,
 		paddingBlock: 0,
 		paddingInline: appSidebar.rowInset,
 
@@ -40,10 +39,17 @@ const styles = stylex.create({
 		minInlineSize: 0,
 		textAlign: 'start',
 	},
+	content: {
+		minInlineSize: 0,
+	},
+	// `middle` centers the chevron on the label's x-height, the one point
+	// that stays fixed as the collapsed state rotates it.
 	chevron: {
 		blockSize: appSidebar.iconSize,
-		flexShrink: 0,
+		display: 'inline',
 		inlineSize: appSidebar.iconSize,
+		marginInlineStart: spacing.xs,
+		verticalAlign: 'middle',
 	},
 	chevronCollapsed: {
 		transform: 'rotate(-90deg)',
@@ -71,15 +77,17 @@ export function SidebarCollapsibleTrigger({
 					aria-label={`${open ? 'Collapse' : 'Expand'} ${children}`}
 					type='button'
 				>
-					<span>{children}</span>
-					<ChevronDown
-						aria-hidden='true'
-						{...stylex.props(
-							styles.chevron,
-							!open && styles.chevronCollapsed,
-						)}
-						strokeWidth={iconWeights.medium}
-					/>
+					<span {...stylex.props(styles.content)}>
+						<span>{children}</span>
+						<ChevronDown
+							aria-hidden='true'
+							{...stylex.props(
+								styles.chevron,
+								!open && styles.chevronCollapsed,
+							)}
+							strokeWidth={iconWeights.medium}
+						/>
+					</span>
 				</button>
 			)}
 			xstyle={[styles.trigger, xstyle]}
