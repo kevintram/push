@@ -4,6 +4,8 @@ import * as stylex from '@stylexjs/stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
+import { menuVars } from './menu.stylex'
+
 export interface DropdownMenuContentProps extends Omit<
 	React.ComponentProps<typeof Menu.Popup>,
 	'className' | 'style'
@@ -20,6 +22,12 @@ const styles = stylex.create({
 	},
 	popup: {
 		padding: spacing.xs,
+
+		[menuVars.labelInsetStart]: {
+			default: spacing.sm,
+			':has([data-menu-icon], [role="menuitemcheckbox"], [role="menuitemradio"])':
+				spacing['2xl'],
+		},
 
 		borderColor: colorsSemantic.borderPrimary,
 		borderRadius: radii.lg,

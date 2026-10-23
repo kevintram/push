@@ -4,23 +4,28 @@ import * as stylex from '@stylexjs/stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
+import { menuVars } from './menu.stylex'
+
 export interface DropdownMenuItemProps extends Omit<
 	React.ComponentProps<typeof Menu.Item>,
-	'className' | 'style' | 'prefix' | 'suffix'
+	'className' | 'style' | 'suffix'
 > {
-	inset?: boolean
-	prefix?: React.ReactNode
+	// Leading glyph. When any item in the menu has one, every item's label
+	// starts past the icon column.
+	icon?: React.ReactNode
 	suffix?: React.ReactNode
 }
 
 const styles = stylex.create({
 	item: {
 		paddingBlock: '6px',
-		paddingInline: spacing.sm,
+		paddingInlineEnd: spacing.sm,
+		paddingInlineStart: menuVars.labelInsetStart,
 
 		alignItems: 'center',
 		columnGap: spacing.sm,
 		display: 'flex',
+		position: 'relative',
 
 		borderRadius: radii.xs,
 		outline: 'none',
@@ -52,37 +57,40 @@ const styles = stylex.create({
 		opacity: 0.5,
 		pointerEvents: 'none',
 	},
-	inset: {
-		paddingInlineStart: spacing['2xl'],
-	},
 	slot: {
 		alignItems: 'center',
 		display: 'inline-flex',
 		flexShrink: 0,
 		justifyContent: 'center',
 	},
+	icon: {
+		alignItems: 'center',
+		display: 'flex',
+		insetInlineStart: spacing.sm,
+		justifyContent: 'center',
+		position: 'absolute',
+	},
 })
 
 export function DropdownMenuItem({
-	inset = false,
 	disabled,
 	children,
-	prefix,
+	icon,
 	suffix,
 	...props
 }: DropdownMenuItemProps) {
 	return (
 		<Menu.Item
 			disabled={disabled}
-			{...stylex.props(
-				styles.item,
-				inset && styles.inset,
-				disabled && styles.disabled,
-			)}
+			{...stylex.props(styles.item, disabled && styles.disabled)}
 			{...props}
 		>
+			{icon && (
+				<span data-menu-icon='' {...stylex.props(styles.icon)}>
+					{icon}
+				</span>
+			)}
 			<div {...stylex.props(styles.innerContainer)}>
-				{prefix && <span {...stylex.props(styles.slot)}>{prefix}</span>}
 				<span {...stylex.props(styles.content)}>{children}</span>
 				{suffix && <span {...stylex.props(styles.slot)}>{suffix}</span>}
 			</div>

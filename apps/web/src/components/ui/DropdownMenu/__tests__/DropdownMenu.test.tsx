@@ -88,14 +88,14 @@ describe('DropdownMenu', () => {
 		)
 	})
 
-	it('renders item prefix and suffix slots', async () => {
+	it('renders item icon and suffix slots', async () => {
 		const user = userEvent.setup()
 
 		render(
 			<DropdownMenu>
 				<DropdownMenuTrigger>Actions</DropdownMenuTrigger>
 				<DropdownMenuContent>
-					<DropdownMenuItem prefix='⌘' suffix='→'>
+					<DropdownMenuItem icon='⌘' suffix='→'>
 						Open
 					</DropdownMenuItem>
 				</DropdownMenuContent>
