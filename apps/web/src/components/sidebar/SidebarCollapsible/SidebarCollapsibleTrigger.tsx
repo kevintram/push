@@ -15,7 +15,6 @@ import {
 const styles = stylex.create({
 	trigger: {
 		borderWidth: 0,
-		gap: spacing.xs,
 		paddingBlock: 0,
 		paddingInline: appSidebar.rowInset,
 
@@ -39,6 +38,12 @@ const styles = stylex.create({
 		fontWeight: fontWeights.medium,
 		minInlineSize: 0,
 		textAlign: 'start',
+	},
+	content: {
+		gap: spacing.xs,
+		alignItems: 'baseline',
+		display: 'flex',
+		minInlineSize: 0,
 	},
 	chevron: {
 		blockSize: appSidebar.iconSize,
@@ -71,15 +76,17 @@ export function SidebarCollapsibleTrigger({
 					aria-label={`${open ? 'Collapse' : 'Expand'} ${children}`}
 					type='button'
 				>
-					<span>{children}</span>
-					<ChevronDown
-						aria-hidden='true'
-						{...stylex.props(
-							styles.chevron,
-							!open && styles.chevronCollapsed,
-						)}
-						strokeWidth={iconWeights.medium}
-					/>
+					<span {...stylex.props(styles.content)}>
+						<span>{children}</span>
+						<ChevronDown
+							aria-hidden='true'
+							{...stylex.props(
+								styles.chevron,
+								!open && styles.chevronCollapsed,
+							)}
+							strokeWidth={iconWeights.medium}
+						/>
+					</span>
 				</button>
 			)}
 			xstyle={[styles.trigger, xstyle]}
