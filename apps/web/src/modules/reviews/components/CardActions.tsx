@@ -1,14 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
-import {
-	Archive,
-	ArrowUpRight,
-	Ellipsis,
-	Flag,
-	FolderInput,
-	Trash2,
-	Zap,
-} from 'lucide-react'
+import { Archive, ArrowUpRight, Ellipsis, Flag, Zap } from 'lucide-react'
 import { useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
@@ -194,45 +186,53 @@ export function CardActions({
 					<Ellipsis aria-hidden='true' size={iconSizes.sm} />
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align='end'>
-					<DropdownMenuItem onClick={toggleType}>
-						<Zap
-							aria-hidden='true'
-							size={iconSizes.sm}
-							{...(isFlashcard
-								? stylex.props(styles.flashcardOn)
-								: {})}
-						/>
+					<DropdownMenuItem
+						icon={
+							<Zap
+								aria-hidden='true'
+								size={iconSizes.sm}
+								{...stylex.props(
+									isFlashcard && styles.flashcardOn,
+								)}
+							/>
+						}
+						onClick={toggleType}
+					>
 						{isFlashcard
 							? 'Remove as flashcard'
 							: 'Mark as flashcard'}
 					</DropdownMenuItem>
-					<DropdownMenuItem onClick={toggleFlag}>
-						<Flag
-							aria-hidden='true'
-							size={iconSizes.sm}
-							{...(isFlagged ? stylex.props(styles.flagOn) : {})}
-						/>
+					<DropdownMenuItem
+						icon={
+							<Flag
+								aria-hidden='true'
+								size={iconSizes.sm}
+								{...stylex.props(isFlagged && styles.flagOn)}
+							/>
+						}
+						onClick={toggleFlag}
+					>
 						{isFlagged ? 'Unflag' : 'Flag'}
 					</DropdownMenuItem>
-					<DropdownMenuItem onClick={toggleRetire}>
-						<Archive
-							aria-hidden='true'
-							size={iconSizes.sm}
-							{...(isRetired
-								? stylex.props(styles.retiredOn)
-								: {})}
-						/>
+					<DropdownMenuItem
+						icon={
+							<Archive
+								aria-hidden='true'
+								size={iconSizes.sm}
+								{...stylex.props(isRetired && styles.retiredOn)}
+							/>
+						}
+						onClick={toggleRetire}
+					>
 						{isRetired ? 'Unretire' : 'Retire'}
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={() => setIsMoveDialogOpen(true)}>
-						<FolderInput aria-hidden='true' size={iconSizes.sm} />
 						Move
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						onClick={() => setIsDeleteDialogOpen(true)}
 					>
-						<Trash2 aria-hidden='true' size={iconSizes.sm} />
 						Delete
 					</DropdownMenuItem>
 				</DropdownMenuContent>

@@ -1,7 +1,7 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { useQuery } from '@tanstack/react-query'
-import { Ellipsis, Maximize2, Minimize2, Trash2, X } from 'lucide-react'
+import { Ellipsis, Maximize2, Minimize2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import {
@@ -469,10 +469,6 @@ export function ReviewDialog({
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align='end'>
 								<DropdownMenuItem onClick={onDelete}>
-									<Trash2
-										aria-hidden='true'
-										size={iconSizes.sm}
-									/>
 									Delete
 								</DropdownMenuItem>
 							</DropdownMenuContent>

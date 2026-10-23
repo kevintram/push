@@ -1,6 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { FolderInput, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
@@ -12,7 +11,7 @@ import {
 	ContextMenuTrigger,
 } from '~/components/ui'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import {
 	useCreateCollection,
@@ -100,18 +99,15 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 				</ContextMenuTrigger>
 				<ContextMenuContent>
 					<ContextMenuItem onClick={handleCreateSubcollection}>
-						<Plus aria-hidden='true' size={iconSizes.sm} />
 						Add subcollection
 					</ContextMenuItem>
 					<ContextMenuItem onClick={() => setIsMoveDialogOpen(true)}>
-						<FolderInput aria-hidden='true' size={iconSizes.sm} />
 						Move
 					</ContextMenuItem>
 					<ContextMenuSeparator />
 					<ContextMenuItem
 						onClick={() => setIsDeleteDialogOpen(true)}
 					>
-						<Trash2 aria-hidden='true' size={iconSizes.sm} />
 						Delete
 					</ContextMenuItem>
 				</ContextMenuContent>

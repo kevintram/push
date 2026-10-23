@@ -2,7 +2,7 @@ import type { Collection } from '@convex/validators/collections'
 import * as stylex from '@stylexjs/stylex'
 import { queryOptions, useSuspenseQueries } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
-import { Ellipsis, FolderInput, Plus, Trash2 } from 'lucide-react'
+import { Ellipsis, Plus } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -236,20 +236,12 @@ export function CollectionPage() {
 							<DropdownMenuItem
 								onClick={() => setIsMoveDialogOpen(true)}
 							>
-								<FolderInput
-									aria-hidden='true'
-									size={iconSizes.sm}
-								/>
 								Move
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								disabled={deleteCollection.isPending}
 								onClick={handleDeleteCollection}
 							>
-								<Trash2
-									aria-hidden='true'
-									size={iconSizes.sm}
-								/>
 								Delete
 							</DropdownMenuItem>
 						</DropdownMenuContent>

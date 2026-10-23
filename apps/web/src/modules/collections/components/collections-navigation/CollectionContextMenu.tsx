@@ -1,4 +1,3 @@
-import { FolderInput, Plus, Trash2 } from 'lucide-react'
 import { type ReactElement, useState } from 'react'
 
 import {
@@ -9,7 +8,6 @@ import {
 	ContextMenuTrigger,
 	useHoldPopoverOpen,
 } from '~/components/ui'
-import { iconSizes } from '~/styles/tokens.stylex'
 
 type CollectionContextMenuProps = {
 	trigger: ReactElement
@@ -32,18 +30,11 @@ export function CollectionContextMenu({
 			<ContextMenuTrigger render={trigger} />
 			<ContextMenuContent>
 				<ContextMenuItem onClick={onCreateSubcollection}>
-					<Plus aria-hidden='true' size={iconSizes.sm} />
 					Add subcollection
 				</ContextMenuItem>
-				<ContextMenuItem onClick={onMove}>
-					<FolderInput aria-hidden='true' size={iconSizes.sm} />
-					Move
-				</ContextMenuItem>
+				<ContextMenuItem onClick={onMove}>Move</ContextMenuItem>
 				<ContextMenuSeparator />
-				<ContextMenuItem onClick={onDelete}>
-					<Trash2 aria-hidden='true' size={iconSizes.sm} />
-					Delete
-				</ContextMenuItem>
+				<ContextMenuItem onClick={onDelete}>Delete</ContextMenuItem>
 			</ContextMenuContent>
 		</ContextMenu>
 	)
