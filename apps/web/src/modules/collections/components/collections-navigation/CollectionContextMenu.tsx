@@ -9,7 +9,7 @@ import {
 	ContextMenuTrigger,
 	useHoldPopoverOpen,
 } from '~/components/ui'
-import { iconSizes, iconWeights } from '~/styles/tokens.stylex'
+import { iconSizes } from '~/styles/tokens.stylex'
 
 type CollectionContextMenuProps = {
 	trigger: ReactElement
@@ -32,28 +32,16 @@ export function CollectionContextMenu({
 			<ContextMenuTrigger render={trigger} />
 			<ContextMenuContent>
 				<ContextMenuItem onClick={onCreateSubcollection}>
-					<Plus
-						aria-hidden='true'
-						size={iconSizes.sm}
-						strokeWidth={iconWeights.medium}
-					/>
+					<Plus aria-hidden='true' size={iconSizes.sm} />
 					Add subcollection
 				</ContextMenuItem>
 				<ContextMenuItem onClick={onMove}>
-					<FolderInput
-						aria-hidden='true'
-						size={iconSizes.sm}
-						strokeWidth={iconWeights.medium}
-					/>
+					<FolderInput aria-hidden='true' size={iconSizes.sm} />
 					Move
 				</ContextMenuItem>
 				<ContextMenuSeparator />
 				<ContextMenuItem onClick={onDelete}>
-					<Trash2
-						aria-hidden='true'
-						size={iconSizes.sm}
-						strokeWidth={iconWeights.medium}
-					/>
+					<Trash2 aria-hidden='true' size={iconSizes.sm} />
 					Delete
 				</ContextMenuItem>
 			</ContextMenuContent>
