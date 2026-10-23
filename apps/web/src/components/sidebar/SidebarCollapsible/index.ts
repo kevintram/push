@@ -3,10 +3,6 @@ export {
 	type SidebarCollapsibleActionsProps,
 } from './SidebarCollapsibleActions'
 export {
-	SidebarCollapsibleContent,
-	type SidebarCollapsibleContentProps,
-} from './SidebarCollapsibleContent'
-export {
 	SidebarCollapsibleHeader,
 	type SidebarCollapsibleHeaderProps,
 } from './SidebarCollapsibleHeader'
@@ -18,3 +14,7 @@ export {
 	SidebarCollapsibleTrigger,
 	type SidebarCollapsibleTriggerProps,
 } from './SidebarCollapsibleTrigger'
+export {
+	CollapsibleContent as SidebarCollapsibleContent,
+	type CollapsibleContentProps as SidebarCollapsibleContentProps,
+} from '~/components/ui'
