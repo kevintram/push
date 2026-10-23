@@ -103,9 +103,9 @@ const variants = stylex.create({
 	outline: {
 		borderColor: colorsSemantic.borderPrimary,
 		backgroundColor: {
-			default: colorsSemantic.surfaceInteractiveSecondary,
-			':hover': colorsSemantic.surfaceInteractiveSecondaryHover,
-			':active': colorsSemantic.surfaceInteractiveSecondaryActive,
+			default: colorsSemantic.surfaceTransparent,
+			':hover': colorsSemantic.surfaceTransparentHover,
+			':active': colorsSemantic.surfaceTransparentActive,
 		},
 		color: {
 			default: colorsSemantic.textInteractive,
@@ -152,7 +152,7 @@ const activeVariants = stylex.create({
 		color: colorsSemantic.textInteractiveActive,
 	},
 	outline: {
-		backgroundColor: colorsSemantic.surfaceInteractiveSecondaryActive,
+		backgroundColor: colorsSemantic.surfaceTransparentActive,
 		color: colorsSemantic.textInteractiveActive,
 	},
 	ghost: {
@@ -223,6 +223,7 @@ const sizeVariants = stylex.create({
 		fontSize: fontSizes.sm,
 	},
 	small: {
+		gap: spacing.xs,
 		paddingInline: spacing.sm,
 		blockSize: buttonSizes.small,
 	},

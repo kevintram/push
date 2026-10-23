@@ -7,6 +7,7 @@ import { useCreateReview } from '../api/reviewQueries'
 import {
 	emptyReviewDraft,
 	ReviewComposerContext,
+	type ReviewComposerDockState,
 	type ReviewComposerProviderProps,
 	type ReviewComposerState,
 } from './reviewComposerContext'
@@ -14,8 +15,12 @@ import {
 export function ReviewComposerProvider({
 	cardId,
 	children,
+	defaultDockState = 'closed',
+	onDockStateChange,
 }: ReviewComposerProviderProps) {
 	const [draft, setDraft] = useState(emptyReviewDraft)
+	const [dockState, setLocalDockState] =
+		useState<ReviewComposerDockState>(defaultDockState)
 	const { isPending, mutate } = useCreateReview()
 	const isDirty =
 		draft.description !== '' ||
@@ -27,6 +32,11 @@ export function ReviewComposerProvider({
 			draft,
 			isPending,
 			isDirty,
+			dockState,
+			setDockState: value => {
+				setLocalDockState(value)
+				onDockStateChange?.(value)
+			},
 			setDescription: value =>
 				setDraft(p => ({ ...p, description: value })),
 			setNotes: value => setDraft(p => ({ ...p, notes: value })),
@@ -41,7 +51,7 @@ export function ReviewComposerProvider({
 				})),
 			setDate: value => setDraft(p => ({ ...p, date: value })),
 			resetDraft: () => setDraft(emptyReviewDraft),
-			submit: composerSuccess => {
+			submit: () => {
 				if (!isDirty || isPending) return
 				mutate(
 					{
@@ -57,13 +67,21 @@ export function ReviewComposerProvider({
 						onError: () => toast.error('Failed to create review'),
 						onSuccess: () => {
 							setDraft(emptyReviewDraft)
-							composerSuccess?.()
+							setLocalDockState('closed')
 						},
 					},
 				)
 			},
 		}),
-		[cardId, draft, isDirty, isPending, mutate],
+		[
+			cardId,
+			draft,
+			dockState,
+			isDirty,
+			isPending,
+			mutate,
+			onDockStateChange,
+		],
 	)
 	return (
 		<ReviewComposerContext.Provider value={state}>

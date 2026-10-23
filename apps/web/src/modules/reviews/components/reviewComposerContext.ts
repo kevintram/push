@@ -17,16 +17,24 @@ export const emptyReviewDraft: ReviewDraft = {
 	rating: null,
 	date: null,
 }
+/** Where the card's docked composer is showing, if at all. */
+export type ReviewComposerDockState =
+	| 'closed'
+	| 'open'
+	| 'minimized'
+	| 'expanded'
 export type ReviewComposerState = {
 	draft: ReviewDraft
 	isPending: boolean
 	isDirty: boolean
+	dockState: ReviewComposerDockState
+	setDockState: (value: ReviewComposerDockState) => void
 	setDescription: (value: string) => void
 	setNotes: (value: string) => void
 	setRating: (value: Rating | null) => void
 	setDate: (value: DateString | null) => void
 	resetDraft: () => void
-	submit: (onSuccess?: () => void) => void
+	submit: () => void
 }
 export const ReviewComposerContext = createContext<ReviewComposerState | null>(
 	null,
@@ -37,7 +45,17 @@ export function useReviewComposerState() {
 		throw new Error('ReviewComposer requires ReviewComposerProvider')
 	return state
 }
-export type ReviewComposerProviderProps = {
+/** Lets a parent carry the dock's state from one card to the next. */
+export type ReviewComposerDockProps = {
+	/** Where the dock starts. Defaults to closed. */
+	defaultDockState?: ReviewComposerDockState
+	/**
+	 * Called when the user moves the dock. Creating a review closes the dock
+	 * without calling this, since that isn't a choice to hide it.
+	 */
+	onDockStateChange?: (value: ReviewComposerDockState) => void
+}
+export type ReviewComposerProviderProps = ReviewComposerDockProps & {
 	cardId: Id<'cards'>
 	children: React.ReactNode
 }

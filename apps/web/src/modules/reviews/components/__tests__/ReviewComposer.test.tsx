@@ -77,7 +77,7 @@ describe('ReviewComposer', () => {
 		expect(mutate).not.toHaveBeenCalled()
 	})
 
-	it('displays the Add review shortcut in the Add button tooltip', async () => {
+	it('displays the shortcut in the Create button tooltip', async () => {
 		const user = userEvent.setup()
 		renderComposer()
 
@@ -85,56 +85,38 @@ describe('ReviewComposer', () => {
 			screen.getByRole('textbox', { name: 'Review description' }),
 			{ target: { value: 'A review' } },
 		)
-		await user.hover(screen.getByRole('button', { name: 'Add' }))
+		await user.hover(screen.getByRole('button', { name: 'Create review' }))
 
 		const tooltip = await screen.findByRole('tooltip')
-		expect(tooltip).toHaveTextContent('Add review')
+		expect(tooltip).toHaveTextContent('Create review')
 		expect(tooltip.querySelector('kbd')).toHaveTextContent('↵')
 	})
 
-	it('shows Cancel and resets the draft when a cancel callback is provided', async () => {
+	it('clears the draft after a successful create', async () => {
 		const user = userEvent.setup()
-		const onCancel = vi.fn()
-		renderComposer({ onCancel })
+		mutate.mockImplementation((_args, options) => options.onSuccess())
+		renderComposer()
 
 		const description = screen.getByRole('textbox', {
 			name: 'Review description',
 		})
-		fireEvent.change(description, { target: { value: 'Draft review' } })
-		await user.click(screen.getByRole('button', { name: 'Cancel' }))
+		fireEvent.change(description, { target: { value: 'A review' } })
+		await user.click(screen.getByRole('button', { name: 'Create review' }))
 
-		expect(onCancel).toHaveBeenCalledOnce()
 		expect(description).toHaveValue('')
 	})
 
-	it('notifies the parent only after a successful create', async () => {
+	it('preserves the draft when creation fails', async () => {
 		const user = userEvent.setup()
-		const onSuccess = vi.fn()
-		mutate.mockImplementation((_args, options) => options.onSuccess())
-		renderComposer({ onSuccess })
-
-		fireEvent.change(
-			screen.getByRole('textbox', { name: 'Review description' }),
-			{ target: { value: 'A review' } },
-		)
-		await user.click(screen.getByRole('button', { name: 'Add' }))
-
-		expect(onSuccess).toHaveBeenCalledOnce()
-	})
-
-	it('preserves the draft and does not notify the parent when creation fails', async () => {
-		const user = userEvent.setup()
-		const onSuccess = vi.fn()
 		mutate.mockImplementation((_args, options) => options.onError())
-		renderComposer({ onSuccess })
+		renderComposer()
 
 		const description = screen.getByRole('textbox', {
 			name: 'Review description',
 		})
 		fireEvent.change(description, { target: { value: 'Keep this draft' } })
-		await user.click(screen.getByRole('button', { name: 'Add' }))
+		await user.click(screen.getByRole('button', { name: 'Create review' }))
 
-		expect(onSuccess).not.toHaveBeenCalled()
 		expect(description).toHaveValue('Keep this draft')
 	})
 })

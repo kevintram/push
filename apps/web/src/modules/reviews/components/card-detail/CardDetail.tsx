@@ -21,18 +21,20 @@ import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, layout, spacing } from '~/styles/tokens.stylex'
 
 import { CardActions } from '../CardActions'
+import type { ReviewComposerDockProps } from '../reviewComposerContext'
 import { ReviewComposerProvider } from '../ReviewComposerProvider'
-import { AddReviewPopover } from './AddReviewPopover'
 import { CardBreadcrumbs } from './CardBreadcrumbs'
 import { CardOverview } from './CardOverview'
 import { CardReviews } from './CardReviews'
 import { CardSidebar } from './CardSidebar'
+import { NewReviewButton } from './NewReviewButton'
+import { ReviewComposerDock } from './ReviewComposerDock'
 
 export type CardTab = 'overview' | 'reviews'
 
 const DETAILS_SIDEBAR_STORAGE_KEY = 'cardDetailSidebarOpen'
 
-type CardDetailBaseProps = {
+type CardDetailBaseProps = ReviewComposerDockProps & {
 	cardId: Id<'cards'>
 	activeTab: CardTab
 	showGoToCard?: boolean
@@ -57,6 +59,7 @@ const styles = stylex.create({
 		blockSize: '100%',
 		containerType: 'inline-size',
 		inlineSize: '100%',
+		position: 'relative',
 
 		display: 'flex',
 		flexDirection: 'column',
@@ -88,7 +91,7 @@ const styles = stylex.create({
 		display: 'flex',
 		flexShrink: 0,
 		justifyContent: 'space-between',
-		paddingBlockEnd: spacing.xs,
+		paddingBlockEnd: spacing.sm,
 	},
 	secondaryToolbarActions: {
 		alignItems: 'center',
@@ -125,15 +128,6 @@ const styles = stylex.create({
 		position: 'relative',
 		zIndex: 1,
 	},
-	reviewFallback: {
-		display: {
-			default: 'flex',
-			'@container (min-width: 640px)': 'none',
-		},
-	},
-	reviewFallbackClosed: {
-		display: 'flex',
-	},
 })
 
 export function CardDetail({
@@ -143,6 +137,8 @@ export function CardDetail({
 	tabLinks,
 	showGoToCard = false,
 	onNavigate,
+	defaultDockState,
+	onDockStateChange,
 }: CardDetailProps) {
 	const { data: card } = useSuspenseQuery(cardQueries.detail(cardId))
 	const today = useToday()
@@ -158,7 +154,12 @@ export function CardDetail({
 	}
 
 	return (
-		<ReviewComposerProvider cardId={cardId} key={cardId}>
+		<ReviewComposerProvider
+			cardId={cardId}
+			defaultDockState={defaultDockState}
+			key={cardId}
+			onDockStateChange={onDockStateChange}
+		>
 			<div {...stylex.props(styles.container)}>
 				<header {...stylex.props(styles.toolbar)}>
 					<div {...stylex.props(styles.breadcrumbs)}>
@@ -204,15 +205,7 @@ export function CardDetail({
 						</TabsList>
 					</Tabs>
 					<div {...stylex.props(styles.secondaryToolbarActions)}>
-						{activeTab === 'overview' && (
-							<AddReviewPopover
-								xstyle={
-									sidebarOpen
-										? styles.reviewFallback
-										: styles.reviewFallbackClosed
-								}
-							/>
-						)}
+						<NewReviewButton />
 						<Tooltip>
 							<TooltipTrigger
 								render={
@@ -262,6 +255,7 @@ export function CardDetail({
 						/>
 					)}
 				</div>
+				<ReviewComposerDock />
 			</div>
 		</ReviewComposerProvider>
 	)

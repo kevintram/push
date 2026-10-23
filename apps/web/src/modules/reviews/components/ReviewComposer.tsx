@@ -21,7 +21,7 @@ import { RatingPicker } from './RatingPicker'
 import { useReviewComposerState } from './reviewComposerContext'
 import { ReviewDatePicker } from './ReviewDatePicker'
 
-const ADD_REVIEW_HOTKEY = 'Mod+Enter' satisfies Hotkey
+const CREATE_REVIEW_HOTKEY = 'Mod+Enter' satisfies Hotkey
 
 const styles = stylex.create({
 	composer: {
@@ -31,9 +31,10 @@ const styles = stylex.create({
 		padding: 0,
 		marginInline: 0,
 
+		blockSize: '100%',
 		display: 'grid',
 		gridTemplateColumns: 'max-content minmax(0, 1fr)',
-		gridTemplateRows: 'auto auto',
+		gridTemplateRows: 'minmax(0, 1fr) auto',
 		inlineSize: '100%',
 		minInlineSize: 0,
 	},
@@ -74,10 +75,12 @@ const styles = stylex.create({
 	notes: {
 		borderRadius: radii.xs,
 		borderStyle: 'none',
+		flexBasis: 0,
+		flexGrow: 1,
 		fontSize: fontSizes.sm,
 		fontWeight: fontWeights.medium,
 		lineHeight: 1.4,
-		minBlockSize: '5rem',
+		minBlockSize: 0,
 		overflowWrap: 'anywhere',
 		overflowX: 'hidden',
 		overflowY: 'auto',
@@ -105,33 +108,21 @@ const styles = stylex.create({
 		minInlineSize: 0,
 		rowGap: spacing.xs,
 	},
-	footerActions: {
-		alignItems: 'center',
-		columnGap: spacing.sm,
-		display: 'flex',
-		flexShrink: 0,
-		marginInlineStart: 'auto',
-		whiteSpace: 'nowrap',
-	},
 })
 
 type ReviewComposerProps = {
-	autoFocusDescription?: boolean
-	id?: string
-	onCancel?: () => void
-	onSuccess?: () => void
-	xstyle?: stylex.StyleXStyles
+	/** The control to focus when the composer mounts. */
+	autoFocus?: 'description' | 'rating'
 }
 
-export function ReviewComposer({
-	autoFocusDescription = false,
-	id,
-	onCancel,
-	onSuccess,
-	xstyle,
-}: ReviewComposerProps) {
+/**
+ * Fills its container. Cancelling belongs to the window around it, such as
+ * the docked composer or its dialog.
+ */
+export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 	const formRef = useRef<HTMLFormElement>(null)
 	const descriptionRef = useRef<HTMLTextAreaElement>(null)
+	const ratingRef = useRef<HTMLButtonElement>(null)
 	const {
 		draft,
 		isDirty,
@@ -140,27 +131,22 @@ export function ReviewComposer({
 		setNotes,
 		setRating,
 		setDate,
-		resetDraft,
 		submit,
 	} = useReviewComposerState()
 	const isSubmitDisabled = !isDirty || isPending
 
 	useEffect(() => {
-		if (autoFocusDescription) descriptionRef.current?.focus()
-	}, [autoFocusDescription])
-
-	const handleCancel = () => {
-		resetDraft()
-		onCancel?.()
-	}
+		if (autoFocus === 'description') descriptionRef.current?.focus()
+		else if (autoFocus === 'rating') ratingRef.current?.focus()
+	}, [autoFocus])
 
 	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
-		if (!isSubmitDisabled) submit(onSuccess)
+		if (!isSubmitDisabled) submit()
 	}
 
 	const submitWithHotkey = () => formRef.current?.requestSubmit()
-	useHotkey(ADD_REVIEW_HOTKEY, submitWithHotkey, {
+	useHotkey(CREATE_REVIEW_HOTKEY, submitWithHotkey, {
 		enabled: !isSubmitDisabled,
 		target: formRef,
 	})
@@ -168,10 +154,9 @@ export function ReviewComposer({
 	return (
 		<form
 			aria-label='Add review'
-			id={id}
 			onSubmit={handleSubmit}
 			ref={formRef}
-			{...stylex.props(styles.composer, xstyle)}
+			{...stylex.props(styles.composer)}
 		>
 			<aside {...stylex.props(styles.rail)}>
 				<div {...stylex.props(styles.ratingControl)}>
@@ -179,6 +164,7 @@ export function ReviewComposer({
 						disabled={isPending}
 						onSetRating={setRating}
 						rating={draft.rating ?? undefined}
+						ref={ratingRef}
 					/>
 				</div>
 			</aside>
@@ -187,7 +173,7 @@ export function ReviewComposer({
 					aria-label='Review description'
 					disabled={isPending}
 					onChange={event => setDescription(event.target.value)}
-					placeholder='Add a review...'
+					placeholder='Description'
 					value={draft.description}
 					ref={descriptionRef}
 					xstyle={styles.description}
@@ -206,42 +192,29 @@ export function ReviewComposer({
 					<ReviewDatePicker
 						date={draft.date}
 						disabled={isPending}
-						emptyLabel={null}
+						emptyLabel='Date'
 						kind={draft.rating === null ? 'scheduled' : 'completed'}
 						onDateChange={setDate}
 						size='medium'
 					/>
 				</div>
-				<div {...stylex.props(styles.footerActions)}>
-					{(isDirty || onCancel !== undefined) && (
-						<Button
-							disabled={isPending}
-							onClick={handleCancel}
-							shape='round'
-							type='button'
-							variant='ghost'
-						>
-							Cancel
-						</Button>
-					)}
-					<Tooltip>
-						<TooltipTrigger
-							render={
-								<Button
-									shape='round'
-									disabled={isSubmitDisabled}
-									type='submit'
-								>
-									Add
-								</Button>
-							}
-						/>
-						<TooltipContent>
-							Add review
-							<Kbd>{formatForDisplay(ADD_REVIEW_HOTKEY)}</Kbd>
-						</TooltipContent>
-					</Tooltip>
-				</div>
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button
+								shape='round'
+								disabled={isSubmitDisabled}
+								type='submit'
+							>
+								Create review
+							</Button>
+						}
+					/>
+					<TooltipContent>
+						Create review
+						<Kbd>{formatForDisplay(CREATE_REVIEW_HOTKEY)}</Kbd>
+					</TooltipContent>
+				</Tooltip>
 			</footer>
 		</form>
 	)

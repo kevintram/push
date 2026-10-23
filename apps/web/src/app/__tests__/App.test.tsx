@@ -664,9 +664,11 @@ describe('v2 app setup', () => {
 		renderRoute('/review/new', { newCards: [card, secondCard] })
 
 		await user.click(await screen.findByRole('tab', { name: 'Reviews' }))
-		expect(
-			await screen.findByRole('form', { name: 'Add review' }),
-		).toBeInTheDocument()
+		await waitFor(() =>
+			expect(
+				screen.getByRole('tab', { name: 'Reviews' }),
+			).toHaveAttribute('aria-selected', 'true'),
+		)
 
 		await user.click(screen.getByRole('button', { name: 'Next card' }))
 
@@ -1169,10 +1171,10 @@ describe('v2 app setup', () => {
 			within(sidebar).queryByRole('region', { name: 'Reviews' }),
 		).not.toBeInTheDocument()
 		expect(
-			within(sidebar).queryByRole('form', { name: 'Add review' }),
+			screen.queryByRole('form', { name: 'Add review' }),
 		).not.toBeInTheDocument()
 		expect(
-			screen.getByRole('form', { name: 'Add review' }),
+			screen.getByRole('button', { name: 'New review' }),
 		).toBeInTheDocument()
 		expect(screen.getByRole('tab', { name: 'Reviews' })).toHaveAttribute(
 			'aria-selected',
@@ -1181,7 +1183,7 @@ describe('v2 app setup', () => {
 		expect(router.state.location.pathname).toBe(`/cards/${cardId}/reviews`)
 	})
 
-	it('renders the composer and history in the Overview sidebar', async () => {
+	it('renders history in the Overview sidebar and docks the composer', async () => {
 		renderRoute(`/cards/${cardId}`)
 
 		const sidebar = await screen.findByRole('complementary', {
@@ -1191,7 +1193,10 @@ describe('v2 app setup', () => {
 			within(sidebar).getByRole('region', { name: 'Properties' }),
 		).toBeInTheDocument()
 		expect(
-			within(sidebar).getByRole('form', { name: 'Add review' }),
+			within(sidebar).queryByRole('form', { name: 'Add review' }),
+		).not.toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'New review' }),
 		).toBeInTheDocument()
 		expect(
 			within(sidebar).getByRole('region', { name: 'Reviews' }),
@@ -1216,9 +1221,6 @@ describe('v2 app setup', () => {
 			'aria-selected',
 			'true',
 		)
-		expect(
-			await screen.findByRole('form', { name: 'Add review' }),
-		).toBeInTheDocument()
 	})
 
 	it('renders the not found route', async () => {
