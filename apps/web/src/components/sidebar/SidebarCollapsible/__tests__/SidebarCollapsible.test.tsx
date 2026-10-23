@@ -22,7 +22,7 @@ describe('SidebarCollapsible', () => {
 					</SidebarCollapsibleTrigger>
 				</SidebarCollapsibleHeader>
 				<SidebarCollapsibleContent
-					render={<nav aria-label='review sections' />}
+					render={<nav aria-label='Review sections' />}
 				>
 					<a href='/review/due'>Due</a>
 				</SidebarCollapsibleContent>
@@ -31,7 +31,7 @@ describe('SidebarCollapsible', () => {
 
 		const trigger = screen.getByRole('button', { name: 'Collapse Review' })
 		const panel = screen.getByRole('navigation', {
-			name: 'review sections',
+			name: 'Review sections',
 		})
 		expect(trigger).toHaveAttribute('aria-expanded', 'true')
 		expect(trigger).toHaveAttribute('aria-controls', panel.id)
@@ -41,7 +41,7 @@ describe('SidebarCollapsible', () => {
 			screen.getByRole('button', { name: 'Expand Review' }),
 		).toHaveAttribute('aria-expanded', 'false')
 		expect(
-			screen.queryByRole('navigation', { name: 'review sections' }),
+			screen.queryByRole('navigation', { name: 'Review sections' }),
 		).not.toBeInTheDocument()
 	})
 

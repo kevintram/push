@@ -40,7 +40,7 @@ export function ReviewNavigation() {
 				<SidebarCollapsibleTrigger>Review</SidebarCollapsibleTrigger>
 			</SidebarCollapsibleHeader>
 			<SidebarCollapsibleContent
-				render={<nav aria-label='review sections' />}
+				render={<nav aria-label='Review sections' />}
 				xstyle={styles.items}
 			>
 				{REVIEW_LINKS.map(({ icon, label, queueKey, to }) => (
