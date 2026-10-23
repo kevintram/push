@@ -1,7 +1,7 @@
 import { Tooltip } from '@base-ui/react/tooltip'
 import * as stylex from '@stylexjs/stylex'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 export interface TooltipContentProps extends Omit<
@@ -20,14 +20,14 @@ const styles = stylex.create({
 		paddingBlock: '6px',
 		paddingInline: spacing.sm,
 
-		borderColor: semanticColors.borderSubtle,
+		borderColor: colorsSemantic.borderPrimary,
 		borderRadius: radii.xs,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		alignItems: 'center',
-		backgroundColor: semanticColors.surfaceRaised,
-		boxShadow: `0 4px 12px ${semanticColors.shadowPrimary}`,
-		color: semanticColors.textPrimary,
+		backgroundColor: colorsSemantic.surfaceRaised,
+		boxShadow: `0 4px 12px ${colorsSemantic.shadowPrimary}`,
+		color: colorsSemantic.textPrimary,
 		columnGap: spacing.sm,
 		display: 'flex',
 		fontSize: fontSizes.sm,

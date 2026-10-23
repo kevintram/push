@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { baseColors, neutral } from '~/styles/colors/primitives.stylex'
+import { baseColors, neutral } from '~/styles/colors/colorsPrimitive.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
 import {

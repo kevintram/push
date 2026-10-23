@@ -10,13 +10,13 @@ import {
 	red,
 	rose,
 	whiteAlpha,
-} from './primitives.stylex'
+} from './colorsPrimitive.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
 
 // Semantic color tokens, tier 2 of the color system. Components consume these
-// tokens directly; each token references primitives.stylex.ts.
-export const semanticColors = stylex.defineVars({
+// tokens directly; each token references colorsPrimitive.stylex.ts.
+export const colorsSemantic = stylex.defineVars({
 	// Surface
 	// Structural surfaces
 	// The default application canvas and content background.
@@ -171,11 +171,9 @@ export const semanticColors = stylex.defineVars({
 
 	// Border
 	// The default boundary used to clearly separate adjacent elements or surfaces.
-	borderPrimary: { default: neutral.s300, [DARK]: neutral.s600 },
+	borderPrimary: { default: neutral.s300, [DARK]: neutral.s700 },
 	// A low-emphasis boundary for gentle visual separation.
-	borderSubtle: { default: neutral.s200, [DARK]: whiteAlpha.s5 },
-	// A high-emphasis boundary for pronounced separation or containment.
-	borderStrong: { default: neutral.s400, [DARK]: neutral.s500 },
+	borderSubtle: { default: neutral.s200, [DARK]: neutral.s800 },
 	// The boundary color that identifies keyboard or input focus.
 	borderFocus: { default: blue.s600, [DARK]: blue.s500 },
 	// A boundary that communicates brand identity or brand emphasis.

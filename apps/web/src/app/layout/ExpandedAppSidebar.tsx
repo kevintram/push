@@ -10,7 +10,7 @@ import { CollectionsNavigation } from '~/modules/collections/components/collecti
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { ReviewNavigation } from '~/modules/reviews/components/review-navigation/ReviewNavigation'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	appSidebar,
 	fontSizes,
@@ -41,9 +41,9 @@ const styles = stylex.create({
 		textDecoration: 'none',
 		alignItems: 'center',
 		color: {
-			default: semanticColors.textInteractive,
-			':hover': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':hover': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 		display: 'flex',
 		fontSize: fontSizes.lg,

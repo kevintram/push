@@ -4,7 +4,7 @@ import * as stylex from '@stylexjs/stylex'
 import { type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	appSidebar,
 	fontSizes,
@@ -46,8 +46,8 @@ const styles = stylex.create({
 		fontFamily: 'inherit',
 		fontSize: fontSizes.sm,
 		outlineColor: {
-			default: semanticColors.surfaceTransparent,
-			':focus-visible': semanticColors.borderFocus,
+			default: colorsSemantic.surfaceTransparent,
+			':focus-visible': colorsSemantic.borderFocus,
 		},
 		// Inset to match the collection tree's rows, which share the sidebar.
 		outlineOffset: '-2px',
@@ -61,18 +61,18 @@ const styles = stylex.create({
 		transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
 
 		backgroundColor: {
-			'[data-status=active]': semanticColors.surfaceTransparentActive,
-			default: semanticColors.surfaceTransparent,
+			'[data-status=active]': colorsSemantic.surfaceTransparentActive,
+			default: colorsSemantic.surfaceTransparent,
 			':is([data-status=active]:hover)':
-				semanticColors.surfaceTransparentActive,
-			':hover': semanticColors.surfaceTransparentHover,
-			':active': semanticColors.surfaceTransparentActive,
+				colorsSemantic.surfaceTransparentActive,
+			':hover': colorsSemantic.surfaceTransparentHover,
+			':active': colorsSemantic.surfaceTransparentActive,
 		},
 		color: {
-			'[data-status=active]': semanticColors.textInteractiveActive,
-			default: semanticColors.textInteractive,
-			':hover': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			'[data-status=active]': colorsSemantic.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':hover': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 	},
 	// Buttons shrink a little while pressed, like Button. Links don't.
@@ -94,11 +94,11 @@ const styles = stylex.create({
 	},
 	disabled: {
 		backgroundColor: {
-			default: semanticColors.surfaceTransparent,
-			':hover': semanticColors.surfaceTransparent,
-			':active': semanticColors.surfaceTransparent,
+			default: colorsSemantic.surfaceTransparent,
+			':hover': colorsSemantic.surfaceTransparent,
+			':active': colorsSemantic.surfaceTransparent,
 		},
-		color: semanticColors.textInteractiveDisabled,
+		color: colorsSemantic.textInteractiveDisabled,
 		cursor: 'not-allowed',
 		transform: 'none',
 	},
@@ -107,31 +107,31 @@ const styles = stylex.create({
 		flexShrink: 0,
 	},
 	secondary: {
-		borderColor: semanticColors.surfaceTransparent,
+		borderColor: colorsSemantic.surfaceTransparent,
 		backgroundColor: {
-			default: semanticColors.surfaceInteractiveSecondary,
-			':hover': semanticColors.surfaceInteractiveSecondaryHover,
-			':active': semanticColors.surfaceInteractiveSecondaryActive,
+			default: colorsSemantic.surfaceInteractiveSecondary,
+			':hover': colorsSemantic.surfaceInteractiveSecondaryHover,
+			':active': colorsSemantic.surfaceInteractiveSecondaryActive,
 		},
 		color: {
-			default: semanticColors.textInteractive,
-			':hover': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':hover': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 	},
 	outline: {
-		borderColor: semanticColors.borderSubtle,
+		borderColor: colorsSemantic.borderPrimary,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		backgroundColor: {
-			default: semanticColors.surfaceInteractiveSecondary,
-			':hover': semanticColors.surfaceInteractiveSecondaryHover,
-			':active': semanticColors.surfaceInteractiveSecondaryActive,
+			default: colorsSemantic.surfaceInteractiveSecondary,
+			':hover': colorsSemantic.surfaceInteractiveSecondaryHover,
+			':active': colorsSemantic.surfaceInteractiveSecondaryActive,
 		},
 		color: {
-			default: semanticColors.textInteractive,
-			':hover': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':hover': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 	},
 })

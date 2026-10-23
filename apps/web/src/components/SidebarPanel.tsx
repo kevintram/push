@@ -1,17 +1,17 @@
 import * as stylex from '@stylexjs/stylex'
 import type { ReactNode } from 'react'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	container: {
 		padding: spacing.lg,
-		borderColor: semanticColors.borderSubtle,
+		borderColor: colorsSemantic.borderSubtle,
 		borderRadius: radii.xl,
 		borderStyle: 'solid',
 		borderWidth: 1,
-		backgroundColor: semanticColors.surfaceSecondary,
+		backgroundColor: colorsSemantic.surfaceSecondary,
 	},
 	header: {
 		alignItems: 'center',
@@ -20,7 +20,7 @@ const styles = stylex.create({
 	},
 	title: {
 		margin: 0,
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,

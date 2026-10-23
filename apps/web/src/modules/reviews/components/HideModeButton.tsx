@@ -4,7 +4,7 @@ import { Copy } from 'lucide-react'
 
 import { SidebarItem } from '~/components/sidebar'
 import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
-import { blue, whiteAlpha } from '~/styles/colors/primitives.stylex'
+import { blue, whiteAlpha } from '~/styles/colors/colorsPrimitive.stylex'
 import {
 	appSidebar,
 	fontWeights,

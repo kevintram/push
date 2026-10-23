@@ -1,8 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
 import { DayButton } from 'react-day-picker'
 
-import { blue } from '~/styles/colors/primitives.stylex'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { blue } from '~/styles/colors/colorsPrimitive.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
@@ -10,7 +10,7 @@ const DARK = '@media (prefers-color-scheme: dark)'
 const styles = stylex.create({
 	button: {
 		padding: spacing.none,
-		borderColor: semanticColors.surfaceTransparent,
+		borderColor: colorsSemantic.surfaceTransparent,
 		borderRadius: radii.full,
 		borderStyle: 'solid',
 		borderWidth: '1px',
@@ -19,28 +19,28 @@ const styles = stylex.create({
 				default: null,
 				':is([data-today="true"])': blue.s900,
 			},
-			default: semanticColors.surfaceTransparent,
+			default: colorsSemantic.surfaceTransparent,
 			':is([data-selected-single="true"])':
-				semanticColors.surfaceInteractivePrimary,
+				colorsSemantic.surfaceInteractivePrimary,
 			':is([data-today="true"])': blue.s400,
 
 			':is([data-selected-single="true"]):hover':
-				semanticColors.surfaceInteractivePrimaryHover,
+				colorsSemantic.surfaceInteractivePrimaryHover,
 			':is([data-today="true"]):hover': blue.s600,
-			':hover': semanticColors.surfaceTransparentHover,
+			':hover': colorsSemantic.surfaceTransparentHover,
 		},
 		blockSize: '32px',
 		color: {
-			default: semanticColors.textPrimary,
-			':is([data-selected-single="true"])': semanticColors.textOnBrand,
-			':is([data-today="true"])': semanticColors.textOnBrand,
+			default: colorsSemantic.textPrimary,
+			':is([data-selected-single="true"])': colorsSemantic.textOnBrand,
+			':is([data-today="true"])': colorsSemantic.textOnBrand,
 		},
 		cursor: 'pointer',
 		fontSize: fontSizes.sm,
 		inlineSize: '32px',
 		outlineColor: {
-			default: semanticColors.surfaceTransparent,
-			':focus-visible': semanticColors.borderFocus,
+			default: colorsSemantic.surfaceTransparent,
+			':focus-visible': colorsSemantic.borderFocus,
 		},
 		outlineOffset: '1px',
 		outlineStyle: 'solid',

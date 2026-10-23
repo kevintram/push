@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 
 export interface BreadcrumbPageProps extends Omit<
 	React.ComponentProps<'span'>,
@@ -11,7 +11,7 @@ export interface BreadcrumbPageProps extends Omit<
 
 const styles = stylex.create({
 	page: {
-		color: semanticColors.textPrimary,
+		color: colorsSemantic.textPrimary,
 	},
 })
 

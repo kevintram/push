@@ -1,7 +1,7 @@
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import * as stylex from '@stylexjs/stylex'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes } from '~/styles/tokens.stylex'
 
 export interface DialogDescriptionProps extends Omit<
@@ -13,7 +13,7 @@ export interface DialogDescriptionProps extends Omit<
 
 const styles = stylex.create({
 	description: {
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		fontSize: fontSizes.sm,
 		lineHeight: 1.5,
 	},

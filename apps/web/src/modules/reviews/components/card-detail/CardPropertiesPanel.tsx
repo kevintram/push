@@ -3,7 +3,7 @@ import { Anvil } from 'lucide-react'
 
 import { SidebarPanel } from '~/components/SidebarPanel'
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -38,7 +38,7 @@ const styles = stylex.create({
 		display: 'contents',
 	},
 	label: {
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		fontWeight: fontWeights.medium,
 	},
 	value: {
@@ -46,7 +46,7 @@ const styles = stylex.create({
 		// than to the full width of the 1fr column.
 		justifySelf: 'start',
 
-		color: semanticColors.textPrimary,
+		color: colorsSemantic.textPrimary,
 		whiteSpace: 'nowrap',
 	},
 	valueWithIcon: {
@@ -55,10 +55,10 @@ const styles = stylex.create({
 		display: 'inline-flex',
 	},
 	overdue: {
-		color: semanticColors.textDanger,
+		color: colorsSemantic.textDanger,
 	},
 	today: {
-		color: semanticColors.textToday,
+		color: colorsSemantic.textToday,
 	},
 })
 

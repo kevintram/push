@@ -15,7 +15,7 @@ import {
 	TooltipTrigger,
 } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 import {
@@ -31,8 +31,8 @@ const styles = stylex.create({
 
 		paddingInline: spacing.xs,
 	},
-	today: { color: semanticColors.textToday },
-	overdue: { color: semanticColors.textDanger },
+	today: { color: colorsSemantic.textToday },
+	overdue: { color: colorsSemantic.textDanger },
 	content: {
 		display: 'flex',
 		flexDirection: 'column',

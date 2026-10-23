@@ -1,7 +1,7 @@
 import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import * as stylex from '@stylexjs/stylex'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	buttonSizes,
 	fontSizes,
@@ -36,8 +36,8 @@ const styles = stylex.create({
 		// The outline is only the focus ring; each variant sets the visible edge
 		// with borderColor.
 		outlineColor: {
-			default: semanticColors.surfaceTransparent,
-			':focus-visible': semanticColors.borderFocus,
+			default: colorsSemantic.surfaceTransparent,
+			':focus-visible': colorsSemantic.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
@@ -75,68 +75,68 @@ const styles = stylex.create({
 
 const variants = stylex.create({
 	primary: {
-		borderColor: semanticColors.surfaceTransparent,
+		borderColor: colorsSemantic.surfaceTransparent,
 		backgroundColor: {
-			default: semanticColors.surfaceInteractivePrimary,
-			':hover': semanticColors.surfaceInteractivePrimaryHover,
-			':active': semanticColors.surfaceInteractivePrimaryActive,
+			default: colorsSemantic.surfaceInteractivePrimary,
+			':hover': colorsSemantic.surfaceInteractivePrimaryHover,
+			':active': colorsSemantic.surfaceInteractivePrimaryActive,
 		},
 		color: {
-			default: semanticColors.textOnBrand,
-			':hover': semanticColors.textOnBrand,
-			':active': semanticColors.textOnBrand,
+			default: colorsSemantic.textOnBrand,
+			':hover': colorsSemantic.textOnBrand,
+			':active': colorsSemantic.textOnBrand,
 		},
 	},
 	secondary: {
-		borderColor: semanticColors.surfaceTransparent,
+		borderColor: colorsSemantic.surfaceTransparent,
 		backgroundColor: {
-			default: semanticColors.surfaceInteractiveSecondary,
-			':hover': semanticColors.surfaceInteractiveSecondaryHover,
-			':active': semanticColors.surfaceInteractiveSecondaryActive,
+			default: colorsSemantic.surfaceInteractiveSecondary,
+			':hover': colorsSemantic.surfaceInteractiveSecondaryHover,
+			':active': colorsSemantic.surfaceInteractiveSecondaryActive,
 		},
 		color: {
-			default: semanticColors.textInteractive,
-			':hover': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':hover': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 	},
 	outline: {
-		borderColor: semanticColors.borderSubtle,
+		borderColor: colorsSemantic.borderPrimary,
 		backgroundColor: {
-			default: semanticColors.surfaceInteractiveSecondary,
-			':hover': semanticColors.surfaceInteractiveSecondaryHover,
-			':active': semanticColors.surfaceInteractiveSecondaryActive,
+			default: colorsSemantic.surfaceInteractiveSecondary,
+			':hover': colorsSemantic.surfaceInteractiveSecondaryHover,
+			':active': colorsSemantic.surfaceInteractiveSecondaryActive,
 		},
 		color: {
-			default: semanticColors.textInteractive,
-			':hover': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':hover': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 	},
 	ghost: {
-		borderColor: semanticColors.surfaceTransparent,
+		borderColor: colorsSemantic.surfaceTransparent,
 		backgroundColor: {
-			default: semanticColors.surfaceTransparent,
-			':hover': semanticColors.surfaceTransparentHover,
-			':active': semanticColors.surfaceTransparentActive,
+			default: colorsSemantic.surfaceTransparent,
+			':hover': colorsSemantic.surfaceTransparentHover,
+			':active': colorsSemantic.surfaceTransparentActive,
 		},
 		color: {
-			default: semanticColors.textInteractive,
-			':hover': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':hover': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 	},
 	danger: {
-		borderColor: semanticColors.surfaceTransparent,
+		borderColor: colorsSemantic.surfaceTransparent,
 		backgroundColor: {
-			default: semanticColors.surfaceInteractiveDanger,
-			':hover': semanticColors.surfaceInteractiveDangerHover,
-			':active': semanticColors.surfaceInteractiveDangerActive,
+			default: colorsSemantic.surfaceInteractiveDanger,
+			':hover': colorsSemantic.surfaceInteractiveDangerHover,
+			':active': colorsSemantic.surfaceInteractiveDangerActive,
 		},
 		color: {
-			default: semanticColors.textOnDanger,
-			':hover': semanticColors.textOnDanger,
-			':active': semanticColors.textOnDanger,
+			default: colorsSemantic.textOnDanger,
+			':hover': colorsSemantic.textOnDanger,
+			':active': colorsSemantic.textOnDanger,
 		},
 	},
 })
@@ -144,66 +144,66 @@ const variants = stylex.create({
 // Holds each variant's pressed colors while the button is active.
 const activeVariants = stylex.create({
 	primary: {
-		backgroundColor: semanticColors.surfaceInteractivePrimaryActive,
-		color: semanticColors.textOnBrand,
+		backgroundColor: colorsSemantic.surfaceInteractivePrimaryActive,
+		color: colorsSemantic.textOnBrand,
 	},
 	secondary: {
-		backgroundColor: semanticColors.surfaceInteractiveSecondaryActive,
-		color: semanticColors.textInteractiveActive,
+		backgroundColor: colorsSemantic.surfaceInteractiveSecondaryActive,
+		color: colorsSemantic.textInteractiveActive,
 	},
 	outline: {
-		backgroundColor: semanticColors.surfaceInteractiveSecondaryActive,
-		color: semanticColors.textInteractiveActive,
+		backgroundColor: colorsSemantic.surfaceInteractiveSecondaryActive,
+		color: colorsSemantic.textInteractiveActive,
 	},
 	ghost: {
-		backgroundColor: semanticColors.surfaceTransparentActive,
-		color: semanticColors.textInteractiveActive,
+		backgroundColor: colorsSemantic.surfaceTransparentActive,
+		color: colorsSemantic.textInteractiveActive,
 	},
 	danger: {
-		backgroundColor: semanticColors.surfaceInteractiveDangerActive,
-		color: semanticColors.textOnDanger,
+		backgroundColor: colorsSemantic.surfaceInteractiveDangerActive,
+		color: colorsSemantic.textOnDanger,
 	},
 })
 
 const disabledVariants = stylex.create({
 	brand: {
 		borderColor: {
-			default: semanticColors.surfaceTransparent,
-			':hover': semanticColors.surfaceTransparent,
-			':active': semanticColors.surfaceTransparent,
+			default: colorsSemantic.surfaceTransparent,
+			':hover': colorsSemantic.surfaceTransparent,
+			':active': colorsSemantic.surfaceTransparent,
 		},
 		backgroundColor: {
-			default: semanticColors.surfaceInteractivePrimaryDisabled,
-			':hover': semanticColors.surfaceInteractivePrimaryDisabled,
-			':active': semanticColors.surfaceInteractivePrimaryDisabled,
+			default: colorsSemantic.surfaceInteractivePrimaryDisabled,
+			':hover': colorsSemantic.surfaceInteractivePrimaryDisabled,
+			':active': colorsSemantic.surfaceInteractivePrimaryDisabled,
 		},
-		color: semanticColors.textOnBrandDisabled,
+		color: colorsSemantic.textOnBrandDisabled,
 	},
 	ghost: {
 		borderColor: {
-			default: semanticColors.surfaceTransparent,
-			':hover': semanticColors.surfaceTransparent,
-			':active': semanticColors.surfaceTransparent,
+			default: colorsSemantic.surfaceTransparent,
+			':hover': colorsSemantic.surfaceTransparent,
+			':active': colorsSemantic.surfaceTransparent,
 		},
 		backgroundColor: {
-			default: semanticColors.surfaceTransparent,
-			':hover': semanticColors.surfaceTransparent,
-			':active': semanticColors.surfaceTransparent,
+			default: colorsSemantic.surfaceTransparent,
+			':hover': colorsSemantic.surfaceTransparent,
+			':active': colorsSemantic.surfaceTransparent,
 		},
-		color: semanticColors.textInteractiveDisabled,
+		color: colorsSemantic.textInteractiveDisabled,
 	},
 	generic: {
 		borderColor: {
-			default: semanticColors.borderDisabled,
-			':hover': semanticColors.borderDisabled,
-			':active': semanticColors.borderDisabled,
+			default: colorsSemantic.borderDisabled,
+			':hover': colorsSemantic.borderDisabled,
+			':active': colorsSemantic.borderDisabled,
 		},
 		backgroundColor: {
-			default: semanticColors.surfaceInteractiveSecondaryDisabled,
-			':hover': semanticColors.surfaceInteractiveSecondaryDisabled,
-			':active': semanticColors.surfaceInteractiveSecondaryDisabled,
+			default: colorsSemantic.surfaceInteractiveSecondaryDisabled,
+			':hover': colorsSemantic.surfaceInteractiveSecondaryDisabled,
+			':active': colorsSemantic.surfaceInteractiveSecondaryDisabled,
 		},
-		color: semanticColors.textDisabled,
+		color: colorsSemantic.textDisabled,
 	},
 })
 

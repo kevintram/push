@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { ChevronDown } from 'lucide-react'
 
 import { CollapsibleTrigger } from '~/components/ui'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	appSidebar,
 	fontSizes,
@@ -24,10 +24,10 @@ const styles = stylex.create({
 		backgroundColor: 'transparent',
 		blockSize: appSidebar.rowHeight,
 		color: {
-			default: semanticColors.textInteractive,
-			':disabled': semanticColors.textInteractiveDisabled,
-			':hover': semanticColors.textInteractiveHover,
-			':active': semanticColors.textInteractiveActive,
+			default: colorsSemantic.textInteractive,
+			':disabled': colorsSemantic.textInteractiveDisabled,
+			':hover': colorsSemantic.textInteractiveHover,
+			':active': colorsSemantic.textInteractiveActive,
 		},
 		cursor: 'pointer',
 		display: 'flex',

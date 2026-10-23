@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { blue, slate, whiteAlpha } from '~/styles/colors/primitives.stylex'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { blue, slate, whiteAlpha } from '~/styles/colors/colorsPrimitive.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 
 const DARK = '@media (prefers-color-scheme: dark)'
 
@@ -9,7 +9,7 @@ const DARK = '@media (prefers-color-scheme: dark)'
 // the sidebar renders; portaled surfaces like menus and tooltips never see it.
 // Interactive text uses the secondary step and disabled text the tertiary step,
 // as in the base scale, so hierarchy reads the same as outside hide mode.
-export const hideModeSidebarTheme = stylex.createTheme(semanticColors, {
+export const hideModeSidebarTheme = stylex.createTheme(colorsSemantic, {
 	// Opaque so the drag chip hides the rows under it.
 	surfaceTertiary: { default: slate.s600, [DARK]: slate.s800 },
 	// Light, to sit behind the dark textOnInverse below.

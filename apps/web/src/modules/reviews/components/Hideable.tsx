@@ -2,6 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { type ReactNode, useCallback, useState } from 'react'
 
 import { Button } from '~/components/ui'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { radii } from '~/styles/tokens.stylex'
 
 type HideableProps = {
@@ -24,6 +25,7 @@ const styles = stylex.create({
 		visibility: 'hidden',
 	},
 	overlay: {
+		borderColor: colorsSemantic.borderSubtle,
 		borderRadius: radii['3xl'],
 		gridColumn: '1',
 		gridRow: '1',

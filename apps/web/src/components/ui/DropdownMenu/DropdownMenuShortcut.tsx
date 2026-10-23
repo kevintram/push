@@ -1,11 +1,11 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	shortcut: {
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		fontSize: fontSizes.xs,
 		letterSpacing: '0.1em',
 		marginInlineStart: 'auto',

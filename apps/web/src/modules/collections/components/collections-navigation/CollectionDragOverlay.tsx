@@ -1,7 +1,7 @@
 import { DragOverlay } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { appSidebar, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -19,16 +19,16 @@ const styles = stylex.create({
 	// Shaped like a tooltip. Tertiary rather than raised, which matches the
 	// sidebar's own background.
 	chip: {
-		borderColor: semanticColors.borderSubtle,
+		borderColor: colorsSemantic.borderPrimary,
 		borderRadius: radii.xs,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		overflow: 'hidden',
 		paddingBlock: '6px',
 		paddingInline: spacing.sm,
-		backgroundColor: semanticColors.surfaceTertiary,
-		boxShadow: `0 4px 12px ${semanticColors.shadowPrimary}`,
-		color: semanticColors.textPrimary,
+		backgroundColor: colorsSemantic.surfaceTertiary,
+		boxShadow: `0 4px 12px ${colorsSemantic.shadowPrimary}`,
+		color: colorsSemantic.textPrimary,
 		fontSize: fontSizes.sm,
 		textOverflow: 'ellipsis',
 		whiteSpace: 'nowrap',

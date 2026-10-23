@@ -14,7 +14,7 @@ import {
 	TreeItemLabel,
 	useHoldPopoverOpen,
 } from '~/components/ui'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 
 import {
 	useCreateCollection,
@@ -46,7 +46,7 @@ const styles = stylex.create({
 		opacity: 0.5,
 	},
 	containerIsDropTarget: {
-		backgroundColor: semanticColors.surfaceTransparentHover,
+		backgroundColor: colorsSemantic.surfaceTransparentHover,
 	},
 })
 

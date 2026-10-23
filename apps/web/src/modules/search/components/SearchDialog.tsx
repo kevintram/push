@@ -18,7 +18,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import {
 	breakpoints,
@@ -93,13 +93,13 @@ const styles = stylex.create({
 		paddingInlineEnd: spacing.lg,
 		paddingInlineStart: spacing.lg,
 
-		borderBlockEndColor: semanticColors.borderSubtle,
+		borderBlockEndColor: colorsSemantic.borderSubtle,
 		borderBlockEndStyle: 'solid',
 		borderBlockEndWidth: '1px',
 	},
 	searchIcon: {
 		blockSize: iconSizes.sm,
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		flexShrink: 0,
 		inlineSize: iconSizes.sm,
 	},
@@ -120,8 +120,8 @@ const styles = stylex.create({
 		borderWidth: 0,
 		outline: 'none',
 		appearance: 'none',
-		backgroundColor: semanticColors.surfaceTransparent,
-		color: semanticColors.textPrimary,
+		backgroundColor: colorsSemantic.surfaceTransparent,
+		color: colorsSemantic.textPrimary,
 		fontFamily: 'inherit',
 		lineHeight: 1.4,
 		// Suppresses the WebKit search clear button so `type='search'` looks
@@ -129,7 +129,7 @@ const styles = stylex.create({
 		// input itself does not remove it in Chrome.
 		'::-webkit-search-cancel-button': { display: 'none' },
 		'::placeholder': {
-			color: semanticColors.textSecondary,
+			color: colorsSemantic.textSecondary,
 		},
 	},
 	results: {
@@ -144,7 +144,7 @@ const styles = stylex.create({
 		paddingBlock: spacing['2xl'],
 		paddingInline: spacing.xl,
 		alignItems: 'center',
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		display: 'flex',
 		fontSize: fontSizes.md,
 		justifyContent: 'center',

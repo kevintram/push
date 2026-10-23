@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { ChevronsUpDown } from 'lucide-react'
 
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	buttonSizes,
 	fontSizes,
@@ -39,9 +39,9 @@ const styles = stylex.create({
 		maxInlineSize: `calc(100% - 2 * ${spacing.lg})`,
 		position: 'absolute',
 
-		backgroundColor: semanticColors.surfaceInverse,
-		boxShadow: `0 4px 12px ${semanticColors.shadowPrimary}`,
-		color: semanticColors.textOnInverse,
+		backgroundColor: colorsSemantic.surfaceInverse,
+		boxShadow: `0 4px 12px ${colorsSemantic.shadowPrimary}`,
+		color: colorsSemantic.textOnInverse,
 		fontFamily: 'inherit',
 		fontSize: fontSizes.sm,
 		fontWeight: fontWeights.medium,
@@ -54,8 +54,8 @@ const styles = stylex.create({
 		animationTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
 		cursor: 'pointer',
 		outlineColor: {
-			default: semanticColors.surfaceTransparent,
-			':focus-visible': semanticColors.borderFocus,
+			default: colorsSemantic.surfaceTransparent,
+			':focus-visible': colorsSemantic.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
@@ -73,7 +73,7 @@ const styles = stylex.create({
 		userSelect: 'none',
 	},
 	icon: {
-		color: semanticColors.textOnInverseSecondary,
+		color: colorsSemantic.textOnInverseSecondary,
 		flexShrink: 0,
 	},
 	title: {

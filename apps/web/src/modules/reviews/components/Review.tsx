@@ -12,7 +12,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '~/components/ui'
-import { semanticColors } from '~/styles/colors/semantic.stylex'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	fontSizes,
 	iconSizes,
@@ -45,8 +45,8 @@ const styles = stylex.create({
 		marginInline: `calc(${layout.rowBleed} * -1)`,
 		paddingInline: layout.rowBleed,
 		backgroundColor: {
-			default: semanticColors.surfaceTransparent,
-			':hover': semanticColors.surfaceTransparentHover,
+			default: colorsSemantic.surfaceTransparent,
+			':hover': colorsSemantic.surfaceTransparentHover,
 		},
 		cursor: 'pointer',
 	},
@@ -75,8 +75,8 @@ const styles = stylex.create({
 		fontSize: fontSizes.sm,
 		textAlign: 'start',
 
-		backgroundColor: semanticColors.surfaceTransparent,
-		color: semanticColors.textPrimary,
+		backgroundColor: colorsSemantic.surfaceTransparent,
+		color: colorsSemantic.textPrimary,
 		cursor: 'pointer',
 
 		borderWidth: 0,
@@ -100,7 +100,7 @@ const styles = stylex.create({
 	},
 	notesIndicator: {
 		blockSize: iconSizes.sm,
-		color: semanticColors.textSecondary,
+		color: colorsSemantic.textSecondary,
 		flexShrink: 0,
 		inlineSize: iconSizes.sm,
 	},
