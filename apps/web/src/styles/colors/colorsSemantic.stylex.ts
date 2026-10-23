@@ -60,12 +60,12 @@ export const colorsSemantic = stylex.defineVars({
 	// Secondary interactive surfaces
 	// The resting surface for a medium- or low-emphasis interactive action.
 	surfaceInteractiveSecondary: {
-		default: neutral.s100,
-		[DARK]: neutral.s900,
-	},
-	surfaceInteractiveSecondaryHover: {
 		default: neutral.s200,
 		[DARK]: neutral.s800,
+	},
+	surfaceInteractiveSecondaryHover: {
+		default: neutral.s300,
+		[DARK]: neutral.s700,
 	},
 	surfaceInteractiveSecondaryActive: {
 		default: neutral.s300,
