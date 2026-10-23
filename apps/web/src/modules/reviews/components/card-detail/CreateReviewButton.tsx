@@ -18,10 +18,10 @@ export function CreateReviewButton({ xstyle }: CreateReviewButtonProps) {
 			onClick={() => setDockState('open')}
 			shape='round'
 			size='small'
-			variant='outline'
+			variant='primary'
 			xstyle={xstyle}
 		>
-			<SquarePen aria-hidden='true' size={iconSizes.md} />
+			<SquarePen aria-hidden='true' size={iconSizes.sm} />
 			Create review
 		</Button>
 	)
