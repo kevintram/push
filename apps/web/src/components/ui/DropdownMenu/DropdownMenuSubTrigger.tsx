@@ -5,17 +5,18 @@ import { ChevronRight } from 'lucide-react'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
-export interface DropdownMenuSubTriggerProps extends Omit<
+import { menuVars } from './menu.stylex'
+
+export type DropdownMenuSubTriggerProps = Omit<
 	React.ComponentProps<typeof Menu.SubmenuTrigger>,
 	'className' | 'style'
-> {
-	inset?: boolean
-}
+>
 
 const styles = stylex.create({
 	trigger: {
 		paddingBlock: '6px',
-		paddingInline: spacing.sm,
+		paddingInlineEnd: spacing.sm,
+		paddingInlineStart: menuVars.labelInsetStart,
 
 		alignItems: 'center',
 		columnGap: spacing.sm,
@@ -39,9 +40,6 @@ const styles = stylex.create({
 		userSelect: 'none',
 		whiteSpace: 'nowrap',
 	},
-	inset: {
-		paddingInlineStart: spacing['2xl'],
-	},
 	icon: {
 		marginInlineStart: 'auto',
 	},
@@ -49,14 +47,10 @@ const styles = stylex.create({
 
 export function DropdownMenuSubTrigger({
 	children,
-	inset = false,
 	...props
 }: DropdownMenuSubTriggerProps) {
 	return (
-		<Menu.SubmenuTrigger
-			{...stylex.props(styles.trigger, inset && styles.inset)}
-			{...props}
-		>
+		<Menu.SubmenuTrigger {...stylex.props(styles.trigger)} {...props}>
 			{children}
 			<ChevronRight
 				aria-hidden

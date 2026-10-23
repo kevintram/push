@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { Ellipsis, File, Trash2 } from 'lucide-react'
+import { Ellipsis, File } from 'lucide-react'
 import { useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
@@ -229,10 +229,6 @@ export function Review({ review }: ReviewProps) {
 								<DropdownMenuItem
 									onClick={() => setIsDeleteDialogOpen(true)}
 								>
-									<Trash2
-										aria-hidden='true'
-										size={iconSizes.sm}
-									/>
 									Delete
 								</DropdownMenuItem>
 							</DropdownMenuContent>

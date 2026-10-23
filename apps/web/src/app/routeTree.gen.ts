@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as FlaggedRouteImport } from './routes/flagged'
-import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as ReviewRouteRouteImport } from './routes/review/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReviewIndexRouteImport } from './routes/review/index'
@@ -32,11 +31,6 @@ const SettingsRoute = SettingsRouteImport.update({
 const FlaggedRoute = FlaggedRouteImport.update({
   id: '/flagged',
   path: '/flagged',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DesignSystemRoute = DesignSystemRouteImport.update({
-  id: '/design-system',
-  path: '/design-system',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReviewRouteRoute = ReviewRouteRouteImport.update({
@@ -98,7 +92,6 @@ const CardsCardIdReviewsRoute = CardsCardIdReviewsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/review': typeof ReviewRouteRouteWithChildren
-  '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
   '/settings': typeof SettingsRoute
   '/cards/$cardId': typeof CardsCardIdRouteRouteWithChildren
@@ -113,7 +106,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
   '/settings': typeof SettingsRoute
   '/collection/$collectionId': typeof CollectionCollectionIdRoute
@@ -129,7 +121,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/review': typeof ReviewRouteRouteWithChildren
-  '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
   '/settings': typeof SettingsRoute
   '/cards/$cardId': typeof CardsCardIdRouteRouteWithChildren
@@ -147,7 +138,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/review'
-    | '/design-system'
     | '/flagged'
     | '/settings'
     | '/cards/$cardId'
@@ -162,7 +152,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/design-system'
     | '/flagged'
     | '/settings'
     | '/collection/$collectionId'
@@ -177,7 +166,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/review'
-    | '/design-system'
     | '/flagged'
     | '/settings'
     | '/cards/$cardId'
@@ -194,7 +182,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ReviewRouteRoute: typeof ReviewRouteRouteWithChildren
-  DesignSystemRoute: typeof DesignSystemRoute
   FlaggedRoute: typeof FlaggedRoute
   SettingsRoute: typeof SettingsRoute
   CardsCardIdRouteRoute: typeof CardsCardIdRouteRouteWithChildren
@@ -215,13 +202,6 @@ declare module '@tanstack/react-router' {
       path: '/flagged'
       fullPath: '/flagged'
       preLoaderRoute: typeof FlaggedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/design-system': {
-      id: '/design-system'
-      path: '/design-system'
-      fullPath: '/design-system'
-      preLoaderRoute: typeof DesignSystemRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/review': {
@@ -340,7 +320,6 @@ const CardsCardIdRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ReviewRouteRoute: ReviewRouteRouteWithChildren,
-  DesignSystemRoute: DesignSystemRoute,
   FlaggedRoute: FlaggedRoute,
   SettingsRoute: SettingsRoute,
   CardsCardIdRouteRoute: CardsCardIdRouteRouteWithChildren,
