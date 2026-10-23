@@ -90,7 +90,7 @@ const styles = stylex.create({
 		display: 'flex',
 		flexShrink: 0,
 		justifyContent: 'space-between',
-		paddingBlockEnd: spacing.xs,
+		paddingBlockEnd: spacing.sm,
 	},
 	secondaryToolbarActions: {
 		alignItems: 'center',
