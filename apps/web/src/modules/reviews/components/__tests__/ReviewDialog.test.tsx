@@ -56,7 +56,7 @@ vi.mock('../ReviewStrength', () => ({
 	ReviewStrength: () => <span>Strength</span>,
 }))
 
-const review = {
+const baseReview = {
 	_creationTime: 0,
 	_id: 'review-1' as Id<'reviews'>,
 	date: '2026-08-25',
@@ -68,7 +68,13 @@ const review = {
 	stabilityAfter: 15,
 } as Review
 
-function ReviewDialogHarness({ onDelete }: { onDelete: () => void }) {
+function ReviewDialogHarness({
+	onDelete,
+	review = baseReview,
+}: {
+	onDelete: () => void
+	review?: Review
+}) {
 	const [isOpen, setIsOpen] = useState(true)
 	const descriptionField = {
 		flush: vi.fn(),
@@ -174,5 +180,26 @@ describe('ReviewDialog', () => {
 				screen.queryByRole('textbox', { name: 'Review description' }),
 			).not.toBeInTheDocument(),
 		)
+	})
+
+	it('shows strength when the review has one', () => {
+		render(<ReviewDialogHarness onDelete={vi.fn()} />)
+
+		expect(screen.getByText('Strength')).toBeInTheDocument()
+	})
+
+	it('omits strength when the review has none', () => {
+		render(
+			<ReviewDialogHarness
+				onDelete={vi.fn()}
+				review={{
+					...baseReview,
+					rating: undefined,
+					stabilityAfter: undefined,
+				}}
+			/>,
+		)
+
+		expect(screen.queryByText('Strength')).not.toBeInTheDocument()
 	})
 })
