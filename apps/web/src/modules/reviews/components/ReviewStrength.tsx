@@ -1,3 +1,4 @@
+import type { StyleXStyles } from '@stylexjs/stylex'
 import * as stylex from '@stylexjs/stylex'
 
 import type { ButtonSize } from '~/components/ui'
@@ -16,16 +17,19 @@ const sizeVariants = stylex.create({
 
 type ReviewStrengthProps = {
 	review: Review
+	changeXstyle?: StyleXStyles
 	size?: ButtonSize
 }
 
 export function ReviewStrength({
 	review,
+	changeXstyle,
 	size = 'medium',
 }: ReviewStrengthProps) {
 	return (
 		<StrengthSignal
 			stability={review.stabilityAfter ?? null}
+			changeXstyle={changeXstyle}
 			stabilityBefore={review.stabilityBefore ?? null}
 			xstyle={sizeVariants[size]}
 		/>
