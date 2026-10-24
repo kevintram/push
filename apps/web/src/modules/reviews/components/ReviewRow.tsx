@@ -1,31 +1,18 @@
 import type { StyleXStyles } from '@stylexjs/stylex'
 import * as stylex from '@stylexjs/stylex'
-import { Ellipsis } from 'lucide-react'
 
-import {
-	Button,
-	DialogTrigger,
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from '~/components/ui'
+import { DialogTrigger } from '~/components/ui'
 // StyleX's dev server only resolves shared constants through the `~` alias.
 import { reviewTable } from '~/modules/reviews/components/reviewTable.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import {
-	fontSizes,
-	iconSizes,
-	layout,
-	radii,
-	spacing,
-} from '~/styles/tokens.stylex'
+import { fontSizes, layout, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
 import type { Rating, Review } from '../types/review.types'
 import { RatingPicker } from './RatingPicker'
 import { ReviewDate } from './ReviewDate'
 import { ReviewNotesIndicator } from './ReviewNotesIndicator'
+import { ReviewRowActions } from './ReviewRowActions'
 import { ReviewStrength } from './ReviewStrength'
 
 // Like claude.ai's sidebar, long descriptions fade out instead of ending in
@@ -91,6 +78,7 @@ const styles = stylex.create({
 			[reviewTable.wide]: spacing.none,
 		},
 	},
+
 	cell: {
 		padding: 0,
 	},
@@ -98,12 +86,34 @@ const styles = stylex.create({
 	whole: {
 		minInlineSize: 'max-content',
 	},
+	// Above the row's open-review trigger, so the control stays clickable.
+	raised: {
+		position: 'relative',
+		zIndex: 1,
+	},
+	muted: {
+		color: colorsSemantic.textSecondary,
+	},
+	stackedHidden: {
+		display: {
+			default: 'none',
+			[reviewTable.wide]: 'block',
+		},
+	},
+	tableHidden: {
+		display: {
+			default: null,
+			[reviewTable.wide]: 'none',
+		},
+	},
+
 	rating: {
 		gridColumnEnd: 'rating',
 		gridColumnStart: 'rating',
 		gridRowEnd: 'rating',
 		gridRowStart: 'rating',
 	},
+
 	description: {
 		gridColumnEnd: 'description',
 		gridColumnStart: 'description',
@@ -138,22 +148,6 @@ const styles = stylex.create({
 			position: 'absolute',
 		},
 	},
-	// Without a description there is nothing to label the row, so the trigger
-	// covers it directly and takes its name from aria-label.
-	overlayTrigger: {
-		inset: 0,
-		position: 'absolute',
-
-		backgroundColor: colorsSemantic.surfaceTransparent,
-		cursor: 'pointer',
-
-		borderRadius: radii.lg,
-		borderWidth: 0,
-	},
-	raised: {
-		position: 'relative',
-		zIndex: 1,
-	},
 	descriptionText: {
 		overflow: 'hidden',
 		flexGrow: 1,
@@ -167,7 +161,7 @@ const styles = stylex.create({
 				default: actionsFade,
 				'@media (hover: hover)': {
 					default: restingFade,
-					// Matches `actionsTrigger`.
+					// Matches the trigger in `ReviewRowActions`.
 					[stylex.when.ancestor(':has(:focus-visible)')]: actionsFade,
 					[stylex.when.ancestor(':has([data-popup-open])')]:
 						actionsFade,
@@ -176,6 +170,19 @@ const styles = stylex.create({
 			},
 		},
 	},
+	// Without a description there is nothing to label the row, so the trigger
+	// covers it directly and takes its name from aria-label.
+	overlayTrigger: {
+		inset: 0,
+		position: 'absolute',
+
+		backgroundColor: colorsSemantic.surfaceTransparent,
+		cursor: 'pointer',
+
+		borderRadius: radii.lg,
+		borderWidth: 0,
+	},
+
 	// Only the table has a notes column. Stacked, the marker leads the date.
 	notes: {
 		gridColumnEnd: 'notes',
@@ -189,6 +196,7 @@ const styles = stylex.create({
 			[reviewTable.wide]: 'flex',
 		},
 	},
+
 	date: {
 		gridColumnEnd: 'date',
 		gridColumnStart: 'date',
@@ -201,21 +209,7 @@ const styles = stylex.create({
 
 		fontSize: fontSizes.sm,
 	},
-	stackedHidden: {
-		display: {
-			default: 'none',
-			[reviewTable.wide]: 'block',
-		},
-	},
-	tableHidden: {
-		display: {
-			default: null,
-			[reviewTable.wide]: 'none',
-		},
-	},
-	muted: {
-		color: colorsSemantic.textSecondary,
-	},
+
 	strength: {
 		gridColumnEnd: 'strength',
 		gridColumnStart: 'strength',
@@ -233,6 +227,7 @@ const styles = stylex.create({
 			[reviewTable.noStrengthChange]: 'none',
 		},
 	},
+
 	// Stacked, the actions sit over the end of the first line, on top of the
 	// description.
 	actions: {
@@ -254,19 +249,6 @@ const styles = stylex.create({
 		},
 		justifySelf: 'end',
 	},
-	// Shown while the row is hovered, keyboard focused, or has its menu open.
-	// Always shown on touch, where there is no hover to reveal it.
-	actionsTrigger: {
-		opacity: {
-			default: null,
-			'@media (hover: hover)': {
-				default: 0,
-				[stylex.when.ancestor(':has(:focus-visible)')]: 1,
-				[stylex.when.ancestor(':has([data-popup-open])')]: 1,
-				[stylex.when.ancestor(':hover')]: 1,
-			},
-		},
-	},
 })
 
 type ReviewRowProps = {
@@ -281,15 +263,19 @@ type ReviewRowProps = {
  */
 export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 	const description = review.description.trim()
+	const date = (review.date ?? null) as DateString | null
+
 	const hasDescription = description.length > 0
+	const hasNotes = review.notes.trim().length > 0
+	const isCompleted = review.rating !== undefined
 	// A pending review has no strength yet. The table keeps its dash so the
 	// column stays readable, but the stacked layout drops it.
-	const hasStrength =
-		review.rating !== undefined && review.stabilityAfter != null
-	const hasNotes = review.notes.trim().length > 0
-	const date = (review.date ?? null) as DateString | null
-	// The notes marker has its own column in the table, and leads the date
-	// when stacked. Raised above the row's trigger so its tooltip can show.
+	const hasStrength = isCompleted && review.stabilityAfter != null
+	// Stacked, the date cell also carries the notes marker.
+	const hasStackedDate = date !== null || hasNotes
+
+	// Rendered twice: in the table's notes column, and leading the stacked
+	// date. Raised above the row's trigger so its tooltip can show.
 	const notesIndicator = (xstyle?: StyleXStyles) =>
 		hasNotes && (
 			<ReviewNotesIndicator
@@ -317,6 +303,7 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 					rating={review.rating}
 				/>
 			</td>
+
 			<td role='cell' {...stylex.props(styles.cell, styles.description)}>
 				{hasDescription ? (
 					<DialogTrigger {...stylex.props(styles.descriptionTrigger)}>
@@ -344,9 +331,11 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 					</>
 				)}
 			</td>
+
 			<td role='cell' {...stylex.props(styles.cell, styles.notes)}>
 				{notesIndicator()}
 			</td>
+
 			<td
 				role='cell'
 				{...stylex.props(
@@ -354,7 +343,7 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 					styles.whole,
 					styles.date,
 					hasDescription && styles.secondLine,
-					date === null && !hasNotes && styles.stackedHidden,
+					!hasStackedDate && styles.stackedHidden,
 				)}
 			>
 				{notesIndicator(styles.tableHidden)}
@@ -367,11 +356,12 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 				) : (
 					<ReviewDate
 						date={date}
-						isCompleted={review.rating !== undefined}
+						isCompleted={isCompleted}
 						xstyle={styles.raised}
 					/>
 				)}
 			</td>
+
 			<td
 				role='cell'
 				{...stylex.props(
@@ -389,31 +379,12 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 					size='micro'
 				/>
 			</td>
+
 			<td
 				role='cell'
 				{...stylex.props(styles.cell, styles.actions, styles.raised)}
 			>
-				<DropdownMenu>
-					<DropdownMenuTrigger
-						render={
-							<Button
-								aria-label='Review actions'
-								iconOnly
-								shape='round'
-								size='micro'
-								variant='ghost'
-								xstyle={styles.actionsTrigger}
-							/>
-						}
-					>
-						<Ellipsis aria-hidden='true' size={iconSizes.sm} />
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align='end'>
-						<DropdownMenuItem onClick={onDelete}>
-							Delete
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
+				<ReviewRowActions onDelete={onDelete} />
 			</td>
 		</tr>
 	)
