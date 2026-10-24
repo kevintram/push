@@ -39,7 +39,11 @@ const styles = stylex.create({
 		maxInlineSize: `calc(100% - 2 * ${spacing.lg})`,
 		position: 'absolute',
 
-		backgroundColor: colorsSemantic.surfaceInverse,
+		backgroundColor: {
+			default: colorsSemantic.surfaceInteractiveInverse,
+			':hover': colorsSemantic.surfaceInteractiveInverseHover,
+			':active': colorsSemantic.surfaceInteractiveInverseActive,
+		},
 		boxShadow: `0 4px 12px ${colorsSemantic.shadowPrimary}`,
 		color: colorsSemantic.textOnInverse,
 		fontFamily: 'inherit',
