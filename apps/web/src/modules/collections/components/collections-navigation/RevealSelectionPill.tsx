@@ -77,7 +77,6 @@ const styles = stylex.create({
 		userSelect: 'none',
 	},
 	icon: {
-		color: colorsSemantic.textOnInverseSecondary,
 		flexShrink: 0,
 	},
 	title: {
