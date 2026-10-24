@@ -17,6 +17,7 @@ import {
 } from '~/components/ui'
 import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
+import { a11y } from '~/styles/a11y'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	breakpoints,
@@ -288,16 +289,6 @@ const styles = stylex.create({
 		flexShrink: 0,
 		marginInlineStart: 'auto',
 	},
-	visuallyHidden: {
-		margin: '-1px',
-		padding: 0,
-		overflow: 'hidden',
-		blockSize: '1px',
-		clip: 'rect(0, 0, 0, 0)',
-		inlineSize: '1px',
-		position: 'absolute',
-		whiteSpace: 'nowrap',
-	},
 })
 
 type EditableField = ReturnType<typeof useReviewField>
@@ -351,7 +342,7 @@ export function ReviewDialog({
 			]}
 			xstyle={[styles.popup, isExpanded && styles.expandedPopup]}
 		>
-			<DialogTitle xstyle={styles.visuallyHidden}>
+			<DialogTitle xstyle={a11y.visuallyHidden}>
 				Review editor
 			</DialogTitle>
 			<header {...stylex.props(styles.header)}>

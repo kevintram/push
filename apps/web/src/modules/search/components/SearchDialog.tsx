@@ -18,6 +18,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
+import { a11y } from '~/styles/a11y'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import {
@@ -72,16 +73,6 @@ const styles = stylex.create({
 			[breakpoints.tablet]: '720px',
 		},
 
-		overflowX: 'hidden',
-		overflowY: 'hidden',
-	},
-	visuallyHidden: {
-		blockSize: '1px',
-		clip: 'rect(0 0 0 0)',
-		clipPath: 'inset(50%)',
-		inlineSize: '1px',
-		position: 'absolute',
-		whiteSpace: 'nowrap',
 		overflowX: 'hidden',
 		overflowY: 'hidden',
 	},
@@ -235,11 +226,11 @@ export function SearchDialog({ tooltipSide = 'bottom' }: SearchDialogProps) {
 				viewportXstyle={styles.viewport}
 				xstyle={styles.content}
 			>
-				<DialogTitle xstyle={styles.visuallyHidden}>Search</DialogTitle>
-				<DialogDescription xstyle={styles.visuallyHidden}>
+				<DialogTitle xstyle={a11y.visuallyHidden}>Search</DialogTitle>
+				<DialogDescription xstyle={a11y.visuallyHidden}>
 					Search your collections and cards.
 				</DialogDescription>
-				<p aria-live='polite' {...stylex.props(styles.visuallyHidden)}>
+				<p aria-live='polite' {...stylex.props(a11y.visuallyHidden)}>
 					{queryStatus}
 				</p>
 
