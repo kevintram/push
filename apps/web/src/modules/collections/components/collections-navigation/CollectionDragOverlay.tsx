@@ -2,6 +2,8 @@ import { DragOverlay } from '@dnd-kit/react'
 import * as stylex from '@stylexjs/stylex'
 
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
+import { textFade } from '~/styles/textFade'
+import { textFadeVars } from '~/styles/textFade.stylex'
 import { appSidebar, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -25,13 +27,14 @@ const styles = stylex.create({
 		borderWidth: '1px',
 		overflow: 'hidden',
 		paddingBlock: '6px',
-		paddingInline: spacing.sm,
 		backgroundColor: colorsSemantic.surfaceTertiary,
 		boxShadow: `0 4px 12px ${colorsSemantic.shadowPrimary}`,
 		color: colorsSemantic.textPrimary,
 		fontSize: fontSizes.sm,
-		textOverflow: 'ellipsis',
-		whiteSpace: 'nowrap',
+		// The title carries the end padding and fades its overflow into it.
+		paddingInlineEnd: spacing.none,
+		paddingInlineStart: spacing.sm,
+		[textFadeVars.size]: spacing.sm,
 	},
 })
 
@@ -42,7 +45,9 @@ export function CollectionDragOverlay() {
 			{source => (
 				<div {...stylex.props(styles.row)}>
 					<div {...stylex.props(styles.chip)}>
-						{source.data.title}
+						<span {...stylex.props(textFade.line)}>
+							{source.data.title}
+						</span>
 					</div>
 				</div>
 			)}

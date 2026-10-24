@@ -5,6 +5,7 @@ import * as stylex from '@stylexjs/stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
+import { FadeText } from '../FadeText'
 import { useTreeItemContext } from './TreeItemContext'
 
 export interface TreeItemLabelProps extends Omit<
@@ -48,6 +49,7 @@ const styles = stylex.create({
 })
 
 export function TreeItemLabel({
+	children,
 	render,
 	xstyle,
 	...props
@@ -60,6 +62,8 @@ export function TreeItemLabel({
 			{ type: render ? undefined : 'button' },
 			stylex.props(styles.label, selected && styles.selected, xstyle),
 			props,
+			// The label keeps its focus ring, so only the text fades.
+			{ children: <FadeText>{children}</FadeText> },
 		),
 		render,
 		state: { slot: 'tree-item-label' },

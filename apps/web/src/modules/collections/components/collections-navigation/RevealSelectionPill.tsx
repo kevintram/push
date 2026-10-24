@@ -1,7 +1,9 @@
 import * as stylex from '@stylexjs/stylex'
 import { ChevronsUpDown } from 'lucide-react'
 
+import { FadeText } from '~/components/ui'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
+import { textFadeVars } from '~/styles/textFade.stylex'
 import {
 	buttonSizes,
 	fontSizes,
@@ -24,8 +26,10 @@ const styles = stylex.create({
 		borderWidth: 0,
 		gap: spacing.xs,
 		paddingBlock: spacing.none,
-		paddingInlineEnd: spacing.md,
+		// The title carries the end padding and fades its overflow into it.
+		paddingInlineEnd: spacing.none,
 		paddingInlineStart: spacing.sm,
+		[textFadeVars.size]: spacing.md,
 
 		alignItems: 'center',
 		blockSize: buttonSizes.tiny,
@@ -79,12 +83,6 @@ const styles = stylex.create({
 	icon: {
 		flexShrink: 0,
 	},
-	title: {
-		overflow: 'hidden',
-		minInlineSize: 0,
-		textOverflow: 'ellipsis',
-		whiteSpace: 'nowrap',
-	},
 })
 
 type RevealSelectionPillProps = {
@@ -115,7 +113,7 @@ export function RevealSelectionPill({
 				strokeWidth={iconWeights.medium}
 				{...stylex.props(styles.icon)}
 			/>
-			<span {...stylex.props(styles.title)}>{title}</span>
+			<FadeText>{title}</FadeText>
 		</button>
 	)
 }

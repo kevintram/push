@@ -5,6 +5,8 @@ import { DialogTrigger } from '~/components/ui'
 // StyleX's dev server only resolves shared constants through the `~` alias.
 import { reviewTable } from '~/modules/reviews/components/reviewTable.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
+import { textFade } from '~/styles/textFade'
+import { textFadeVars } from '~/styles/textFade.stylex'
 import { fontSizes, layout, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
@@ -15,14 +17,8 @@ import { ReviewNotesIndicator } from './ReviewNotesIndicator'
 import { ReviewRowActions } from './ReviewRowActions'
 import { ReviewStrength } from './ReviewStrength'
 
-// Like claude.ai's sidebar, long descriptions fade out instead of ending in
-// an ellipsis. Stacked, the description runs under the actions, so while they
-// show the fade ends short of them, leaving a clear spot for the button.
-const FADE = '24px'
 // `buttonSizes.micro`, inlined because constants must be static.
 const ACTIONS_CLEARANCE = '1.625rem'
-const restingFade = `linear-gradient(to right, black calc(100% - ${FADE}), transparent)`
-const actionsFade = `linear-gradient(to right, black calc(100% - ${FADE} - ${ACTIONS_CLEARANCE}), transparent calc(100% - ${ACTIONS_CLEARANCE}))`
 
 const styles = stylex.create({
 	// A table row laid out as a grid. Stacked by default, with the description
@@ -148,25 +144,26 @@ const styles = stylex.create({
 			position: 'absolute',
 		},
 	},
+	// Stacked, the description runs under the actions, so while they show the
+	// fade ends short of them, leaving a clear spot for the button.
 	descriptionText: {
-		overflow: 'hidden',
-		flexGrow: 1,
-		minInlineSize: 0,
-		whiteSpace: 'nowrap',
-
-		maskImage: {
-			default: restingFade,
+		// Null defaults leave the inherited inset in place. StyleX emits a
+		// var's default outside its layers, where it would beat every condition.
+		[textFadeVars.inset]: {
+			default: null,
 			[reviewTable.stacked]: {
-				// Touch shows the actions all the time.
-				default: actionsFade,
+				default: null,
 				'@media (hover: hover)': {
-					default: restingFade,
+					default: null,
 					// Matches the trigger in `ReviewRowActions`.
-					[stylex.when.ancestor(':has(:focus-visible)')]: actionsFade,
+					[stylex.when.ancestor(':has(:focus-visible)')]:
+						ACTIONS_CLEARANCE,
 					[stylex.when.ancestor(':has([data-popup-open])')]:
-						actionsFade,
-					[stylex.when.ancestor(':hover')]: actionsFade,
+						ACTIONS_CLEARANCE,
+					[stylex.when.ancestor(':hover')]: ACTIONS_CLEARANCE,
 				},
+				// Touch shows the actions all the time.
+				'@media (hover: none)': ACTIONS_CLEARANCE,
 			},
 		},
 	},
@@ -307,7 +304,12 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 			<td role='cell' {...stylex.props(styles.cell, styles.description)}>
 				{hasDescription ? (
 					<DialogTrigger {...stylex.props(styles.descriptionTrigger)}>
-						<span {...stylex.props(styles.descriptionText)}>
+						<span
+							{...stylex.props(
+								textFade.line,
+								styles.descriptionText,
+							)}
+						>
 							{description}
 						</span>
 					</DialogTrigger>

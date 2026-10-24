@@ -9,6 +9,7 @@ import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 	ContextMenuTrigger,
+	FadeText,
 } from '~/components/ui'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
@@ -28,7 +29,6 @@ const styles = stylex.create({
 		paddingBlock: spacing.xs,
 		paddingInline: spacing.sm,
 
-		overflow: 'hidden',
 		display: 'block',
 		// The list scrolls, so keep rows at full height instead of letting the
 		// flex column squeeze them to fit.
@@ -44,8 +44,6 @@ const styles = stylex.create({
 		textDecoration: 'none',
 		color: colorsSemantic.textPrimary,
 		fontSize: fontSizes.sm,
-		textOverflow: 'ellipsis',
-		whiteSpace: 'nowrap',
 	},
 })
 
@@ -95,7 +93,8 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 						/>
 					}
 				>
-					{collectionTitle}
+					{/* The row keeps its hover surface, so only the title fades. */}
+					<FadeText>{collectionTitle}</FadeText>
 				</ContextMenuTrigger>
 				<ContextMenuContent>
 					<ContextMenuItem onClick={handleCreateSubcollection}>
