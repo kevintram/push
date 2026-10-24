@@ -3,9 +3,9 @@ import { useRender } from '@base-ui/react/use-render'
 import * as stylex from '@stylexjs/stylex'
 
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { textFade } from '~/styles/textFade'
 import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
+import { FadeText } from '../FadeText'
 import { useTreeItemContext } from './TreeItemContext'
 
 export interface TreeItemLabelProps extends Omit<
@@ -63,11 +63,7 @@ export function TreeItemLabel({
 			stylex.props(styles.label, selected && styles.selected, xstyle),
 			props,
 			// The label keeps its focus ring, so only the text fades.
-			{
-				children: (
-					<span {...stylex.props(textFade.line)}>{children}</span>
-				),
-			},
+			{ children: <FadeText>{children}</FadeText> },
 		),
 		render,
 		state: { slot: 'tree-item-label' },

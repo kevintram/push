@@ -9,9 +9,9 @@ import {
 	ContextMenuItem,
 	ContextMenuSeparator,
 	ContextMenuTrigger,
+	FadeText,
 } from '~/components/ui'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { textFade } from '~/styles/textFade'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import {
@@ -94,9 +94,7 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 					}
 				>
 					{/* The row keeps its hover surface, so only the title fades. */}
-					<span {...stylex.props(textFade.line)}>
-						{collectionTitle}
-					</span>
+					<FadeText>{collectionTitle}</FadeText>
 				</ContextMenuTrigger>
 				<ContextMenuContent>
 					<ContextMenuItem onClick={handleCreateSubcollection}>

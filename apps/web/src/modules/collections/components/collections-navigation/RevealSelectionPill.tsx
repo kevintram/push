@@ -1,8 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
 import { ChevronsUpDown } from 'lucide-react'
 
+import { FadeText } from '~/components/ui'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { textFade } from '~/styles/textFade'
 import { textFadeVars } from '~/styles/textFade.stylex'
 import {
 	buttonSizes,
@@ -110,7 +110,7 @@ export function RevealSelectionPill({
 				strokeWidth={iconWeights.medium}
 				{...stylex.props(styles.icon)}
 			/>
-			<span {...stylex.props(textFade.line)}>{title}</span>
+			<FadeText>{title}</FadeText>
 		</button>
 	)
 }
