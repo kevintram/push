@@ -30,7 +30,7 @@ export const colorsSemantic = stylex.defineVars({
 	// A recessed surface that should appear inset beneath its surrounding surface.
 	surfaceSunken: { default: neutral.s100, [DARK]: neutral.s900 },
 	// A contrast-reversed surface intended to host inverse foreground colors.
-	surfaceInverse: { default: neutral.s900, [DARK]: neutral.s50 },
+	surfaceInverse: { default: neutral.s950, [DARK]: neutral.s50 },
 	// A surface that communicates the product's primary brand identity.
 	surfaceBrand: { default: indigo.s600, [DARK]: indigo.s600 },
 	// A surface that communicates an error, danger, or destructive consequence.
@@ -87,6 +87,18 @@ export const colorsSemantic = stylex.defineVars({
 	surfaceInteractiveDangerDisabled: {
 		default: blackAlpha.s5,
 		[DARK]: whiteAlpha.s5,
+	},
+
+	// Inverse interactive surfaces
+	// The resting surface for a contrast-reversed interactive element.
+	surfaceInteractiveInverse: { default: neutral.s950, [DARK]: neutral.s50 },
+	surfaceInteractiveInverseHover: {
+		default: neutral.s750,
+		[DARK]: neutral.s250,
+	},
+	surfaceInteractiveInverseActive: {
+		default: neutral.s650,
+		[DARK]: neutral.s350,
 	},
 
 	// Transparent interactive surfaces

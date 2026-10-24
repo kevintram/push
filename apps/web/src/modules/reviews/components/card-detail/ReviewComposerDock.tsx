@@ -39,7 +39,11 @@ const styles = stylex.create({
 	},
 	minimized: {
 		borderColor: colorsSemantic.borderOnInverse,
-		backgroundColor: colorsSemantic.surfaceInverse,
+		backgroundColor: {
+			default: colorsSemantic.surfaceInteractiveInverse,
+			':hover': colorsSemantic.surfaceInteractiveInverseHover,
+			':active': colorsSemantic.surfaceInteractiveInverseActive,
+		},
 		blockSize: 'auto',
 		color: colorsSemantic.textOnInverse,
 		inlineSize: `min(320px, calc(100% - 2 * ${spacing.lg}))`,
