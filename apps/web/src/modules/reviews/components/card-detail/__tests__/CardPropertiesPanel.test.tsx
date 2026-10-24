@@ -35,7 +35,7 @@ describe('CardPropertiesPanel', () => {
 		expect(screen.queryByText('Recall')).not.toBeInTheDocument()
 		expect(
 			screen.getByLabelText('Good, reviewed Aug 16, 2026'),
-		).toHaveTextContent('8d ago')
+		).toHaveTextContent('Aug 16')
 	})
 
 	it('marks an overdue due date', () => {

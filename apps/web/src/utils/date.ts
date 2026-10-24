@@ -19,6 +19,14 @@ export function formatAbsoluteDate(value: DateString): string {
 	return parseDate(value).toFormat('LLL d, yyyy')
 }
 
+/** Days on either side of today that read as relative, such as `7d ago`. */
+const RELATIVE_DAYS = 7
+
+/**
+ * Describe a date relative to today within a week, such as `Yesterday` or
+ * `in 3d`. Further dates show the month and day, plus the year when it
+ * differs from today's.
+ */
 export function formatRelativeDate(
 	value: DateString | null,
 	today: DateString = todayIso(),
@@ -30,8 +38,14 @@ export function formatRelativeDate(
 	if (difference === 0) return 'Today'
 	if (difference === 1) return 'Tomorrow'
 	if (difference === -1) return 'Yesterday'
-	if (difference < 0) return `${Math.abs(difference)}d ago`
-	return `in ${difference}d`
+	if (Math.abs(difference) <= RELATIVE_DAYS) {
+		return difference < 0 ? `${-difference}d ago` : `in ${difference}d`
+	}
+
+	const date = parseDate(value)
+	return date.hasSame(parseDate(today), 'year')
+		? date.toFormat('LLL d')
+		: formatAbsoluteDate(value)
 }
 
 /** Tone for a scheduled date: late unless the review is already done. */
