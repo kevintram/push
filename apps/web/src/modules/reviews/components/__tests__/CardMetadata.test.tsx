@@ -146,7 +146,7 @@ describe('CardMetadata', () => {
 		expect(onClick).toHaveBeenCalledOnce()
 	})
 
-	it('shows the durability icon and explanation in a tooltip', async () => {
+	it('explains the strength in a tooltip', async () => {
 		const user = userEvent.setup()
 
 		render(
@@ -162,10 +162,10 @@ describe('CardMetadata', () => {
 			</TooltipProvider>,
 		)
 
-		const durability = screen.getByText(/Durability/)
-		expect(durability).toHaveTextContent(/Durability.*10d/)
-		expect(document.querySelector('svg.lucide-anvil')).toBeInTheDocument()
-		await user.hover(durability)
+		expect(screen.getByText('10d').parentElement).toHaveTextContent(
+			'Strength 10d',
+		)
+		await user.hover(screen.getByText('10d'))
 
 		expect(await screen.findByRole('tooltip')).toHaveTextContent(
 			'Estimated to remember for at least 10d',

@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { Anvil, Calendar, Sparkles } from 'lucide-react'
+import { Calendar, Sparkles } from 'lucide-react'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
@@ -17,8 +17,8 @@ import {
 } from '~/utils/date'
 
 import type { CardSrsState } from '../types/review.types'
-import { formatDurability, formatDurabilityTooltip } from '../utils/cardSrs'
 import { getLastReviewedDetails } from './reviewRatings'
+import { StrengthSignal } from './StrengthSignal'
 
 const styles = stylex.create({
 	boundary: {
@@ -51,7 +51,7 @@ const styles = stylex.create({
 		fontWeight: fontWeights.semibold,
 		whiteSpace: 'nowrap',
 	},
-	durability: {
+	strength: {
 		display: {
 			default: 'inline-flex',
 			'@container (max-width: 400px)': 'none',
@@ -72,7 +72,7 @@ const styles = stylex.create({
 	},
 })
 
-/** Scheduling summary for a card, including its durability estimate. */
+/** Scheduling summary for a card, including its strength estimate. */
 export function CardMetadata({
 	lastReviewedAt,
 	lastRating,
@@ -124,8 +124,6 @@ export function CardMetadata({
 	}
 
 	const dueTone = getDueDateTone(nextDueAt, false, today)
-	const durability = formatDurability(stability)
-	const durabilityTooltip = formatDurabilityTooltip(stability)
 	const {
 		Icon: RatingIcon,
 		ariaLabel: lastReviewedLabel,
@@ -186,28 +184,15 @@ export function CardMetadata({
 					/>
 					<TooltipContent>{lastReviewedTooltip}</TooltipContent>
 				</Tooltip>
-				{durability !== null ? (
-					<Tooltip>
-						<TooltipTrigger
-							render={
-								<span
-									{...stylex.props(
-										styles.item,
-										styles.raisedItem,
-										styles.durability,
-									)}
-								>
-									Durability
-									<Anvil
-										aria-hidden='true'
-										size={iconSizes.sm}
-									/>
-									{durability}
-								</span>
-							}
-						/>
-						<TooltipContent>{durabilityTooltip}</TooltipContent>
-					</Tooltip>
+				{stability !== null ? (
+					<StrengthSignal
+						stability={stability}
+						xstyle={[
+							styles.item,
+							styles.raisedItem,
+							styles.strength,
+						]}
+					/>
 				) : null}
 			</div>
 		</div>
