@@ -6,7 +6,7 @@ import { scrollFade } from '~/styles/scrollFade'
 import { layout, spacing } from '~/styles/tokens.stylex'
 
 import { reviewQueries } from '../../api/reviewQueries'
-import { Review } from '../Review'
+import { ReviewList } from '../ReviewList'
 
 const styles = stylex.create({
 	container: {
@@ -28,7 +28,6 @@ const styles = stylex.create({
 		minWidth: 0,
 		width: '100%',
 	},
-	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
 })
 
 type CardReviewsProps = {
@@ -41,11 +40,7 @@ export function CardReviews({ cardId }: CardReviewsProps) {
 	return (
 		<div {...stylex.props(styles.container, scrollFade.y)}>
 			<div {...stylex.props(styles.content)}>
-				<div {...stylex.props(styles.list)}>
-					{reviews.map(review => (
-						<Review key={review._id} review={review} />
-					))}
-				</div>
+				<ReviewList reviews={reviews} />
 			</div>
 		</div>
 	)
