@@ -48,12 +48,21 @@ const styles = stylex.create({
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
 		outlineWidth: '2px',
+		// Stretches the click target over the nearest positioned ancestor, so
+		// the whole minimized window restores it, not just the title text.
+		'::after': {
+			inset: 0,
+			content: '""',
+			position: 'absolute',
+		},
 	},
 	actions: {
 		gap: spacing.xs,
 		alignItems: 'center',
 		display: 'flex',
 		flexShrink: 0,
+		// Lifts the controls above the title's stretched click target.
+		position: 'relative',
 	},
 	// Ghost buttons tint toward black, which disappears on dark surfaces, so
 	// the controls tint toward the header's text color instead.

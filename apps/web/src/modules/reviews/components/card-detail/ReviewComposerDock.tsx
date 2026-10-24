@@ -39,10 +39,14 @@ const styles = stylex.create({
 	},
 	minimized: {
 		borderColor: colorsSemantic.borderOnInverse,
+		// Keyed to the title button, which restores the window, so hovering
+		// the close control doesn't light up the whole window.
 		backgroundColor: {
 			default: colorsSemantic.surfaceInteractiveInverse,
-			':hover': colorsSemantic.surfaceInteractiveInverseHover,
-			':active': colorsSemantic.surfaceInteractiveInverseActive,
+			':has(> header > button:active)':
+				colorsSemantic.surfaceInteractiveInverseActive,
+			':has(> header > button:hover)':
+				colorsSemantic.surfaceInteractiveInverseHover,
 		},
 		blockSize: 'auto',
 		color: colorsSemantic.textOnInverse,
