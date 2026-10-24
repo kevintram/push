@@ -4,8 +4,6 @@ import { describe, expect, it } from 'vitest'
 import type { Card } from '../../types/review.types'
 import {
 	deriveCardSrsState,
-	formatDurability,
-	formatDurabilityTooltip,
 	formatStrength,
 	formatStrengthDelta,
 	formatStrengthTooltip,
@@ -60,26 +58,6 @@ describe('deriveCardSrsState', () => {
 		expect(srs.nextDueAt).toBe('2026-02-20')
 		expect(srs.stability).toBe(10)
 		expect(srs.retrievability).toBeCloseTo(0.9403442888929227, 14)
-	})
-})
-
-describe('formatDurability', () => {
-	it.each([
-		[null, null],
-		[1, '1d'],
-		[10.4, '10d'],
-		[10.5, '11d'],
-	] as const)('formats %s as %s', (stability, expected) => {
-		expect(formatDurability(stability)).toBe(expected)
-	})
-})
-
-describe('formatDurabilityTooltip', () => {
-	it.each([
-		[null, null],
-		[10.4, 'Estimated to remember for at least 10d'],
-	] as const)('formats %s as %s', (stability, expected) => {
-		expect(formatDurabilityTooltip(stability)).toBe(expected)
 	})
 })
 

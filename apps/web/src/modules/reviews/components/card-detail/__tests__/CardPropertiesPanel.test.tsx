@@ -12,7 +12,7 @@ function classesOf(label: string): Array<string> {
 }
 
 describe('CardPropertiesPanel', () => {
-	it('shows due, reviewed, and durability', () => {
+	it('shows due, reviewed, and strength', () => {
 		render(
 			<CardPropertiesPanel
 				lastReviewedAt='2026-08-16'
@@ -29,6 +29,9 @@ describe('CardPropertiesPanel', () => {
 		).toBeInTheDocument()
 		expect(screen.getByText('in 2d')).toBeInTheDocument()
 		expect(screen.getByText('10d')).toBeInTheDocument()
+		expect(screen.queryByText('(new)')).not.toBeInTheDocument()
+		// The row label names the value, so no hidden label repeats it.
+		expect(screen.getAllByText(/Strength/)).toHaveLength(1)
 		expect(screen.queryByText('Recall')).not.toBeInTheDocument()
 		expect(
 			screen.getByLabelText('Good, reviewed Aug 16, 2026'),
@@ -105,7 +108,7 @@ describe('CardPropertiesPanel', () => {
 		expect(screen.getAllByText('—')).toHaveLength(2)
 	})
 
-	it('explains durability in a tooltip', async () => {
+	it('explains strength in a tooltip', async () => {
 		const user = userEvent.setup()
 
 		render(

@@ -28,7 +28,7 @@ import type { Review as ReviewModel } from '../types/review.types'
 import { RatingPicker } from './RatingPicker'
 import { ReviewDatePicker } from './ReviewDatePicker'
 import { ReviewDialog } from './ReviewDialog'
-import { ReviewDurability } from './ReviewDurability'
+import { ReviewStrength } from './ReviewStrength'
 
 const styles = stylex.create({
 	contentContainer: {
@@ -205,7 +205,7 @@ export function Review({ review }: ReviewProps) {
 								size='micro'
 							/>
 						</div>
-						<ReviewDurability review={review} size='micro' />
+						<ReviewStrength review={review} size='micro' />
 						<div {...stylex.props(styles.spacer)} />
 						<DropdownMenu>
 							<DropdownMenuTrigger

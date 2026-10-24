@@ -1,5 +1,4 @@
 import * as stylex from '@stylexjs/stylex'
-import { Anvil } from 'lucide-react'
 
 import { SidebarPanel } from '~/components/SidebarPanel'
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
@@ -18,8 +17,8 @@ import {
 } from '~/utils/date'
 
 import type { CardSrsState } from '../../types/review.types'
-import { formatDurability, formatDurabilityTooltip } from '../../utils/cardSrs'
 import { getLastReviewedDetails } from '../reviewRatings'
+import { StrengthSignal } from '../StrengthSignal'
 
 const styles = stylex.create({
 	container: {
@@ -145,32 +144,12 @@ export function CardPropertiesPanel({
 					)}
 				</div>
 				<div {...stylex.props(styles.row)}>
-					<span {...stylex.props(styles.label)}>Durability</span>
-					{stability === null ? (
-						<span {...stylex.props(styles.value)}>—</span>
-					) : (
-						<Tooltip>
-							<TooltipTrigger
-								render={
-									<span
-										{...stylex.props(
-											styles.value,
-											styles.valueWithIcon,
-										)}
-									>
-										<Anvil
-											aria-hidden='true'
-											size={iconSizes.sm}
-										/>
-										{formatDurability(stability)}
-									</span>
-								}
-							/>
-							<TooltipContent>
-								{formatDurabilityTooltip(stability)}
-							</TooltipContent>
-						</Tooltip>
-					)}
+					<span {...stylex.props(styles.label)}>Strength</span>
+					<StrengthSignal
+						hasVisibleLabel
+						stability={stability}
+						xstyle={styles.value}
+					/>
 				</div>
 			</div>
 		</SidebarPanel>

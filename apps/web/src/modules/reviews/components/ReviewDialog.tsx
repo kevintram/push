@@ -34,7 +34,7 @@ import type { Rating, Review } from '../types/review.types'
 import { RatingPicker } from './RatingPicker'
 import { ReviewDatePicker } from './ReviewDatePicker'
 import { ReviewDialogBreadcrumbs } from './ReviewDialogBreadcrumbs'
-import { ReviewDurability } from './ReviewDurability'
+import { ReviewStrength } from './ReviewStrength'
 
 const styles = stylex.create({
 	viewport: {
@@ -438,7 +438,7 @@ export function ReviewDialog({
 							onDateChange={onSetDate}
 							size='medium'
 						/>
-						<ReviewDurability review={review} size='medium' />
+						<ReviewStrength review={review} size='medium' />
 					</div>
 					<div {...stylex.props(styles.footerActions)}>
 						<DropdownMenu>

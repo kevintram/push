@@ -52,8 +52,8 @@ vi.mock('../ReviewDialogBreadcrumbs', () => ({
 	),
 }))
 
-vi.mock('../ReviewDurability', () => ({
-	ReviewDurability: () => <span>Durability</span>,
+vi.mock('../ReviewStrength', () => ({
+	ReviewStrength: () => <span>Strength</span>,
 }))
 
 const review = {

@@ -27,21 +27,6 @@ export function deriveCardSrsState(
 	}
 }
 
-/** Format FSRS stability in whole days, or `null` when unavailable. */
-export function formatDurability(stability: number | null): string | null {
-	if (stability === null) return null
-	return `${Math.round(stability)}d`
-}
-
-/** Explain the minimum memory duration represented by an FSRS stability value. */
-export function formatDurabilityTooltip(
-	stability: number | null,
-): string | null {
-	const durability = formatDurability(stability)
-	if (durability === null) return null
-	return `Estimated to remember for at least ${durability}`
-}
-
 const MAX_STRENGTH_DAYS = 365
 const DAYS_PER_MONTH = 30
 /** Days at which each strength bar fills: a week, a month, half a year, a year. */
