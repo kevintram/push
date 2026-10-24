@@ -438,7 +438,9 @@ export function ReviewDialog({
 							onDateChange={onSetDate}
 							size='medium'
 						/>
-						<ReviewStrength review={review} size='medium' />
+						{review.stabilityAfter != null && (
+							<ReviewStrength review={review} size='medium' />
+						)}
 					</div>
 					<div {...stylex.props(styles.footerActions)}>
 						<DropdownMenu>

@@ -5,10 +5,10 @@ import { Link } from '@tanstack/react-router'
 
 import { SidebarPanel } from '~/components/SidebarPanel'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { fontSizes, spacing } from '~/styles/tokens.stylex'
+import { fontSizes } from '~/styles/tokens.stylex'
 
 import { reviewQueries } from '../../api/reviewQueries'
-import { Review } from '../Review'
+import { ReviewList } from '../ReviewList'
 
 const styles = stylex.create({
 	container: {
@@ -23,7 +23,6 @@ const styles = stylex.create({
 		},
 		fontSize: fontSizes.sm,
 	},
-	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
 })
 type CardReviewsPanelProps = {
 	cardId: Id<'cards'>
@@ -46,11 +45,7 @@ export function CardReviewsPanel({ cardId }: CardReviewsPanelProps) {
 			}
 			xstyle={styles.container}
 		>
-			<div {...stylex.props(styles.list)}>
-				{reviews.map(review => (
-					<Review key={review._id} review={review} />
-				))}
-			</div>
+			<ReviewList reviews={reviews} />
 		</SidebarPanel>
 	)
 }

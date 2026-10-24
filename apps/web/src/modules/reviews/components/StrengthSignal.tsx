@@ -21,6 +21,9 @@ const styles = stylex.create({
 		display: 'inline-flex',
 		whiteSpace: 'nowrap',
 	},
+	empty: {
+		color: colorsSemantic.textSecondary,
+	},
 	bars: {
 		blockSize: iconSizes.sm,
 		flexShrink: 0,
@@ -57,6 +60,8 @@ type StrengthSignalProps = {
 	stabilityBefore?: number | null
 	/** Skip the screen-reader label when a visible label already names it. */
 	hasVisibleLabel?: boolean
+	/** Style the change, such as hiding it where space runs out. */
+	changeXstyle?: StyleXStyles
 	xstyle?: StyleXStyles
 }
 
@@ -65,6 +70,7 @@ export function StrengthSignal({
 	stability,
 	stabilityBefore,
 	hasVisibleLabel = false,
+	changeXstyle,
 	xstyle,
 }: StrengthSignalProps) {
 	const label = hasVisibleLabel ? null : (
@@ -72,7 +78,11 @@ export function StrengthSignal({
 	)
 
 	if (stability === null) {
-		return <span {...stylex.props(styles.container, xstyle)}>{label}—</span>
+		return (
+			<span {...stylex.props(styles.container, styles.empty, xstyle)}>
+				{label}—
+			</span>
+		)
 	}
 
 	const level = getStrengthLevel(stability)
@@ -114,6 +124,7 @@ export function StrengthSignal({
 									delta !== null && delta < 0
 										? styles.negativeChange
 										: styles.positiveChange,
+									changeXstyle,
 								)}
 							>
 								({formatStrengthDelta(delta)})
