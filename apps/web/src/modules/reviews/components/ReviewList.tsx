@@ -91,6 +91,10 @@ const styles = stylex.create({
 		gridColumnEnd: 'description',
 		gridColumnStart: 'description',
 	},
+	notes: {
+		gridColumnEnd: 'notes',
+		gridColumnStart: 'notes',
+	},
 	date: {
 		gridColumnEnd: 'date',
 		gridColumnStart: 'date',
@@ -109,6 +113,7 @@ const styles = stylex.create({
 const COLUMNS = [
 	{ area: 'rating', isIconColumn: true, label: 'Rating' },
 	{ area: 'description', isIconColumn: false, label: 'Description' },
+	{ area: 'notes', isIconColumn: true, label: 'Notes' },
 	{ area: 'date', isIconColumn: false, label: 'Date' },
 	{ area: 'strength', isIconColumn: false, label: 'Strength' },
 	{ area: 'actions', isIconColumn: true, label: 'Actions' },

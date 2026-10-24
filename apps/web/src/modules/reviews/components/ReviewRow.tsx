@@ -111,7 +111,6 @@ const styles = stylex.create({
 		gridRowStart: 'description',
 
 		alignItems: 'center',
-		columnGap: '6px',
 		display: 'flex',
 		minInlineSize: 0,
 	},
@@ -175,6 +174,19 @@ const styles = stylex.create({
 					[stylex.when.ancestor(':hover')]: actionsFade,
 				},
 			},
+		},
+	},
+	// Only the table has a notes column. Stacked, the marker leads the date.
+	notes: {
+		gridColumnEnd: 'notes',
+		gridColumnStart: 'notes',
+		gridRowEnd: 'notes',
+		gridRowStart: 'notes',
+
+		// Flex, not block, so the icon centers instead of sitting on a baseline.
+		display: {
+			default: 'none',
+			[reviewTable.wide]: 'flex',
 		},
 	},
 	date: {
@@ -276,9 +288,9 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 		review.rating !== undefined && review.stabilityAfter != null
 	const hasNotes = review.notes.trim().length > 0
 	const date = (review.date ?? null) as DateString | null
-	// The notes marker sits with the description in the table, and before the
-	// date when stacked. Raised above the row's trigger so its tooltip can show.
-	const notesIndicator = (xstyle: StyleXStyles) =>
+	// The notes marker has its own column in the table, and leads the date
+	// when stacked. Raised above the row's trigger so its tooltip can show.
+	const notesIndicator = (xstyle?: StyleXStyles) =>
 		hasNotes && (
 			<ReviewNotesIndicator
 				notes={review.notes}
@@ -331,7 +343,9 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 						</span>
 					</>
 				)}
-				{notesIndicator(styles.stackedHidden)}
+			</td>
+			<td role='cell' {...stylex.props(styles.cell, styles.notes)}>
+				{notesIndicator()}
 			</td>
 			<td
 				role='cell'

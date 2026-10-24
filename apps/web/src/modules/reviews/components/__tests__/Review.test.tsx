@@ -119,9 +119,9 @@ describe('Review', () => {
 		expect(screen.getByText('—', { exact: false })).toBeInTheDocument()
 	})
 
-	// Happy DOM evaluates no container queries, so both markers render: with
-	// the description for the table, and before the date for the stacked
-	// layout. CSS shows one.
+	// Happy DOM evaluates no container queries, so both markers render: in the
+	// notes column for the table, and before the date for the stacked layout.
+	// CSS shows one.
 	it.each([
 		['with a description', 'Review cellular respiration.'],
 		['without a description', ''],

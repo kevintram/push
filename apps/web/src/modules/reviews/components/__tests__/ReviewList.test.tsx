@@ -47,6 +47,13 @@ describe('ReviewList', () => {
 
 		expect(
 			screen.getAllByRole('columnheader').map(cell => cell.textContent),
-		).toEqual(['Rating', 'Description', 'Date', 'Strength', 'Actions'])
+		).toEqual([
+			'Rating',
+			'Description',
+			'Notes',
+			'Date',
+			'Strength',
+			'Actions',
+		])
 	})
 })
