@@ -28,7 +28,7 @@ describe('CardMetadata', () => {
 		expect(
 			document.querySelector('svg.lucide-calendar'),
 		).toBeInTheDocument()
-		expect(screen.getByText('8d ago')).toBeInTheDocument()
+		expect(screen.getByText('Aug 1')).toBeInTheDocument()
 	})
 
 	it('tones a review from today like a date due today', () => {
