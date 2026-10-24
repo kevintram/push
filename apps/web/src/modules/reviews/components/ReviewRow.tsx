@@ -28,15 +28,24 @@ import { ReviewDate } from './ReviewDate'
 import { ReviewNotesIndicator } from './ReviewNotesIndicator'
 import { ReviewStrength } from './ReviewStrength'
 
+// Like claude.ai's sidebar, long descriptions fade out instead of ending in
+// an ellipsis. Stacked, the description runs under the actions, so while they
+// show the fade ends short of them, leaving a clear spot for the button.
+const FADE = '24px'
+// `buttonSizes.micro`, inlined because constants must be static.
+const ACTIONS_CLEARANCE = '1.625rem'
+const restingFade = `linear-gradient(to right, black calc(100% - ${FADE}), transparent)`
+const actionsFade = `linear-gradient(to right, black calc(100% - ${FADE} - ${ACTIONS_CLEARANCE}), transparent calc(100% - ${ACTIONS_CLEARANCE}))`
+
 const styles = stylex.create({
 	// A table row laid out as a grid. Stacked by default, with the description
-	// above the date, strength, and actions. Once the list is wide enough the
+	// above the notes, date, and strength. Once the list is wide enough the
 	// cells line up as table columns.
 	row: {
 		gridTemplateAreas: {
 			default: `
 				'rating description description description description'
-				'. date strength . actions'
+				'. date strength . .'
 			`,
 			[reviewTable.wide]: reviewTable.areas,
 		},
@@ -55,7 +64,6 @@ const styles = stylex.create({
 			[reviewTable.wide]: '44px',
 		},
 		position: 'relative',
-		rowGap: spacing.xs,
 
 		borderRadius: radii.lg,
 		marginInline: `calc(${layout.rowBleed} * -1)`,
@@ -71,51 +79,16 @@ const styles = stylex.create({
 	// description cell stretches to push the actions to the end.
 	withoutDescription: {
 		gridTemplateAreas: {
-			default: `'rating date strength description actions'`,
+			default: `'rating date strength description .'`,
 			[reviewTable.wide]: reviewTable.areas,
-		},
-		gridTemplateColumns: {
-			default: 'auto auto auto minmax(0, 1fr) auto',
-			[reviewTable.wide]: reviewTable.columns,
 		},
 	},
-	// Stacked, a row with neither a date nor a strength keeps its actions on
-	// the description line instead of leaving them alone below it.
-	descriptionOnly: {
-		gridTemplateAreas: {
-			default: `'rating description actions'`,
-			[reviewTable.wide]: reviewTable.areas,
-		},
-		gridTemplateColumns: {
-			default: 'auto minmax(0, 1fr) auto',
-			[reviewTable.wide]: reviewTable.columns,
-		},
-	},
-	// Without a date, a narrow row has nothing left for its second line.
-	descriptionOnlyWhenNarrow: {
-		gridTemplateAreas: {
-			default: `
-				'rating description description description description'
-				'. date strength . actions'
-			`,
-			[reviewTable.noStrength]: `'rating description actions'`,
-			[reviewTable.wide]: reviewTable.areas,
-		},
-		gridTemplateColumns: {
-			default: 'auto auto auto minmax(0, 1fr) auto',
-			[reviewTable.noStrength]: 'auto minmax(0, 1fr) auto',
-			[reviewTable.wide]: reviewTable.columns,
-		},
-	},
-	// With notes, the cell holds the notes marker, so it follows the rating.
-	withoutDescriptionWithNotes: {
-		gridTemplateAreas: {
-			default: `'rating description date strength . actions'`,
-			[reviewTable.wide]: reviewTable.areas,
-		},
-		gridTemplateColumns: {
-			default: 'auto auto auto auto minmax(0, 1fr) auto',
-			[reviewTable.wide]: reviewTable.columns,
+	// The second line's gap is a margin rather than a row gap, so the line
+	// takes no space when nothing on it shows.
+	secondLine: {
+		marginBlockStart: {
+			default: spacing.xs,
+			[reviewTable.wide]: spacing.none,
 		},
 	},
 	cell: {
@@ -137,15 +110,17 @@ const styles = stylex.create({
 		gridRowEnd: 'description',
 		gridRowStart: 'description',
 
-		minInlineSize: 0,
-	},
-	descriptionTrigger: {
-		padding: 0,
-
 		alignItems: 'center',
 		columnGap: '6px',
 		display: 'flex',
-		inlineSize: '100%',
+		minInlineSize: 0,
+	},
+	// Fills the cell so the fade only reaches text long enough to run into it.
+	descriptionTrigger: {
+		padding: 0,
+
+		display: 'flex',
+		flexGrow: 1,
 		minInlineSize: 0,
 
 		fontSize: fontSizes.sm,
@@ -182,18 +157,25 @@ const styles = stylex.create({
 	},
 	descriptionText: {
 		overflow: 'hidden',
+		flexGrow: 1,
 		minInlineSize: 0,
-		textOverflow: 'ellipsis',
 		whiteSpace: 'nowrap',
-	},
-	// The table fills an empty description cell with a dash, matching the
-	// strength column. Stacked, only the notes marker shows.
-	emptyDescription: {
-		alignItems: 'center',
-		columnGap: '6px',
-		display: 'flex',
 
-		color: colorsSemantic.textSecondary,
+		maskImage: {
+			default: restingFade,
+			[reviewTable.stacked]: {
+				// Touch shows the actions all the time.
+				default: actionsFade,
+				'@media (hover: hover)': {
+					default: restingFade,
+					// Matches `actionsTrigger`.
+					[stylex.when.ancestor(':has(:focus-visible)')]: actionsFade,
+					[stylex.when.ancestor(':has([data-popup-open])')]:
+						actionsFade,
+					[stylex.when.ancestor(':hover')]: actionsFade,
+				},
+			},
+		},
 	},
 	date: {
 		gridColumnEnd: 'date',
@@ -239,38 +221,41 @@ const styles = stylex.create({
 			[reviewTable.noStrengthChange]: 'none',
 		},
 	},
+	// Stacked, the actions sit over the end of the first line, on top of the
+	// description.
 	actions: {
-		gridColumnEnd: 'actions',
-		gridColumnStart: 'actions',
-		gridRowEnd: 'actions',
-		gridRowStart: 'actions',
+		gridColumnEnd: {
+			default: '-1',
+			[reviewTable.wide]: 'actions',
+		},
+		gridColumnStart: {
+			default: '-2',
+			[reviewTable.wide]: 'actions',
+		},
+		gridRowEnd: {
+			default: '2',
+			[reviewTable.wide]: 'actions',
+		},
+		gridRowStart: {
+			default: '1',
+			[reviewTable.wide]: 'actions',
+		},
+		justifySelf: 'end',
+	},
+	// Shown while the row is hovered, keyboard focused, or has its menu open.
+	// Always shown on touch, where there is no hover to reveal it.
+	actionsTrigger: {
+		opacity: {
+			default: null,
+			'@media (hover: hover)': {
+				default: 0,
+				[stylex.when.ancestor(':has(:focus-visible)')]: 1,
+				[stylex.when.ancestor(':has([data-popup-open])')]: 1,
+				[stylex.when.ancestor(':hover')]: 1,
+			},
+		},
 	},
 })
-
-type StackedLayoutFlags = {
-	hasDate: boolean
-	hasDescription: boolean
-	hasNotes: boolean
-	hasStrength: boolean
-}
-
-/** Pick the stacked grid for what the row shows; `row` is the default. */
-function stackedLayout({
-	hasDate,
-	hasDescription,
-	hasNotes,
-	hasStrength,
-}: StackedLayoutFlags) {
-	if (!hasDescription) {
-		return hasNotes
-			? styles.withoutDescriptionWithNotes
-			: styles.withoutDescription
-	}
-	if (hasDate) return null
-	return hasStrength
-		? styles.descriptionOnlyWhenNarrow
-		: styles.descriptionOnly
-}
 
 type ReviewRowProps = {
 	onDelete: () => void
@@ -291,8 +276,9 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 		review.rating !== undefined && review.stabilityAfter != null
 	const hasNotes = review.notes.trim().length > 0
 	const date = (review.date ?? null) as DateString | null
-	// Raised above the row's overlay trigger so its tooltip can show.
-	const notesIndicator = (xstyle?: StyleXStyles) =>
+	// The notes marker sits with the description in the table, and before the
+	// date when stacked. Raised above the row's trigger so its tooltip can show.
+	const notesIndicator = (xstyle: StyleXStyles) =>
 		hasNotes && (
 			<ReviewNotesIndicator
 				notes={review.notes}
@@ -306,12 +292,8 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 			role='row'
 			{...stylex.props(
 				styles.row,
-				stackedLayout({
-					hasDate: date !== null,
-					hasDescription,
-					hasNotes,
-					hasStrength,
-				}),
+				stylex.defaultMarker(),
+				!hasDescription && styles.withoutDescription,
 			)}
 		>
 			<td
@@ -323,21 +305,12 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 					rating={review.rating}
 				/>
 			</td>
-			<td
-				role='cell'
-				{...stylex.props(
-					styles.cell,
-					styles.description,
-					!hasDescription && styles.emptyDescription,
-				)}
-			>
+			<td role='cell' {...stylex.props(styles.cell, styles.description)}>
 				{hasDescription ? (
 					<DialogTrigger {...stylex.props(styles.descriptionTrigger)}>
 						<span {...stylex.props(styles.descriptionText)}>
 							{description}
 						</span>
-						{/* Stacked, the marker moves before the date. */}
-						{notesIndicator(date !== null && styles.stackedHidden)}
 					</DialogTrigger>
 				) : (
 					<>
@@ -345,16 +318,20 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 							aria-label='Open review'
 							{...stylex.props(styles.overlayTrigger)}
 						/>
-						{/* The row's trigger already names it "Open review". */}
+						{/* The row's trigger already names it "Open review". The
+						table fills the empty cell with a dash, like the strength. */}
 						<span
 							aria-hidden='true'
-							{...stylex.props(styles.stackedHidden)}
+							{...stylex.props(
+								styles.stackedHidden,
+								styles.muted,
+							)}
 						>
 							—
 						</span>
-						{notesIndicator()}
 					</>
 				)}
+				{notesIndicator(styles.stackedHidden)}
 			</td>
 			<td
 				role='cell'
@@ -362,22 +339,23 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 					styles.cell,
 					styles.whole,
 					styles.date,
-					// Like a pending strength, a missing date shows a dash only
-					// in the table.
-					date === null && [styles.stackedHidden, styles.muted],
+					hasDescription && styles.secondLine,
+					date === null && !hasNotes && styles.stackedHidden,
 				)}
 			>
+				{notesIndicator(styles.tableHidden)}
 				{date === null ? (
-					'—'
+					// Like a pending strength, a missing date shows a dash only
+					// in the table.
+					<span {...stylex.props(styles.stackedHidden, styles.muted)}>
+						—
+					</span>
 				) : (
-					<>
-						{hasDescription && notesIndicator(styles.tableHidden)}
-						<ReviewDate
-							date={date}
-							isCompleted={review.rating !== undefined}
-							xstyle={styles.raised}
-						/>
-					</>
+					<ReviewDate
+						date={date}
+						isCompleted={review.rating !== undefined}
+						xstyle={styles.raised}
+					/>
 				)}
 			</td>
 			<td
@@ -387,6 +365,7 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 					styles.whole,
 					styles.strength,
 					styles.raised,
+					hasDescription && styles.secondLine,
 					!hasStrength && styles.stackedHidden,
 				)}
 			>
@@ -409,6 +388,7 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 								shape='round'
 								size='micro'
 								variant='ghost'
+								xstyle={styles.actionsTrigger}
 							/>
 						}
 					>

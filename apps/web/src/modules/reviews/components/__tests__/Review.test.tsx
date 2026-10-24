@@ -119,16 +119,16 @@ describe('Review', () => {
 		expect(screen.getByText('—', { exact: false })).toBeInTheDocument()
 	})
 
-	// Happy DOM evaluates no container queries, so a described review renders
-	// both markers: after the description for the table, and before the date
-	// for the stacked layout. CSS shows one.
+	// Happy DOM evaluates no container queries, so both markers render: with
+	// the description for the table, and before the date for the stacked
+	// layout. CSS shows one.
 	it.each([
-		['with a description', 'Review cellular respiration.', 2],
-		['without a description', '', 1],
-	])('marks a review that has notes %s', (_, description, count) => {
+		['with a description', 'Review cellular respiration.'],
+		['without a description', ''],
+	])('marks a review that has notes %s', (_, description) => {
 		renderReview(review({ description, notes: 'Some notes' }))
 
-		expect(screen.getAllByLabelText('Has notes')).toHaveLength(count)
+		expect(screen.getAllByLabelText('Has notes')).toHaveLength(2)
 	})
 
 	it('shows the full date on hover', async () => {
@@ -146,7 +146,7 @@ describe('Review', () => {
 			review({ description: '', notes: 'Recheck the ATP yield.\nMore' }),
 		)
 
-		await userEvent.hover(screen.getByLabelText('Has notes'))
+		await userEvent.hover(screen.getAllByLabelText('Has notes')[0]!)
 
 		expect(
 			await screen.findByText('Recheck the ATP yield.'),

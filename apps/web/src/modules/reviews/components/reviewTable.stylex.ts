@@ -7,6 +7,7 @@ import * as stylex from '@stylexjs/stylex'
  */
 export const reviewTable = stylex.defineConsts({
 	wide: '@container (min-width: 560px)',
+	stacked: '@container (width < 560px)',
 	// Stacked rows run out of room for the date and strength on one line, so
 	// the strength change drops first, then the strength itself.
 	noStrengthChange: '@container (width < 300px)',
