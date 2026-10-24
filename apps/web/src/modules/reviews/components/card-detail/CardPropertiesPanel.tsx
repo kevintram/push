@@ -108,7 +108,7 @@ export function CardPropertiesPanel({
 					)}
 				</div>
 				<div {...stylex.props(styles.row)}>
-					<span {...stylex.props(styles.label)}>Reviewed</span>
+					<span {...stylex.props(styles.label)}>Last reviewed</span>
 					{lastReviewedAt === null || lastReviewed === null ? (
 						<span {...stylex.props(styles.value)}>—</span>
 					) : (
