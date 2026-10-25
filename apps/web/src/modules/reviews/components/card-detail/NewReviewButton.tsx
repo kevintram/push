@@ -11,12 +11,12 @@ type NewReviewButtonProps = {
 }
 
 export function NewReviewButton({ xstyle }: NewReviewButtonProps) {
-	const { dockState, setDockState } = useReviewComposerState()
+	const { dock, setDockState } = useReviewComposerState()
 
 	return (
 		<Button
 			onClick={() =>
-				setDockState(dockState === 'open' ? 'minimized' : 'open')
+				setDockState(dock.state === 'open' ? 'minimized' : 'open')
 			}
 			shape='round'
 			size='small'

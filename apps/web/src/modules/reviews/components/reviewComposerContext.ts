@@ -17,18 +17,27 @@ export const emptyReviewDraft: ReviewDraft = {
 	rating: null,
 	date: null,
 }
-/** Where the card's docked composer is showing, if at all. */
-export type ReviewComposerDockState =
-	| 'closed'
-	| 'open'
-	| 'minimized'
-	| 'expanded'
+/** How much of the card's composer is showing. */
+export type ReviewComposerDockState = 'closed' | 'open' | 'minimized'
+export type ReviewComposerDock = {
+	state: ReviewComposerDockState
+	/**
+	 * Shows the open composer as a dialog instead of docked. Survives
+	 * minimizing, so restoring returns to the dialog, and resets on close.
+	 */
+	isExpanded: boolean
+}
+export const closedReviewComposerDock: ReviewComposerDock = {
+	state: 'closed',
+	isExpanded: false,
+}
 export type ReviewComposerState = {
 	draft: ReviewDraft
 	isPending: boolean
 	isDirty: boolean
-	dockState: ReviewComposerDockState
+	dock: ReviewComposerDock
 	setDockState: (value: ReviewComposerDockState) => void
+	setExpanded: (value: boolean) => void
 	setDescription: (value: string) => void
 	setNotes: (value: string) => void
 	setRating: (value: Rating | null) => void
@@ -48,12 +57,12 @@ export function useReviewComposerState() {
 /** Lets a parent carry the dock's state from one card to the next. */
 export type ReviewComposerDockProps = {
 	/** Where the dock starts. Defaults to closed. */
-	defaultDockState?: ReviewComposerDockState
+	defaultDock?: ReviewComposerDock
 	/**
 	 * Called when the user moves the dock. Creating a review closes the dock
 	 * without calling this, since that isn't a choice to hide it.
 	 */
-	onDockStateChange?: (value: ReviewComposerDockState) => void
+	onDockChange?: (value: ReviewComposerDock) => void
 }
 export type ReviewComposerProviderProps = ReviewComposerDockProps & {
 	cardId: Id<'cards'>

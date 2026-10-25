@@ -764,6 +764,32 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
+	it('keeps the card under an open dialog when J is pressed', async () => {
+		const user = userEvent.setup()
+		const secondCard: Card = {
+			...card,
+			_id: 'card-2' as Id<'cards'>,
+			primaryText: 'What is a discriminated union?',
+		}
+		renderRoute('/review/new', { newCards: [card, secondCard] })
+
+		await user.click(
+			await screen.findByRole('button', {
+				name: 'Expand review composer',
+			}),
+		)
+		const dialog = screen.getByRole('dialog', { name: 'New review' })
+		// The dialog focuses its description, and text fields already keep J.
+		within(dialog)
+			.getByRole('button', { name: 'Minimize review composer' })
+			.focus()
+		await user.keyboard('j')
+		expect(
+			screen.getByDisplayValue('What problem do generics solve?'),
+		).toBeInTheDocument()
+		expect(dialog).toBeInTheDocument()
+	})
+
 	it('follows a breadcrumb directly from the static workspace', async () => {
 		const user = userEvent.setup()
 		const { router } = renderRoute('/review/new', { newCards: [card] })

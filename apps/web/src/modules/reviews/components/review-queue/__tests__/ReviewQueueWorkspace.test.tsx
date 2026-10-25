@@ -2,11 +2,59 @@ import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { ReviewComposerDockProps } from '~/modules/reviews/components/reviewComposerContext'
+import type { Card } from '~/modules/reviews/types/review.types'
 import type { DateString } from '~/types/date'
 
 import { ReviewQueueWorkspace } from '../ReviewQueueWorkspace'
 
+// Stands in for the card so tests can see where its dock starts and move it.
+vi.mock('~/modules/reviews/components/card-detail/CardDetailView', () => ({
+	CardDetailView: ({
+		defaultDock,
+		onDockChange,
+	}: ReviewComposerDockProps) => (
+		<>
+			<output aria-label='Starting dock'>
+				{JSON.stringify(defaultDock)}
+			</output>
+			<button
+				type='button'
+				onClick={() =>
+					onDockChange?.({ state: 'open', isExpanded: true })
+				}
+			>
+				Expand dock
+			</button>
+			<button
+				type='button'
+				onClick={() =>
+					onDockChange?.({ state: 'minimized', isExpanded: true })
+				}
+			>
+				Minimize expanded dock
+			</button>
+		</>
+	),
+}))
+vi.mock('~/modules/reviews/components/CardItem', () => ({
+	CardItem: () => null,
+}))
+vi.mock('~/modules/reviews/utils/cardSrs', () => ({
+	deriveCardSrsState: () => ({}),
+}))
+
 const STORAGE_KEY = 'reviewQueueSidebarOpen'
+const queueCards = [
+	{ _id: 'card-1', primaryText: 'First', type: 'flashcard' },
+	{ _id: 'card-2', primaryText: 'Second', type: 'flashcard' },
+] as unknown as ReadonlyArray<Card>
+
+function startingDock() {
+	return JSON.parse(
+		screen.getByRole('status', { name: 'Starting dock' }).textContent ?? '',
+	)
+}
 
 describe('ReviewQueueWorkspace', () => {
 	beforeEach(() => {
@@ -271,5 +319,37 @@ describe('ReviewQueueWorkspace', () => {
 		expect(
 			screen.getByRole('complementary', { name: 'Queue' }),
 		).toBeInTheDocument()
+	})
+	it('opens the next card docked when the dialog was open', async () => {
+		const user = userEvent.setup()
+		render(
+			<ReviewQueueWorkspace
+				cards={queueCards}
+				title='Due'
+				today={'2026-09-13' as DateString}
+			/>,
+		)
+		expect(startingDock()).toEqual({ state: 'open', isExpanded: false })
+
+		await user.click(screen.getByRole('button', { name: 'Expand dock' }))
+		await user.click(screen.getByRole('button', { name: 'Next card' }))
+		expect(startingDock()).toEqual({ state: 'open', isExpanded: false })
+	})
+
+	it('carries a minimized dialog to the next card', async () => {
+		const user = userEvent.setup()
+		render(
+			<ReviewQueueWorkspace
+				cards={queueCards}
+				title='Due'
+				today={'2026-09-13' as DateString}
+			/>,
+		)
+
+		await user.click(
+			screen.getByRole('button', { name: 'Minimize expanded dock' }),
+		)
+		await user.click(screen.getByRole('button', { name: 'Next card' }))
+		expect(startingDock()).toEqual({ state: 'minimized', isExpanded: true })
 	})
 })
