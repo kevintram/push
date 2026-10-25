@@ -31,7 +31,14 @@ vi.mock('../../CardActions', () => ({
 vi.mock('../CardBreadcrumbs', () => ({ CardBreadcrumbs: () => null }))
 vi.mock('../CardOverview', () => ({ CardOverview: () => null }))
 vi.mock('../CardPropertiesPanel', () => ({ CardPropertiesPanel: () => null }))
-vi.mock('../CardReviewsPanel', () => ({ CardReviewsPanel: () => null }))
+vi.mock('../CardReviewsPanel', () => ({
+	CardReviewsPanel: ({ onSeeAll }: { onSeeAll?: () => void }) =>
+		onSeeAll ? (
+			<button type='button' onClick={onSeeAll}>
+				See all reviews
+			</button>
+		) : null,
+}))
 vi.mock('../../RatingPicker', () => ({
 	RatingPicker: ({
 		rating,
@@ -132,6 +139,23 @@ describe('CardDetail review composer', () => {
 		render(detail('overview', firstCard, true))
 
 		expect(cardActionsRender).toHaveBeenCalledWith(true)
+	})
+
+	it('switches to the Reviews tab from the reviews panel', () => {
+		const onTabChange = vi.fn()
+		render(
+			<TooltipProvider delay={0}>
+				<CardDetail
+					cardId={firstCard}
+					activeTab='overview'
+					onTabChange={onTabChange}
+				/>
+			</TooltipProvider>,
+		)
+
+		fireEvent.click(screen.getByRole('button', { name: 'See all reviews' }))
+		expect(onTabChange).toHaveBeenCalledWith('reviews')
+		expect(screen.getByRole('tab', { name: 'Reviews' })).toHaveFocus()
 	})
 
 	it('toggles the card details sidebar accessibly', () => {

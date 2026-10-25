@@ -2,7 +2,7 @@ import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { PanelRight } from 'lucide-react'
-import { type ReactElement, useId } from 'react'
+import { type ReactElement, useId, useRef } from 'react'
 
 import {
 	Button,
@@ -148,10 +148,20 @@ export function CardDetail({
 		true,
 	)
 	const sidebarId = useId()
+	const reviewsTabRef = useRef<HTMLElement>(null)
 
 	const toggleSidebar = () => {
 		setSidebarOpen(!sidebarOpen)
 	}
+
+	// The sidebar's reviews panel hides on the Reviews tab, so focus moves
+	// to the tab instead of falling to the page.
+	const showAllReviews =
+		onTabChange &&
+		(() => {
+			onTabChange('reviews')
+			reviewsTabRef.current?.focus()
+		})
 
 	return (
 		<ReviewComposerProvider
@@ -196,6 +206,7 @@ export function CardDetail({
 								Overview
 							</TabsTrigger>
 							<TabsTrigger
+								ref={reviewsTabRef}
 								value='reviews'
 								nativeButton={tabLinks ? false : undefined}
 								render={tabLinks?.reviews}
@@ -250,6 +261,7 @@ export function CardDetail({
 							{...srsState}
 							cardId={cardId}
 							showReviews={activeTab === 'overview'}
+							onSeeAllReviews={showAllReviews}
 							today={today}
 							xstyle={styles.sidebar}
 						/>

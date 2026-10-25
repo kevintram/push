@@ -25,6 +25,7 @@ type CardSidebarProps = CardSrsState & {
 	id: string
 	cardId: Id<'cards'>
 	showReviews: boolean
+	onSeeAllReviews?: () => void
 	today: DateString
 	xstyle?: stylex.StyleXStyles
 }
@@ -33,6 +34,7 @@ export function CardSidebar({
 	id,
 	cardId,
 	showReviews,
+	onSeeAllReviews,
 	today,
 	xstyle,
 	...srsState
@@ -43,7 +45,9 @@ export function CardSidebar({
 			aria-label='Card details'
 			{...stylex.props(styles.container, scrollFade.y, xstyle)}
 		>
-			{showReviews && <CardReviewsPanel cardId={cardId} />}
+			{showReviews && (
+				<CardReviewsPanel cardId={cardId} onSeeAll={onSeeAllReviews} />
+			)}
 			<CardPropertiesPanel {...srsState} today={today} />
 		</aside>
 	)
