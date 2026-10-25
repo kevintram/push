@@ -155,6 +155,7 @@ describe('CardDetail review composer', () => {
 
 		fireEvent.click(screen.getByRole('button', { name: 'See all reviews' }))
 		expect(onTabChange).toHaveBeenCalledWith('reviews')
+		expect(screen.getByRole('tab', { name: 'Reviews' })).toHaveFocus()
 	})
 
 	it('toggles the card details sidebar accessibly', () => {
