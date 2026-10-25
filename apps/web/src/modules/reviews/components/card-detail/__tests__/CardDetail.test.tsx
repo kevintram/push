@@ -389,6 +389,24 @@ describe('CardDetail review composer', () => {
 		})
 	})
 
+	it('collapses the dialog to the dock on Escape', () => {
+		render(detail('overview'))
+		openDock()
+		fireEvent.change(description(), { target: { value: 'Stay docked' } })
+		fireEvent.click(
+			screen.getByRole('button', { name: 'Expand review composer' }),
+		)
+
+		fireEvent.keyDown(screen.getByRole('dialog', { name: 'New review' }), {
+			key: 'Escape',
+		})
+		expect(
+			screen.queryByRole('dialog', { name: 'New review' }),
+		).not.toBeInTheDocument()
+		expect(queryDock()).toBeInTheDocument()
+		expect(description()).toHaveValue('Stay docked')
+	})
+
 	it('opens docked again after closing the dialog', () => {
 		render(detail('overview'))
 		openDock()
