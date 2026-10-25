@@ -19,9 +19,21 @@ function isTabNavigation(event: KeyboardEvent) {
 	)
 }
 
+// Dialogs, popovers, and menus sit above the card, so moving the card behind
+// them would strand or discard what they're showing.
+const OVERLAY_SELECTOR = '[role="dialog"], [role="alertdialog"], [role="menu"]'
+
+function isInsideOverlay(event: KeyboardEvent) {
+	return (
+		event.target instanceof Element &&
+		event.target.closest(OVERLAY_SELECTOR) !== null
+	)
+}
+
 /**
  * Registers navigation only while its card surface is mounted. Navigation keys
- * keep their intrinsic behavior in editable fields and the card's tab list.
+ * keep their intrinsic behavior in editable fields, the card's tab list, and
+ * any overlay open above the card.
  */
 export function CardNavigationHotkeys({
 	canGoNext,
@@ -37,14 +49,16 @@ export function CardNavigationHotkeys({
 			{
 				hotkey: previousHotkey,
 				callback: event => {
-					if (!isTabNavigation(event)) onPrevious()
+					if (!isTabNavigation(event) && !isInsideOverlay(event))
+						onPrevious()
 				},
 				options: { enabled: canGoPrevious },
 			},
 			{
 				hotkey: nextHotkey,
 				callback: event => {
-					if (!isTabNavigation(event)) onNext()
+					if (!isTabNavigation(event) && !isInsideOverlay(event))
+						onNext()
 				},
 				options: { enabled: canGoNext },
 			},
