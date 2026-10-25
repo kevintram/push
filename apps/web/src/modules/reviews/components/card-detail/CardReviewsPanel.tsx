@@ -31,6 +31,9 @@ const styles = stylex.create({
 		fontFamily: 'inherit',
 	},
 })
+
+const REVIEW_LIMIT = 3
+
 type CardReviewsPanelProps = {
 	cardId: Id<'cards'>
 	/**
@@ -42,12 +45,19 @@ type CardReviewsPanelProps = {
 
 export function CardReviewsPanel({ cardId, onSeeAll }: CardReviewsPanelProps) {
 	const { data: reviews } = useSuspenseQuery(reviewQueries.listByCard(cardId))
+	// The query sorts undated reviews first, so skip them to show the most
+	// recent dated ones.
+	const recentReviews = reviews
+		.filter(review => review.date !== undefined)
+		.slice(0, REVIEW_LIMIT)
+	const hasMore = reviews.length > recentReviews.length
 
 	return (
 		<SidebarPanel
 			title='Reviews'
 			actions={
-				onSeeAll ? (
+				hasMore &&
+				(onSeeAll ? (
 					<button
 						type='button'
 						onClick={onSeeAll}
@@ -63,11 +73,11 @@ export function CardReviewsPanel({ cardId, onSeeAll }: CardReviewsPanelProps) {
 					>
 						See all
 					</Link>
-				)
+				))
 			}
 			xstyle={styles.container}
 		>
-			<ReviewList reviews={reviews} />
+			<ReviewList reviews={recentReviews} />
 		</SidebarPanel>
 	)
 }
