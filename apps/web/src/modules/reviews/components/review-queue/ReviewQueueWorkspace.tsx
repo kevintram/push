@@ -11,7 +11,7 @@ import {
 	filterCardsByType,
 } from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
 import { CardNavigationHotkeys } from '~/modules/reviews/components/CardNavigationHotkeys'
-import type { ReviewComposerDockState } from '~/modules/reviews/components/reviewComposerContext'
+import type { ReviewComposerDock } from '~/modules/reviews/components/reviewComposerContext'
 import type { Card } from '~/modules/reviews/types/review.types'
 import { baseColors } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
@@ -142,9 +142,14 @@ export function ReviewQueueWorkspace({
 	const queueSidebarToggleRef = useRef<HTMLButtonElement>(null)
 	// Each card starts its composer where the user last left it, so hiding it
 	// once keeps it hidden through the rest of the queue. The expanded dialog
-	// is modal, so a card opens it docked instead.
-	const [dockState, setDockState] = useState<ReviewComposerDockState>('open')
-	const cardDockState = dockState === 'expanded' ? 'open' : dockState
+	// is modal, so a card opens it docked instead; a minimized one still
+	// restores to the dialog.
+	const [dock, setDock] = useState<ReviewComposerDock>({
+		state: 'open',
+		isExpanded: false,
+	})
+	const cardDock =
+		dock.state === 'open' ? { ...dock, isExpanded: false } : dock
 
 	useEffect(() => {
 		if (typeof window.matchMedia !== 'function') {
@@ -257,8 +262,8 @@ export function ReviewQueueWorkspace({
 										>
 											<CardDetailView
 												cardId={currentCard._id}
-												defaultDockState={cardDockState}
-												onDockStateChange={setDockState}
+												defaultDock={cardDock}
+												onDockChange={setDock}
 												showGoToCard
 											/>
 										</Suspense>

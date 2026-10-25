@@ -64,7 +64,7 @@ const styles = stylex.create({
 })
 
 export function ReviewComposerDock() {
-	const { dockState, isDirty, resetDraft, setDockState } =
+	const { dock, isDirty, resetDraft, setDockState, setExpanded } =
 		useReviewComposerState()
 	const [isDiscardOpen, setIsDiscardOpen] = useState(false)
 	const titleId = useId()
@@ -80,7 +80,7 @@ export function ReviewComposerDock() {
 		close()
 	}
 
-	if (dockState === 'closed') return null
+	if (dock.state === 'closed') return null
 
 	const discardDialog = (
 		<DeleteConfirmationDialog
@@ -94,10 +94,10 @@ export function ReviewComposerDock() {
 		/>
 	)
 
-	if (dockState === 'expanded') {
+	if (dock.state === 'open' && dock.isExpanded) {
 		return (
 			<ReviewComposerDialog
-				onCollapse={() => setDockState('open')}
+				onCollapse={() => setExpanded(false)}
 				onClose={requestClose}
 				onMinimize={() => setDockState('minimized')}
 			>
@@ -106,7 +106,7 @@ export function ReviewComposerDock() {
 		)
 	}
 
-	const isMinimized = dockState === 'minimized'
+	const isMinimized = dock.state === 'minimized'
 
 	return (
 		<section
@@ -124,7 +124,7 @@ export function ReviewComposerDock() {
 					<ReviewComposerWindowHeader
 						onClose={requestClose}
 						onMinimize={() => setDockState('minimized')}
-						onToggleExpanded={() => setDockState('expanded')}
+						onToggleExpanded={() => setExpanded(true)}
 						titleId={titleId}
 					/>
 					<div {...stylex.props(styles.body)}>

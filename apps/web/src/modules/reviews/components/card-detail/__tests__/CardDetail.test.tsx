@@ -251,15 +251,15 @@ describe('CardDetail review composer', () => {
 	})
 
 	it('starts where the caller left the dock and reports moves', () => {
-		const onDockStateChange = vi.fn()
+		const onDockChange = vi.fn()
 		render(
 			<TooltipProvider delay={0}>
 				<CardDetail
 					cardId={firstCard}
 					activeTab='overview'
 					onTabChange={() => {}}
-					defaultDockState='open'
-					onDockStateChange={onDockStateChange}
+					defaultDock={{ state: 'open', isExpanded: false }}
+					onDockChange={onDockChange}
 				/>
 			</TooltipProvider>,
 		)
@@ -267,17 +267,23 @@ describe('CardDetail review composer', () => {
 		expect(ratingPicker()).toHaveFocus()
 
 		fireEvent.click(newReviewToggle())
-		expect(onDockStateChange).toHaveBeenLastCalledWith('minimized')
+		expect(onDockChange).toHaveBeenLastCalledWith({
+			state: 'minimized',
+			isExpanded: false,
+		})
 		fireEvent.click(newReviewToggle())
-		expect(onDockStateChange).toHaveBeenLastCalledWith('open')
+		expect(onDockChange).toHaveBeenLastCalledWith({
+			state: 'open',
+			isExpanded: false,
+		})
 
 		// Creating a review closes the dock without hiding it for later cards.
-		onDockStateChange.mockClear()
+		onDockChange.mockClear()
 		fireEvent.change(description(), { target: { value: 'Submit me' } })
 		fireEvent.click(submitButton())
 		act(() => mutation.mutate.mock.calls[0]?.[1].onSuccess())
 		expect(queryDock()).not.toBeInTheDocument()
-		expect(onDockStateChange).not.toHaveBeenCalled()
+		expect(onDockChange).not.toHaveBeenCalled()
 	})
 
 	it('keeps the draft while minimized and restores from the title', () => {
@@ -313,6 +319,91 @@ describe('CardDetail review composer', () => {
 
 		fireEvent.click(newReviewToggle())
 		expect(description()).toHaveValue('Keep me')
+	})
+
+	it('restores a minimized dialog to the dialog', () => {
+		render(detail('overview'))
+		openDock()
+		fireEvent.change(description(), { target: { value: 'Big draft' } })
+		fireEvent.click(
+			screen.getByRole('button', { name: 'Expand review composer' }),
+		)
+		fireEvent.click(
+			screen.getByRole('button', { name: 'Minimize review composer' }),
+		)
+		expect(
+			screen.queryByRole('dialog', { name: 'New review' }),
+		).not.toBeInTheDocument()
+
+		fireEvent.click(
+			within(
+				screen.getByRole('region', { name: 'New review' }),
+			).getByRole('button', { name: 'New review' }),
+		)
+		const dialog = screen.getByRole('dialog', { name: 'New review' })
+		expect(
+			within(dialog).getByRole('textbox', { name: 'Review description' }),
+		).toHaveValue('Big draft')
+
+		fireEvent.click(
+			screen.getByRole('button', { name: 'Minimize review composer' }),
+		)
+		fireEvent.click(newReviewToggle())
+		expect(
+			screen.getByRole('dialog', { name: 'New review' }),
+		).toBeInTheDocument()
+	})
+
+	it('carries a minimized dialog to and from the caller', () => {
+		const onDockChange = vi.fn()
+		render(
+			<TooltipProvider delay={0}>
+				<CardDetail
+					cardId={firstCard}
+					activeTab='overview'
+					onTabChange={() => {}}
+					defaultDock={{ state: 'minimized', isExpanded: true }}
+					onDockChange={onDockChange}
+				/>
+			</TooltipProvider>,
+		)
+		expect(
+			screen.queryByRole('dialog', { name: 'New review' }),
+		).not.toBeInTheDocument()
+
+		fireEvent.click(newReviewToggle())
+		expect(
+			screen.getByRole('dialog', { name: 'New review' }),
+		).toBeInTheDocument()
+		expect(onDockChange).toHaveBeenLastCalledWith({
+			state: 'open',
+			isExpanded: true,
+		})
+
+		fireEvent.click(
+			screen.getByRole('button', { name: 'Minimize review composer' }),
+		)
+		expect(onDockChange).toHaveBeenLastCalledWith({
+			state: 'minimized',
+			isExpanded: true,
+		})
+	})
+
+	it('opens docked again after closing the dialog', () => {
+		render(detail('overview'))
+		openDock()
+		fireEvent.click(
+			screen.getByRole('button', { name: 'Expand review composer' }),
+		)
+		closeDock()
+		expect(
+			screen.queryByRole('dialog', { name: 'New review' }),
+		).not.toBeInTheDocument()
+
+		openDock()
+		expect(
+			screen.queryByRole('dialog', { name: 'New review' }),
+		).not.toBeInTheDocument()
 	})
 
 	it('closes an empty composer without asking', () => {

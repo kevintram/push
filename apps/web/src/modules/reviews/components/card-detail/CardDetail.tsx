@@ -137,8 +137,8 @@ export function CardDetail({
 	tabLinks,
 	showGoToCard = false,
 	onNavigate,
-	defaultDockState,
-	onDockStateChange,
+	defaultDock,
+	onDockChange,
 }: CardDetailProps) {
 	const { data: card } = useSuspenseQuery(cardQueries.detail(cardId))
 	const today = useToday()
@@ -156,9 +156,9 @@ export function CardDetail({
 	return (
 		<ReviewComposerProvider
 			cardId={cardId}
-			defaultDockState={defaultDockState}
+			defaultDock={defaultDock}
 			key={cardId}
-			onDockStateChange={onDockStateChange}
+			onDockChange={onDockChange}
 		>
 			<div {...stylex.props(styles.container)}>
 				<header {...stylex.props(styles.toolbar)}>

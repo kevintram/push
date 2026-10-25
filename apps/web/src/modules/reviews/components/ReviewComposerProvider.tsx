@@ -5,9 +5,10 @@ import { todayIso } from '~/utils/date'
 
 import { useCreateReview } from '../api/reviewQueries'
 import {
+	closedReviewComposerDock,
 	emptyReviewDraft,
 	ReviewComposerContext,
-	type ReviewComposerDockState,
+	type ReviewComposerDock,
 	type ReviewComposerProviderProps,
 	type ReviewComposerState,
 } from './reviewComposerContext'
@@ -15,28 +16,35 @@ import {
 export function ReviewComposerProvider({
 	cardId,
 	children,
-	defaultDockState = 'closed',
-	onDockStateChange,
+	defaultDock = closedReviewComposerDock,
+	onDockChange,
 }: ReviewComposerProviderProps) {
 	const [draft, setDraft] = useState(emptyReviewDraft)
-	const [dockState, setLocalDockState] =
-		useState<ReviewComposerDockState>(defaultDockState)
+	const [dock, setLocalDock] = useState(defaultDock)
 	const { isPending, mutate } = useCreateReview()
 	const isDirty =
 		draft.description !== '' ||
 		draft.notes !== '' ||
 		draft.rating !== null ||
 		draft.date !== null
-	const state = useMemo<ReviewComposerState>(
-		() => ({
+	const state = useMemo<ReviewComposerState>(() => {
+		const moveDock = (next: ReviewComposerDock) => {
+			setLocalDock(next)
+			onDockChange?.(next)
+		}
+		return {
 			draft,
 			isPending,
 			isDirty,
-			dockState,
-			setDockState: value => {
-				setLocalDockState(value)
-				onDockStateChange?.(value)
-			},
+			dock,
+			setDockState: value =>
+				moveDock(
+					value === 'closed'
+						? closedReviewComposerDock
+						: { ...dock, state: value },
+				),
+			setExpanded: value =>
+				moveDock({ state: 'open', isExpanded: value }),
 			setDescription: value =>
 				setDraft(p => ({ ...p, description: value })),
 			setNotes: value => setDraft(p => ({ ...p, notes: value })),
@@ -67,22 +75,13 @@ export function ReviewComposerProvider({
 						onError: () => toast.error('Failed to create review'),
 						onSuccess: () => {
 							setDraft(emptyReviewDraft)
-							setLocalDockState('closed')
+							setLocalDock(closedReviewComposerDock)
 						},
 					},
 				)
 			},
-		}),
-		[
-			cardId,
-			draft,
-			dockState,
-			isDirty,
-			isPending,
-			mutate,
-			onDockStateChange,
-		],
-	)
+		}
+	}, [cardId, dock, draft, isDirty, isPending, mutate, onDockChange])
 	return (
 		<ReviewComposerContext.Provider value={state}>
 			{children}
