@@ -250,6 +250,9 @@ export function CardDetail({
 							{...srsState}
 							cardId={cardId}
 							showReviews={activeTab === 'overview'}
+							onSeeAllReviews={
+								onTabChange && (() => onTabChange('reviews'))
+							}
 							today={today}
 							xstyle={styles.sidebar}
 						/>

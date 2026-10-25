@@ -23,25 +23,47 @@ const styles = stylex.create({
 		},
 		fontSize: fontSizes.sm,
 	},
+	seeAllButton: {
+		padding: 0,
+		borderWidth: 0,
+		backgroundColor: 'transparent',
+		cursor: 'pointer',
+		fontFamily: 'inherit',
+	},
 })
 type CardReviewsPanelProps = {
 	cardId: Id<'cards'>
+	/**
+	 * Shows all reviews without leaving the current view. When omitted,
+	 * "See all" links to the card's reviews route.
+	 */
+	onSeeAll?: () => void
 }
 
-export function CardReviewsPanel({ cardId }: CardReviewsPanelProps) {
+export function CardReviewsPanel({ cardId, onSeeAll }: CardReviewsPanelProps) {
 	const { data: reviews } = useSuspenseQuery(reviewQueries.listByCard(cardId))
 
 	return (
 		<SidebarPanel
 			title='Reviews'
 			actions={
-				<Link
-					to='/cards/$cardId/reviews'
-					params={{ cardId }}
-					{...stylex.props(styles.seeAll)}
-				>
-					See all
-				</Link>
+				onSeeAll ? (
+					<button
+						type='button'
+						onClick={onSeeAll}
+						{...stylex.props(styles.seeAll, styles.seeAllButton)}
+					>
+						See all
+					</button>
+				) : (
+					<Link
+						to='/cards/$cardId/reviews'
+						params={{ cardId }}
+						{...stylex.props(styles.seeAll)}
+					>
+						See all
+					</Link>
+				)
 			}
 			xstyle={styles.container}
 		>
