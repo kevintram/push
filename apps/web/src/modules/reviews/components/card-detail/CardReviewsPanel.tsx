@@ -15,7 +15,8 @@ const styles = stylex.create({
 		flexShrink: 0,
 	},
 	// Spaced and padded like a stacked review row, so the link reads as the
-	// list's next item.
+	// list's next item. Flex sizes the footer to the link's line instead of
+	// the panel's larger body text.
 	footer: {
 		paddingBlock: spacing.xs,
 		display: 'flex',
