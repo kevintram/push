@@ -65,6 +65,18 @@ describe('CardReviewsPanel', () => {
 		).toBeInTheDocument()
 	})
 
+	it('places "See all" after the reviews', () => {
+		query.data = dated
+		renderPanel()
+
+		const list = screen.getByRole('list')
+		const seeAll = screen.getByRole('link', { name: 'See all' })
+		expect(
+			list.compareDocumentPosition(seeAll) &
+				Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy()
+	})
+
 	it('hides "See all" when every review is shown', () => {
 		query.data = dated.slice(1)
 		renderPanel(vi.fn())
