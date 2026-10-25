@@ -20,6 +20,7 @@ const styles = stylex.create({
 	footer: {
 		paddingBlock: spacing.xs,
 		display: 'flex',
+		justifyContent: 'center',
 		marginBlockStart: spacing.md,
 	},
 	seeAll: {
