@@ -1,6 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { fireEvent, render, screen } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import type { Review } from '../../../types/review.types'
 import { CardReviewsPanel } from '../CardReviewsPanel'
@@ -32,6 +32,15 @@ function review(id: string, date?: string): Partial<Review> {
 	return { _id: id as Id<'reviews'>, date }
 }
 
+// Newest first, matching the order `listByCard` returns.
+const dated = [
+	review('d4', '2026-04-01'),
+	review('d3', '2026-03-01'),
+	review('d2', '2026-02-01'),
+	review('d1', '2026-01-01'),
+]
+const undated = review('undated')
+
 function renderPanel(onSeeAll?: () => void) {
 	render(
 		<CardReviewsPanel
@@ -46,18 +55,8 @@ function shownIds() {
 }
 
 describe('CardReviewsPanel', () => {
-	beforeEach(() => {
-		query.data = []
-	})
-
 	it('shows the three most recent dated reviews', () => {
-		query.data = [
-			review('undated'),
-			review('d4', '2026-04-01'),
-			review('d3', '2026-03-01'),
-			review('d2', '2026-02-01'),
-			review('d1', '2026-01-01'),
-		]
+		query.data = [undated, ...dated]
 		renderPanel()
 
 		expect(shownIds()).toEqual(['d4', 'd3', 'd2'])
@@ -67,11 +66,7 @@ describe('CardReviewsPanel', () => {
 	})
 
 	it('hides "See all" when every review is shown', () => {
-		query.data = [
-			review('d3', '2026-03-01'),
-			review('d2', '2026-02-01'),
-			review('d1', '2026-01-01'),
-		]
+		query.data = dated.slice(1)
 		renderPanel(vi.fn())
 
 		expect(shownIds()).toEqual(['d3', 'd2', 'd1'])
@@ -79,7 +74,7 @@ describe('CardReviewsPanel', () => {
 	})
 
 	it('shows "See all" when only undated reviews are hidden', () => {
-		query.data = [review('undated'), review('d1', '2026-01-01')]
+		query.data = [undated, ...dated.slice(3)]
 		renderPanel()
 
 		expect(shownIds()).toEqual(['d1'])
@@ -89,12 +84,7 @@ describe('CardReviewsPanel', () => {
 	})
 
 	it('shows all reviews in place instead of navigating', () => {
-		query.data = [
-			review('d4', '2026-04-01'),
-			review('d3', '2026-03-01'),
-			review('d2', '2026-02-01'),
-			review('d1', '2026-01-01'),
-		]
+		query.data = dated
 		const onSeeAll = vi.fn()
 		renderPanel(onSeeAll)
 
