@@ -78,7 +78,7 @@ const styles = stylex.create({
 	cell: {
 		padding: 0,
 	},
-	// Keep the date and strength whole so they don't wrap or shrink.
+	// Keep the date and strength whole; squeezing them shrinks their icons.
 	whole: {
 		minInlineSize: 'max-content',
 	},
