@@ -19,6 +19,8 @@ import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { a11y } from '~/styles/a11y'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
+import { scrollFade } from '~/styles/scrollFade'
+import { scrollFadeVars } from '~/styles/scrollFade.stylex'
 import {
 	breakpoints,
 	fontSizes,
@@ -172,56 +174,39 @@ const styles = stylex.create({
 		backgroundColor: colorsSemantic.surfaceTransparent,
 		flexShrink: 0,
 	},
+	// The description and notes scroll together as one document; the textareas
+	// size to their content and never scroll on their own.
 	editor: {
 		gap: spacing.sm,
-		overflow: 'hidden',
 		display: 'flex',
 		flexBasis: 0,
 		flexDirection: 'column',
 		flexGrow: 1,
-		minInlineSize: 0,
+		scrollPaddingBlockEnd: scrollFadeVars.size,
+		scrollPaddingBlockStart: scrollFadeVars.size,
+		overflowX: 'hidden',
+		overflowY: 'auto',
 	},
 	description: {
 		borderRadius: radii.xs,
 		borderStyle: 'none',
-		blockSize: 'auto',
+		flexShrink: 0,
 		fontSize: fontSizes.sm,
 		fontWeight: fontWeights.medium,
 		lineHeight: 1.4,
 		marginBlockStart: '4px', // magic number because it *is* a magic number
-		maxBlockSize: 'calc(1.4em * 6)',
 		overflowWrap: 'anywhere',
-		overflowX: 'hidden',
-		overflowY: 'auto',
 	},
 	notes: {
 		borderRadius: radii.xs,
 		borderStyle: 'none',
-		blockSize: 'auto',
-		flexBasis: {
-			default: 0,
-			[breakpoints.tablet]: 'auto',
-		},
-		flexGrow: {
-			default: 1,
-			[breakpoints.tablet]: 0,
-		},
-		flexShrink: 1,
+		flexGrow: 1,
+		flexShrink: 0,
 		fontSize: fontSizes.sm,
 		fontWeight: fontWeights.medium,
 		lineHeight: 1.4,
-		minBlockSize: {
-			default: 0,
-			[breakpoints.tablet]: '5rem',
-		},
+		minBlockSize: '5rem',
 		overflowWrap: 'anywhere',
-		overflowX: 'hidden',
-		overflowY: 'auto',
-	},
-	expandedNotes: {
-		flexBasis: 0,
-		flexGrow: 1,
-		minBlockSize: 0,
 	},
 	footer: {
 		alignItems: 'center',
@@ -354,7 +339,7 @@ export function ReviewDialog({
 						rating={review.rating}
 					/>
 				</aside>
-				<div {...stylex.props(styles.editor)}>
+				<div {...stylex.props(styles.editor, scrollFade.y)}>
 					<Textarea
 						aria-label='Review description'
 						placeholder='Description'
@@ -369,10 +354,7 @@ export function ReviewDialog({
 						value={notesField.value}
 						onBlur={notesField.flush}
 						onChange={notesField.onChange}
-						xstyle={[
-							styles.notes,
-							isExpanded && styles.expandedNotes,
-						]}
+						xstyle={styles.notes}
 					/>
 				</div>
 			</div>
