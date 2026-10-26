@@ -29,7 +29,7 @@ const styles = stylex.create({
 	},
 })
 
-type SidebarPanelProps = {
+type PanelProps = {
 	title: string
 	actions?: ReactNode
 	children: ReactNode
@@ -37,15 +37,10 @@ type SidebarPanelProps = {
 }
 
 /**
- * A titled panel in a page's detail sidebar. Callers own layout (flex
- * sizing, scrolling) through `xstyle`.
+ * A titled panel. Callers own layout (flex sizing, scrolling) through
+ * `xstyle`.
  */
-export function SidebarPanel({
-	title,
-	actions,
-	children,
-	xstyle,
-}: SidebarPanelProps) {
+export function Panel({ title, actions, children, xstyle }: PanelProps) {
 	return (
 		<section aria-label={title} {...stylex.props(styles.container, xstyle)}>
 			<div {...stylex.props(styles.header)}>
