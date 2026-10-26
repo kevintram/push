@@ -203,7 +203,7 @@ const styles = stylex.create({
 		flexGrow: 1,
 		flexShrink: 0,
 		fontSize: fontSizes.sm,
-		fontWeight: fontWeights.medium,
+		fontWeight: fontWeights.regular,
 		lineHeight: 1.4,
 		minBlockSize: '5rem',
 		overflowWrap: 'anywhere',
