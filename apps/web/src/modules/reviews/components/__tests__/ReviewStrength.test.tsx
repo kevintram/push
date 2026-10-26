@@ -40,7 +40,7 @@ describe('ReviewStrength', () => {
 		await user.hover(screen.getByText('4mo'))
 
 		expect(await screen.findByRole('tooltip')).toHaveTextContent(
-			'Estimated to remember for at least 4mo',
+			'Estimated to remember for 4 months',
 		)
 	})
 

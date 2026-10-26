@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
@@ -83,6 +83,7 @@ export function CardItemLink({
 	active = false,
 }: CardItemLinkProps) {
 	const { _id, type, primaryText, secondaryText } = card
+	const navigate = useNavigate()
 	// Flashcard secondary text is the answer, so never show it in lists.
 	const secondaryShown = type === 'practice'
 
@@ -107,7 +108,18 @@ export function CardItemLink({
 				) : null}
 
 				<div {...stylex.props(styles.footer)}>
-					<CardMetadata {...srs} today={today} />
+					{/* The metadata's tooltip triggers sit above the stretched
+					link, so forward their clicks to it. */}
+					<CardMetadata
+						{...srs}
+						today={today}
+						onClick={() =>
+							navigate({
+								to: '/cards/$cardId',
+								params: { cardId: _id },
+							})
+						}
+					/>
 					<CardActions card={card} xstyle={styles.raised} />
 				</div>
 			</div>

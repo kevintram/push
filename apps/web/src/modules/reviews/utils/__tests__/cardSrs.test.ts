@@ -123,9 +123,14 @@ describe('formatStrengthDelta', () => {
 })
 
 describe('formatStrengthTooltip', () => {
-	it('explains the minimum memory duration', () => {
-		expect(formatStrengthTooltip(130)).toBe(
-			'Estimated to remember for at least 4mo',
+	it.each([
+		[1, '1 day'],
+		[10, '10 days'],
+		[30, '1 month'],
+		[130, '4 months'],
+	] as const)('spells out %s days as %s', (stability, expected) => {
+		expect(formatStrengthTooltip(stability)).toBe(
+			`Estimated to remember for ${expected}`,
 		)
 	})
 })

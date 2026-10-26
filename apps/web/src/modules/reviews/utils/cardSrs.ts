@@ -37,10 +37,21 @@ function strengthDays(stability: number): number {
 	return Math.min(Math.floor(stability), MAX_STRENGTH_DAYS)
 }
 
-function formatDays(days: number): string {
+/** Split days into whole days under a month, then whole months. */
+function splitDays(days: number): [count: number, unit: 'day' | 'month'] {
 	return days < DAYS_PER_MONTH
-		? `${days}d`
-		: `${Math.floor(days / DAYS_PER_MONTH)}mo`
+		? [days, 'day']
+		: [Math.floor(days / DAYS_PER_MONTH), 'month']
+}
+
+function formatDays(days: number): string {
+	const [count, unit] = splitDays(days)
+	return `${count}${unit === 'day' ? 'd' : 'mo'}`
+}
+
+function formatDaysLong(days: number): string {
+	const [count, unit] = splitDays(days)
+	return `${count} ${unit}${count === 1 ? '' : 's'}`
 }
 
 /** Number of filled strength bars, from 0 to 4. */
@@ -69,7 +80,7 @@ export function formatStrengthDelta(delta: number | null): string {
 	return `${delta < 0 ? '−' : '+'}${formatDays(Math.abs(delta))}`
 }
 
-/** Explain the minimum memory duration represented by an FSRS stability value. */
+/** Explain the memory duration represented by an FSRS stability value. */
 export function formatStrengthTooltip(stability: number): string {
-	return `Estimated to remember for at least ${formatStrength(stability)}`
+	return `Estimated to remember for ${formatDaysLong(strengthDays(stability))}`
 }
