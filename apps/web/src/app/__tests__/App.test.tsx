@@ -626,7 +626,7 @@ describe('v2 app setup', () => {
 		})
 
 		await user.click(
-			within(secondCardButton.parentElement!).getByRole('button', {
+			within(secondCardButton.closest('tr')!).getByRole('button', {
 				name: 'Remove as flashcard',
 			}),
 		)

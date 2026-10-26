@@ -11,6 +11,7 @@ import {
 import type { CardTypeFilter } from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
 import { CardTypeFilterBadges } from '~/modules/reviews/components/card-type-filter/CardTypeFilterBadges'
 import { CardItem } from '~/modules/reviews/components/CardItem'
+import { CardList } from '~/modules/reviews/components/CardList'
 import type { Card } from '~/modules/reviews/types/review.types'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { baseColors } from '~/styles/colors/colorsPrimitive.stylex'
@@ -148,22 +149,25 @@ export function ReviewQueueSidebar({
 				{cards.length === 0 ? (
 					<p {...stylex.props(styles.empty)}>No cards.</p>
 				) : null}
-				{cards.map(card => (
-					<CardItem
-						key={card._id}
-						card={card}
-						srs={deriveCardSrsState(card, today)}
-						today={today}
-						density='compact'
-						active={card._id === currentCardId}
-						onClick={() => onCardClick(card._id)}
-						buttonProps={{
-							'aria-label': `Select ${card.primaryText.trim() || 'Untitled'}`,
-							'aria-current':
-								card._id === currentCardId ? 'true' : undefined,
-						}}
-					/>
-				))}
+				<CardList>
+					{cards.map(card => (
+						<CardItem
+							key={card._id}
+							card={card}
+							srs={deriveCardSrsState(card, today)}
+							today={today}
+							active={card._id === currentCardId}
+							onClick={() => onCardClick(card._id)}
+							buttonProps={{
+								'aria-label': `Select ${card.primaryText.trim() || 'Untitled'}`,
+								'aria-current':
+									card._id === currentCardId
+										? 'true'
+										: undefined,
+							}}
+						/>
+					))}
+				</CardList>
 			</div>
 		</aside>
 	)

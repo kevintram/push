@@ -29,10 +29,9 @@ import { CollectionPathBreadcrumbs } from '~/modules/collections/components/Coll
 import { MoveCollectionDialog } from '~/modules/collections/components/MoveCollectionDialog'
 import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcrumbLabel'
 import { cardQueries, useCreateCard } from '~/modules/reviews/api/cardQueries'
-import { CardItemLink } from '~/modules/reviews/components/CardItemLink'
+import { CardItem } from '~/modules/reviews/components/CardItem'
+import { CardList } from '~/modules/reviews/components/CardList'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
-import { baseColors } from '~/styles/colors/colorsPrimitive.stylex'
-import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import {
 	fontSizes,
@@ -114,17 +113,11 @@ const styles = stylex.create({
 	separator: {
 		marginBlock: spacing.md,
 	},
-	cardsHeaderText: {
-		color: colorsSemantic.textSecondary,
-		fontSize: fontSizes.md,
-	},
-	cardsList: {
-		display: 'flex',
-		flexDirection: 'column',
-	},
+	// Pulled into the gutter by its padding and border, plus the plus glyph's
+	// inset (5 of its 24 viewBox units), so the glyph lines up with the card
+	// titles.
 	addCardButton: {
-		backgroundColor: baseColors.transparent,
-		inlineSize: '100%',
+		marginInlineStart: `calc((${spacing.md} + 1px + ${iconSizes.sm} * 5 / 24) * -1)`,
 	},
 })
 
@@ -281,17 +274,17 @@ export function CollectionPage() {
 
 						<Separator xstyle={styles.separator} />
 
-						<h2 {...stylex.props(styles.cardsHeaderText)}>Cards</h2>
-
-						<div {...stylex.props(styles.cardsList)}>
-							{cards.map(card => (
-								<CardItemLink
-									key={card._id}
-									card={card}
-									srs={deriveCardSrsState(card, today)}
-									today={today}
-								/>
-							))}
+						<div>
+							<CardList title='Cards'>
+								{cards.map(card => (
+									<CardItem
+										key={card._id}
+										card={card}
+										srs={deriveCardSrsState(card, today)}
+										today={today}
+									/>
+								))}
+							</CardList>
 							<Button
 								aria-label='Add card'
 								shape='round'
