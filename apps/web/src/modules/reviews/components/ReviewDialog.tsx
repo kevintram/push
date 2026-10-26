@@ -148,20 +148,10 @@ const styles = stylex.create({
 			[breakpoints.tablet]: 'inline-flex',
 		},
 	},
-	content: {
-		gridTemplateAreas: `
-			'rail editor'
-			'rail footer'
-		`,
-		columnGap: spacing.md,
-		gridTemplateColumns: 'max-content minmax(0, 1fr)',
-		gridTemplateRows: {
-			default: 'minmax(0, 1fr) auto',
-			[breakpoints.tablet]: 'minmax(0, auto) auto',
-		},
-
+	body: {
+		gap: spacing.md,
 		overflow: 'hidden',
-		display: 'grid',
+		display: 'flex',
 		flexBasis: {
 			default: 0,
 			[breakpoints.tablet]: 'auto',
@@ -170,55 +160,26 @@ const styles = stylex.create({
 			default: 1,
 			[breakpoints.tablet]: 0,
 		},
-		flexShrink: 1,
 		minBlockSize: 0,
-		minInlineSize: 0,
 	},
-	expandedContent: {
+	expandedBody: {
 		flexBasis: 0,
 		flexGrow: 1,
-		gridTemplateRows: 'minmax(0, 1fr) auto',
 	},
 	rail: {
-		alignItems: 'flex-start',
-		display: 'flex',
-		flexDirection: 'column',
-		gridColumnEnd: '2',
-		gridColumnStart: '1',
-		gridRowEnd: '-1',
-		gridRowStart: '1',
-		minBlockSize: 0,
-		minInlineSize: 0,
-	},
-	ratingControl: {
 		borderRadius: radii.md,
 		alignSelf: 'flex-start',
 		backgroundColor: colorsSemantic.surfaceTransparent,
+		flexShrink: 0,
 	},
 	editor: {
 		gap: spacing.sm,
 		overflow: 'hidden',
 		display: 'flex',
-		flexBasis: {
-			default: 0,
-			[breakpoints.tablet]: 'auto',
-		},
-		flexDirection: 'column',
-		flexGrow: {
-			default: 1,
-			[breakpoints.tablet]: 0,
-		},
-		flexShrink: 1,
-		gridColumnEnd: '3',
-		gridColumnStart: '2',
-		gridRowEnd: '2',
-		gridRowStart: '1',
-		minBlockSize: 0,
-		minInlineSize: 0,
-	},
-	expandedEditor: {
 		flexBasis: 0,
+		flexDirection: 'column',
 		flexGrow: 1,
+		minInlineSize: 0,
 	},
 	description: {
 		borderRadius: radii.xs,
@@ -267,13 +228,8 @@ const styles = stylex.create({
 		columnGap: spacing.sm,
 		display: 'flex',
 		flexShrink: 0,
-		gridColumnEnd: '3',
-		gridColumnStart: '2',
-		gridRowEnd: '3',
-		gridRowStart: '2',
 		justifyContent: 'space-between',
 		minBlockSize: spacing.xl,
-		minInlineSize: 0,
 	},
 	footerMetadata: {
 		alignItems: 'center',
@@ -388,24 +344,17 @@ export function ReviewDialog({
 			</header>
 			<div
 				{...stylex.props(
-					styles.content,
-					isExpanded && styles.expandedContent,
+					styles.body,
+					isExpanded && styles.expandedBody,
 				)}
 			>
 				<aside {...stylex.props(styles.rail)}>
-					<div {...stylex.props(styles.ratingControl)}>
-						<RatingPicker
-							onSetRating={onSetRating}
-							rating={review.rating}
-						/>
-					</div>
+					<RatingPicker
+						onSetRating={onSetRating}
+						rating={review.rating}
+					/>
 				</aside>
-				<div
-					{...stylex.props(
-						styles.editor,
-						isExpanded && styles.expandedEditor,
-					)}
-				>
+				<div {...stylex.props(styles.editor)}>
 					<Textarea
 						aria-label='Review description'
 						placeholder='Description'
@@ -426,49 +375,46 @@ export function ReviewDialog({
 						]}
 					/>
 				</div>
-				<footer {...stylex.props(styles.footer)}>
-					<div {...stylex.props(styles.footerMetadata)}>
-						<ReviewDatePicker
-							date={(review.date ?? null) as DateString | null}
-							kind={
-								review.rating === undefined
-									? 'scheduled'
-									: 'completed'
-							}
-							onDateChange={onSetDate}
-							size='medium'
-						/>
-						{review.stabilityAfter != null && (
-							<ReviewStrength review={review} size='medium' />
-						)}
-					</div>
-					<div {...stylex.props(styles.footerActions)}>
-						<DropdownMenu>
-							<DropdownMenuTrigger
-								render={
-									<Button
-										aria-label='Review actions'
-										iconOnly
-										shape='round'
-										size='micro'
-										variant='ghost'
-									/>
-								}
-							>
-								<Ellipsis
-									aria-hidden='true'
-									size={iconSizes.sm}
-								/>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align='end'>
-								<DropdownMenuItem onClick={onDelete}>
-									Delete
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</div>
-				</footer>
 			</div>
+			<footer {...stylex.props(styles.footer)}>
+				<div {...stylex.props(styles.footerMetadata)}>
+					<ReviewDatePicker
+						date={(review.date ?? null) as DateString | null}
+						kind={
+							review.rating === undefined
+								? 'scheduled'
+								: 'completed'
+						}
+						onDateChange={onSetDate}
+						size='medium'
+					/>
+					{review.stabilityAfter != null && (
+						<ReviewStrength review={review} size='medium' />
+					)}
+				</div>
+				<div {...stylex.props(styles.footerActions)}>
+					<DropdownMenu>
+						<DropdownMenuTrigger
+							render={
+								<Button
+									aria-label='Review actions'
+									iconOnly
+									shape='round'
+									size='micro'
+									variant='ghost'
+								/>
+							}
+						>
+							<Ellipsis aria-hidden='true' size={iconSizes.sm} />
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='end'>
+							<DropdownMenuItem onClick={onDelete}>
+								Delete
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+			</footer>
 		</DialogContent>
 	)
 }
