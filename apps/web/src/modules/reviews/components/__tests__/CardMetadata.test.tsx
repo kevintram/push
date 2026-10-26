@@ -168,7 +168,7 @@ describe('CardMetadata', () => {
 		await user.hover(screen.getByText('10d'))
 
 		expect(await screen.findByRole('tooltip')).toHaveTextContent(
-			'Estimated to remember for at least 10d',
+			'Estimated to remember for 10 days',
 		)
 	})
 })
