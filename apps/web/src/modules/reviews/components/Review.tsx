@@ -50,6 +50,7 @@ export function Review({ review }: ReviewProps) {
 			<Dialog open={isOpen} onOpenChange={handleOpenChange}>
 				<ReviewRow
 					onDelete={() => setIsDeleteDialogOpen(true)}
+					onOpen={() => setIsOpen(true)}
 					onSetRating={setRating}
 					review={review}
 				/>

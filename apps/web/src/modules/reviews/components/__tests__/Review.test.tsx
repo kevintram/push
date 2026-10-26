@@ -28,7 +28,8 @@ vi.mock('../../hooks/useReviewField', () => ({
 }))
 
 vi.mock('../ReviewDialog', () => ({
-	ReviewDialog: () => null,
+	ReviewDialog: ({ isOpen }: { isOpen: boolean }) =>
+		isOpen ? <div role='dialog' /> : null,
 }))
 
 function review(overrides: Partial<ReviewModel> = {}): ReviewModel {
@@ -70,6 +71,15 @@ describe('Review', () => {
 		).toBeInTheDocument()
 		expect(screen.getByText('12d')).toBeInTheDocument()
 		expect(screen.queryByText('No description')).not.toBeInTheDocument()
+	})
+
+	// The date and strength sit above the row's trigger for their tooltips.
+	it.each(['Oct 13', '12d'])('opens the review from %s', async text => {
+		renderReview(review())
+
+		await userEvent.click(screen.getByText(text))
+
+		expect(screen.getByRole('dialog')).toBeInTheDocument()
 	})
 
 	it('shows the date as read-only text', () => {

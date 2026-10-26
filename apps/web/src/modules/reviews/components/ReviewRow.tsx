@@ -82,7 +82,9 @@ const styles = stylex.create({
 	whole: {
 		minInlineSize: 'max-content',
 	},
-	// Above the row's open-review trigger, so the control stays clickable.
+	// Above the row's open-review trigger, so the control stays clickable or
+	// its tooltip can show. Cells raised only for a tooltip forward clicks to
+	// `onOpen`.
 	raised: {
 		position: 'relative',
 		zIndex: 1,
@@ -250,6 +252,7 @@ const styles = stylex.create({
 
 type ReviewRowProps = {
 	onDelete: () => void
+	onOpen: () => void
 	onSetRating: (rating: Rating | null) => void
 	review: Review
 }
@@ -258,7 +261,12 @@ type ReviewRowProps = {
  * A review as a table row. Render it inside the review's `Dialog`, which the
  * row's description or overlay opens.
  */
-export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
+export function ReviewRow({
+	onDelete,
+	onOpen,
+	onSetRating,
+	review,
+}: ReviewRowProps) {
 	const description = review.description.trim()
 	const date = (review.date ?? null) as DateString | null
 
@@ -334,11 +342,16 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 				)}
 			</td>
 
-			<td role='cell' {...stylex.props(styles.cell, styles.notes)}>
+			<td
+				onClick={onOpen}
+				role='cell'
+				{...stylex.props(styles.cell, styles.notes)}
+			>
 				{notesIndicator()}
 			</td>
 
 			<td
+				onClick={onOpen}
 				role='cell'
 				{...stylex.props(
 					styles.cell,
@@ -365,6 +378,7 @@ export function ReviewRow({ onDelete, onSetRating, review }: ReviewRowProps) {
 			</td>
 
 			<td
+				onClick={onOpen}
 				role='cell'
 				{...stylex.props(
 					styles.cell,
