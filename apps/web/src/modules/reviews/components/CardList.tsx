@@ -79,6 +79,10 @@ const styles = stylex.create({
 		marginInline: `calc(${layout.rowBleed} * -1)`,
 		paddingInline: layout.rowBleed,
 	},
+	// A visible title gets a little room above the first row.
+	titledHeaderRow: {
+		marginBlockEnd: spacing.xs,
+	},
 	headerCell: {
 		padding: 0,
 		fontWeight: fontWeights.regular,
@@ -88,8 +92,16 @@ const styles = stylex.create({
 		margin: 0,
 
 		color: colorsSemantic.textPrimary,
-		fontSize: fontSizes.md,
 		fontWeight: fontWeights.semibold,
+	},
+	// The list's own heading, such as a collection's "Cards".
+	h2: {
+		fontSize: fontSizes.xl,
+		letterSpacing: '-0.01em',
+	},
+	// A subdivision of a level 2 list, such as a collection's section.
+	h3: {
+		fontSize: fontSizes.md,
 	},
 	// Shown while the table is hovered or holds keyboard focus. Always shown
 	// on touch, where there is no hover to reveal it. Stacked, the labels are
@@ -139,6 +151,10 @@ const styles = stylex.create({
 			[wide]: 'visible',
 		},
 	},
+	headerActions: {
+		display: 'flex',
+		justifyContent: 'flex-end',
+	},
 	due: { gridColumnStart: '2' },
 	lastReviewed: { gridColumnStart: '3' },
 	strength: { gridColumnStart: '4' },
@@ -152,26 +168,50 @@ const LABELS = [
 ] as const
 
 type CardListProps = {
-	/** A visible heading over the title column. */
-	title?: string
+	/** A visible heading over the title column, such as text or an editable title. */
+	title?: ReactNode
+	/** The title's heading level. Defaults to 2. */
+	headingLevel?: 2 | 3
+	/** Controls for the whole list, over the row actions column. */
+	actions?: ReactNode
 	/** Rows, as `CardItem`s. */
 	children: ReactNode
 }
 
 /** Cards as a table that stacks into a list when narrow. */
-export function CardList({ title, children }: CardListProps) {
+export function CardList({
+	title,
+	headingLevel = 2,
+	actions,
+	children,
+}: CardListProps) {
+	const Heading = headingLevel === 3 ? 'h3' : 'h2'
+
 	return (
 		<div {...stylex.props(styles.container, cardTableMarker)}>
 			{/* The table's block and grid layout can drop its native roles, so name them. */}
 			<table role='table' {...stylex.props(styles.table)}>
 				<thead role='rowgroup' {...stylex.props(styles.group)}>
-					<tr role='row' {...stylex.props(styles.headerRow)}>
+					<tr
+						role='row'
+						{...stylex.props(
+							styles.headerRow,
+							title ? styles.titledHeaderRow : null,
+						)}
+					>
 						<th
 							role='columnheader'
 							{...stylex.props(styles.headerCell)}
 						>
 							{title ? (
-								<h2 {...stylex.props(styles.title)}>{title}</h2>
+								<Heading
+									{...stylex.props(
+										styles.title,
+										styles[Heading],
+									)}
+								>
+									{title}
+								</Heading>
 							) : (
 								<span {...stylex.props(a11y.visuallyHidden)}>
 									Card
@@ -193,11 +233,16 @@ export function CardList({ title, children }: CardListProps) {
 						))}
 						<th
 							role='columnheader'
-							{...stylex.props(styles.headerCell, styles.actions)}
+							{...stylex.props(
+								styles.headerCell,
+								styles.actions,
+								actions !== undefined && styles.headerActions,
+							)}
 						>
 							<span {...stylex.props(a11y.visuallyHidden)}>
 								Actions
 							</span>
+							{actions}
 						</th>
 					</tr>
 				</thead>

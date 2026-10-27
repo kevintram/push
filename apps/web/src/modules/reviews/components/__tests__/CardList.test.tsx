@@ -76,6 +76,18 @@ describe('CardList', () => {
 		).toEqual(['Cards', 'Due', 'Last reviewed', 'Strength', 'Actions'])
 	})
 
+	it('heads its title at the given level', () => {
+		render(
+			<CardList title='Cell membrane' headingLevel={3}>
+				{null}
+			</CardList>,
+		)
+
+		expect(
+			screen.getByRole('heading', { level: 3, name: 'Cell membrane' }),
+		).toBeInTheDocument()
+	})
+
 	it('links a card to its page and leaves out the practice answer', () => {
 		renderList(reviewed)
 
