@@ -107,6 +107,8 @@ export function CardActions({
 									<Link
 										to='/cards/$cardId'
 										params={{ cardId: card._id }}
+										// Base UI marks non-native buttons as `button`.
+										role='link'
 									/>
 								}
 							>
