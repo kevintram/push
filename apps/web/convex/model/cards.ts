@@ -7,6 +7,7 @@ import type {
 	CardSearchResult,
 } from '../validators/cards'
 import * as Collections from './collections'
+import * as Sections from './sections'
 
 export async function requireUserOwns(
 	ctx: QueryCtx,
@@ -64,6 +65,14 @@ export async function create(
 	fields: CardCreate,
 ): Promise<Id<'cards'>> {
 	await Collections.requireUserOwns(ctx, userId, fields.collectionId)
+	if (fields.sectionId !== undefined) {
+		await Sections.requireUserOwnsInCollection(
+			ctx,
+			userId,
+			fields.sectionId,
+			fields.collectionId,
+		)
+	}
 
 	const primaryText = fields.primaryText ?? ''
 	const secondaryText = fields.secondaryText ?? ''
@@ -72,6 +81,7 @@ export async function create(
 	return await ctx.db.insert('cards', {
 		ownerId: userId,
 		collectionId: fields.collectionId,
+		...(fields.sectionId !== undefined && { sectionId: fields.sectionId }),
 		type: fields.type ?? 'practice',
 		primaryText,
 		secondaryText,
@@ -96,13 +106,29 @@ export async function update(
 ): Promise<void> {
 	const card = await requireUserOwns(ctx, userId, cardId)
 
-	const { flaggedAt, retiredAt, collectionId, ...fields } = patch
+	const { flaggedAt, retiredAt, collectionId, sectionId, ...fields } = patch
 
 	// A card can only move to another collection owned by the same user. Validate the
 	// destination in this transaction so a failed check cannot orphan the card.
 	if (collectionId !== undefined) {
 		await Collections.requireUserOwns(ctx, userId, collectionId)
 	}
+
+	// A section must live in the card's collection, judged after any move in
+	// this same patch.
+	const destinationCollectionId = collectionId ?? card.collectionId
+	if (sectionId !== undefined && sectionId !== null) {
+		await Sections.requireUserOwnsInCollection(
+			ctx,
+			userId,
+			sectionId,
+			destinationCollectionId,
+		)
+	}
+	// Moving to another collection without naming a section there leaves the
+	// card unsectioned, since its old section stays behind.
+	const sectionChanged =
+		sectionId !== undefined || destinationCollectionId !== card.collectionId
 
 	// Recomputed unconditionally from the merged doc: when the patch touches no
 	// text field this rewrites the identical string, which is cheaper than a
@@ -117,6 +143,8 @@ export async function update(
 			.filter(Boolean)
 			.join('\n'),
 		...(collectionId !== undefined && { collectionId }),
+		// Clearing in Convex means patching an explicit `undefined`.
+		...(sectionChanged && { sectionId: sectionId ?? undefined }),
 		// An omitted key leaves the flag alone. `null` clears it, which in
 		// Convex means patching an explicit `undefined`.
 		...(flaggedAt !== undefined && {
@@ -153,6 +181,23 @@ export async function deleteAllForCollection(
 		.withIndex('by_collectionId_ownerId', q =>
 			q.eq('collectionId', collectionId),
 		)
+
+	for await (const card of cards) {
+		await deleteCard(ctx, card._id)
+	}
+}
+
+/**
+ * Deletes every card in `sectionId`. Called while removing a section, which
+ * takes its cards with it.
+ */
+export async function deleteAllForSection(
+	ctx: MutationCtx,
+	sectionId: Id<'sections'>,
+): Promise<void> {
+	const cards = ctx.db
+		.query('cards')
+		.withIndex('by_sectionId', q => q.eq('sectionId', sectionId))
 
 	for await (const card of cards) {
 		await deleteCard(ctx, card._id)

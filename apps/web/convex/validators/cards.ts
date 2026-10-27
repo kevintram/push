@@ -10,6 +10,9 @@ export const learningState = v.union(
 
 export const cardBase = v.object({
 	collectionId: v.id('collections'),
+	// Absent when the card is unsectioned. When present, the section belongs
+	// to `collectionId`.
+	sectionId: v.optional(v.id('sections')),
 	ownerId: v.string(),
 	type: v.union(v.literal('practice'), v.literal('flashcard')),
 	primaryText: v.string(),
@@ -60,15 +63,17 @@ export const cardCreate = v.object({
 	collectionId: v.id('collections'), // require collectionId
 })
 
-// The mutable card fields, plus `flaggedAt` and `retiredAt` as three-state
-// shapes where 1. omit/undefined = leave alone 2. null = clear (unflag /
-// unretire) 3. number = set (flag / retire).
-// Moving via `collectionId` is authorized in the model; `ownerId` stays unsettable.
+// The mutable card fields, plus `flaggedAt`, `retiredAt`, and `sectionId` as
+// three-state shapes where 1. omit/undefined = leave alone 2. null = clear
+// (unflag / unretire / unsection) 3. value = set (flag / retire / section).
+// Moving via `collectionId` or `sectionId` is authorized in the model;
+// `ownerId` stays unsettable.
 export const cardPatch = cardBase
 	.omit(
 		'ownerId', // omit because handled by server only
 		'flaggedAt', // omit to do three-state shape (see above comment)
 		'retiredAt', // omit to do three-state shape (see above comment)
+		'sectionId', // omit to do three-state shape (see above comment)
 		// omit SRS columns because they're handled by server
 		'stability',
 		'difficulty',
@@ -81,6 +86,7 @@ export const cardPatch = cardBase
 	.extend({
 		flaggedAt: v.union(v.number(), v.null()),
 		retiredAt: v.union(v.number(), v.null()),
+		sectionId: v.union(v.id('sections'), v.null()),
 	})
 	.partial()
 

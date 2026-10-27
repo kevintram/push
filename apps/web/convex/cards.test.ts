@@ -451,6 +451,152 @@ describe('cards', () => {
 		).resolves.toMatchObject({ collectionId: sourceCollectionId })
 	})
 
+	it('creates a card only in an owned section of its own collection', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const asUserB = t.withIdentity(userBIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const sectionId = await asUserA.mutation(api.sections.create, {
+			collectionId,
+		})
+		const otherCollectionId = await asUserA.mutation(
+			api.collections.create,
+			{},
+		)
+		const otherSectionId = await asUserA.mutation(api.sections.create, {
+			collectionId: otherCollectionId,
+		})
+		const foreignCollectionId = await asUserB.mutation(
+			api.collections.create,
+			{},
+		)
+		const foreignSectionId = await asUserB.mutation(api.sections.create, {
+			collectionId: foreignCollectionId,
+		})
+
+		await expect(
+			asUserA.mutation(api.cards.create, {
+				collectionId,
+				sectionId: otherSectionId,
+			}),
+		).rejects.toThrow("Section is not in the card's collection")
+		await expect(
+			asUserA.mutation(api.cards.create, {
+				collectionId,
+				sectionId: foreignSectionId,
+			}),
+		).rejects.toThrow('Section not found')
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
+			sectionId,
+		})
+
+		await expect(
+			asUserA.query(api.cards.listByCollection, { collectionId }),
+		).resolves.toMatchObject([{ _id: cardId, sectionId }])
+	})
+
+	it('moves a card into a section, and unsections it with null', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const sectionId = await asUserA.mutation(api.sections.create, {
+			collectionId,
+		})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
+		})
+
+		await asUserA.mutation(api.cards.update, { cardId, sectionId })
+		await expect(
+			asUserA.query(api.cards.get, { cardId }),
+		).resolves.toMatchObject({ sectionId })
+
+		// An unrelated patch leaves the section alone.
+		await asUserA.mutation(api.cards.update, { cardId, notes: 'Notes' })
+		await expect(
+			asUserA.query(api.cards.get, { cardId }),
+		).resolves.toMatchObject({ sectionId })
+
+		await asUserA.mutation(api.cards.update, { cardId, sectionId: null })
+		expect(
+			(await asUserA.query(api.cards.get, { cardId })).sectionId,
+		).toBeUndefined()
+	})
+
+	it('unsections a card that moves to another collection without a section', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const sourceCollectionId = await asUserA.mutation(
+			api.collections.create,
+			{},
+		)
+		const destinationCollectionId = await asUserA.mutation(
+			api.collections.create,
+			{},
+		)
+		const sectionId = await asUserA.mutation(api.sections.create, {
+			collectionId: sourceCollectionId,
+		})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId: sourceCollectionId,
+			sectionId,
+		})
+
+		await asUserA.mutation(api.cards.update, {
+			cardId,
+			collectionId: destinationCollectionId,
+		})
+
+		const card = await asUserA.query(api.cards.get, { cardId })
+		expect(card.collectionId).toBe(destinationCollectionId)
+		expect(card.sectionId).toBeUndefined()
+	})
+
+	it('moves a card into a section of its destination collection in one patch', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const sourceCollectionId = await asUserA.mutation(
+			api.collections.create,
+			{},
+		)
+		const destinationCollectionId = await asUserA.mutation(
+			api.collections.create,
+			{},
+		)
+		const sourceSectionId = await asUserA.mutation(api.sections.create, {
+			collectionId: sourceCollectionId,
+		})
+		const destinationSectionId = await asUserA.mutation(
+			api.sections.create,
+			{ collectionId: destinationCollectionId },
+		)
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId: sourceCollectionId,
+		})
+
+		// The section is judged against the destination, not the source.
+		await expect(
+			asUserA.mutation(api.cards.update, {
+				cardId,
+				collectionId: destinationCollectionId,
+				sectionId: sourceSectionId,
+			}),
+		).rejects.toThrow("Section is not in the card's collection")
+		await asUserA.mutation(api.cards.update, {
+			cardId,
+			collectionId: destinationCollectionId,
+			sectionId: destinationSectionId,
+		})
+
+		await expect(
+			asUserA.query(api.cards.get, { cardId }),
+		).resolves.toMatchObject({
+			collectionId: destinationCollectionId,
+			sectionId: destinationSectionId,
+		})
+	})
+
 	it('returns the removed card and leaves its siblings alone', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)

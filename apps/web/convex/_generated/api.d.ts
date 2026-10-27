@@ -17,14 +17,18 @@ import type * as model_collectionRemoval from "../model/collectionRemoval.js";
 import type * as model_collections from "../model/collections.js";
 import type * as model_due from "../model/due.js";
 import type * as model_reviews from "../model/reviews.js";
+import type * as model_sectionRemoval from "../model/sectionRemoval.js";
+import type * as model_sections from "../model/sections.js";
 import type * as model_srs_replay from "../model/srs/replay.js";
 import type * as reviews from "../reviews.js";
+import type * as sections from "../sections.js";
 import type * as utils_assertNonNull from "../utils/assertNonNull.js";
 import type * as validators_cards from "../validators/cards.js";
 import type * as validators_collections from "../validators/collections.js";
 import type * as validators_due from "../validators/due.js";
 import type * as validators_reviewRatings from "../validators/reviewRatings.js";
 import type * as validators_reviews from "../validators/reviews.js";
+import type * as validators_sections from "../validators/sections.js";
 
 import type {
   ApiFromModules,
@@ -42,14 +46,18 @@ declare const fullApi: ApiFromModules<{
   "model/collections": typeof model_collections;
   "model/due": typeof model_due;
   "model/reviews": typeof model_reviews;
+  "model/sectionRemoval": typeof model_sectionRemoval;
+  "model/sections": typeof model_sections;
   "model/srs/replay": typeof model_srs_replay;
   reviews: typeof reviews;
+  sections: typeof sections;
   "utils/assertNonNull": typeof utils_assertNonNull;
   "validators/cards": typeof validators_cards;
   "validators/collections": typeof validators_collections;
   "validators/due": typeof validators_due;
   "validators/reviewRatings": typeof validators_reviewRatings;
   "validators/reviews": typeof validators_reviews;
+  "validators/sections": typeof validators_sections;
 }>;
 
 /**
