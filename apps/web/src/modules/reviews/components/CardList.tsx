@@ -75,6 +75,10 @@ const styles = stylex.create({
 			default: null,
 			[wide]: '32px',
 		},
+		// Contains the visually hidden labels, which are absolutely positioned.
+		// Otherwise they anchor to an ancestor outside the page's scroll area and
+		// stretch that ancestor's scroll height.
+		position: 'relative',
 
 		marginInline: `calc(${layout.rowBleed} * -1)`,
 		paddingInline: layout.rowBleed,
@@ -82,6 +86,16 @@ const styles = stylex.create({
 	// A visible title gets a little room above the first row.
 	titledHeaderRow: {
 		marginBlockEnd: spacing.xs,
+	},
+	// Rules off a section from the rows above it, with the title sitting just
+	// over the rule rather than centered.
+	underlinedHeaderRow: {
+		alignItems: 'end',
+		paddingBlockEnd: spacing['2xs'],
+
+		borderBlockEndColor: colorsSemantic.borderSubtle,
+		borderBlockEndStyle: 'solid',
+		borderBlockEndWidth: '1px',
 	},
 	headerCell: {
 		padding: 0,
@@ -197,6 +211,9 @@ export function CardList({
 						{...stylex.props(
 							styles.headerRow,
 							title ? styles.titledHeaderRow : null,
+							title && headingLevel === 3
+								? styles.underlinedHeaderRow
+								: null,
 						)}
 					>
 						<th

@@ -22,6 +22,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
 import { collectionQueries } from '~/modules/collections/api/collectionQueries'
+import { sectionQueries } from '~/modules/collections/api/sectionQueries'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { dueQueries } from '~/modules/reviews/api/dueQueries'
 import { reviewQueries } from '~/modules/reviews/api/reviewQueries'
@@ -113,6 +114,8 @@ function renderRoute(
 		newCards = [],
 		cardType = 'flashcard',
 		collections = [],
+		collectionCards = [],
+		sections = [],
 	}: {
 		ancestors?: Array<Doc<'collections'>>
 		dueEntries?: Array<DueEntry>
@@ -123,6 +126,8 @@ function renderRoute(
 		newCards?: Array<Card>
 		cardType?: Card['type']
 		collections?: Array<Doc<'collections'>>
+		collectionCards?: Array<Card>
+		sections?: Array<Doc<'sections'>>
 	} = {},
 ) {
 	const queryClient = createTestQueryClient()
@@ -189,7 +194,11 @@ function renderRoute(
 	}
 	queryClient.setQueryData(
 		cardQueries.listByCollection(collectionId).queryKey,
-		[],
+		collectionCards,
+	)
+	queryClient.setQueryData(
+		sectionQueries.listByCollection(collectionId).queryKey,
+		sections,
 	)
 	// The review queue fetches each card it lands on by id.
 	for (const card of newCards) {
@@ -1104,6 +1113,64 @@ describe('v2 app setup', () => {
 		expect(
 			within(panel).queryByRole('link', { name: 'Unrelated' }),
 		).not.toBeInTheDocument()
+	})
+
+	it('groups collection cards under their sections, unsectioned cards first', async () => {
+		const sectionId = 'section-1' as Id<'sections'>
+		const section: Doc<'sections'> = {
+			_id: sectionId,
+			_creationTime: 0,
+			collectionId,
+			ownerId: 'user-1',
+			title: 'Type parameters',
+		}
+		const emptySection: Doc<'sections'> = {
+			...section,
+			_id: 'section-2' as Id<'sections'>,
+			title: '',
+		}
+		const sectionedCard: Card = {
+			...card,
+			_id: 'card-sectioned' as Id<'cards'>,
+			primaryText: 'What does a constraint do?',
+			sectionId,
+		}
+
+		renderRoute(`/collection/${collectionId}`, {
+			collectionCards: [sectionedCard, card],
+			sections: [section, emptySection],
+		})
+
+		const tables = await screen.findAllByRole('table')
+		expect(tables).toHaveLength(3)
+		const [unsectioned, typeParameters, untitled] = tables as [
+			HTMLElement,
+			HTMLElement,
+			HTMLElement,
+		]
+		expect(
+			within(unsectioned).getByRole('heading', { name: 'Cards' }),
+		).toBeInTheDocument()
+		expect(
+			within(unsectioned).getByText(card.primaryText),
+		).toBeInTheDocument()
+		expect(
+			within(typeParameters).getByRole('textbox', {
+				name: 'Section title',
+			}),
+		).toHaveValue('Type parameters')
+		expect(
+			within(typeParameters).getByText(sectionedCard.primaryText),
+		).toBeInTheDocument()
+		expect(
+			within(untitled).getByRole('textbox', { name: 'Section title' }),
+		).toHaveValue('')
+		expect(
+			screen.getByRole('button', { name: 'Add to Type parameters' }),
+		).toBeInTheDocument()
+		expect(
+			screen.getAllByRole('button', { name: 'Section actions' }),
+		).toHaveLength(2)
 	})
 
 	it('renders the shared error page when a collection does not exist', async () => {
