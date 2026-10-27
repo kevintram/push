@@ -24,6 +24,9 @@ const styles = stylex.create({
 	// Wide, the table owns the columns and every row group and row joins
 	// them through subgrid.
 	table: {
+		// Stacked, the header cell lays out as a table cell, which would pick up
+		// the default spacing and push the title off the row titles.
+		borderSpacing: 0,
 		columnGap: spacing.lg,
 		display: {
 			default: 'block',
