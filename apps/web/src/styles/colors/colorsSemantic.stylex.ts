@@ -188,6 +188,11 @@ export const colorsSemantic = stylex.defineVars({
 	borderSubtle: { default: neutral.s200, [DARK]: neutral.s800 },
 	// A boundary around a contrast-reversed surface.
 	borderOnInverse: { default: neutral.s700, [DARK]: neutral.s300 },
+	// The resting color for a boundary tied to an interactive element, such as a
+	// tree's indent guide.
+	borderInteractive: { default: neutral.s200, [DARK]: neutral.s800 },
+	borderInteractiveHover: { default: neutral.s400, [DARK]: neutral.s600 },
+	borderInteractiveActive: { default: neutral.s500, [DARK]: neutral.s500 },
 	// The boundary color that identifies keyboard or input focus.
 	borderFocus: { default: blue.s600, [DARK]: blue.s500 },
 	// A boundary that communicates brand identity or brand emphasis.
