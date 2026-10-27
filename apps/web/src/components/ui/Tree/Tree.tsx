@@ -1,5 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 
+import { treeMarker } from './tree.stylex'
+
 export interface TreeProps extends Omit<
 	React.ComponentProps<'ul'>,
 	'className' | 'style'
@@ -22,7 +24,7 @@ export function Tree({ xstyle, ...props }: TreeProps) {
 	return (
 		<ul
 			data-slot='tree'
-			{...stylex.props(styles.root, xstyle)}
+			{...stylex.props(styles.root, treeMarker, xstyle)}
 			{...props}
 		/>
 	)
