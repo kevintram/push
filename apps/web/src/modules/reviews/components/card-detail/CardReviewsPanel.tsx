@@ -21,7 +21,6 @@ const styles = stylex.create({
 		paddingBlock: spacing.xs,
 		display: 'flex',
 		justifyContent: 'center',
-		marginBlockStart: spacing.md,
 	},
 	seeAll: {
 		textDecoration: 'none',
