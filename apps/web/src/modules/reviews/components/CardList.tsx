@@ -120,23 +120,31 @@ const styles = stylex.create({
 	h3: {
 		fontSize: fontSizes.md,
 	},
-	// Shown while the table is hovered or holds keyboard focus. Always shown
-	// on touch, where there is no hover to reveal it. Stacked, the labels are
-	// visually hidden rather than removed, so screen readers still name each
-	// cell. Mirrors `a11y.visuallyHidden`, which can't sit behind a container
-	// query.
-	label: {
-		color: colorsSemantic.textSecondary,
-		fontSize: fontSizes.xs,
+	// Shown while the table is hovered, holds keyboard focus, or has a popup
+	// open, such as a header action's menu. Always shown on touch, where there
+	// is no hover to reveal it. The column labels and header actions share it,
+	// so they show together.
+	revealed: {
 		opacity: {
 			default: null,
 			'@media (hover: hover)': {
 				default: '0',
 				[stylex.when.ancestor(':has(:focus-visible)', cardTableMarker)]:
 					1,
+				[stylex.when.ancestor(
+					':has([data-popup-open])',
+					cardTableMarker,
+				)]: 1,
 				[stylex.when.ancestor(':hover', cardTableMarker)]: 1,
 			},
 		},
+	},
+	// Stacked, the labels are visually hidden rather than removed, so screen
+	// readers still name each cell. Mirrors `a11y.visuallyHidden`, which can't
+	// sit behind a container query.
+	label: {
+		color: colorsSemantic.textSecondary,
+		fontSize: fontSizes.xs,
 
 		blockSize: {
 			default: '1px',
@@ -245,6 +253,7 @@ export function CardList({
 								{...stylex.props(
 									styles.headerCell,
 									styles.label,
+									styles.revealed,
 									styles[column],
 								)}
 							>
@@ -256,7 +265,10 @@ export function CardList({
 							{...stylex.props(
 								styles.headerCell,
 								styles.actions,
-								actions !== undefined && styles.headerActions,
+								actions !== undefined && [
+									styles.headerActions,
+									styles.revealed,
+								],
 							)}
 						>
 							<span {...stylex.props(a11y.visuallyHidden)}>
