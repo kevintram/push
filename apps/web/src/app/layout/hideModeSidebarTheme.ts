@@ -27,5 +27,8 @@ export const hideModeSidebarTheme = stylex.createTheme(colorsSemantic, {
 	textInteractiveDisabled: { default: slate.s400, [DARK]: slate.s500 },
 
 	borderSubtle: whiteAlpha.s10,
+	borderInteractive: whiteAlpha.s10,
+	borderInteractiveHover: whiteAlpha.s30,
+	borderInteractiveActive: whiteAlpha.s50,
 	borderFocus: blue.s300,
 })
