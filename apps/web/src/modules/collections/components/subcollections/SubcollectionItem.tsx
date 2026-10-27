@@ -84,7 +84,7 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 								render={
 									<Button
 										variant='secondary'
-										size='large'
+										size='medium'
 										nativeButton={false}
 										render={
 											<Link
