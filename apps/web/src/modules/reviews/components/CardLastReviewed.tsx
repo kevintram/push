@@ -2,8 +2,6 @@ import * as stylex from '@stylexjs/stylex'
 import { Sparkles } from 'lucide-react'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
-// StyleX's dev server only resolves shared constants through the `~` alias.
-import { cardTable } from '~/modules/reviews/components/cardTable.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
@@ -11,6 +9,10 @@ import { formatRelativeDate } from '~/utils/date'
 
 import type { Rating } from '../types/review.types'
 import { getLastReviewedDetails } from './reviewRatings'
+
+// A local string, not a shared constant: StyleX can leave an imported
+// at-rule key unresolved in dev, emitting invalid CSS.
+const wide = '@container (min-width: 560px)'
 
 const styles = stylex.create({
 	item: {
@@ -28,13 +30,13 @@ const styles = stylex.create({
 		color: colorsSemantic.textTertiary,
 		display: {
 			default: 'none',
-			[cardTable.wide]: 'inline',
+			[wide]: 'inline',
 		},
 	},
 	new: {
 		display: {
 			default: 'inline-flex',
-			[cardTable.wide]: 'none',
+			[wide]: 'none',
 		},
 	},
 })

@@ -2,13 +2,17 @@ import * as stylex from '@stylexjs/stylex'
 import type { ReactNode } from 'react'
 
 // StyleX's dev server only resolves shared constants through the `~` alias.
-import {
-	cardTable,
-	cardTableMarker,
-} from '~/modules/reviews/components/cardTable.stylex'
+import { cardTableMarker } from '~/modules/reviews/components/cardTable.stylex'
 import { a11y } from '~/styles/a11y'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
+
+// A local string, not a shared constant: StyleX can leave an imported
+// at-rule key unresolved in dev, emitting invalid CSS.
+const wide = '@container (min-width: 560px)'
+// Title, due, last reviewed, strength, and actions. The actions column sizes
+// to the widest row, since rows show a toggle per active state.
+const columns = 'minmax(0, 1fr) 112px 112px 80px max-content'
 
 const styles = stylex.create({
 	// Rows lay themselves out against this width, so the same list reads as a
@@ -23,53 +27,53 @@ const styles = stylex.create({
 		columnGap: spacing.lg,
 		display: {
 			default: 'block',
-			[cardTable.wide]: 'grid',
+			[wide]: 'grid',
 		},
 		gridTemplateColumns: {
 			default: null,
-			[cardTable.wide]: cardTable.columns,
+			[wide]: columns,
 		},
 	},
 	group: {
 		display: {
 			default: 'block',
-			[cardTable.wide]: 'grid',
+			[wide]: 'grid',
 		},
 		gridColumnEnd: {
 			default: null,
-			[cardTable.wide]: '-1',
+			[wide]: '-1',
 		},
 		gridColumnStart: {
 			default: null,
-			[cardTable.wide]: '1',
+			[wide]: '1',
 		},
 		gridTemplateColumns: {
 			default: null,
-			[cardTable.wide]: 'subgrid',
+			[wide]: 'subgrid',
 		},
 	},
 	headerRow: {
 		alignItems: 'center',
 		display: {
 			default: 'block',
-			[cardTable.wide]: 'grid',
+			[wide]: 'grid',
 		},
 		gridColumnEnd: {
 			default: null,
-			[cardTable.wide]: '-1',
+			[wide]: '-1',
 		},
 		gridColumnStart: {
 			default: null,
-			[cardTable.wide]: '1',
+			[wide]: '1',
 		},
 		gridTemplateColumns: {
 			default: null,
-			[cardTable.wide]: 'subgrid',
+			[wide]: 'subgrid',
 		},
 		// Stacked, only a title takes up space.
 		minBlockSize: {
 			default: null,
-			[cardTable.wide]: '32px',
+			[wide]: '32px',
 		},
 
 		marginInline: `calc(${layout.rowBleed} * -1)`,
@@ -107,32 +111,32 @@ const styles = stylex.create({
 
 		blockSize: {
 			default: '1px',
-			[cardTable.wide]: 'auto',
+			[wide]: 'auto',
 		},
 		clip: {
 			default: 'rect(0 0 0 0)',
-			[cardTable.wide]: 'auto',
+			[wide]: 'auto',
 		},
 		clipPath: {
 			default: 'inset(50%)',
-			[cardTable.wide]: 'none',
+			[wide]: 'none',
 		},
 		inlineSize: {
 			default: '1px',
-			[cardTable.wide]: 'auto',
+			[wide]: 'auto',
 		},
 		position: {
 			default: 'absolute',
-			[cardTable.wide]: 'static',
+			[wide]: 'static',
 		},
 		whiteSpace: 'nowrap',
 		overflowX: {
 			default: 'hidden',
-			[cardTable.wide]: 'visible',
+			[wide]: 'visible',
 		},
 		overflowY: {
 			default: 'hidden',
-			[cardTable.wide]: 'visible',
+			[wide]: 'visible',
 		},
 	},
 	due: { gridColumnStart: '2' },
