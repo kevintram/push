@@ -141,7 +141,7 @@ const styles = stylex.create({
 	// sit behind a container query.
 	label: {
 		color: colorsSemantic.textSecondary,
-		fontSize: fontSizes.xs,
+		fontSize: fontSizes.sm,
 
 		blockSize: {
 			default: '1px',
