@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 import { cardTableMarker } from '~/modules/reviews/components/cardTable.stylex'
 import { a11y } from '~/styles/a11y'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 // A local string, not a shared constant: StyleX can leave an imported
 // at-rule key unresolved in dev, emitting invalid CSS.
@@ -82,9 +82,6 @@ const styles = stylex.create({
 		// Otherwise they anchor to an ancestor outside the page's scroll area and
 		// stretch that ancestor's scroll height.
 		position: 'relative',
-
-		marginInline: `calc(${layout.rowBleed} * -1)`,
-		paddingInline: layout.rowBleed,
 	},
 	// A visible title gets a little room above the first row.
 	titledHeaderRow: {
