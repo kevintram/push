@@ -26,10 +26,12 @@ const styles = stylex.create({
 		margin: 0,
 		gap: 0,
 		paddingBlock: 0,
-		// The indent guide, emphasized on the branch holding the selected item.
+		// The indent guide, emphasized while its parent row is hovered and more
+		// so while it is selected.
 		backgroundImage: {
-			default: `linear-gradient(${colorsSemantic.borderSubtle}, ${colorsSemantic.borderSubtle})`,
-			':has(> li > [data-slot="tree-item-content"][data-selected])': `linear-gradient(${colorsSemantic.borderPrimary}, ${colorsSemantic.borderPrimary})`,
+			default: `linear-gradient(${colorsSemantic.borderInteractive}, ${colorsSemantic.borderInteractive})`,
+			':is([data-slot="tree-item-content"]:hover:not([data-selected]) ~ *)': `linear-gradient(${colorsSemantic.borderInteractiveHover}, ${colorsSemantic.borderInteractiveHover})`,
+			':is([data-slot="tree-item-content"][data-selected] ~ *)': `linear-gradient(${colorsSemantic.borderInteractiveActive}, ${colorsSemantic.borderInteractiveActive})`,
 		},
 		backgroundPositionX: guideOffset,
 		backgroundRepeat: 'no-repeat',
