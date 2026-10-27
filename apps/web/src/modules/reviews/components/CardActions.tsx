@@ -43,17 +43,36 @@ const styles = stylex.create({
 	retiredOn: {
 		color: violet.s400,
 	},
+	// Shown while the row is hovered, keyboard focused, or has its menu open.
+	// Always shown on touch, where there is no hover to reveal it.
+	hoverRevealed: {
+		opacity: {
+			default: null,
+			'@media (hover: hover)': {
+				default: 0,
+				[stylex.when.ancestor(':has(:focus-visible)')]: 1,
+				[stylex.when.ancestor(':has([data-popup-open])')]: 1,
+				[stylex.when.ancestor(':hover')]: 1,
+			},
+		},
+	},
 })
 
 type CardActionsProps = {
 	card: Card
 	showGoToCard?: boolean
+	/**
+	 * Hide the menu trigger until an ancestor marked with
+	 * `stylex.defaultMarker()` is hovered or focused.
+	 */
+	isMenuHoverRevealed?: boolean
 	xstyle?: stylex.StyleXStyles
 }
 
 export function CardActions({
 	card,
 	showGoToCard = false,
+	isMenuHoverRevealed = false,
 	xstyle,
 }: CardActionsProps) {
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
@@ -180,6 +199,7 @@ export function CardActions({
 							shape='round'
 							variant='ghost'
 							size='small'
+							xstyle={isMenuHoverRevealed && styles.hoverRevealed}
 						/>
 					}
 				>

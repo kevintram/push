@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { TooltipProvider } from '~/components/ui'
 
@@ -123,27 +123,6 @@ describe('CardMetadata', () => {
 		expect(await screen.findByRole('tooltip')).toHaveTextContent(
 			'Not reviewed yet',
 		)
-	})
-
-	it('forwards metadata clicks when requested', async () => {
-		const user = userEvent.setup()
-		const onClick = vi.fn()
-
-		render(
-			<CardMetadata
-				lastReviewedAt='2026-08-01'
-				lastRating='good'
-				nextDueAt='2026-08-10'
-				retrievability={0.85}
-				stability={10}
-				today='2026-08-09'
-				onClick={onClick}
-			/>,
-		)
-
-		await user.click(screen.getByText('Due Tomorrow'))
-
-		expect(onClick).toHaveBeenCalledOnce()
 	})
 
 	it('explains the strength in a tooltip', async () => {

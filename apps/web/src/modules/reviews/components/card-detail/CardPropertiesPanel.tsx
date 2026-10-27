@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { SidebarPanel } from '~/components/SidebarPanel'
+import { Panel } from '~/components/Panel'
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
@@ -79,7 +79,7 @@ export function CardPropertiesPanel({
 			: getLastReviewedDetails(lastReviewedAt, lastRating)
 
 	return (
-		<SidebarPanel title='Properties' xstyle={styles.container}>
+		<Panel title='Properties' xstyle={styles.container}>
 			<div {...stylex.props(styles.list)}>
 				<div {...stylex.props(styles.row)}>
 					<span {...stylex.props(styles.label)}>Due</span>
@@ -152,6 +152,6 @@ export function CardPropertiesPanel({
 					/>
 				</div>
 			</div>
-		</SidebarPanel>
+		</Panel>
 	)
 }

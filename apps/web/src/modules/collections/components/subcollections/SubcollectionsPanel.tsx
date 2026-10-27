@@ -5,9 +5,8 @@ import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useCallback } from 'react'
 
-import { SidebarPanel } from '~/components/SidebarPanel'
+import { Panel } from '~/components/Panel'
 import { Button } from '~/components/ui'
-import { scrollFade } from '~/styles/scrollFade'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import {
@@ -17,21 +16,15 @@ import {
 import { SubcollectionItem } from './SubcollectionItem'
 
 const styles = stylex.create({
-	container: {
-		display: 'flex',
-		flexDirection: 'column',
-		flexShrink: 1,
-		minBlockSize: 0,
+	// Bleeds into the page gutter so the panel's text lines up with the page's.
+	panel: {
+		marginInline: `calc(${spacing.lg} * -1)`,
 	},
 	list: {
-		marginInline: `calc(${spacing.sm} * -1)`,
-		// Items bleed into the panel padding on hover. The scroll container
-		// clips horizontally, so give the list that padding back.
-		paddingInline: spacing.sm,
+		gap: spacing.sm,
+		alignItems: 'center',
 		display: 'flex',
-		flexDirection: 'column',
-		minBlockSize: 0,
-		overflowY: 'auto',
+		flexWrap: 'wrap',
 	},
 })
 
@@ -63,12 +56,11 @@ export function SubcollectionsPanel({
 	}, [createCollection, navigate, collectionId])
 
 	return (
-		<SidebarPanel
+		<Panel
 			title='Subcollections'
 			actions={
 				<Button
 					aria-label='Add subcollection'
-					iconOnly
 					variant='ghost'
 					size='micro'
 					disabled={createCollection.isPending}
@@ -76,11 +68,12 @@ export function SubcollectionsPanel({
 					shape='round'
 				>
 					<Plus aria-hidden='true' size={iconSizes.sm} />
+					Add
 				</Button>
 			}
-			xstyle={styles.container}
+			xstyle={styles.panel}
 		>
-			<div {...stylex.props(styles.list, scrollFade.y)}>
+			<div {...stylex.props(styles.list)}>
 				{subcollections.map(subcollection => (
 					<SubcollectionItem
 						key={subcollection._id}
@@ -88,6 +81,6 @@ export function SubcollectionsPanel({
 					/>
 				))}
 			</div>
-		</SidebarPanel>
+		</Panel>
 	)
 }

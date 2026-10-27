@@ -1,5 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { Folder } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
@@ -12,7 +13,15 @@ import {
 	FadeText,
 } from '~/components/ui'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { textFadeVars } from '~/styles/textFade.stylex'
+import {
+	buttonSizes,
+	fontSizes,
+	fontWeights,
+	iconSizes,
+	radii,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 import {
 	useCreateCollection,
@@ -22,28 +31,38 @@ import type { Collection } from '../../types/collection.types'
 import { MoveCollectionDialog } from '../MoveCollectionDialog'
 
 const styles = stylex.create({
-	item: {
-		marginBlock: spacing.xs,
-		// Bleed into the panel's padding so the hover surface reads as a full-width row.
-		marginInline: `calc(${spacing.sm} * -1)`,
-		paddingBlock: spacing.xs,
-		paddingInline: spacing.sm,
+	badge: {
+		gap: spacing.xs,
+		alignItems: 'center',
+		blockSize: buttonSizes.small,
+		display: 'inline-flex',
+		maxInlineSize: '240px',
+		minInlineSize: 0,
+		// The title's fade takes the end padding, per `textFade`.
+		paddingInlineEnd: spacing.none,
+		paddingInlineStart: spacing.md,
 
-		display: 'block',
-		// The list scrolls, so keep rows at full height instead of letting the
-		// flex column squeeze them to fit.
-		flexShrink: 0,
-
-		borderRadius: radii.md,
+		borderColor: colorsSemantic.borderSubtle,
+		borderRadius: radii.full,
+		borderStyle: 'solid',
+		borderWidth: 1,
 		backgroundColor: {
-			default: 'transparent',
-			':hover': colorsSemantic.surfaceTransparentHover,
-			':active': colorsSemantic.surfaceTransparentActive,
+			default: colorsSemantic.surfacePrimary,
+			':hover': colorsSemantic.surfaceTertiary,
+			':active': colorsSemantic.surfaceTertiary,
 		},
 
 		textDecoration: 'none',
 		color: colorsSemantic.textPrimary,
 		fontSize: fontSizes.sm,
+		fontWeight: fontWeights.medium,
+	},
+	title: {
+		[textFadeVars.size]: spacing.md,
+	},
+	icon: {
+		color: colorsSemantic.textSecondary,
+		flexShrink: 0,
 	},
 })
 
@@ -89,12 +108,17 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 							to='/collection/$collectionId'
 							params={{ collectionId: _id }}
 							aria-label={collectionTitle}
-							{...stylex.props(styles.item)}
+							{...stylex.props(styles.badge)}
 						/>
 					}
 				>
-					{/* The row keeps its hover surface, so only the title fades. */}
-					<FadeText>{collectionTitle}</FadeText>
+					<Folder
+						aria-hidden='true'
+						size={iconSizes.sm}
+						{...stylex.props(styles.icon)}
+					/>
+					{/* The badge keeps its surface, so only the title fades. */}
+					<FadeText xstyle={styles.title}>{collectionTitle}</FadeText>
 				</ContextMenuTrigger>
 				<ContextMenuContent>
 					<ContextMenuItem onClick={handleCreateSubcollection}>

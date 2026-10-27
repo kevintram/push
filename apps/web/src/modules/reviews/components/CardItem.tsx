@@ -1,39 +1,93 @@
 import * as stylex from '@stylexjs/stylex'
+import { Link, useNavigate } from '@tanstack/react-router'
 
+// StyleX's dev server only resolves shared constants through the `~` alias.
+import { cardTable } from '~/modules/reviews/components/cardTable.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
+import { textFade } from '~/styles/textFade'
+import {
+	fontSizes,
+	fontWeights,
+	layout,
+	radii,
+	spacing,
+} from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
 import type { Card as CardModel, CardSrsState } from '../types/review.types'
 import { CardActions } from './CardActions'
-import { CardMetadata } from './CardMetadata'
-
-const densityVariants = stylex.create({
-	comfortable: {
-		marginInline: `calc(${spacing.lg} * -1)`,
-		paddingBlock: spacing.lg,
-		paddingInline: spacing.lg,
-		fontSize: fontSizes.lg,
-	},
-	compact: {
-		marginInline: `calc(${spacing.md} * -1)`,
-		paddingBlock: spacing.sm,
-		paddingInline: spacing.md,
-		fontSize: fontSizes.md,
-	},
-})
+import { CardDueDate } from './CardDueDate'
+import { CardLastReviewed } from './CardLastReviewed'
+import { StrengthSignal } from './StrengthSignal'
 
 const styles = stylex.create({
-	outer: {
+	// A table row. Stacked by default, as a wrapping flex row with the title
+	// and actions above the dates and strength. Once the list is wide enough
+	// the row joins the table's columns through subgrid, so the actions column
+	// fits the row with the most toggles. Grid placement on the cells only
+	// applies to the table.
+	row: {
+		alignItems: 'center',
+		columnGap: {
+			default: spacing.none,
+			[cardTable.wide]: spacing.lg,
+		},
+		display: {
+			default: 'flex',
+			[cardTable.wide]: 'grid',
+		},
+		flexWrap: 'wrap',
+		gridColumnEnd: {
+			default: null,
+			[cardTable.wide]: '-1',
+		},
+		gridColumnStart: {
+			default: null,
+			[cardTable.wide]: '1',
+		},
+		gridTemplateColumns: {
+			default: null,
+			[cardTable.wide]: 'subgrid',
+		},
+		minBlockSize: {
+			default: null,
+			[cardTable.wide]: '52px',
+		},
 		position: 'relative',
 
 		borderRadius: radii.lg,
-
+		marginInline: `calc(${layout.rowBleed} * -1)`,
+		paddingBlock: {
+			default: spacing.sm,
+			[cardTable.wide]: spacing.xs,
+		},
+		paddingInline: layout.rowBleed,
 		backgroundColor: {
+			default: colorsSemantic.surfaceTransparent,
 			':hover': colorsSemantic.surfaceTransparentHover,
 		},
+		cursor: 'pointer',
 
-		color: colorsSemantic.textPrimary,
+		// The ring wraps the row when its title target has keyboard focus.
+		outlineColor: {
+			default: colorsSemantic.surfaceTransparent,
+			':has(> [role=cell] > :focus-visible)': colorsSemantic.borderFocus,
+		},
+		outlineOffset: '-2px',
+		outlineStyle: 'solid',
+		outlineWidth: '2px',
+
+		// Stacked, a full-width break between the actions and the metadata,
+		// so the metadata line can run under the actions.
+		'::after': {
+			content: '""',
+			display: {
+				default: null,
+				[cardTable.wide]: 'none',
+			},
+			flexBasis: '100%',
+			order: 1,
+		},
 	},
 	active: {
 		backgroundColor: {
@@ -41,50 +95,97 @@ const styles = stylex.create({
 			':hover': colorsSemantic.surfaceTransparentActive,
 		},
 	},
-	inner: {
-		gap: spacing.xs,
-		display: 'flex',
-		flexDirection: 'column',
-	},
-	title: {
-		fontSize: 'inherit',
-		fontWeight: fontWeights.semibold,
 
-		color: colorsSemantic.textPrimary,
+	cell: {
+		padding: 0,
 	},
+	// Above the row's stretched target, so tooltips can show. Clicks on these
+	// cells are forwarded to the target.
 	raised: {
-		// Create seperate z-index context so overlay button
-		// doesn't capture interactions
 		position: 'relative',
 		zIndex: 1,
 	},
-	secondaryText: {
+	// Stacked, metadata cells space themselves with margins, so hidden cells
+	// leave no gap behind.
+	metadata: {
+		gridRowStart: '1',
+		marginBlockStart: {
+			default: spacing['2xs'],
+			[cardTable.wide]: spacing.none,
+		},
+		marginInlineEnd: {
+			default: spacing.md,
+			[cardTable.wide]: spacing.none,
+		},
+		order: 2,
+
 		fontSize: fontSizes.sm,
+		fontVariantNumeric: 'tabular-nums',
 	},
-	footer: {
-		gap: spacing.md,
+	stackedHidden: {
+		display: {
+			default: 'none',
+			[cardTable.wide]: 'block',
+		},
+	},
+
+	title: {
+		flexBasis: 0,
+		flexGrow: 1,
+		gridColumnStart: '1',
+		gridRowStart: '1',
+
 		alignItems: 'center',
 		display: 'flex',
+		minInlineSize: 0,
 	},
-	overlayButton: {
-		inset: 0,
-		position: 'absolute',
+	// Fills the cell so the fade only reaches text long enough to run into it.
+	target: {
+		padding: 0,
 
-		margin: spacing.none,
-		padding: spacing.none,
-		borderRadius: radii.lg,
-		borderStyle: 'none',
-		backgroundColor: 'transparent',
+		display: 'flex',
+		flexGrow: 1,
+		minInlineSize: 0,
 
+		textDecoration: 'none',
+		fontFamily: 'inherit',
+		fontSize: fontSizes.md,
+		fontWeight: fontWeights.regular,
+		textAlign: 'start',
+
+		backgroundColor: colorsSemantic.surfaceTransparent,
+		color: colorsSemantic.textPrimary,
 		cursor: 'pointer',
 
-		outlineColor: {
-			default: colorsSemantic.surfaceTransparent,
-			':focus-visible': colorsSemantic.borderFocus,
+		borderWidth: 0,
+		outlineStyle: 'none',
+
+		// stretched link trick
+		'::after': {
+			inset: 0,
+			content: '""',
+			position: 'absolute',
 		},
-		outlineOffset: '-2px',
-		outlineStyle: 'solid',
-		outlineWidth: '2px',
+	},
+
+	due: { gridColumnStart: '2' },
+	lastReviewed: { gridColumnStart: '3' },
+	strength: {
+		display: {
+			default: null,
+			[cardTable.noStrength]: 'none',
+		},
+		gridColumnStart: '4',
+	},
+	actions: {
+		gridColumnStart: '5',
+		gridRowStart: '1',
+		justifySelf: 'end',
+
+		marginInlineStart: {
+			default: spacing.sm,
+			[cardTable.wide]: spacing.none,
+		},
 	},
 })
 
@@ -92,60 +193,119 @@ type CardItemProps = {
 	card: CardModel
 	srs: CardSrsState
 	today: DateString
-	density?: keyof typeof densityVariants
 	active?: boolean
-	onClick: () => void
+	/** Run on activation. Without it, the row links to the card's page. */
+	onClick?: () => void
 	buttonProps?: Omit<
 		React.ComponentProps<'button'>,
 		'onClick' | 'type' | 'className' | 'style'
 	>
 }
 
+/** A card as a row of `CardList`. */
 export function CardItem({
 	card,
 	srs,
 	today,
-	density = 'comfortable',
 	active = false,
 	onClick,
 	buttonProps,
 }: CardItemProps) {
-	const { type, primaryText, secondaryText } = card
-	// Flashcard secondary text is the answer, so never show it in lists.
-	const secondaryShown = type === 'practice'
+	const navigate = useNavigate()
+	const { _id, primaryText } = card
+	const { lastRating, lastReviewedAt, nextDueAt, stability } = srs
+	const title = primaryText.trim() || 'Untitled'
+	const isNew = lastReviewedAt === null
 
+	const activate =
+		onClick ??
+		(() => void navigate({ to: '/cards/$cardId', params: { cardId: _id } }))
+
+	const titleText = <span {...stylex.props(textFade.line)}>{title}</span>
+
+	// The table's grid layout can drop its native roles, so name them.
 	return (
-		<div
-			data-active={active ? '' : undefined}
+		<tr
+			role='row'
 			{...stylex.props(
-				styles.outer,
-				densityVariants[density],
+				styles.row,
+				stylex.defaultMarker(),
 				active && styles.active,
 			)}
 		>
-			<button
-				type='button'
-				onClick={onClick}
-				{...stylex.props(styles.overlayButton)}
-				{...buttonProps}
-			/>
+			<td role='cell' {...stylex.props(styles.cell, styles.title)}>
+				{onClick ? (
+					<button
+						type='button'
+						onClick={onClick}
+						{...stylex.props(styles.target)}
+						{...buttonProps}
+					>
+						{titleText}
+					</button>
+				) : (
+					<Link
+						to='/cards/$cardId'
+						params={{ cardId: _id }}
+						{...stylex.props(styles.target)}
+					>
+						{titleText}
+					</Link>
+				)}
+			</td>
 
-			<div {...stylex.props(styles.inner)}>
-				<h3 {...stylex.props(styles.title)}>
-					{primaryText.trim() || 'Untitled'}
-				</h3>
+			{/* Stacked, a new card's line only says it is new. */}
+			<td
+				role='cell'
+				onClick={activate}
+				{...stylex.props(
+					styles.cell,
+					styles.raised,
+					styles.metadata,
+					styles.due,
+					(isNew || nextDueAt === null) && styles.stackedHidden,
+				)}
+			>
+				<CardDueDate date={nextDueAt} today={today} />
+			</td>
 
-				{secondaryText && secondaryShown ? (
-					<p {...stylex.props(styles.secondaryText)}>
-						{secondaryText}
-					</p>
-				) : null}
+			<td
+				role='cell'
+				onClick={activate}
+				{...stylex.props(
+					styles.cell,
+					styles.raised,
+					styles.metadata,
+					styles.lastReviewed,
+				)}
+			>
+				<CardLastReviewed
+					lastRating={lastRating}
+					lastReviewedAt={lastReviewedAt}
+					today={today}
+				/>
+			</td>
 
-				<div {...stylex.props(styles.footer)}>
-					<CardMetadata {...srs} today={today} onClick={onClick} />
-					<CardActions card={card} xstyle={styles.raised} />
-				</div>
-			</div>
-		</div>
+			<td
+				role='cell'
+				onClick={activate}
+				{...stylex.props(
+					styles.cell,
+					styles.raised,
+					styles.metadata,
+					styles.strength,
+					stability === null && styles.stackedHidden,
+				)}
+			>
+				<StrengthSignal stability={stability} />
+			</td>
+
+			<td
+				role='cell'
+				{...stylex.props(styles.cell, styles.raised, styles.actions)}
+			>
+				<CardActions card={card} isMenuHoverRevealed />
+			</td>
+		</tr>
 	)
 }

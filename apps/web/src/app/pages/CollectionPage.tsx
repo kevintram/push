@@ -14,7 +14,6 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-	Separator,
 	Textarea,
 } from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -24,14 +23,14 @@ import {
 	useDeleteCollection,
 	useUpdateCollection,
 } from '~/modules/collections/api/collectionQueries'
-import { CollectionSidebar } from '~/modules/collections/components/collection-sidebar/CollectionSidebar'
 import { CollectionPathBreadcrumbs } from '~/modules/collections/components/CollectionPathBreadcrumbs'
 import { MoveCollectionDialog } from '~/modules/collections/components/MoveCollectionDialog'
+import { SubcollectionsPanel } from '~/modules/collections/components/subcollections/SubcollectionsPanel'
 import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcrumbLabel'
 import { cardQueries, useCreateCard } from '~/modules/reviews/api/cardQueries'
-import { CardItemLink } from '~/modules/reviews/components/CardItemLink'
+import { CardItem } from '~/modules/reviews/components/CardItem'
+import { CardList } from '~/modules/reviews/components/CardList'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
-import { baseColors } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import {
@@ -90,7 +89,7 @@ const styles = stylex.create({
 		minWidth: 0,
 	},
 	content: {
-		gap: spacing.md,
+		gap: spacing.xl,
 		paddingInline: spacing.lg,
 		display: 'flex',
 		flexDirection: 'column',
@@ -101,30 +100,23 @@ const styles = stylex.create({
 		width: '100%',
 	},
 	collectionDetails: {
-		gap: spacing.sm,
+		gap: spacing.xs,
 		display: 'flex',
 		flexDirection: 'column',
 	},
 	title: {
-		fontSize: fontSizes.xl,
-		fontWeight: fontWeights.bold,
-		minBlockSize: '44px',
+		fontSize: fontSizes['2xl'],
+		fontWeight: fontWeights.semibold,
 	},
-	description: { fontSize: fontSizes.md },
-	separator: {
-		marginBlock: spacing.md,
-	},
-	cardsHeaderText: {
+	description: {
 		color: colorsSemantic.textSecondary,
 		fontSize: fontSizes.md,
 	},
-	cardsList: {
-		display: 'flex',
-		flexDirection: 'column',
-	},
+	// Pulled into the gutter by its padding and border, plus the plus glyph's
+	// inset (5 of its 24 viewBox units), so the glyph lines up with the card
+	// titles.
 	addCardButton: {
-		backgroundColor: baseColors.transparent,
-		inlineSize: '100%',
+		marginInlineStart: `calc((${spacing.md} + 1px + ${iconSizes.sm} * 5 / 24) * -1)`,
 	},
 })
 
@@ -279,19 +271,19 @@ export function CollectionPage() {
 							/>
 						</section>
 
-						<Separator xstyle={styles.separator} />
+						<SubcollectionsPanel collectionId={collectionId} />
 
-						<h2 {...stylex.props(styles.cardsHeaderText)}>Cards</h2>
-
-						<div {...stylex.props(styles.cardsList)}>
-							{cards.map(card => (
-								<CardItemLink
-									key={card._id}
-									card={card}
-									srs={deriveCardSrsState(card, today)}
-									today={today}
-								/>
-							))}
+						<div>
+							<CardList title='Cards'>
+								{cards.map(card => (
+									<CardItem
+										key={card._id}
+										card={card}
+										srs={deriveCardSrsState(card, today)}
+										today={today}
+									/>
+								))}
+							</CardList>
 							<Button
 								aria-label='Add card'
 								shape='round'
@@ -306,8 +298,6 @@ export function CollectionPage() {
 						</div>
 					</div>
 				</div>
-
-				<CollectionSidebar collectionId={collectionId} />
 			</div>
 		</div>
 	)

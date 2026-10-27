@@ -3,7 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 
-import { SidebarPanel } from '~/components/SidebarPanel'
+import { Panel } from '~/components/Panel'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
@@ -62,7 +62,7 @@ export function CardReviewsPanel({ cardId, onSeeAll }: CardReviewsPanelProps) {
 	const hasMore = reviews.length > recentReviews.length
 
 	return (
-		<SidebarPanel title='Reviews' xstyle={styles.container}>
+		<Panel title='Reviews' xstyle={styles.container}>
 			<ReviewList reviews={recentReviews} />
 			{hasMore && (
 				<div {...stylex.props(styles.footer)}>
@@ -88,6 +88,6 @@ export function CardReviewsPanel({ cardId, onSeeAll }: CardReviewsPanelProps) {
 					)}
 				</div>
 			)}
-		</SidebarPanel>
+		</Panel>
 	)
 }

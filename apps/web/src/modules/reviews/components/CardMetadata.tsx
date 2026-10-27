@@ -27,9 +27,6 @@ const styles = stylex.create({
 		flexShrink: 1,
 		minWidth: 0,
 	},
-	clickable: {
-		cursor: 'pointer',
-	},
 	container: {
 		gap: {
 			default: spacing.xl,
@@ -57,13 +54,6 @@ const styles = stylex.create({
 			'@container (max-width: 400px)': 'none',
 		},
 	},
-	// Tooltip triggers must sit above the card's stretched-link overlay to
-	// receive hover. Raise the individual triggers, not the whole row, so the
-	// rest of the metadata stays click-through to the link.
-	raisedItem: {
-		position: 'relative',
-		zIndex: 1,
-	},
 	overdue: {
 		color: colorsSemantic.textDanger,
 	},
@@ -79,35 +69,15 @@ export function CardMetadata({
 	nextDueAt,
 	stability,
 	today,
-	onClick,
-}: CardSrsState & {
-	today: DateString
-	/**
-	 * Tooltip triggers are raised above CardItem's overlay button so they can
-	 * receive hover events. Forward their clicks because they cannot reach that
-	 * sibling overlay button directly.
-	 *
-	 * TODO(3): I feel like there should be a better way to do this but I don't feel
-	 * like thinking right now.
-	 */
-	onClick?: React.MouseEventHandler<HTMLDivElement>
-}) {
+}: CardSrsState & { today: DateString }) {
 	if (lastReviewedAt === null) {
 		return (
-			<div
-				onClick={onClick}
-				{...stylex.props(styles.boundary, onClick && styles.clickable)}
-			>
+			<div {...stylex.props(styles.boundary)}>
 				<div {...stylex.props(styles.container)}>
 					<Tooltip>
 						<TooltipTrigger
 							render={
-								<span
-									{...stylex.props(
-										styles.item,
-										styles.raisedItem,
-									)}
-								>
+								<span {...stylex.props(styles.item)}>
 									<Sparkles
 										aria-hidden='true'
 										size={iconSizes.sm}
@@ -131,10 +101,7 @@ export function CardMetadata({
 	} = getLastReviewedDetails(lastReviewedAt, lastRating)
 
 	return (
-		<div
-			onClick={onClick}
-			{...stylex.props(styles.boundary, onClick && styles.clickable)}
-		>
+		<div {...stylex.props(styles.boundary)}>
 			<div {...stylex.props(styles.container)}>
 				{nextDueAt !== null ? (
 					<Tooltip>
@@ -143,7 +110,6 @@ export function CardMetadata({
 								<span
 									{...stylex.props(
 										styles.item,
-										styles.raisedItem,
 										dueTone === 'overdue' && styles.overdue,
 										dueTone === 'today' && styles.today,
 									)}
@@ -168,7 +134,6 @@ export function CardMetadata({
 								aria-label={lastReviewedLabel}
 								{...stylex.props(
 									styles.item,
-									styles.raisedItem,
 									lastReviewedAt === today && styles.today,
 								)}
 							>
@@ -187,11 +152,7 @@ export function CardMetadata({
 				{stability !== null ? (
 					<StrengthSignal
 						stability={stability}
-						xstyle={[
-							styles.item,
-							styles.raisedItem,
-							styles.strength,
-						]}
+						xstyle={[styles.item, styles.strength]}
 					/>
 				) : null}
 			</div>
