@@ -5,23 +5,19 @@ import { useCallback, useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
+	Button,
 	ContextMenu,
 	ContextMenuContent,
 	ContextMenuItem,
 	ContextMenuSeparator,
 	ContextMenuTrigger,
-	FadeText,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
 } from '~/components/ui'
-import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
+import { textFade } from '~/styles/textFade'
 import { textFadeVars } from '~/styles/textFade.stylex'
-import {
-	buttonSizes,
-	fontSizes,
-	fontWeights,
-	iconSizes,
-	radii,
-	spacing,
-} from '~/styles/tokens.stylex'
+import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import {
 	useCreateCollection,
@@ -32,36 +28,15 @@ import { MoveCollectionDialog } from '../MoveCollectionDialog'
 
 const styles = stylex.create({
 	badge: {
-		gap: spacing.xs,
-		alignItems: 'center',
-		blockSize: buttonSizes.small,
-		display: 'inline-flex',
 		maxInlineSize: '240px',
 		minInlineSize: 0,
 		// The title's fade takes the end padding, per `textFade`.
 		paddingInlineEnd: spacing.none,
-		paddingInlineStart: spacing.md,
-
-		borderColor: colorsSemantic.borderSubtle,
-		borderRadius: radii.full,
-		borderStyle: 'solid',
-		borderWidth: 1,
-		backgroundColor: {
-			default: colorsSemantic.surfacePrimary,
-			':hover': colorsSemantic.surfaceTertiary,
-			':active': colorsSemantic.surfaceTertiary,
-		},
-
-		textDecoration: 'none',
-		color: colorsSemantic.textPrimary,
-		fontSize: fontSizes.sm,
-		fontWeight: fontWeights.medium,
 	},
 	title: {
 		[textFadeVars.size]: spacing.md,
 	},
 	icon: {
-		color: colorsSemantic.textSecondary,
 		flexShrink: 0,
 	},
 })
@@ -102,24 +77,42 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 	return (
 		<>
 			<ContextMenu>
-				<ContextMenuTrigger
-					render={
-						<Link
-							to='/collection/$collectionId'
-							params={{ collectionId: _id }}
-							aria-label={collectionTitle}
-							{...stylex.props(styles.badge)}
+				<Tooltip>
+					<ContextMenuTrigger
+						render={
+							<TooltipTrigger
+								render={
+									<Button
+										variant='secondary'
+										size='large'
+										nativeButton={false}
+										render={
+											<Link
+												to='/collection/$collectionId'
+												params={{ collectionId: _id }}
+												// Base UI marks non-native buttons as `button`.
+												role='link'
+											/>
+										}
+										xstyle={styles.badge}
+									/>
+								}
+							/>
+						}
+					>
+						<Folder
+							aria-hidden='true'
+							size={iconSizes.md}
+							{...stylex.props(styles.icon)}
 						/>
-					}
-				>
-					<Folder
-						aria-hidden='true'
-						size={iconSizes.sm}
-						{...stylex.props(styles.icon)}
-					/>
-					{/* The badge keeps its surface, so only the title fades. */}
-					<FadeText xstyle={styles.title}>{collectionTitle}</FadeText>
-				</ContextMenuTrigger>
+						{/* The badge keeps its surface, so only the title fades. */}
+						<span {...stylex.props(textFade.line, styles.title)}>
+							{collectionTitle}
+						</span>
+					</ContextMenuTrigger>
+					{/* Centered on the badge, so the full title reads under it. */}
+					<TooltipContent>{collectionTitle}</TooltipContent>
+				</Tooltip>
 				<ContextMenuContent>
 					<ContextMenuItem onClick={handleCreateSubcollection}>
 						Add subcollection

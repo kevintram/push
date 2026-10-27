@@ -17,6 +17,15 @@ import { ReviewNotesIndicator } from './ReviewNotesIndicator'
 import { ReviewRowActions } from './ReviewRowActions'
 import { ReviewStrength } from './ReviewStrength'
 
+// A local string, not a shared constant: StyleX can leave an imported
+// at-rule key unresolved in dev, emitting invalid CSS.
+const wide = '@container (min-width: 560px)'
+const stacked = '@container (width < 560px)'
+// Stacked rows run out of room for the date and strength on one line, so the
+// strength change drops first, then the strength itself.
+const noStrengthChange = '@container (width < 300px)'
+const noStrength = '@container (width < 280px)'
+
 // `buttonSizes.micro`, inlined because constants must be static.
 const ACTIONS_CLEARANCE = '1.625rem'
 
@@ -30,21 +39,21 @@ const styles = stylex.create({
 				'rating description description description description'
 				'. date strength . .'
 			`,
-			[reviewTable.wide]: reviewTable.areas,
+			[wide]: reviewTable.areas,
 		},
 		alignItems: 'center',
 		columnGap: {
 			default: spacing.sm,
-			[reviewTable.wide]: spacing.lg,
+			[wide]: spacing.lg,
 		},
 		display: 'grid',
 		gridTemplateColumns: {
 			default: 'auto auto auto minmax(0, 1fr) auto',
-			[reviewTable.wide]: reviewTable.columns,
+			[wide]: reviewTable.columns,
 		},
 		minBlockSize: {
 			default: null,
-			[reviewTable.wide]: '44px',
+			[wide]: '44px',
 		},
 		position: 'relative',
 
@@ -63,7 +72,7 @@ const styles = stylex.create({
 	withoutDescription: {
 		gridTemplateAreas: {
 			default: `'rating date strength description .'`,
-			[reviewTable.wide]: reviewTable.areas,
+			[wide]: reviewTable.areas,
 		},
 	},
 	// The second line's gap is a margin rather than a row gap, so the line
@@ -71,7 +80,7 @@ const styles = stylex.create({
 	secondLine: {
 		marginBlockStart: {
 			default: spacing.xs,
-			[reviewTable.wide]: spacing.none,
+			[wide]: spacing.none,
 		},
 	},
 
@@ -95,13 +104,13 @@ const styles = stylex.create({
 	stackedHidden: {
 		display: {
 			default: 'none',
-			[reviewTable.wide]: 'block',
+			[wide]: 'block',
 		},
 	},
 	tableHidden: {
 		display: {
 			default: null,
-			[reviewTable.wide]: 'none',
+			[wide]: 'none',
 		},
 	},
 
@@ -153,7 +162,7 @@ const styles = stylex.create({
 		// var's default outside its layers, where it would beat every condition.
 		[textFadeVars.inset]: {
 			default: null,
-			[reviewTable.stacked]: {
+			[stacked]: {
 				default: null,
 				'@media (hover: hover)': {
 					default: null,
@@ -192,7 +201,7 @@ const styles = stylex.create({
 		// Flex, not block, so the icon centers instead of sitting on a baseline.
 		display: {
 			default: 'none',
-			[reviewTable.wide]: 'flex',
+			[wide]: 'flex',
 		},
 	},
 
@@ -217,13 +226,13 @@ const styles = stylex.create({
 
 		display: {
 			default: null,
-			[reviewTable.noStrength]: 'none',
+			[noStrength]: 'none',
 		},
 	},
 	strengthChange: {
 		display: {
 			default: null,
-			[reviewTable.noStrengthChange]: 'none',
+			[noStrengthChange]: 'none',
 		},
 	},
 
@@ -232,19 +241,19 @@ const styles = stylex.create({
 	actions: {
 		gridColumnEnd: {
 			default: '-1',
-			[reviewTable.wide]: 'actions',
+			[wide]: 'actions',
 		},
 		gridColumnStart: {
 			default: '-2',
-			[reviewTable.wide]: 'actions',
+			[wide]: 'actions',
 		},
 		gridRowEnd: {
 			default: '2',
-			[reviewTable.wide]: 'actions',
+			[wide]: 'actions',
 		},
 		gridRowStart: {
 			default: '1',
-			[reviewTable.wide]: 'actions',
+			[wide]: 'actions',
 		},
 		justifySelf: 'end',
 	},

@@ -23,6 +23,8 @@ const styles = stylex.create({
 		display: 'inline-flex',
 		justifyContent: 'center',
 
+		// Drops the underline when rendered as a link.
+		textDecoration: 'none',
 		fontSize: fontSizes.md,
 		fontWeight: fontWeights.regular,
 		lineHeight: 1.5,

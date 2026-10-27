@@ -509,9 +509,8 @@ describe('v2 app setup', () => {
 		expect(screen.getByLabelText('Card primary text')).not.toHaveAttribute(
 			'readonly',
 		)
-		// Base UI keeps `role="button"` on the non-native element, but it stays
-		// a real anchor so middle-click and open-in-new-tab still work.
-		const openLink = screen.getByRole('button', {
+		// A real anchor, so middle-click and open-in-new-tab still work.
+		const openLink = screen.getByRole('link', {
 			name: 'Go to card',
 		})
 		expect(openLink.tagName).toBe('A')

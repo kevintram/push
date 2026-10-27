@@ -21,7 +21,7 @@ const styles = stylex.create({
 		marginInline: `calc(${spacing.lg} * -1)`,
 	},
 	list: {
-		gap: spacing.sm,
+		gap: spacing.md,
 		alignItems: 'center',
 		display: 'flex',
 		flexWrap: 'wrap',

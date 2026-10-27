@@ -9,6 +9,10 @@ import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 import type { Review as ReviewModel } from '../types/review.types'
 import { Review } from './Review'
 
+// A local string, not a shared constant: StyleX can leave an imported
+// at-rule key unresolved in dev, emitting invalid CSS.
+const wide = '@container (min-width: 560px)'
+
 const styles = stylex.create({
 	// Rows lay themselves out against this width, so the same table reads as a
 	// table on the card page and stacks in the narrow card sidebar. Below the
@@ -26,36 +30,36 @@ const styles = stylex.create({
 	head: {
 		blockSize: {
 			default: '1px',
-			[reviewTable.wide]: 'auto',
+			[wide]: 'auto',
 		},
 		clip: {
 			default: 'rect(0 0 0 0)',
-			[reviewTable.wide]: 'auto',
+			[wide]: 'auto',
 		},
 		clipPath: {
 			default: 'inset(50%)',
-			[reviewTable.wide]: 'none',
+			[wide]: 'none',
 		},
 		display: 'block',
 		inlineSize: {
 			default: '1px',
-			[reviewTable.wide]: 'auto',
+			[wide]: 'auto',
 		},
 		position: {
 			default: 'absolute',
-			[reviewTable.wide]: 'static',
+			[wide]: 'static',
 		},
 		whiteSpace: {
 			default: 'nowrap',
-			[reviewTable.wide]: 'normal',
+			[wide]: 'normal',
 		},
 		overflowX: {
 			default: 'hidden',
-			[reviewTable.wide]: 'visible',
+			[wide]: 'visible',
 		},
 		overflowY: {
 			default: 'hidden',
-			[reviewTable.wide]: 'visible',
+			[wide]: 'visible',
 		},
 	},
 
@@ -64,7 +68,7 @@ const styles = stylex.create({
 		flexDirection: 'column',
 		rowGap: {
 			default: spacing.md,
-			[reviewTable.wide]: spacing.none,
+			[wide]: spacing.none,
 		},
 	},
 	headerRow: {

@@ -1,8 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link, useNavigate } from '@tanstack/react-router'
 
-// StyleX's dev server only resolves shared constants through the `~` alias.
-import { cardTable } from '~/modules/reviews/components/cardTable.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { textFade } from '~/styles/textFade'
 import {
@@ -20,6 +18,13 @@ import { CardDueDate } from './CardDueDate'
 import { CardLastReviewed } from './CardLastReviewed'
 import { StrengthSignal } from './StrengthSignal'
 
+// A local string, not a shared constant: StyleX can leave an imported
+// at-rule key unresolved in dev, emitting invalid CSS.
+const wide = '@container (min-width: 560px)'
+// Stacked rows run out of room for the whole metadata line, so the strength
+// drops first.
+const noStrength = '@container (width < 280px)'
+
 const styles = stylex.create({
 	// A table row. Stacked by default, as a wrapping flex row with the title
 	// and actions above the dates and strength. Once the list is wide enough
@@ -30,28 +35,28 @@ const styles = stylex.create({
 		alignItems: 'center',
 		columnGap: {
 			default: spacing.none,
-			[cardTable.wide]: spacing.lg,
+			[wide]: spacing.lg,
 		},
 		display: {
 			default: 'flex',
-			[cardTable.wide]: 'grid',
+			[wide]: 'grid',
 		},
 		flexWrap: 'wrap',
 		gridColumnEnd: {
 			default: null,
-			[cardTable.wide]: '-1',
+			[wide]: '-1',
 		},
 		gridColumnStart: {
 			default: null,
-			[cardTable.wide]: '1',
+			[wide]: '1',
 		},
 		gridTemplateColumns: {
 			default: null,
-			[cardTable.wide]: 'subgrid',
+			[wide]: 'subgrid',
 		},
 		minBlockSize: {
 			default: null,
-			[cardTable.wide]: '52px',
+			[wide]: '52px',
 		},
 		position: 'relative',
 
@@ -59,7 +64,7 @@ const styles = stylex.create({
 		marginInline: `calc(${layout.rowBleed} * -1)`,
 		paddingBlock: {
 			default: spacing.sm,
-			[cardTable.wide]: spacing.xs,
+			[wide]: spacing.xs,
 		},
 		paddingInline: layout.rowBleed,
 		backgroundColor: {
@@ -83,7 +88,7 @@ const styles = stylex.create({
 			content: '""',
 			display: {
 				default: null,
-				[cardTable.wide]: 'none',
+				[wide]: 'none',
 			},
 			flexBasis: '100%',
 			order: 1,
@@ -111,11 +116,11 @@ const styles = stylex.create({
 		gridRowStart: '1',
 		marginBlockStart: {
 			default: spacing['2xs'],
-			[cardTable.wide]: spacing.none,
+			[wide]: spacing.none,
 		},
 		marginInlineEnd: {
 			default: spacing.md,
-			[cardTable.wide]: spacing.none,
+			[wide]: spacing.none,
 		},
 		order: 2,
 
@@ -125,7 +130,7 @@ const styles = stylex.create({
 	stackedHidden: {
 		display: {
 			default: 'none',
-			[cardTable.wide]: 'block',
+			[wide]: 'block',
 		},
 	},
 
@@ -173,7 +178,7 @@ const styles = stylex.create({
 	strength: {
 		display: {
 			default: null,
-			[cardTable.noStrength]: 'none',
+			[noStrength]: 'none',
 		},
 		gridColumnStart: '4',
 	},
@@ -184,7 +189,7 @@ const styles = stylex.create({
 
 		marginInlineStart: {
 			default: spacing.sm,
-			[cardTable.wide]: spacing.none,
+			[wide]: spacing.none,
 		},
 	},
 })

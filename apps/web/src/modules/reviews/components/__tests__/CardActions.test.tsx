@@ -112,7 +112,7 @@ describe('CardActions', () => {
 		render(<CardActions card={card} />)
 
 		expect(
-			screen.queryByRole('button', { name: 'Go to card' }),
+			screen.queryByRole('link', { name: 'Go to card' }),
 		).not.toBeInTheDocument()
 	})
 
@@ -120,7 +120,7 @@ describe('CardActions', () => {
 		render(<CardActions card={card} showGoToCard />)
 
 		expect(
-			screen.getByRole('button', { name: 'Go to card' }),
+			screen.getByRole('link', { name: 'Go to card' }),
 		).toHaveAttribute('href', '/cards/card-1')
 	})
 
