@@ -16,6 +16,13 @@ vi.mock('~/modules/collections/api/sectionQueries', () => ({
 	useDeleteSection: () => ({ mutate: deleteMutate, isPending: false }),
 }))
 
+// The dialog has its own tests; this checks only that the menu opens it.
+vi.mock('~/modules/collections/components/MoveSectionDialog', () => ({
+	MoveSectionDialog: ({ section }: { section: Section }) => (
+		<div role='dialog' aria-label={`Move ${section.title}`} />
+	),
+}))
+
 const section = {
 	_id: 'section-1' as Section['_id'],
 	title: 'Cell anatomy',
@@ -34,6 +41,22 @@ describe('SectionActions', () => {
 		)
 
 		expect(convertMutate).toHaveBeenCalledWith({ sectionId: section._id })
+	})
+
+	it('opens the move dialog for the section', async () => {
+		const user = userEvent.setup()
+		render(<SectionActions section={section} />)
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+
+		await user.click(
+			screen.getByRole('button', { name: 'Section actions' }),
+		)
+		await user.click(screen.getByRole('menuitem', { name: 'Move' }))
+
+		expect(
+			screen.getByRole('dialog', { name: 'Move Cell anatomy' }),
+		).toBeInTheDocument()
 	})
 
 	it('deletes only after the confirmation is accepted', async () => {

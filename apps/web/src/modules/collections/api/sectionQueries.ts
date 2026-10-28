@@ -76,6 +76,17 @@ export function useMoveSection() {
 	})
 }
 
+export function useMoveSectionToCollection() {
+	const mutationFn = useConvexMutation(api.sections.moveToCollection)
+	return useMutation({
+		mutationFn,
+		onError: error =>
+			toast.error('Failed to move section', {
+				description: getErrorMessage(error),
+			}),
+	})
+}
+
 export function useConvertSectionToCollection() {
 	const mutationFn = useConvexMutation(api.sections.convertToCollection)
 	return useMutation({
