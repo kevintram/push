@@ -38,6 +38,9 @@ importers:
       convex:
         specifier: ^1.42.3
         version: 1.42.3(@clerk/react@6.12.11(react-dom@19.1.4(react@19.1.4))(react@19.1.4))(react@19.1.4)
+      fractional-indexing:
+        specifier: 3.2.0
+        version: 3.2.0
       lodash.debounce:
         specifier: ^4.0.8
         version: 4.0.8
@@ -1794,6 +1797,10 @@ packages:
 
   flatted@3.4.2:
     resolution: {integrity: sha512-PjDse7RzhcPkIJwy5t7KPWQSZ9cAbzQXcafsetQoD7sOJRQlGikNbx7yZp2OotDnJyrDcbyRq3Ttb18iYOqkxA==}
+
+  fractional-indexing@3.2.0:
+    resolution: {integrity: sha512-PcOxmqwYCW7O2ovKRU8OoQQj2yqTfEB/yeTYk4gPid6dN5ODRfU1hXd9tTVZzax/0NkO7AxpHykvZnT1aYp/BQ==}
+    engines: {node: ^14.13.1 || >=16.0.0}
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -3893,6 +3900,8 @@ snapshots:
       keyv: 4.5.4
 
   flatted@3.4.2: {}
+
+  fractional-indexing@3.2.0: {}
 
   fsevents@2.3.3:
     optional: true
