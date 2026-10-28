@@ -15,7 +15,10 @@ const MOVES = [
 	direction: MoveDirection
 }>
 
-/** Whether a key reached the page or a selectable item, not another control. */
+/**
+ * Whether a key reached the page or a selectable item, not another control
+ * such as a text field.
+ */
 function isOnSelectable(event: KeyboardEvent) {
 	const { target } = event
 	return (
@@ -67,9 +70,15 @@ export function CollectionHotkeys({
 				hotkey,
 				callback: claim(() => onMove(direction)),
 			})),
-			// Enter on another focused control, like an "Add" button, keeps
-			// activating that control.
-			{ hotkey: 'Enter', callback: claim(onOpen, isOnSelectable) },
+			// Selectable items are buttons and links, which `ignoreInputs`
+			// leaves Enter to, so this hotkey filters with `isOnSelectable`
+			// instead: Enter on another focused control, like an "Add" button,
+			// keeps activating that control.
+			{
+				hotkey: 'Enter',
+				callback: claim(onOpen, isOnSelectable),
+				options: { ignoreInputs: false },
+			},
 			{ hotkey: 'Escape', callback: claim(onClear) },
 		],
 		{
