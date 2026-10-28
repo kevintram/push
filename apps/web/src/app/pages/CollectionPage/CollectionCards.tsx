@@ -9,14 +9,26 @@ import { useToday } from '~/hooks/useToday'
 import {
 	sectionQueries,
 	useCreateSection,
+	useMoveSection,
 } from '~/modules/collections/api/sectionQueries'
-import { cardQueries, useCreateCard } from '~/modules/reviews/api/cardQueries'
+import {
+	cardQueries,
+	useCreateCard,
+	useMoveCard,
+} from '~/modules/reviews/api/cardQueries'
 import { spacing } from '~/styles/tokens.stylex'
 
 import { CardGroup } from './CardGroup'
+import { CollectionHotkeys } from './CollectionHotkeys'
+import {
+	type MoveDirection,
+	planCardMove,
+	planSectionMove,
+} from './collectionOrder'
 import { groupCardsBySection } from './groupCardsBySection'
 import { SectionActions } from './SectionActions'
 import { SectionTitle } from './SectionTitle'
+import { useCollectionSelection } from './useCollectionSelection'
 
 const styles = stylex.create({
 	groups: {
@@ -42,14 +54,17 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 		() => groupCardsBySection(sections, cards),
 		[sections, cards],
 	)
+	const { selected, select, clear, selectAdjacent } =
+		useCollectionSelection(grouped)
 
-	// The section created from an "Add" menu, whose title takes focus so it
-	// can be named right away.
-	const [newSectionId, setNewSectionId] = useState<Id<'sections'> | null>(
-		null,
-	)
+	// The section whose title is a field. A new section starts out renaming so
+	// it can be named right away.
+	const [renamingSectionId, setRenamingSectionId] =
+		useState<Id<'sections'> | null>(null)
 	const createSection = useCreateSection()
 	const createCard = useCreateCard()
+	const moveSection = useMoveSection()
+	const moveCard = useMoveCard()
 	const navigate = useNavigate()
 	const today = useToday()
 
@@ -73,14 +88,63 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 	const handleCreateSection = useCallback(() => {
 		createSection.mutate(
 			{ collectionId },
-			{ onSuccess: sectionId => setNewSectionId(sectionId) },
+			{
+				onSuccess: sectionId => {
+					select({ kind: 'section', id: sectionId })
+					setRenamingSectionId(sectionId)
+				},
+			},
 		)
-	}, [createSection, collectionId])
+	}, [createSection, collectionId, select])
 
+	const handleMove = useCallback(
+		(direction: MoveDirection) => {
+			if (selected?.kind === 'card') {
+				const placement = planCardMove(grouped, selected.id, direction)
+				if (placement) {
+					moveCard.mutate({ cardId: selected.id, ...placement })
+				}
+			} else if (selected?.kind === 'section') {
+				const placement = planSectionMove(
+					grouped,
+					selected.id,
+					direction,
+				)
+				if (placement) {
+					moveSection.mutate({ sectionId: selected.id, ...placement })
+				}
+			}
+		},
+		[grouped, selected, moveCard, moveSection],
+	)
+
+	const handleOpen = useCallback(() => {
+		if (selected?.kind === 'card') {
+			void navigate({
+				to: '/cards/$cardId',
+				params: { cardId: selected.id },
+			})
+		} else if (selected?.kind === 'section') {
+			setRenamingSectionId(selected.id)
+		}
+	}, [navigate, selected])
+
+	const selectCard = useCallback(
+		(cardId: Id<'cards'>) => select({ kind: 'card', id: cardId }),
+		[select],
+	)
+	const selectedCardId = selected?.kind === 'card' ? selected.id : null
 	const isAdding = createCard.isPending || createSection.isPending
 
 	return (
 		<div {...stylex.props(styles.groups)}>
+			<CollectionHotkeys
+				hasSelection={selected !== null}
+				onSelectAdjacent={selectAdjacent}
+				onMove={handleMove}
+				onOpen={handleOpen}
+				onClear={clear}
+			/>
 			<CardGroup
 				cards={grouped.unsectioned}
 				today={today}
@@ -89,6 +153,8 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 				isAdding={isAdding}
 				onAddCard={() => handleCreateCard()}
 				onAddSection={handleCreateSection}
+				selectedCardId={selectedCardId}
+				onSelectCard={selectCard}
 			/>
 			{grouped.sections.map(({ section, cards: sectionCards }) => (
 				<CardGroup
@@ -98,7 +164,16 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 					title={
 						<SectionTitle
 							section={section}
-							autoFocus={section._id === newSectionId}
+							isSelected={
+								selected?.kind === 'section' &&
+								selected.id === section._id
+							}
+							isRenaming={section._id === renamingSectionId}
+							onSelect={() =>
+								select({ kind: 'section', id: section._id })
+							}
+							onRename={() => setRenamingSectionId(section._id)}
+							onRenameEnd={() => setRenamingSectionId(null)}
 						/>
 					}
 					headingLevel={3}
@@ -107,6 +182,8 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 					isAdding={isAdding}
 					onAddCard={() => handleCreateCard(section._id)}
 					onAddSection={handleCreateSection}
+					selectedCardId={selectedCardId}
+					onSelectCard={selectCard}
 				/>
 			))}
 		</div>

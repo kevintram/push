@@ -1,5 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link, useNavigate } from '@tanstack/react-router'
+import type { MouseEvent } from 'react'
 
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { textFade } from '~/styles/textFade'
@@ -201,6 +202,12 @@ type CardItemProps = {
 	active?: boolean
 	/** Run on activation. Without it, the row links to the card's page. */
 	onClick?: () => void
+	/**
+	 * Makes a linked row selectable: a click selects it and a double click
+	 * opens the card. Mod-, Shift-, and middle-clicks still open it in a new tab
+	 * or window, and Enter on the focused link still opens it.
+	 */
+	onSelect?: () => void
 	buttonProps?: Omit<
 		React.ComponentProps<'button'>,
 		'onClick' | 'type' | 'className' | 'style'
@@ -214,6 +221,7 @@ export function CardItem({
 	today,
 	active = false,
 	onClick,
+	onSelect,
 	buttonProps,
 }: CardItemProps) {
 	const navigate = useNavigate()
@@ -222,9 +230,27 @@ export function CardItem({
 	const title = primaryText.trim() || 'Untitled'
 	const isNew = lastReviewedAt === null
 
-	const activate =
+	const open =
 		onClick ??
 		(() => void navigate({ to: '/cards/$cardId', params: { cardId: _id } }))
+	// A click on a selectable row selects it, and a double click opens it.
+	const activate = onSelect ?? open
+	const handleDoubleClick = onSelect ? open : undefined
+
+	const handleLinkClick = (event: MouseEvent<HTMLAnchorElement>) => {
+		// A keyboard click has no detail. Modified clicks keep opening a new tab
+		// or window.
+		const isPlainClick =
+			event.detail > 0 &&
+			!event.metaKey &&
+			!event.ctrlKey &&
+			!event.shiftKey &&
+			!event.altKey
+		if (!onSelect || !isPlainClick) return
+
+		event.preventDefault()
+		onSelect()
+	}
 
 	const titleText = <span {...stylex.props(textFade.line)}>{title}</span>
 
@@ -252,6 +278,9 @@ export function CardItem({
 					<Link
 						to='/cards/$cardId'
 						params={{ cardId: _id }}
+						data-card-id={_id}
+						onClick={handleLinkClick}
+						onDoubleClick={handleDoubleClick}
 						{...stylex.props(styles.target)}
 					>
 						{titleText}
@@ -263,6 +292,7 @@ export function CardItem({
 			<td
 				role='cell'
 				onClick={activate}
+				onDoubleClick={handleDoubleClick}
 				{...stylex.props(
 					styles.cell,
 					styles.raised,
@@ -277,6 +307,7 @@ export function CardItem({
 			<td
 				role='cell'
 				onClick={activate}
+				onDoubleClick={handleDoubleClick}
 				{...stylex.props(
 					styles.cell,
 					styles.raised,
@@ -294,6 +325,7 @@ export function CardItem({
 			<td
 				role='cell'
 				onClick={activate}
+				onDoubleClick={handleDoubleClick}
 				{...stylex.props(
 					styles.cell,
 					styles.raised,

@@ -1,3 +1,4 @@
+import type { Id } from '@convex/_generated/dataModel'
 import type { ReactNode } from 'react'
 
 import { CardItem } from '~/modules/reviews/components/CardItem'
@@ -20,6 +21,8 @@ type CardGroupProps = {
 	isAdding: boolean
 	onAddCard: () => void
 	onAddSection: () => void
+	selectedCardId: Id<'cards'> | null
+	onSelectCard: (cardId: Id<'cards'>) => void
 }
 
 /** One group of cards on the collection page, followed by its "Add" menu. */
@@ -33,6 +36,8 @@ export function CardGroup({
 	isAdding,
 	onAddCard,
 	onAddSection,
+	selectedCardId,
+	onSelectCard,
 }: CardGroupProps) {
 	return (
 		<div>
@@ -47,6 +52,8 @@ export function CardGroup({
 						card={card}
 						srs={deriveCardSrsState(card, today)}
 						today={today}
+						active={card._id === selectedCardId}
+						onSelect={() => onSelectCard(card._id)}
 					/>
 				))}
 			</CardList>
