@@ -10,6 +10,14 @@ export const learningState = v.union(
 
 export const cardBase = v.object({
 	collectionId: v.id('collections'),
+	// Absent when the card is unsectioned. When present, the section belongs
+	// to `collectionId`.
+	sectionId: v.optional(v.id('sections')),
+	// The card's place within its list, which is its section or, when
+	// unsectioned, its collection's unsectioned cards. A fractional index key,
+	// absent only on cards created before ordering existed, which sort first
+	// until `migrations.backfillRanks` ranks them.
+	rank: v.optional(v.string()),
 	ownerId: v.string(),
 	type: v.union(v.literal('practice'), v.literal('flashcard')),
 	primaryText: v.string(),
@@ -47,6 +55,7 @@ export const cardCreate = v.object({
 	...cardBase
 		.omit(
 			'ownerId', // omit because handled by server
+			'rank', // omit because the server appends new cards
 			// omit SRS columns because they're handled by server
 			'stability',
 			'difficulty',
@@ -60,15 +69,18 @@ export const cardCreate = v.object({
 	collectionId: v.id('collections'), // require collectionId
 })
 
-// The mutable card fields, plus `flaggedAt` and `retiredAt` as three-state
-// shapes where 1. omit/undefined = leave alone 2. null = clear (unflag /
-// unretire) 3. number = set (flag / retire).
-// Moving via `collectionId` is authorized in the model; `ownerId` stays unsettable.
+// The mutable card fields, plus `flaggedAt`, `retiredAt`, and `sectionId` as
+// three-state shapes where 1. omit/undefined = leave alone 2. null = clear
+// (unflag / unretire / unsection) 3. value = set (flag / retire / section).
+// Moving via `collectionId` or `sectionId` is authorized in the model;
+// `ownerId` stays unsettable.
 export const cardPatch = cardBase
 	.omit(
 		'ownerId', // omit because handled by server only
 		'flaggedAt', // omit to do three-state shape (see above comment)
 		'retiredAt', // omit to do three-state shape (see above comment)
+		'sectionId', // omit to do three-state shape (see above comment)
+		'rank', // omit because reordering goes through `cardMove`
 		// omit SRS columns because they're handled by server
 		'stability',
 		'difficulty',
@@ -81,8 +93,17 @@ export const cardPatch = cardBase
 	.extend({
 		flaggedAt: v.union(v.number(), v.null()),
 		retiredAt: v.union(v.number(), v.null()),
+		sectionId: v.union(v.id('sections'), v.null()),
 	})
 	.partial()
+
+// Places the card in `sectionId`'s list (the unsectioned cards when `null`)
+// right after `afterId`, or first when it is `null`. The card stays in its
+// collection. The server picks the key, so clients never send one.
+export const cardMove = v.object({
+	sectionId: v.union(v.id('sections'), v.null()),
+	afterId: v.union(v.id('cards'), v.null()),
+})
 
 export const cardSearchResult = v.object({
 	_id: v.id('cards'),
@@ -95,4 +116,5 @@ export const cardSearchResult = v.object({
 export type Card = Infer<typeof cardRead>
 export type CardCreate = Infer<typeof cardCreate>
 export type CardPatch = Infer<typeof cardPatch>
+export type CardMove = Infer<typeof cardMove>
 export type CardSearchResult = Infer<typeof cardSearchResult>

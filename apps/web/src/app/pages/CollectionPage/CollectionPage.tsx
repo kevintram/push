@@ -1,8 +1,8 @@
 import type { Collection } from '@convex/validators/collections'
 import * as stylex from '@stylexjs/stylex'
-import { queryOptions, useSuspenseQueries } from '@tanstack/react-query'
-import { useNavigate, useParams } from '@tanstack/react-router'
-import { Ellipsis, Plus } from 'lucide-react'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useParams } from '@tanstack/react-router'
+import { Ellipsis } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -17,7 +17,6 @@ import {
 	Textarea,
 } from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
-import { useToday } from '~/hooks/useToday'
 import {
 	collectionQueries,
 	useDeleteCollection,
@@ -27,10 +26,6 @@ import { CollectionPathBreadcrumbs } from '~/modules/collections/components/Coll
 import { MoveCollectionDialog } from '~/modules/collections/components/MoveCollectionDialog'
 import { SubcollectionsPanel } from '~/modules/collections/components/subcollections/SubcollectionsPanel'
 import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcrumbLabel'
-import { cardQueries, useCreateCard } from '~/modules/reviews/api/cardQueries'
-import { CardItem } from '~/modules/reviews/components/CardItem'
-import { CardList } from '~/modules/reviews/components/CardList'
-import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import {
@@ -40,6 +35,8 @@ import {
 	layout,
 	spacing,
 } from '~/styles/tokens.stylex'
+
+import { CollectionCards } from './CollectionCards'
 
 const styles = stylex.create({
 	container: {
@@ -112,49 +109,21 @@ const styles = stylex.create({
 		color: colorsSemantic.textSecondary,
 		fontSize: fontSizes.md,
 	},
-	// Pulled into the gutter by its padding and border, plus the plus glyph's
-	// inset (5 of its 24 viewBox units), so the glyph lines up with the card
-	// titles.
-	addCardButton: {
-		marginInlineStart: `calc((${spacing.md} + 1px + ${iconSizes.sm} * 5 / 24) * -1)`,
-	},
 })
 
 export function CollectionPage() {
 	const { collectionId } = useParams({ from: '/collection/$collectionId' })
-	const [{ data: collection }, { data: cards }] = useSuspenseQueries({
-		queries: [
-			queryOptions(
-				collectionQueries.detail(collectionId, { expandPath: true }),
-			),
-			queryOptions(cardQueries.listByCollection(collectionId)),
-		],
-	})
+	const { data: collection } = useSuspenseQuery(
+		collectionQueries.detail(collectionId, { expandPath: true }),
+	)
 
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
 	const deleteCollection = useDeleteCollection()
 	const updateCollection = useUpdateCollection()
-	const createCard = useCreateCard()
-	const navigate = useNavigate()
-	const today = useToday()
 
 	const handleDeleteCollection = useCallback(() => {
 		deleteCollection.mutate({ collectionId })
 	}, [deleteCollection, collectionId])
-
-	const handleCreateCard = useCallback(() => {
-		createCard.mutate(
-			{ collectionId },
-			{
-				onError: () => toast.error('Failed to create card'),
-				onSuccess: cardId =>
-					void navigate({
-						to: '/cards/$cardId',
-						params: { cardId },
-					}),
-			},
-		)
-	}, [createCard, navigate, collectionId])
 
 	const saveTitle = useCallback(
 		async (title: string) => {
@@ -273,29 +242,7 @@ export function CollectionPage() {
 
 						<SubcollectionsPanel collectionId={collectionId} />
 
-						<div>
-							<CardList title='Cards'>
-								{cards.map(card => (
-									<CardItem
-										key={card._id}
-										card={card}
-										srs={deriveCardSrsState(card, today)}
-										today={today}
-									/>
-								))}
-							</CardList>
-							<Button
-								aria-label='Add card'
-								shape='round'
-								variant='ghost'
-								disabled={createCard.isPending}
-								onClick={handleCreateCard}
-								xstyle={styles.addCardButton}
-							>
-								<Plus size={iconSizes.sm} />
-								Add card
-							</Button>
-						</div>
+						<CollectionCards collectionId={collectionId} />
 					</div>
 				</div>
 			</div>

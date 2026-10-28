@@ -3,6 +3,7 @@ import { defineSchema, defineTable } from 'convex/server'
 import { cardBase } from './validators/cards'
 import { collectionBase } from './validators/collections'
 import { reviewBase } from './validators/reviews'
+import { sectionBase } from './validators/sections'
 
 export default defineSchema({
 	collections: defineTable(collectionBase)
@@ -13,8 +14,20 @@ export default defineSchema({
 			filterFields: ['ownerId'],
 		}),
 
+	sections: defineTable(sectionBase).index('by_collectionId_rank', [
+		'collectionId',
+		'rank',
+	]),
+
 	cards: defineTable(cardBase)
 		.index('by_collectionId_ownerId', ['collectionId', 'ownerId'])
+		// One list per section, plus the unsectioned cards under an
+		// `undefined` sectionId, each in display order.
+		.index('by_collectionId_sectionId_rank', [
+			'collectionId',
+			'sectionId',
+			'rank',
+		])
 		// `retiredAt` is an equality prefix so the due queue can exclude
 		// retired cards in the index rather than by post-filter, while
 		// `dueDate` stays available as the range suffix.

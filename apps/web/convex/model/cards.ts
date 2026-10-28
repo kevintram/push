@@ -1,12 +1,16 @@
+import { backfillRanks, placeInLine, rankAfter } from '../../shared/ordering'
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import type {
 	Card,
 	CardCreate,
+	CardMove,
 	CardPatch,
 	CardSearchResult,
 } from '../validators/cards'
+import type { Section } from '../validators/sections'
 import * as Collections from './collections'
+import * as Sections from './sections'
 
 export async function requireUserOwns(
 	ctx: QueryCtx,
@@ -20,6 +24,35 @@ export async function requireUserOwns(
 	}
 
 	return card
+}
+
+/**
+ * The cards of one list: `sectionId`'s, or `collectionId`'s unsectioned cards
+ * when it is undefined, in display order.
+ */
+function queryLine(
+	ctx: QueryCtx,
+	collectionId: Id<'collections'>,
+	sectionId: Id<'sections'> | undefined,
+) {
+	return ctx.db
+		.query('cards')
+		.withIndex('by_collectionId_sectionId_rank', q =>
+			q.eq('collectionId', collectionId).eq('sectionId', sectionId),
+		)
+}
+
+/** The key for a card added to the bottom of a list. */
+async function rankAtEnd(
+	ctx: QueryCtx,
+	collectionId: Id<'collections'>,
+	sectionId: Id<'sections'> | undefined,
+): Promise<string> {
+	const last = await queryLine(ctx, collectionId, sectionId)
+		.order('desc')
+		.first()
+
+	return rankAfter(last?.rank)
 }
 
 export async function listByCollection(
@@ -64,6 +97,14 @@ export async function create(
 	fields: CardCreate,
 ): Promise<Id<'cards'>> {
 	await Collections.requireUserOwns(ctx, userId, fields.collectionId)
+	if (fields.sectionId !== undefined) {
+		await Sections.requireUserOwnsInCollection(
+			ctx,
+			userId,
+			fields.sectionId,
+			fields.collectionId,
+		)
+	}
 
 	const primaryText = fields.primaryText ?? ''
 	const secondaryText = fields.secondaryText ?? ''
@@ -72,6 +113,9 @@ export async function create(
 	return await ctx.db.insert('cards', {
 		ownerId: userId,
 		collectionId: fields.collectionId,
+		...(fields.sectionId !== undefined && { sectionId: fields.sectionId }),
+		// New cards go to the bottom of their list.
+		rank: await rankAtEnd(ctx, fields.collectionId, fields.sectionId),
 		type: fields.type ?? 'practice',
 		primaryText,
 		secondaryText,
@@ -96,13 +140,36 @@ export async function update(
 ): Promise<void> {
 	const card = await requireUserOwns(ctx, userId, cardId)
 
-	const { flaggedAt, retiredAt, collectionId, ...fields } = patch
+	const { flaggedAt, retiredAt, collectionId, sectionId, ...fields } = patch
 
 	// A card can only move to another collection owned by the same user. Validate the
 	// destination in this transaction so a failed check cannot orphan the card.
 	if (collectionId !== undefined) {
 		await Collections.requireUserOwns(ctx, userId, collectionId)
 	}
+
+	// A section must live in the card's collection, judged after any move in
+	// this same patch.
+	const destinationCollectionId = collectionId ?? card.collectionId
+	if (sectionId !== undefined && sectionId !== null) {
+		await Sections.requireUserOwnsInCollection(
+			ctx,
+			userId,
+			sectionId,
+			destinationCollectionId,
+		)
+	}
+	// Moving to another collection without naming a section there leaves the
+	// card unsectioned, since its old section stays behind.
+	const sectionChanged =
+		sectionId !== undefined || destinationCollectionId !== card.collectionId
+	const destinationSectionId = sectionChanged
+		? (sectionId ?? undefined)
+		: card.sectionId
+	// A card arriving in another list goes to its bottom.
+	const listChanged =
+		destinationCollectionId !== card.collectionId ||
+		destinationSectionId !== card.sectionId
 
 	// Recomputed unconditionally from the merged doc: when the patch touches no
 	// text field this rewrites the identical string, which is cheaper than a
@@ -117,6 +184,15 @@ export async function update(
 			.filter(Boolean)
 			.join('\n'),
 		...(collectionId !== undefined && { collectionId }),
+		// Clearing in Convex means patching an explicit `undefined`.
+		...(sectionChanged && { sectionId: destinationSectionId }),
+		...(listChanged && {
+			rank: await rankAtEnd(
+				ctx,
+				destinationCollectionId,
+				destinationSectionId,
+			),
+		}),
 		// An omitted key leaves the flag alone. `null` clears it, which in
 		// Convex means patching an explicit `undefined`.
 		...(flaggedAt !== undefined && {
@@ -127,6 +203,76 @@ export async function update(
 			retiredAt: retiredAt ?? undefined,
 		}),
 	})
+}
+
+/**
+ * Places `cardId` in `sectionId`'s list, or its collection's unsectioned cards
+ * when `sectionId` is null, right after `afterId` or first when it is null.
+ * Writes the one card, plus keys for any cards in that list still unranked.
+ */
+export async function move(
+	ctx: MutationCtx,
+	userId: string,
+	cardId: Id<'cards'>,
+	{ sectionId, afterId }: CardMove,
+): Promise<void> {
+	const card = await requireUserOwns(ctx, userId, cardId)
+	if (sectionId !== null) {
+		await Sections.requireUserOwnsInCollection(
+			ctx,
+			userId,
+			sectionId,
+			card.collectionId,
+		)
+	}
+
+	const line = await queryLine(
+		ctx,
+		card.collectionId,
+		sectionId ?? undefined,
+	).collect()
+	const { rank, backfill } = placeInLine(
+		// Cards share their collection's owner given well-formed data. The
+		// check keeps a malformed foreign card from serving as an anchor.
+		line.filter(row => row.ownerId === userId),
+		cardId,
+		afterId,
+	)
+
+	for (const row of backfill) {
+		await ctx.db.patch('cards', row._id, { rank: row.rank })
+	}
+	await ctx.db.patch('cards', cardId, {
+		// Clearing in Convex means patching an explicit `undefined`.
+		sectionId: sectionId ?? undefined,
+		rank,
+	})
+}
+
+/**
+ * Ranks any of `collectionId`'s cards created before ordering existed, list by
+ * list, keeping their order.
+ */
+export async function backfillForCollection(
+	ctx: MutationCtx,
+	collectionId: Id<'collections'>,
+): Promise<void> {
+	const cards = await ctx.db
+		.query('cards')
+		.withIndex('by_collectionId_sectionId_rank', q =>
+			q.eq('collectionId', collectionId),
+		)
+		.collect()
+
+	const lines = new Map<Id<'sections'> | undefined, Array<Card>>()
+	for (const card of cards) {
+		lines.set(card.sectionId, [...(lines.get(card.sectionId) ?? []), card])
+	}
+	for (const line of lines.values()) {
+		for (const row of backfillRanks(line)) {
+			await ctx.db.patch('cards', row._id, { rank: row.rank })
+		}
+	}
 }
 
 export async function remove(
@@ -153,6 +299,21 @@ export async function deleteAllForCollection(
 		.withIndex('by_collectionId_ownerId', q =>
 			q.eq('collectionId', collectionId),
 		)
+
+	for await (const card of cards) {
+		await deleteCard(ctx, card._id)
+	}
+}
+
+/**
+ * Deletes every card in `section`. Called while removing a section, which
+ * takes its cards with it.
+ */
+export async function deleteAllForSection(
+	ctx: MutationCtx,
+	section: Section,
+): Promise<void> {
+	const cards = queryLine(ctx, section.collectionId, section._id)
 
 	for await (const card of cards) {
 		await deleteCard(ctx, card._id)

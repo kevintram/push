@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 import { cardTableMarker } from '~/modules/reviews/components/cardTable.stylex'
 import { a11y } from '~/styles/a11y'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 // A local string, not a shared constant: StyleX can leave an imported
 // at-rule key unresolved in dev, emitting invalid CSS.
@@ -24,6 +24,9 @@ const styles = stylex.create({
 	// Wide, the table owns the columns and every row group and row joins
 	// them through subgrid.
 	table: {
+		// Stacked, the header cell lays out as a table cell, which would pick up
+		// the default spacing and push the title off the row titles.
+		borderSpacing: 0,
 		columnGap: spacing.lg,
 		display: {
 			default: 'block',
@@ -70,14 +73,32 @@ const styles = stylex.create({
 			default: null,
 			[wide]: 'subgrid',
 		},
+		// Contains the visually hidden labels, which are absolutely positioned.
+		// Otherwise they anchor to an ancestor outside the page's scroll area and
+		// stretch that ancestor's scroll height. A title can also stretch over
+		// the row, and isolating the row keeps the highlight it draws behind
+		// the row's text but in front of whatever sits behind the table.
+		isolation: 'isolate',
 		// Stacked, only a title takes up space.
 		minBlockSize: {
 			default: null,
 			[wide]: '32px',
 		},
+		position: 'relative',
+	},
+	// A visible title gets a little room above the first row.
+	titledHeaderRow: {
+		marginBlockEnd: spacing.xs,
+	},
+	// Rules off a section from the rows above it, with the title sitting just
+	// over the rule rather than centered.
+	underlinedHeaderRow: {
+		alignItems: 'end',
+		paddingBlockEnd: spacing['2xs'],
 
-		marginInline: `calc(${layout.rowBleed} * -1)`,
-		paddingInline: layout.rowBleed,
+		borderBlockEndColor: colorsSemantic.borderSubtle,
+		borderBlockEndStyle: 'solid',
+		borderBlockEndWidth: '1px',
 	},
 	headerCell: {
 		padding: 0,
@@ -88,26 +109,42 @@ const styles = stylex.create({
 		margin: 0,
 
 		color: colorsSemantic.textPrimary,
-		fontSize: fontSizes.md,
 		fontWeight: fontWeights.semibold,
 	},
-	// Shown while the table is hovered or holds keyboard focus. Always shown
-	// on touch, where there is no hover to reveal it. Stacked, the labels are
-	// visually hidden rather than removed, so screen readers still name each
-	// cell. Mirrors `a11y.visuallyHidden`, which can't sit behind a container
-	// query.
-	label: {
-		color: colorsSemantic.textSecondary,
-		fontSize: fontSizes.xs,
+	// The list's own heading, such as a collection's "Cards".
+	h2: {
+		fontSize: fontSizes.xl,
+		letterSpacing: '-0.01em',
+	},
+	// A subdivision of a level 2 list, such as a collection's section.
+	h3: {
+		fontSize: fontSizes.md,
+	},
+	// Shown while the table is hovered, holds keyboard focus, or has a popup
+	// open, such as a header action's menu. Always shown on touch, where there
+	// is no hover to reveal it. The column labels and header actions share it,
+	// so they show together.
+	revealed: {
 		opacity: {
 			default: null,
 			'@media (hover: hover)': {
 				default: '0',
 				[stylex.when.ancestor(':has(:focus-visible)', cardTableMarker)]:
 					1,
+				[stylex.when.ancestor(
+					':has([data-popup-open])',
+					cardTableMarker,
+				)]: 1,
 				[stylex.when.ancestor(':hover', cardTableMarker)]: 1,
 			},
 		},
+	},
+	// Stacked, the labels are visually hidden rather than removed, so screen
+	// readers still name each cell. Mirrors `a11y.visuallyHidden`, which can't
+	// sit behind a container query.
+	label: {
+		color: colorsSemantic.textSecondary,
+		fontSize: fontSizes.sm,
 
 		blockSize: {
 			default: '1px',
@@ -139,6 +176,13 @@ const styles = stylex.create({
 			[wide]: 'visible',
 		},
 	},
+	// Above a title stretched over the row, so the actions stay clickable.
+	headerActions: {
+		display: 'flex',
+		justifyContent: 'flex-end',
+		position: 'relative',
+		zIndex: 2,
+	},
 	due: { gridColumnStart: '2' },
 	lastReviewed: { gridColumnStart: '3' },
 	strength: { gridColumnStart: '4' },
@@ -152,26 +196,53 @@ const LABELS = [
 ] as const
 
 type CardListProps = {
-	/** A visible heading over the title column. */
-	title?: string
+	/** A visible heading over the title column, such as text or an editable title. */
+	title?: ReactNode
+	/** The title's heading level. Defaults to 2. */
+	headingLevel?: 2 | 3
+	/** Controls for the whole list, over the row actions column. */
+	actions?: ReactNode
 	/** Rows, as `CardItem`s. */
 	children: ReactNode
 }
 
 /** Cards as a table that stacks into a list when narrow. */
-export function CardList({ title, children }: CardListProps) {
+export function CardList({
+	title,
+	headingLevel = 2,
+	actions,
+	children,
+}: CardListProps) {
+	const Heading = headingLevel === 3 ? 'h3' : 'h2'
+
 	return (
 		<div {...stylex.props(styles.container, cardTableMarker)}>
 			{/* The table's block and grid layout can drop its native roles, so name them. */}
 			<table role='table' {...stylex.props(styles.table)}>
 				<thead role='rowgroup' {...stylex.props(styles.group)}>
-					<tr role='row' {...stylex.props(styles.headerRow)}>
+					<tr
+						role='row'
+						{...stylex.props(
+							styles.headerRow,
+							title ? styles.titledHeaderRow : null,
+							title && headingLevel === 3
+								? styles.underlinedHeaderRow
+								: null,
+						)}
+					>
 						<th
 							role='columnheader'
 							{...stylex.props(styles.headerCell)}
 						>
 							{title ? (
-								<h2 {...stylex.props(styles.title)}>{title}</h2>
+								<Heading
+									{...stylex.props(
+										styles.title,
+										styles[Heading],
+									)}
+								>
+									{title}
+								</Heading>
 							) : (
 								<span {...stylex.props(a11y.visuallyHidden)}>
 									Card
@@ -185,6 +256,7 @@ export function CardList({ title, children }: CardListProps) {
 								{...stylex.props(
 									styles.headerCell,
 									styles.label,
+									styles.revealed,
 									styles[column],
 								)}
 							>
@@ -193,11 +265,19 @@ export function CardList({ title, children }: CardListProps) {
 						))}
 						<th
 							role='columnheader'
-							{...stylex.props(styles.headerCell, styles.actions)}
+							{...stylex.props(
+								styles.headerCell,
+								styles.actions,
+								actions !== undefined && [
+									styles.headerActions,
+									styles.revealed,
+								],
+							)}
 						>
 							<span {...stylex.props(a11y.visuallyHidden)}>
 								Actions
 							</span>
+							{actions}
 						</th>
 					</tr>
 				</thead>

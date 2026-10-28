@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { Route as CollectionRoute } from '~/app/routes/collection/$collectionId'
 import { collectionQueries } from '~/modules/collections/api/collectionQueries'
+import { sectionQueries } from '~/modules/collections/api/sectionQueries'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 
 type LoaderContext = {
@@ -40,7 +41,7 @@ describe('authenticated collection loaders', () => {
 		expect(context.queryClient.ensureQueryData).not.toHaveBeenCalled()
 	})
 
-	it('warms collection children, detail, and cards after Convex authenticates', async () => {
+	it('warms collection children, detail, sections, and cards after Convex authenticates', async () => {
 		const context = createLoaderContext(true)
 		context.queryClient.ensureQueryData.mockResolvedValue([])
 		const loader = CollectionRoute.options.loader as unknown as (args: {
@@ -51,12 +52,15 @@ describe('authenticated collection loaders', () => {
 
 		await loader({ context, params: { collectionId } })
 
-		expect(context.queryClient.ensureQueryData).toHaveBeenCalledTimes(3)
+		expect(context.queryClient.ensureQueryData).toHaveBeenCalledTimes(4)
 		expect(context.queryClient.ensureQueryData).toHaveBeenCalledWith(
 			collectionQueries.children(collectionId),
 		)
 		expect(context.queryClient.ensureQueryData).toHaveBeenCalledWith(
 			collectionQueries.detail(collectionId, { expandPath: true }),
+		)
+		expect(context.queryClient.ensureQueryData).toHaveBeenCalledWith(
+			sectionQueries.listByCollection(collectionId),
 		)
 		expect(context.queryClient.ensureQueryData).toHaveBeenCalledWith(
 			cardQueries.listByCollection(collectionId),

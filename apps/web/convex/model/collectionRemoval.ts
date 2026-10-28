@@ -4,10 +4,11 @@ import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
 import * as Cards from './cards'
 import * as Collections from './collections'
+import * as Sections from './sections'
 
 /**
- * Deletes `collectionId`, every descendant collection, and every card attached
- * to any of them.
+ * Deletes `collectionId`, every descendant collection, and every card and
+ * section attached to any of them.
  */
 export async function remove(
 	ctx: MutationCtx,
@@ -61,6 +62,7 @@ async function removeTree(
 	await Promise.all([
 		...children.map(child => removeTree(ctx, userId, child._id, visited)),
 		Cards.deleteAllForCollection(ctx, collectionId),
+		Sections.deleteAllForCollection(ctx, collectionId),
 	])
 
 	await ctx.db.delete('collections', collectionId)

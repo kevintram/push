@@ -16,12 +16,13 @@ import {
 	within,
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ConvexProvider } from 'convex/react'
+import { ConvexProvider, ConvexReactClient } from 'convex/react'
 import type { ReactNode } from 'react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
 import { collectionQueries } from '~/modules/collections/api/collectionQueries'
+import { sectionQueries } from '~/modules/collections/api/sectionQueries'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { dueQueries } from '~/modules/reviews/api/dueQueries'
 import { reviewQueries } from '~/modules/reviews/api/reviewQueries'
@@ -113,6 +114,8 @@ function renderRoute(
 		newCards = [],
 		cardType = 'flashcard',
 		collections = [],
+		collectionCards = [],
+		sections = [],
 	}: {
 		ancestors?: Array<Doc<'collections'>>
 		dueEntries?: Array<DueEntry>
@@ -123,6 +126,8 @@ function renderRoute(
 		newCards?: Array<Card>
 		cardType?: Card['type']
 		collections?: Array<Doc<'collections'>>
+		collectionCards?: Array<Card>
+		sections?: Array<Doc<'sections'>>
 	} = {},
 ) {
 	const queryClient = createTestQueryClient()
@@ -189,7 +194,11 @@ function renderRoute(
 	}
 	queryClient.setQueryData(
 		cardQueries.listByCollection(collectionId).queryKey,
-		[],
+		collectionCards,
+	)
+	queryClient.setQueryData(
+		sectionQueries.listByCollection(collectionId).queryKey,
+		sections,
 	)
 	// The review queue fetches each card it lands on by id.
 	for (const card of newCards) {
@@ -1104,6 +1113,215 @@ describe('v2 app setup', () => {
 		expect(
 			within(panel).queryByRole('link', { name: 'Unrelated' }),
 		).not.toBeInTheDocument()
+	})
+
+	it('groups collection cards under their sections, unsectioned cards first', async () => {
+		const sectionId = 'section-1' as Id<'sections'>
+		const section: Doc<'sections'> = {
+			_id: sectionId,
+			_creationTime: 0,
+			collectionId,
+			ownerId: 'user-1',
+			title: 'Type parameters',
+		}
+		const emptySection: Doc<'sections'> = {
+			...section,
+			_id: 'section-2' as Id<'sections'>,
+			title: '',
+		}
+		const sectionedCard: Card = {
+			...card,
+			_id: 'card-sectioned' as Id<'cards'>,
+			primaryText: 'What does a constraint do?',
+			sectionId,
+		}
+
+		renderRoute(`/collection/${collectionId}`, {
+			collectionCards: [sectionedCard, card],
+			sections: [section, emptySection],
+		})
+
+		const tables = await screen.findAllByRole('table')
+		expect(tables).toHaveLength(3)
+		const [unsectioned, typeParameters, untitled] = tables as [
+			HTMLElement,
+			HTMLElement,
+			HTMLElement,
+		]
+		expect(
+			within(unsectioned).getByRole('heading', { name: 'Cards' }),
+		).toBeInTheDocument()
+		expect(
+			within(unsectioned).getByText(card.primaryText),
+		).toBeInTheDocument()
+		expect(
+			within(typeParameters).getByRole('button', {
+				name: 'Type parameters',
+			}),
+		).toBeInTheDocument()
+		expect(
+			within(typeParameters).getByText(sectionedCard.primaryText),
+		).toBeInTheDocument()
+		expect(
+			within(untitled).getByRole('button', { name: 'Untitled section' }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Add to Type parameters' }),
+		).toBeInTheDocument()
+		expect(
+			screen.getAllByRole('button', { name: 'Section actions' }),
+		).toHaveLength(2)
+	})
+
+	describe('collection selection', () => {
+		const section: Doc<'sections'> = {
+			_id: 'section-1' as Id<'sections'>,
+			_creationTime: 0,
+			collectionId,
+			ownerId: 'user-1',
+			title: 'Type parameters',
+			rank: 'a0',
+		}
+		const secondCard: Card = {
+			...card,
+			_id: 'card-2' as Id<'cards'>,
+			_creationTime: 1,
+			primaryText: 'What is a type parameter?',
+			rank: 'a1',
+		}
+		const firstCard: Card = { ...card, rank: 'a0' }
+
+		function renderCollection() {
+			const mutation = vi
+				.spyOn(ConvexReactClient.prototype, 'mutation')
+				.mockResolvedValue(null)
+			const rendered = renderRoute(`/collection/${collectionId}`, {
+				collectionCards: [firstCard, secondCard],
+				sections: [section],
+			})
+			return { ...rendered, mutation }
+		}
+
+		afterEach(() => {
+			vi.restoreAllMocks()
+		})
+
+		it('selects a card on click and opens it on double click', async () => {
+			const user = userEvent.setup()
+			const { router } = renderCollection()
+			const link = await screen.findByRole('link', {
+				name: firstCard.primaryText,
+			})
+
+			await user.click(link)
+			expect(router.state.location.pathname).toBe(
+				`/collection/${collectionId}`,
+			)
+			expect(link).toHaveFocus()
+
+			await user.dblClick(link)
+			await waitFor(() =>
+				expect(router.state.location.pathname).toBe(`/cards/${cardId}`),
+			)
+		})
+
+		it('moves the selected card with Mod+arrows, across into a section', async () => {
+			const user = userEvent.setup()
+			const { mutation } = renderCollection()
+			await user.click(
+				await screen.findByRole('link', {
+					name: firstCard.primaryText,
+				}),
+			)
+
+			await user.keyboard('{Control>}{ArrowDown}{/Control}')
+			expect(mutation).toHaveBeenLastCalledWith(
+				expect.anything(),
+				{ cardId, sectionId: null, afterId: secondCard._id },
+				expect.anything(),
+			)
+
+			// The selection moves to the second card, the bottom of its list,
+			// and from there down crosses into the section below.
+			await user.keyboard('{ArrowDown}')
+			expect(
+				screen.getByRole('link', { name: secondCard.primaryText }),
+			).toHaveFocus()
+			await user.keyboard('{Control>}{ArrowDown}{/Control}')
+			expect(mutation).toHaveBeenLastCalledWith(
+				expect.anything(),
+				{
+					cardId: secondCard._id,
+					sectionId: section._id,
+					afterId: null,
+				},
+				expect.anything(),
+			)
+		})
+
+		it('opens the selected card with Enter, and clears the selection with Escape or an empty click', async () => {
+			const user = userEvent.setup()
+			const { router, mutation } = renderCollection()
+			await user.click(
+				await screen.findByRole('link', {
+					name: secondCard.primaryText,
+				}),
+			)
+
+			await user.keyboard('{Escape}')
+			await user.keyboard('{Control>}{ArrowUp}{/Control}')
+			expect(mutation).not.toHaveBeenCalled()
+
+			// So does a click on empty page space.
+			await user.click(
+				screen.getByRole('link', { name: secondCard.primaryText }),
+			)
+			await user.click(screen.getByText('Subcollections'))
+			await user.keyboard('{Control>}{ArrowUp}{/Control}')
+			expect(mutation).not.toHaveBeenCalled()
+
+			await user.click(
+				screen.getByRole('link', { name: secondCard.primaryText }),
+			)
+			await user.keyboard('{Enter}')
+			await waitFor(() =>
+				expect(router.state.location.pathname).toBe(
+					`/cards/${secondCard._id}`,
+				),
+			)
+		})
+
+		it('selects a section on click, moves it, and renames it on double click or Enter', async () => {
+			const user = userEvent.setup()
+			const { mutation } = renderCollection()
+			const title = await screen.findByRole('button', {
+				name: 'Type parameters',
+			})
+
+			await user.click(title)
+			await user.keyboard('{Control>}{ArrowUp}{/Control}')
+			// The only section is already first.
+			expect(mutation).not.toHaveBeenCalled()
+
+			await user.keyboard('{Enter}')
+			const field = screen.getByRole('textbox', { name: 'Section title' })
+			expect(field).toHaveFocus()
+			expect(field).toHaveValue('Type parameters')
+
+			// Arrows keep moving the caret while renaming.
+			await user.keyboard('{Control>}{ArrowUp}{/Control}{Escape}')
+			expect(mutation).not.toHaveBeenCalled()
+			expect(
+				screen.queryByRole('textbox', { name: 'Section title' }),
+			).not.toBeInTheDocument()
+
+			await user.dblClick(
+				screen.getByRole('button', { name: 'Type parameters' }),
+			)
+			expect(
+				screen.getByRole('textbox', { name: 'Section title' }),
+			).toHaveFocus()
+		})
 	})
 
 	it('renders the shared error page when a collection does not exist', async () => {
