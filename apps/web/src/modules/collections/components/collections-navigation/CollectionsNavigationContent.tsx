@@ -17,12 +17,14 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger, Tree } from '~/components/ui'
 import { usePersistedBoolean } from '~/hooks/usePersistedBoolean'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
+import { scrollbarVars } from '~/styles/scrollbars.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import { scrollFadeVars } from '~/styles/scrollFade.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
 import { useCreateCollection } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
+import { collectionsNavigationVars } from './collectionsNavigation.stylex'
 import {
 	type CollectionOpenChangeHandler,
 	CollectionTreeItem,
@@ -66,7 +68,12 @@ const styles = stylex.create({
 	// treats any animation on the panel as its open/close animation, which
 	// would disable the scroll fade.
 	scrollArea: {
+		// Reserves the gutter so rows don't shift once the tree overflows.
+		scrollbarGutter: 'stable',
 		flexGrow: 1,
+		// Puts the scrollbar on the holder's edge; see `edgeInset`.
+		marginInlineEnd: `calc(-1 * ${collectionsNavigationVars.edgeInset})`,
+		paddingInlineEnd: `max(0px, ${collectionsNavigationVars.edgeInset} - ${scrollbarVars['--scrollbar-width']})`,
 		// Keeps focused and revealed rows clear of the edge fades.
 		scrollPaddingBlockEnd: scrollFadeVars.size,
 		scrollPaddingBlockStart: scrollFadeVars.size,
