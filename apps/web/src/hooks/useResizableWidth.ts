@@ -75,12 +75,15 @@ export function useResizableWidth({
 		// Keeps the drag from selecting text along the way.
 		event.preventDefault()
 		event.currentTarget.setPointerCapture(event.pointerId)
+		const isCollapsed = collapse?.isCollapsed ?? false
 		drag.current = {
 			startX: event.clientX,
-			startWidth: measureSidebar(event) ?? width,
+			// A collapsed sidebar may measure 0, such as one that hides
+			// entirely, which must not fall back to the open width.
+			startWidth: measureSidebar(event) ?? (isCollapsed ? 0 : width),
 			width,
 			initialWidth: width,
-			isCollapsed: collapse?.isCollapsed ?? false,
+			isCollapsed,
 		}
 	}
 

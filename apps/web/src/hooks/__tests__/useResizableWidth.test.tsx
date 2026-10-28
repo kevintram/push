@@ -210,5 +210,19 @@ describe('useResizableWidth', () => {
 			fireEvent.pointerMove(handle, { clientX: 300 })
 			expect(renderedWidth()).toBe(300)
 		})
+
+		it('starts a drag from zero when the collapsed sidebar takes no room', () => {
+			window.localStorage.setItem(KEY, '300')
+			render(<CollapsibleSidebar startCollapsed />)
+			const handle = screen.getByRole('separator')
+
+			fireEvent.pointerDown(handle, { button: 0, clientX: 0 })
+			fireEvent.pointerMove(handle, { clientX: 49 })
+			expect(isCollapsed()).toBe(true)
+			fireEvent.pointerMove(handle, { clientX: 51 })
+
+			expect(isCollapsed()).toBe(false)
+			expect(renderedWidth()).toBe(200)
+		})
 	})
 })
