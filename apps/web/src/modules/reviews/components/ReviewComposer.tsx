@@ -15,6 +15,9 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
+import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
+import { scrollFade } from '~/styles/scrollFade'
+import { scrollFadeVars } from '~/styles/scrollFade.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 import { RatingPicker } from './RatingPicker'
@@ -25,78 +28,72 @@ const CREATE_REVIEW_HOTKEY = 'Mod+Enter' satisfies Hotkey
 
 const styles = stylex.create({
 	composer: {
-		columnGap: spacing.sm,
-		rowGap: spacing.sm,
+		gap: spacing.sm,
 
 		padding: 0,
 		marginInline: 0,
 
 		blockSize: '100%',
-		display: 'grid',
-		gridTemplateColumns: 'max-content minmax(0, 1fr)',
-		gridTemplateRows: 'minmax(0, 1fr) auto',
+		display: 'flex',
+		flexDirection: 'column',
 		inlineSize: '100%',
 		minInlineSize: 0,
 	},
-	rail: {
-		alignItems: 'flex-start',
+	body: {
+		gap: spacing.md,
+		overflow: 'hidden',
 		display: 'flex',
-		gridColumnEnd: '2',
-		gridColumnStart: '1',
-		gridRowEnd: '3',
-		gridRowStart: '1',
-		minInlineSize: 0,
+		flexBasis: 0,
+		flexGrow: 1,
+		minBlockSize: 0,
 	},
-	ratingControl: {
+	rail: {
 		borderRadius: radii.md,
+		alignSelf: 'flex-start',
+		backgroundColor: colorsSemantic.surfaceTransparent,
+		flexShrink: 0,
 	},
+	// The description and notes scroll together as one document; the textareas
+	// size to their content and never scroll on their own.
 	editor: {
 		gap: spacing.sm,
 		display: 'flex',
+		flexBasis: 0,
 		flexDirection: 'column',
-		gridColumnEnd: '3',
-		gridColumnStart: '2',
-		gridRowEnd: '2',
-		gridRowStart: '1',
-		minInlineSize: 0,
+		flexGrow: 1,
+		scrollPaddingBlockEnd: scrollFadeVars.size,
+		scrollPaddingBlockStart: scrollFadeVars.size,
+		overflowX: 'hidden',
+		overflowY: 'auto',
 	},
 	description: {
 		borderRadius: radii.xs,
 		borderStyle: 'none',
+		flexShrink: 0,
 		fontSize: fontSizes.sm,
 		fontWeight: fontWeights.medium,
 		lineHeight: 1.4,
 		marginBlockStart: '4px',
-		maxBlockSize: 'calc(1.4em * 6)',
 		overflowWrap: 'anywhere',
-		overflowX: 'hidden',
-		overflowY: 'auto',
 	},
 	notes: {
 		borderRadius: radii.xs,
 		borderStyle: 'none',
-		flexBasis: 0,
 		flexGrow: 1,
+		flexShrink: 0,
 		fontSize: fontSizes.sm,
-		fontWeight: fontWeights.medium,
+		fontWeight: fontWeights.regular,
 		lineHeight: 1.4,
-		minBlockSize: 0,
+		minBlockSize: '5rem',
 		overflowWrap: 'anywhere',
-		overflowX: 'hidden',
-		overflowY: 'auto',
 	},
 	footer: {
 		alignItems: 'center',
 		columnGap: spacing.sm,
 		display: 'flex',
-		flexWrap: 'wrap',
-		gridColumnEnd: '3',
-		gridColumnStart: '2',
-		gridRowEnd: '3',
-		gridRowStart: '2',
+		flexShrink: 0,
 		justifyContent: 'space-between',
-		minInlineSize: 0,
-		rowGap: spacing.xs,
+		minBlockSize: spacing.xl,
 	},
 	footerMetadata: {
 		alignItems: 'center',
@@ -158,34 +155,34 @@ export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 			ref={formRef}
 			{...stylex.props(styles.composer)}
 		>
-			<aside {...stylex.props(styles.rail)}>
-				<div {...stylex.props(styles.ratingControl)}>
+			<div {...stylex.props(styles.body)}>
+				<aside {...stylex.props(styles.rail)}>
 					<RatingPicker
 						disabled={isPending}
 						onSetRating={setRating}
 						rating={draft.rating ?? undefined}
 						ref={ratingRef}
 					/>
+				</aside>
+				<div {...stylex.props(styles.editor, scrollFade.y)}>
+					<Textarea
+						aria-label='Review description'
+						disabled={isPending}
+						onChange={event => setDescription(event.target.value)}
+						placeholder='Description'
+						value={draft.description}
+						ref={descriptionRef}
+						xstyle={styles.description}
+					/>
+					<Textarea
+						aria-label='Review notes'
+						disabled={isPending}
+						onChange={event => setNotes(event.target.value)}
+						placeholder='Add notes…'
+						value={draft.notes}
+						xstyle={styles.notes}
+					/>
 				</div>
-			</aside>
-			<div {...stylex.props(styles.editor)}>
-				<Textarea
-					aria-label='Review description'
-					disabled={isPending}
-					onChange={event => setDescription(event.target.value)}
-					placeholder='Description'
-					value={draft.description}
-					ref={descriptionRef}
-					xstyle={styles.description}
-				/>
-				<Textarea
-					aria-label='Review notes'
-					disabled={isPending}
-					onChange={event => setNotes(event.target.value)}
-					placeholder='Notes'
-					value={draft.notes}
-					xstyle={styles.notes}
-				/>
 			</div>
 			<footer {...stylex.props(styles.footer)}>
 				<div {...stylex.props(styles.footerMetadata)}>

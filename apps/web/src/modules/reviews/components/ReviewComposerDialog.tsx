@@ -16,7 +16,7 @@ const styles = stylex.create({
 		blockSize: '88dvh',
 		display: 'flex',
 		flexDirection: 'column',
-		maxInlineSize: '900px',
+		maxInlineSize: '820px',
 	},
 	body: {
 		padding: spacing.md,
