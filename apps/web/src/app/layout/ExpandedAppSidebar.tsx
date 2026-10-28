@@ -81,8 +81,8 @@ export function ExpandedAppSidebar({
 		storageKey: 'appSidebarWidth',
 		// Matches `appSidebar.width`, which the collapsed rail's popover uses.
 		defaultWidth: 240,
-		minWidth: 200,
-		maxWidth: 400,
+		minWidth: 220,
+		maxWidth: 640,
 		edge: 'end',
 	})
 

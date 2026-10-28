@@ -60,7 +60,7 @@ const styles = stylex.create({
 		flexDirection: 'column',
 		flexShrink: 0,
 		// TODO: add mobile drawer
-		// Leaves the card at least half the row on narrow windows.
+		// Leaves the card at least half the row; the only bound on dragging wider.
 		maxInlineSize: '50%',
 		minBlockSize: 0,
 		position: 'relative',
@@ -123,8 +123,7 @@ export function ReviewQueueSidebar({
 	const { width, handleProps } = useResizableWidth({
 		storageKey: 'reviewQueueSidebarWidth',
 		defaultWidth: 320,
-		minWidth: 200,
-		maxWidth: 480,
+		minWidth: 240,
 		edge: 'start',
 	})
 

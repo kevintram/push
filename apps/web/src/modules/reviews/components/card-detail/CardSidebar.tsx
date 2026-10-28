@@ -58,7 +58,7 @@ export function CardSidebar({
 }: CardSidebarProps) {
 	const { width, handleProps } = useResizableWidth({
 		storageKey: 'cardSidebarWidth',
-		defaultWidth: 320,
+		defaultWidth: 335,
 		minWidth: 240,
 		maxWidth: 480,
 		edge: 'start',
