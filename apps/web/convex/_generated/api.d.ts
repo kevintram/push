@@ -11,6 +11,7 @@
 import type * as cards from "../cards.js";
 import type * as collections from "../collections.js";
 import type * as due from "../due.js";
+import type * as migrations from "../migrations.js";
 import type * as model_auth from "../model/auth.js";
 import type * as model_cards from "../model/cards.js";
 import type * as model_collectionRemoval from "../model/collectionRemoval.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   cards: typeof cards;
   collections: typeof collections;
   due: typeof due;
+  migrations: typeof migrations;
   "model/auth": typeof model_auth;
   "model/cards": typeof model_cards;
   "model/collectionRemoval": typeof model_collectionRemoval;

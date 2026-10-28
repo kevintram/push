@@ -1,4 +1,4 @@
-import { placeInLine, rankAfter } from '../../shared/ordering'
+import { backfillRanks, placeInLine, rankAfter } from '../../shared/ordering'
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import type {
@@ -247,6 +247,32 @@ export async function move(
 		sectionId: sectionId ?? undefined,
 		rank,
 	})
+}
+
+/**
+ * Ranks any of `collectionId`'s cards created before ordering existed, list by
+ * list, keeping their order.
+ */
+export async function backfillForCollection(
+	ctx: MutationCtx,
+	collectionId: Id<'collections'>,
+): Promise<void> {
+	const cards = await ctx.db
+		.query('cards')
+		.withIndex('by_collectionId_sectionId_rank', q =>
+			q.eq('collectionId', collectionId),
+		)
+		.collect()
+
+	const lines = new Map<Id<'sections'> | undefined, Array<Card>>()
+	for (const card of cards) {
+		lines.set(card.sectionId, [...(lines.get(card.sectionId) ?? []), card])
+	}
+	for (const line of lines.values()) {
+		for (const row of backfillRanks(line)) {
+			await ctx.db.patch('cards', row._id, { rank: row.rank })
+		}
+	}
 }
 
 export async function remove(
