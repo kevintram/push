@@ -2,6 +2,8 @@ import type { Hotkey } from '@tanstack/react-hotkeys'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { RefObject } from 'react'
 
+import { isInsideOverlay } from '~/utils/keyboard'
+
 type CardNavigationHotkeysProps = {
 	canGoNext: boolean
 	canGoPrevious: boolean
@@ -10,17 +12,6 @@ type CardNavigationHotkeysProps = {
 	onPrevious: () => void
 	previousHotkey: Hotkey
 	target?: RefObject<HTMLElement | null>
-}
-
-// Dialogs, popovers, and menus sit above the card, so moving the card behind
-// them would strand or discard what they're showing.
-const OVERLAY_SELECTOR = '[role="dialog"], [role="alertdialog"], [role="menu"]'
-
-function isInsideOverlay(event: KeyboardEvent) {
-	return (
-		event.target instanceof Element &&
-		event.target.closest(OVERLAY_SELECTOR) !== null
-	)
 }
 
 /**
@@ -41,6 +32,8 @@ export function CardNavigationHotkeys({
 		[
 			{
 				hotkey: previousHotkey,
+				// Dialogs, popovers, and menus sit above the card, so moving the
+				// card behind them would strand or discard what they're showing.
 				callback: event => {
 					if (!isInsideOverlay(event)) onPrevious()
 				},
