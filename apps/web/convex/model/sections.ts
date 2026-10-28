@@ -41,6 +41,22 @@ export async function requireUserOwnsInCollection(
 	return section
 }
 
+/** A key that sorts after every section in `collectionId`. */
+export async function rankAtEnd(
+	ctx: QueryCtx,
+	collectionId: Id<'collections'>,
+): Promise<string> {
+	const last = await ctx.db
+		.query('sections')
+		.withIndex('by_collectionId_rank', q =>
+			q.eq('collectionId', collectionId),
+		)
+		.order('desc')
+		.first()
+
+	return rankAfter(last?.rank)
+}
+
 /** Lists a collection's sections in display order. */
 export async function listByCollection(
 	ctx: QueryCtx,
@@ -69,19 +85,11 @@ export async function create(
 	await Collections.requireUserOwns(ctx, userId, fields.collectionId)
 
 	// New sections go to the bottom.
-	const last = await ctx.db
-		.query('sections')
-		.withIndex('by_collectionId_rank', q =>
-			q.eq('collectionId', fields.collectionId),
-		)
-		.order('desc')
-		.first()
-
 	return await ctx.db.insert('sections', {
 		collectionId: fields.collectionId,
 		ownerId: userId,
 		title: fields.title ?? '',
-		rank: rankAfter(last?.rank),
+		rank: await rankAtEnd(ctx, fields.collectionId),
 	})
 }
 

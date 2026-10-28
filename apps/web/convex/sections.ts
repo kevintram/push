@@ -3,6 +3,7 @@ import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { requireIdentity } from './model/auth'
 import * as SectionConversion from './model/sectionConversion'
+import * as SectionMove from './model/sectionMove'
 import * as SectionRemoval from './model/sectionRemoval'
 import * as Sections from './model/sections'
 import {
@@ -58,6 +59,24 @@ export const move = mutation({
 		const { subject: userId } = await requireIdentity(ctx)
 
 		await Sections.move(ctx, userId, args.sectionId, args.afterId)
+	},
+})
+
+export const moveToCollection = mutation({
+	args: {
+		sectionId: v.id('sections'),
+		collectionId: v.id('collections'),
+	},
+	returns: v.null(),
+	handler: async (ctx, args) => {
+		const { subject: userId } = await requireIdentity(ctx)
+
+		await SectionMove.moveToCollection(
+			ctx,
+			userId,
+			args.sectionId,
+			args.collectionId,
+		)
 	},
 })
 
