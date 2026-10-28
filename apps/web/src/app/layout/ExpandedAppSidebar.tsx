@@ -4,10 +4,8 @@ import { Link } from '@tanstack/react-router'
 import { PanelLeft, Settings } from 'lucide-react'
 import type { Ref } from 'react'
 
-import { ResizeHandle } from '~/components/ResizeHandle'
 import { SidebarItem } from '~/components/sidebar'
 import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
-import { useResizableWidth } from '~/hooks/useResizableWidth'
 import { CollectionsNavigation } from '~/modules/collections/components/collections-navigation/CollectionsNavigation'
 import { collectionsNavigationVars } from '~/modules/collections/components/collections-navigation/collectionsNavigation.stylex'
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
@@ -29,16 +27,10 @@ const styles = stylex.create({
 		blockSize: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-		position: 'relative',
 	},
 	width: (width: number) => ({
 		inlineSize: `${width}px`,
 	}),
-	// Starts the handle half an inset before the page, so it covers only the
-	// collection scrollbar's empty end and not its thumb.
-	resizeHandle: {
-		insetInlineStart: `calc(100% + ${layout.appShellInset} / 2)`,
-	},
 	brandRow: {
 		alignItems: 'center',
 		display: 'flex',
@@ -74,22 +66,15 @@ type ExpandedAppSidebarProps = {
 	navId: string
 	onToggle: () => void
 	toggleRef: Ref<HTMLButtonElement>
+	width: number
 }
 
 export function ExpandedAppSidebar({
 	navId,
 	onToggle,
 	toggleRef,
+	width,
 }: ExpandedAppSidebarProps) {
-	const { width, handleProps } = useResizableWidth({
-		storageKey: 'appSidebarWidth',
-		// Matches `appSidebar.width`, which the collapsed rail's popover uses.
-		defaultWidth: 240,
-		minWidth: 220,
-		maxWidth: 640,
-		edge: 'end',
-	})
-
 	return (
 		<div {...stylex.props(styles.container, styles.width(width))}>
 			<div {...stylex.props(styles.brandRow)}>
@@ -130,7 +115,6 @@ export function ExpandedAppSidebar({
 			>
 				Settings
 			</SidebarItem>
-			<ResizeHandle {...handleProps} xstyle={styles.resizeHandle} />
 		</div>
 	)
 }

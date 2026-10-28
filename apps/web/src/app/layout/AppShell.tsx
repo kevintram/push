@@ -4,7 +4,9 @@ import { useQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { useCallback, useLayoutEffect, useRef } from 'react'
 
+import { ResizeHandle } from '~/components/ResizeHandle'
 import { usePersistedBoolean } from '~/hooks/usePersistedBoolean'
+import { useResizableWidth } from '~/hooks/useResizableWidth'
 import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { slate } from '~/styles/colors/colorsPrimitive.stylex'
@@ -35,11 +37,17 @@ const styles = stylex.create({
 			'@media (prefers-color-scheme: dark)': slate.s900,
 		},
 	},
-	// Leaves overflow visible so the expanded sidebar's resize handle can sit
+	// Positions the resize handle and leaves overflow visible so it can sit
 	// over the page edge; the shell clips at the viewport.
 	sidebar: {
 		color: colorsSemantic.textPrimary,
 		flexShrink: 0,
+		position: 'relative',
+	},
+	// Starts the handle half an inset before the page, so it covers only the
+	// collection scrollbar's empty end and not its thumb.
+	resizeHandle: {
+		insetInlineStart: `calc(100% + ${layout.appShellInset} / 2)`,
 	},
 	children: {
 		// Establish the inset used by sidebar and page toolbar alignment.
@@ -77,6 +85,22 @@ export function AppShell({ children }: AppShellProps) {
 		SIDEBAR_STORAGE_KEY,
 		false,
 	)
+	// Lives here rather than in the expanded sidebar so its handle stays
+	// mounted while a drag collapses or opens the sidebar.
+	const { width, handleProps } = useResizableWidth({
+		storageKey: 'appSidebarWidth',
+		// Matches `appSidebar.width`, which the collapsed rail's popover uses.
+		defaultWidth: 240,
+		minWidth: 220,
+		maxWidth: 640,
+		edge: 'end',
+		// Sets the state directly: unlike the toggle buttons, a drag leaves
+		// focus where it is.
+		collapse: {
+			isCollapsed: !isSidebarExpanded,
+			onCollapsedChange: isCollapsed => setSidebarExpanded(!isCollapsed),
+		},
+	})
 	const collapsedToggleRef = useRef<HTMLButtonElement>(null)
 	const expandedToggleRef = useRef<HTMLButtonElement>(null)
 	const pendingFocusTarget = useRef<'expanded' | 'collapsed' | null>(null)
@@ -138,6 +162,7 @@ export function AppShell({ children }: AppShellProps) {
 						navId={SIDEBAR_ID}
 						onToggle={toggleSidebar}
 						toggleRef={expandedToggleRef}
+						width={width}
 					/>
 				) : (
 					<CollapsedAppSidebar
@@ -146,6 +171,7 @@ export function AppShell({ children }: AppShellProps) {
 						toggleRef={collapsedToggleRef}
 					/>
 				)}
+				<ResizeHandle {...handleProps} xstyle={styles.resizeHandle} />
 			</nav>
 			<main {...stylex.props(styles.children)}>{children}</main>
 		</div>

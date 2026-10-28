@@ -4,6 +4,8 @@ import { Suspense, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import { LoadingIndicator } from '~/components/LoadingIndicator'
+import { ResizeHandle } from '~/components/ResizeHandle'
+import { useResizableWidth } from '~/hooks/useResizableWidth'
 import { CardDetailErrorFallback } from '~/modules/reviews/components/card-detail/CardDetailErrorFallback'
 import { CardDetailView } from '~/modules/reviews/components/card-detail/CardDetailView'
 import {
@@ -76,6 +78,34 @@ const styles = stylex.create({
 	panelsCollapsed: {
 		paddingInline: spacing.xs,
 		paddingBlockEnd: spacing.xs,
+	},
+	// Stays mounted while the queue sidebar is closed, so a drag on its handle
+	// can open it.
+	sidebarSlot: {
+		display: 'flex',
+		flexShrink: 0,
+		// TODO: add mobile drawer
+		// Leaves the card at least half the row; the only bound on dragging wider.
+		maxInlineSize: '50%',
+		minBlockSize: 0,
+		position: 'relative',
+	},
+	sidebarSlotWidth: (width: number) => ({
+		inlineSize: `${width}px`,
+	}),
+	// Takes no room and cancels the panels gap, so the card keeps the row.
+	sidebarSlotClosed: {
+		inlineSize: 0,
+		marginInlineStart: `calc(-1 * ${spacing.sm})`,
+	},
+	// The middle of the panels gap beside the card.
+	resizeHandle: {
+		insetInlineStart: `calc(${spacing.sm} / -2)`,
+	},
+	// Ends the 12px handle at the collapsed panels' edge. The padding is only
+	// 4px, and anything past it would scroll the workspace sideways.
+	resizeHandleClosed: {
+		insetInlineStart: `calc(${spacing.xs} - ${spacing.md} / 2)`,
 	},
 	cardColumn: {
 		gap: spacing.xs,
@@ -190,6 +220,18 @@ export function ReviewQueueWorkspace({
 		}
 	}
 
+	const { width: queueSidebarWidth, handleProps } = useResizableWidth({
+		storageKey: 'reviewQueueSidebarWidth',
+		defaultWidth: 320,
+		minWidth: 240,
+		edge: 'start',
+		collapse: {
+			isCollapsed: !queueSidebarOpen,
+			onCollapsedChange: isCollapsed =>
+				setQueueSidebarPreference(!isCollapsed),
+		},
+	})
+
 	const onQueueSidebarToggle = () => {
 		setQueueSidebarPreference(!queueSidebarOpen)
 	}
@@ -273,17 +315,34 @@ export function ReviewQueueWorkspace({
 						)}
 					</section>
 				</div>
-				{queueSidebarOpen && (
-					<ReviewQueueSidebar
-						cards={visibleCards}
-						today={today}
-						currentCardId={currentCard?._id ?? null}
-						onCardClick={selectCard}
-						filter={filter}
-						onFilterChange={setFilter}
-						onClose={onQueueSidebarClose}
+				<div
+					{...stylex.props(
+						styles.sidebarSlot,
+						queueSidebarOpen
+							? styles.sidebarSlotWidth(queueSidebarWidth)
+							: styles.sidebarSlotClosed,
+					)}
+				>
+					{queueSidebarOpen && (
+						<ReviewQueueSidebar
+							cards={visibleCards}
+							today={today}
+							currentCardId={currentCard?._id ?? null}
+							onCardClick={selectCard}
+							filter={filter}
+							onFilterChange={setFilter}
+							onClose={onQueueSidebarClose}
+						/>
+					)}
+					<ResizeHandle
+						{...handleProps}
+						xstyle={
+							queueSidebarOpen
+								? styles.resizeHandle
+								: styles.resizeHandleClosed
+						}
 					/>
-				)}
+				</div>
 			</div>
 		</section>
 	)

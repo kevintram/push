@@ -4,6 +4,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { PanelRight } from 'lucide-react'
 import { type ReactElement, useId, useRef } from 'react'
 
+import { ResizeHandle } from '~/components/ResizeHandle'
 import {
 	Button,
 	Tabs,
@@ -14,6 +15,7 @@ import {
 	TooltipTrigger,
 } from '~/components/ui'
 import { usePersistedBoolean } from '~/hooks/usePersistedBoolean'
+import { useResizableWidth } from '~/hooks/useResizableWidth'
 import { useToday } from '~/hooks/useToday'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
@@ -120,13 +122,34 @@ const styles = stylex.create({
 		minHeight: 0,
 		minWidth: 0,
 	},
-	sidebar: {
+	// Stays mounted while the details sidebar is closed, so a drag on its
+	// handle can open it.
+	sidebarSlot: {
 		display: {
 			default: 'none',
 			'@container (min-width: 640px)': 'flex',
 		},
+		flexShrink: 0,
+		// Leaves the card content at least half the row.
+		maxInlineSize: '50%',
 		position: 'relative',
 		zIndex: 1,
+	},
+	sidebarSlotWidth: (width: number) => ({
+		inlineSize: `${width}px`,
+	}),
+	// Takes no room and cancels the content gap, so the card keeps the row.
+	sidebarSlotClosed: {
+		inlineSize: 0,
+		marginInlineStart: `calc(-1 * ${spacing.lg})`,
+	},
+	// The middle of the content gap beside the card.
+	resizeHandle: {
+		insetInlineStart: `calc(${spacing.lg} / -2)`,
+	},
+	// The middle of the content's end padding.
+	resizeHandleClosed: {
+		insetInlineStart: `calc(${spacing.lg} / 2)`,
 	},
 })
 
@@ -149,6 +172,18 @@ export function CardDetail({
 	)
 	const sidebarId = useId()
 	const reviewsTabRef = useRef<HTMLElement>(null)
+
+	const { width: sidebarWidth, handleProps } = useResizableWidth({
+		storageKey: 'cardSidebarWidth',
+		defaultWidth: 335,
+		minWidth: 240,
+		maxWidth: 480,
+		edge: 'start',
+		collapse: {
+			isCollapsed: !sidebarOpen,
+			onCollapsedChange: isCollapsed => setSidebarOpen(!isCollapsed),
+		},
+	})
 
 	const toggleSidebar = () => {
 		setSidebarOpen(!sidebarOpen)
@@ -255,17 +290,33 @@ export function CardDetail({
 					) : (
 						<CardReviews cardId={cardId} />
 					)}
-					{sidebarOpen && (
-						<CardSidebar
-							id={sidebarId}
-							{...srsState}
-							cardId={cardId}
-							showReviews={activeTab === 'overview'}
-							onSeeAllReviews={showAllReviews}
-							today={today}
-							xstyle={styles.sidebar}
+					<div
+						{...stylex.props(
+							styles.sidebarSlot,
+							sidebarOpen
+								? styles.sidebarSlotWidth(sidebarWidth)
+								: styles.sidebarSlotClosed,
+						)}
+					>
+						{sidebarOpen && (
+							<CardSidebar
+								id={sidebarId}
+								{...srsState}
+								cardId={cardId}
+								showReviews={activeTab === 'overview'}
+								onSeeAllReviews={showAllReviews}
+								today={today}
+							/>
+						)}
+						<ResizeHandle
+							{...handleProps}
+							xstyle={
+								sidebarOpen
+									? styles.resizeHandle
+									: styles.resizeHandleClosed
+							}
 						/>
-					)}
+					</div>
 				</div>
 				<ReviewComposerDock />
 			</div>
