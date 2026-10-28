@@ -97,9 +97,19 @@ export const cardPatch = cardBase
 	})
 	.partial()
 
-// Places the card in `sectionId`'s list (the unsectioned cards when `null`)
-// right after `afterId`, or first when it is `null`. The card stays in its
-// collection. The server picks the key, so clients never send one.
+// The part of `cardPatch` that applies to many cards at once: the toggles and
+// moving to another collection, but not each card's own text.
+export const cardBatchPatch = cardPatch.pick(
+	'type',
+	'flaggedAt',
+	'retiredAt',
+	'collectionId',
+)
+
+// Places the cards, in the given order, as a run in `sectionId`'s list (the
+// unsectioned cards when `null`) right after `afterId`, or first when it is
+// `null`. The cards stay in their collection. The server picks the keys, so
+// clients never send one.
 export const cardMove = v.object({
 	sectionId: v.union(v.id('sections'), v.null()),
 	afterId: v.union(v.id('cards'), v.null()),
@@ -116,5 +126,6 @@ export const cardSearchResult = v.object({
 export type Card = Infer<typeof cardRead>
 export type CardCreate = Infer<typeof cardCreate>
 export type CardPatch = Infer<typeof cardPatch>
+export type CardBatchPatch = Infer<typeof cardBatchPatch>
 export type CardMove = Infer<typeof cardMove>
 export type CardSearchResult = Infer<typeof cardSearchResult>

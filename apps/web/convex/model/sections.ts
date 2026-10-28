@@ -108,12 +108,11 @@ export async function move(
 ): Promise<void> {
 	const section = await requireUserOwns(ctx, userId, sectionId)
 	const sections = await listByCollection(ctx, userId, section.collectionId)
-	const { rank, backfill } = placeInLine(sections, sectionId, afterId)
+	const { ranks, backfill } = placeInLine(sections, [sectionId], afterId)
 
-	for (const row of backfill) {
+	for (const row of [...backfill, ...ranks]) {
 		await ctx.db.patch('sections', row._id, { rank: row.rank })
 	}
-	await ctx.db.patch('sections', sectionId, { rank })
 }
 
 /**

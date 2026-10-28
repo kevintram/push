@@ -60,6 +60,11 @@ const styles = stylex.create({
 
 type CardActionsProps = {
 	card: Card
+	/**
+	 * The selected cards. When `card` is one of several, the menu acts on all
+	 * of them; the quick toggles beside it still act on `card` alone.
+	 */
+	selection?: ReadonlyArray<Card>
 	showGoToCard?: boolean
 	/**
 	 * Hide the menu trigger until an ancestor marked with
@@ -71,24 +76,36 @@ type CardActionsProps = {
 
 export function CardActions({
 	card,
+	selection,
 	showGoToCard = false,
 	isMenuHoverRevealed = false,
 	xstyle,
 }: CardActionsProps) {
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
-	const {
-		confirmDelete,
-		isDeleteDialogOpen,
-		isDeleting,
-		setIsDeleteDialogOpen,
-		toggleFlag,
-		toggleRetire,
-		toggleType,
-	} = useCardActions(card)
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+	const { isDeleting, remove, toggleFlag, toggleRetire, toggleType } =
+		useCardActions()
 
 	const isFlashcard = card.type === 'flashcard'
 	const isFlagged = card.flaggedAt !== undefined
 	const isRetired = card.retiredAt !== undefined
+
+	const targets =
+		selection &&
+		selection.length > 1 &&
+		selection.some(({ _id }) => _id === card._id)
+			? selection
+			: [card]
+	const isBatch = targets.length > 1
+	// Names the menu's action for a single card, or counts the cards.
+	const label = (action: string) =>
+		isBatch ? `${action} ${targets.length} cards` : action
+	const areAllFlagged = targets.every(
+		({ flaggedAt }) => flaggedAt !== undefined,
+	)
+	const areAllRetired = targets.every(
+		({ retiredAt }) => retiredAt !== undefined,
+	)
 
 	return (
 		<div {...stylex.props(styles.container, xstyle)}>
@@ -132,7 +149,7 @@ export function CardActions({
 								shape='round'
 								variant='ghost'
 								size='small'
-								onClick={toggleType}
+								onClick={() => toggleType([card])}
 							>
 								<Zap
 									aria-hidden='true'
@@ -155,7 +172,7 @@ export function CardActions({
 								shape='round'
 								variant='ghost'
 								size='small'
-								onClick={toggleFlag}
+								onClick={() => toggleFlag([card])}
 							>
 								<Flag
 									aria-hidden='true'
@@ -178,7 +195,7 @@ export function CardActions({
 								shape='round'
 								variant='ghost'
 								size='small'
-								onClick={toggleRetire}
+								onClick={() => toggleRetire([card])}
 							>
 								<Archive
 									aria-hidden='true'
@@ -208,54 +225,60 @@ export function CardActions({
 					<Ellipsis aria-hidden='true' size={iconSizes.sm} />
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align='end'>
-					<DropdownMenuItem
-						icon={
-							<Zap
-								aria-hidden='true'
-								size={iconSizes.sm}
-								{...stylex.props(
-									isFlashcard && styles.flashcardOn,
-								)}
-							/>
-						}
-						onClick={toggleType}
-					>
-						{isFlashcard
-							? 'Remove as flashcard'
-							: 'Mark as flashcard'}
-					</DropdownMenuItem>
+					{isBatch ? null : (
+						<DropdownMenuItem
+							icon={
+								<Zap
+									aria-hidden='true'
+									size={iconSizes.sm}
+									{...stylex.props(
+										isFlashcard && styles.flashcardOn,
+									)}
+								/>
+							}
+							onClick={() => toggleType(targets)}
+						>
+							{isFlashcard
+								? 'Remove as flashcard'
+								: 'Mark as flashcard'}
+						</DropdownMenuItem>
+					)}
 					<DropdownMenuItem
 						icon={
 							<Flag
 								aria-hidden='true'
 								size={iconSizes.sm}
-								{...stylex.props(isFlagged && styles.flagOn)}
+								{...stylex.props(
+									areAllFlagged && styles.flagOn,
+								)}
 							/>
 						}
-						onClick={toggleFlag}
+						onClick={() => toggleFlag(targets)}
 					>
-						{isFlagged ? 'Unflag' : 'Flag'}
+						{label(areAllFlagged ? 'Unflag' : 'Flag')}
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						icon={
 							<Archive
 								aria-hidden='true'
 								size={iconSizes.sm}
-								{...stylex.props(isRetired && styles.retiredOn)}
+								{...stylex.props(
+									areAllRetired && styles.retiredOn,
+								)}
 							/>
 						}
-						onClick={toggleRetire}
+						onClick={() => toggleRetire(targets)}
 					>
-						{isRetired ? 'Unretire' : 'Retire'}
+						{label(areAllRetired ? 'Unretire' : 'Retire')}
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={() => setIsMoveDialogOpen(true)}>
-						Move
+						{label('Move')}
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						onClick={() => setIsDeleteDialogOpen(true)}
 					>
-						Delete
+						{label('Delete')}
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
@@ -263,17 +286,26 @@ export function CardActions({
 			{isMoveDialogOpen ? (
 				<MoveCardDialog
 					onOpenChange={setIsMoveDialogOpen}
-					card={card}
+					cards={targets}
 				/>
 			) : null}
 
 			<DeleteConfirmationDialog
-				description='This card and its content will be permanently deleted.'
+				description={
+					isBatch
+						? 'These cards and their content will be permanently deleted.'
+						: 'This card and its content will be permanently deleted.'
+				}
 				isPending={isDeleting}
-				onConfirm={confirmDelete}
+				onConfirm={() =>
+					// Leave the dialog open on failure so the toast has context.
+					remove(targets, () => setIsDeleteDialogOpen(false))
+				}
 				onOpenChange={setIsDeleteDialogOpen}
 				open={isDeleteDialogOpen}
-				title='Delete card?'
+				title={
+					isBatch ? `Delete ${targets.length} cards?` : 'Delete card?'
+				}
 			/>
 		</div>
 	)

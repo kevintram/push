@@ -14,7 +14,7 @@ import {
 import {
 	cardQueries,
 	useCreateCard,
-	useMoveCard,
+	useMoveCards,
 } from '~/modules/reviews/api/cardQueries'
 import { spacing } from '~/styles/tokens.stylex'
 
@@ -64,7 +64,7 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 	const createSection = useCreateSection()
 	const createCard = useCreateCard()
 	const moveSection = useMoveSection()
-	const moveCard = useMoveCard()
+	const moveCard = useMoveCards()
 	const navigate = useNavigate()
 	const today = useToday()
 
@@ -102,7 +102,7 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 			if (selected?.kind === 'card') {
 				const placement = planCardMove(grouped, selected.id, direction)
 				if (placement) {
-					moveCard.mutate({ cardId: selected.id, ...placement })
+					moveCard.mutate({ cardIds: [selected.id], ...placement })
 				}
 			} else if (selected?.kind === 'section') {
 				const placement = planSectionMove(

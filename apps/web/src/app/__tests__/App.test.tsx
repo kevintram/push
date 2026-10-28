@@ -1237,7 +1237,7 @@ describe('v2 app setup', () => {
 			await user.keyboard('{Control>}{ArrowDown}{/Control}')
 			expect(mutation).toHaveBeenLastCalledWith(
 				expect.anything(),
-				{ cardId, sectionId: null, afterId: secondCard._id },
+				{ cardIds: [cardId], sectionId: null, afterId: secondCard._id },
 				expect.anything(),
 			)
 
@@ -1251,7 +1251,7 @@ describe('v2 app setup', () => {
 			expect(mutation).toHaveBeenLastCalledWith(
 				expect.anything(),
 				{
-					cardId: secondCard._id,
+					cardIds: [secondCard._id],
 					sectionId: section._id,
 					afterId: null,
 				},

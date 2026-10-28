@@ -47,11 +47,14 @@ export function useMoveSection() {
 			// The server rejects the move, so there is nothing to show.
 			if (afterId !== null && !ids.has(afterId)) continue
 
-			const { rank, backfill } = placeInLine(sections, sectionId, afterId)
-			const ranks = new Map([
-				...backfill.map(row => [row._id, row.rank] as const),
-				[sectionId, rank],
-			])
+			const { ranks: placed, backfill } = placeInLine(
+				sections,
+				[sectionId],
+				afterId,
+			)
+			const ranks = new Map(
+				[...backfill, ...placed].map(row => [row._id, row.rank]),
+			)
 			localStore.setQuery(
 				api.sections.listByCollection,
 				args,

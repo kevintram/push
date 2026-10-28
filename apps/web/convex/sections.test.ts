@@ -224,7 +224,7 @@ describe('sections', () => {
 		})
 		// Reordered, so creation order alone would get it wrong.
 		await asUserA.mutation(api.cards.move, {
-			cardId: secondId,
+			cardIds: [secondId],
 			sectionId,
 			afterId: null,
 		})
