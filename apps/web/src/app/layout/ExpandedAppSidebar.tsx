@@ -4,20 +4,16 @@ import { Link } from '@tanstack/react-router'
 import { PanelLeft, Settings } from 'lucide-react'
 import type { Ref } from 'react'
 
+import { ResizeHandle } from '~/components/ResizeHandle'
 import { SidebarItem } from '~/components/sidebar'
 import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
+import { useResizableWidth } from '~/hooks/useResizableWidth'
 import { CollectionsNavigation } from '~/modules/collections/components/collections-navigation/CollectionsNavigation'
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { ReviewNavigation } from '~/modules/reviews/components/review-navigation/ReviewNavigation'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import {
-	appSidebar,
-	fontSizes,
-	fontWeights,
-	layout,
-	spacing,
-} from '~/styles/tokens.stylex'
+import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
 
 import { SIDEBAR_HOTKEY } from './sidebarHotkey'
 
@@ -30,8 +26,11 @@ const styles = stylex.create({
 		blockSize: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-		inlineSize: appSidebar.width,
+		position: 'relative',
 	},
+	width: (width: number) => ({
+		inlineSize: `${width}px`,
+	}),
 	brandRow: {
 		alignItems: 'center',
 		display: 'flex',
@@ -74,8 +73,17 @@ export function ExpandedAppSidebar({
 	onToggle,
 	toggleRef,
 }: ExpandedAppSidebarProps) {
+	const { width, handleProps } = useResizableWidth({
+		storageKey: 'appSidebarWidth',
+		// Matches `appSidebar.width`, which the collapsed rail's popover uses.
+		defaultWidth: 240,
+		minWidth: 200,
+		maxWidth: 400,
+		edge: 'end',
+	})
+
 	return (
-		<div {...stylex.props(styles.container)}>
+		<div {...stylex.props(styles.container, styles.width(width))}>
 			<div {...stylex.props(styles.brandRow)}>
 				<Tooltip>
 					<TooltipTrigger
@@ -114,6 +122,7 @@ export function ExpandedAppSidebar({
 			>
 				Settings
 			</SidebarItem>
+			<ResizeHandle {...handleProps} />
 		</div>
 	)
 }
