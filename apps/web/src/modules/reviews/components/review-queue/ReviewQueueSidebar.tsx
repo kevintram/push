@@ -2,14 +2,12 @@ import * as stylex from '@stylexjs/stylex'
 import { X } from 'lucide-react'
 import { useId } from 'react'
 
-import { ResizeHandle } from '~/components/ResizeHandle'
 import {
 	Button,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import { useResizableWidth } from '~/hooks/useResizableWidth'
 import type { CardTypeFilter } from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
 import { CardTypeFilterBadges } from '~/modules/reviews/components/card-type-filter/CardTypeFilterBadges'
 import { CardItem } from '~/modules/reviews/components/CardItem'
@@ -58,20 +56,10 @@ const styles = stylex.create({
 		},
 		display: 'flex',
 		flexDirection: 'column',
-		flexShrink: 0,
-		// TODO: add mobile drawer
-		// Leaves the card at least half the row; the only bound on dragging wider.
-		maxInlineSize: '50%',
+		// Fills the slot ReviewQueueWorkspace sizes and resizes.
+		flexGrow: 1,
 		minBlockSize: 0,
-		position: 'relative',
-	},
-	width: (width: number) => ({
-		inlineSize: `${width}px`,
-	}),
-	// The middle of the workspace gap beside the card. Insets start inside
-	// the panel's 1px border, hence the extra pixel.
-	resizeHandle: {
-		insetInlineStart: `calc(${spacing.sm} / -2 - 1px)`,
+		minInlineSize: 0,
 	},
 	header: {
 		gap: spacing.xs,
@@ -120,18 +108,12 @@ export function ReviewQueueSidebar({
 	onClose,
 }: ReviewQueueSidebarProps) {
 	const headingId = useId()
-	const { width, handleProps } = useResizableWidth({
-		storageKey: 'reviewQueueSidebarWidth',
-		defaultWidth: 320,
-		minWidth: 240,
-		edge: 'start',
-	})
 
 	return (
 		<aside
 			id={REVIEW_QUEUE_SIDEBAR_ID}
 			aria-labelledby={headingId}
-			{...stylex.props(styles.panel, styles.width(width))}
+			{...stylex.props(styles.panel)}
 		>
 			<div {...stylex.props(styles.header)}>
 				<div {...stylex.props(styles.titleRow)}>
@@ -186,7 +168,6 @@ export function ReviewQueueSidebar({
 					))}
 				</CardList>
 			</div>
-			<ResizeHandle {...handleProps} xstyle={styles.resizeHandle} />
 		</aside>
 	)
 }
