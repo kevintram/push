@@ -89,6 +89,19 @@ describe('useResizableWidth', () => {
 		expect(renderedWidth()).toBe(290)
 	})
 
+	it('saves the rendered width when dragged past a CSS cap', () => {
+		render(<Sidebar edge='end' />)
+		vi.spyOn(
+			screen.getByTestId('sidebar'),
+			'getBoundingClientRect',
+		).mockReturnValue(new DOMRect(0, 0, 300, 0))
+
+		drag(100, 300)
+
+		expect(renderedWidth()).toBe(300)
+		expect(window.localStorage.getItem(KEY)).toBe('300')
+	})
+
 	it('stops at the minimum width', () => {
 		render(<Sidebar edge='end' />)
 
