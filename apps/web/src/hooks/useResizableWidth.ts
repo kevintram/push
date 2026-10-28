@@ -14,12 +14,20 @@ type ResizableWidthOptions = {
 	maxWidth?: number
 	/** The sidebar edge the handle sits on; dragging it outward widens. */
 	edge: ResizeEdge
+	/** Lets a drag collapse the sidebar, and a drag from collapsed open it. */
+	collapse?: {
+		isCollapsed: boolean
+		onCollapsedChange: (isCollapsed: boolean) => void
+	}
 }
 
 type Drag = {
 	startX: number
 	startWidth: number
 	width: number
+	/** The width before the drag, restored if the drag ends collapsed. */
+	initialWidth: number
+	isCollapsed: boolean
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -41,6 +49,11 @@ function measureSidebar(event: PointerEvent<HTMLElement>) {
  * the sidebar. The hook measures the sidebar through it, so a drag starts
  * from, and saves, the width on screen even when CSS caps it below the
  * dragged one.
+ *
+ * With `collapse`, the sidebar collapses once a drag pulls it under a quarter
+ * of `minWidth`, and opens at `minWidth` once a drag from collapsed passes
+ * it, as in Linear. The handle has to stay mounted in both states so one drag
+ * can cross either way.
  */
 export function useResizableWidth({
 	storageKey,
@@ -48,6 +61,7 @@ export function useResizableWidth({
 	minWidth,
 	maxWidth = Number.POSITIVE_INFINITY,
 	edge,
+	collapse,
 }: ResizableWidthOptions) {
 	const [width, setWidth] = useState(() =>
 		clamp(readStoredNumber(storageKey, defaultWidth), minWidth, maxWidth),
@@ -65,6 +79,8 @@ export function useResizableWidth({
 			startX: event.clientX,
 			startWidth: measureSidebar(event) ?? width,
 			width,
+			initialWidth: width,
+			isCollapsed: collapse?.isCollapsed ?? false,
 		}
 	}
 
@@ -75,19 +91,33 @@ export function useResizableWidth({
 		}
 		// Assumes left-to-right layout: the end edge is on the right.
 		const delta = event.clientX - current.startX
-		current.width = Math.round(
-			clamp(
-				current.startWidth + (edge === 'end' ? delta : -delta),
-				minWidth,
-				maxWidth,
-			),
-		)
+		const draggedWidth =
+			current.startWidth + (edge === 'end' ? delta : -delta)
+		if (collapse) {
+			const shouldCollapse = draggedWidth < minWidth / 4
+			if (shouldCollapse !== current.isCollapsed) {
+				current.isCollapsed = shouldCollapse
+				collapse.onCollapsedChange(shouldCollapse)
+			}
+			if (shouldCollapse) {
+				return
+			}
+		}
+		current.width = Math.round(clamp(draggedWidth, minWidth, maxWidth))
 		setWidth(current.width)
 	}
 
 	function endDrag(event: PointerEvent<HTMLElement>) {
 		const current = drag.current
 		if (current === null) {
+			return
+		}
+		drag.current = null
+		if (current.isCollapsed) {
+			// Opens again at the width the user had, not the one they dragged
+			// through on the way to collapsing.
+			setWidth(current.initialWidth)
+			writeStoredNumber(storageKey, current.initialWidth)
 			return
 		}
 		// Commits the last move so the measurement below sees it.
@@ -100,7 +130,6 @@ export function useResizableWidth({
 		)
 		setWidth(finalWidth)
 		writeStoredNumber(storageKey, finalWidth)
-		drag.current = null
 	}
 
 	function resetWidth() {

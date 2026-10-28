@@ -1,5 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { fireEvent, render, screen } from '@testing-library/react'
+import { useState } from 'react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { ResizeHandle } from '~/components/ResizeHandle'
@@ -27,6 +28,39 @@ function Sidebar({ edge }: { edge: ResizeEdge }) {
 			<ResizeHandle {...handleProps} xstyle={styles.handle} />
 		</aside>
 	)
+}
+
+// Collapses under a quarter of the 200px minimum: 50px.
+function CollapsibleSidebar({ startCollapsed }: { startCollapsed: boolean }) {
+	const [isCollapsed, setIsCollapsed] = useState(startCollapsed)
+	const { width, handleProps } = useResizableWidth({
+		storageKey: KEY,
+		defaultWidth: 240,
+		minWidth: 200,
+		maxWidth: 400,
+		edge: 'end',
+		collapse: { isCollapsed, onCollapsedChange: setIsCollapsed },
+	})
+	return (
+		<aside
+			data-testid='sidebar'
+			data-collapsed={isCollapsed}
+			data-width={width}
+		>
+			<ResizeHandle {...handleProps} xstyle={styles.handle} />
+		</aside>
+	)
+}
+
+function isCollapsed() {
+	return screen.getByTestId('sidebar').dataset.collapsed === 'true'
+}
+
+function measureSidebarAs(width: number) {
+	vi.spyOn(
+		screen.getByTestId('sidebar'),
+		'getBoundingClientRect',
+	).mockReturnValue(new DOMRect(0, 0, width, 0))
 }
 
 function drag(fromX: number, toX: number) {
@@ -127,5 +161,54 @@ describe('useResizableWidth', () => {
 
 		expect(renderedWidth()).toBe(240)
 		expect(window.localStorage.getItem(KEY)).toBe('240')
+	})
+
+	describe('with collapse', () => {
+		it('collapses once dragged under a quarter of the minimum', () => {
+			window.localStorage.setItem(KEY, '300')
+			render(<CollapsibleSidebar startCollapsed={false} />)
+			measureSidebarAs(300)
+			const handle = screen.getByRole('separator')
+
+			fireEvent.pointerDown(handle, { button: 0, clientX: 300 })
+			fireEvent.pointerMove(handle, { clientX: 51 })
+			expect(isCollapsed()).toBe(false)
+			fireEvent.pointerMove(handle, { clientX: 49 })
+			expect(isCollapsed()).toBe(true)
+			fireEvent.pointerUp(handle, { clientX: 49 })
+
+			expect(isCollapsed()).toBe(true)
+		})
+
+		it('keeps the width from before a drag that ends collapsed', () => {
+			window.localStorage.setItem(KEY, '300')
+			render(<CollapsibleSidebar startCollapsed={false} />)
+			measureSidebarAs(300)
+			const handle = screen.getByRole('separator')
+
+			fireEvent.pointerDown(handle, { button: 0, clientX: 300 })
+			fireEvent.pointerMove(handle, { clientX: 220 })
+			expect(renderedWidth()).toBe(220)
+			fireEvent.pointerMove(handle, { clientX: 0 })
+			fireEvent.pointerUp(handle, { clientX: 0 })
+
+			expect(renderedWidth()).toBe(300)
+			expect(window.localStorage.getItem(KEY)).toBe('300')
+		})
+
+		it('opens at the minimum once a drag from collapsed passes the threshold', () => {
+			render(<CollapsibleSidebar startCollapsed />)
+			measureSidebarAs(40)
+			const handle = screen.getByRole('separator')
+
+			fireEvent.pointerDown(handle, { button: 0, clientX: 40 })
+			fireEvent.pointerMove(handle, { clientX: 49 })
+			expect(isCollapsed()).toBe(true)
+			fireEvent.pointerMove(handle, { clientX: 51 })
+			expect(isCollapsed()).toBe(false)
+			expect(renderedWidth()).toBe(200)
+			fireEvent.pointerMove(handle, { clientX: 300 })
+			expect(renderedWidth()).toBe(300)
+		})
 	})
 })
