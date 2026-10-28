@@ -95,10 +95,28 @@ const styles = stylex.create({
 			order: 1,
 		},
 	},
+	// Adjacent active rows join into one block, squaring the corners where
+	// they meet. Each row marks itself `data-active` for its neighbors.
 	active: {
 		backgroundColor: {
 			default: colorsSemantic.surfaceTransparentActive,
 			':hover': colorsSemantic.surfaceTransparentActive,
+		},
+		borderEndEndRadius: {
+			default: radii.lg,
+			':has(+ [data-active])': 0,
+		},
+		borderEndStartRadius: {
+			default: radii.lg,
+			':has(+ [data-active])': 0,
+		},
+		borderStartEndRadius: {
+			default: radii.lg,
+			':is([data-active] + *)': 0,
+		},
+		borderStartStartRadius: {
+			default: radii.lg,
+			':is([data-active] + *)': 0,
 		},
 	},
 
@@ -256,6 +274,7 @@ export function CardItem({
 	return (
 		<tr
 			role='row'
+			data-active={active || undefined}
 			{...stylex.props(
 				styles.row,
 				stylex.defaultMarker(),
