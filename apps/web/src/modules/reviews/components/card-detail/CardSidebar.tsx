@@ -25,6 +25,10 @@ const styles = stylex.create({
 	width: (width: number) => ({
 		inlineSize: `${width}px`,
 	}),
+	// The middle of CardDetail's gap beside the card content.
+	resizeHandle: {
+		insetInlineStart: `calc(${spacing.lg} / -2)`,
+	},
 	scroller: {
 		gap: spacing.sm,
 		display: 'flex',
@@ -75,7 +79,7 @@ export function CardSidebar({
 				)}
 				<CardPropertiesPanel {...srsState} today={today} />
 			</div>
-			<ResizeHandle {...handleProps} />
+			<ResizeHandle {...handleProps} xstyle={styles.resizeHandle} />
 		</aside>
 	)
 }

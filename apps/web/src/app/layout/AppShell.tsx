@@ -35,10 +35,11 @@ const styles = stylex.create({
 			'@media (prefers-color-scheme: dark)': slate.s900,
 		},
 	},
+	// Leaves overflow visible so the expanded sidebar's resize handle can sit
+	// over the page edge; the shell clips at the viewport.
 	sidebar: {
 		color: colorsSemantic.textPrimary,
 		flexShrink: 0,
-		overflowY: 'hidden',
 	},
 	children: {
 		// Establish the inset used by sidebar and page toolbar alignment.

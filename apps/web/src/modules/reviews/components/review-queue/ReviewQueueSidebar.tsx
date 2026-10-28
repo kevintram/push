@@ -50,7 +50,6 @@ const styles = stylex.create({
 		borderRadius: radii['2xl'],
 		borderStyle: 'solid',
 		borderWidth: 1,
-		overflow: 'hidden',
 		backgroundColor: colorsSemantic.surfacePrimary,
 		blockSize: '100%',
 		boxShadow: {
@@ -69,6 +68,11 @@ const styles = stylex.create({
 	width: (width: number) => ({
 		inlineSize: `${width}px`,
 	}),
+	// The middle of the workspace gap beside the card. Insets start inside
+	// the panel's 1px border, hence the extra pixel.
+	resizeHandle: {
+		insetInlineStart: `calc(${spacing.sm} / -2 - 1px)`,
+	},
 	header: {
 		gap: spacing.xs,
 		paddingBlock: spacing.sm,
@@ -183,7 +187,7 @@ export function ReviewQueueSidebar({
 					))}
 				</CardList>
 			</div>
-			<ResizeHandle {...handleProps} />
+			<ResizeHandle {...handleProps} xstyle={styles.resizeHandle} />
 		</aside>
 	)
 }

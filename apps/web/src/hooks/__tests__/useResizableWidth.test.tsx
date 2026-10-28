@@ -1,3 +1,4 @@
+import * as stylex from '@stylexjs/stylex'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
@@ -6,6 +7,12 @@ import { ResizeHandle } from '~/components/ResizeHandle'
 import { type ResizeEdge, useResizableWidth } from '../useResizableWidth'
 
 const KEY = 'sidebarWidth'
+
+const styles = stylex.create({
+	handle: {
+		insetInlineStart: '100%',
+	},
+})
 
 function Sidebar({ edge }: { edge: ResizeEdge }) {
 	const { width, handleProps } = useResizableWidth({
@@ -17,7 +24,7 @@ function Sidebar({ edge }: { edge: ResizeEdge }) {
 	})
 	return (
 		<aside data-testid='sidebar' data-width={width}>
-			<ResizeHandle {...handleProps} />
+			<ResizeHandle {...handleProps} xstyle={styles.handle} />
 		</aside>
 	)
 }

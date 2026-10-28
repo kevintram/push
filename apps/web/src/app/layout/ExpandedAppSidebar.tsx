@@ -31,6 +31,10 @@ const styles = stylex.create({
 	width: (width: number) => ({
 		inlineSize: `${width}px`,
 	}),
+	// The middle of the inset between the sidebar and the page.
+	resizeHandle: {
+		insetInlineStart: `calc(100% - ${layout.appShellInset} / 2)`,
+	},
 	brandRow: {
 		alignItems: 'center',
 		display: 'flex',
@@ -122,7 +126,7 @@ export function ExpandedAppSidebar({
 			>
 				Settings
 			</SidebarItem>
-			<ResizeHandle {...handleProps} />
+			<ResizeHandle {...handleProps} xstyle={styles.resizeHandle} />
 		</div>
 	)
 }
