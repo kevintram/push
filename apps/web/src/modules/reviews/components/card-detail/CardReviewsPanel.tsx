@@ -22,21 +22,25 @@ const styles = stylex.create({
 		display: 'flex',
 		justifyContent: 'center',
 	},
-	seeAll: {
+	link: {
 		textDecoration: 'none',
 		color: {
 			default: colorsSemantic.textInteractive,
 			':hover': colorsSemantic.textInteractiveHover,
 			':active': colorsSemantic.textInteractiveActive,
 		},
-		fontSize: fontSizes.sm,
 	},
-	seeAllButton: {
+	linkButton: {
 		padding: 0,
 		borderWidth: 0,
 		backgroundColor: 'transparent',
 		cursor: 'pointer',
 		fontFamily: 'inherit',
+		fontSize: 'inherit',
+		fontWeight: 'inherit',
+	},
+	seeAll: {
+		fontSize: fontSizes.sm,
 	},
 })
 
@@ -45,8 +49,8 @@ const REVIEW_LIMIT = 3
 type CardReviewsPanelProps = {
 	cardId: Id<'cards'>
 	/**
-	 * Shows all reviews without leaving the current view. When omitted,
-	 * "See all" links to the card's reviews route.
+	 * Shows all reviews without leaving the current view. When omitted, the
+	 * title and "See all" link to the card's reviews route.
 	 */
 	onSeeAll?: () => void
 }
@@ -60,31 +64,37 @@ export function CardReviewsPanel({ cardId, onSeeAll }: CardReviewsPanelProps) {
 		.slice(0, REVIEW_LIMIT)
 	const hasMore = reviews.length > recentReviews.length
 
+	// The review queue shows a card without routing, so it passes `onSeeAll`
+	// to switch tabs in place instead of leaving the queue.
+	const renderReviewsLink = (label: string, xstyle?: stylex.StyleXStyles) =>
+		onSeeAll ? (
+			<button
+				type='button'
+				onClick={onSeeAll}
+				{...stylex.props(styles.link, styles.linkButton, xstyle)}
+			>
+				{label}
+			</button>
+		) : (
+			<Link
+				to='/cards/$cardId/reviews'
+				params={{ cardId }}
+				{...stylex.props(styles.link, xstyle)}
+			>
+				{label}
+			</Link>
+		)
+
 	return (
-		<Panel title='Reviews' xstyle={styles.container}>
+		<Panel
+			title='Reviews'
+			renderTitle={renderReviewsLink}
+			xstyle={styles.container}
+		>
 			<ReviewList reviews={recentReviews} />
 			{hasMore && (
 				<div {...stylex.props(styles.footer)}>
-					{onSeeAll ? (
-						<button
-							type='button'
-							onClick={onSeeAll}
-							{...stylex.props(
-								styles.seeAll,
-								styles.seeAllButton,
-							)}
-						>
-							See all
-						</button>
-					) : (
-						<Link
-							to='/cards/$cardId/reviews'
-							params={{ cardId }}
-							{...stylex.props(styles.seeAll)}
-						>
-							See all
-						</Link>
-					)}
+					{renderReviewsLink('See all', styles.seeAll)}
 				</div>
 			)}
 		</Panel>

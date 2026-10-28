@@ -14,9 +14,15 @@ vi.mock('../../../api/reviewQueries', () => ({
 	reviewQueries: { listByCard: () => ({ queryKey: ['reviews'] }) },
 }))
 vi.mock('@tanstack/react-router', () => ({
-	Link: ({ children }: { children: React.ReactNode }) => (
-		<a href='#'>{children}</a>
-	),
+	Link: ({
+		children,
+		to,
+		params,
+	}: {
+		children: React.ReactNode
+		to: string
+		params: { cardId: string }
+	}) => <a href={to.replace('$cardId', params.cardId)}>{children}</a>,
 }))
 vi.mock('../../ReviewList', () => ({
 	ReviewList: ({ reviews }: { reviews: Array<Review> }) => (
@@ -104,6 +110,28 @@ describe('CardReviewsPanel', () => {
 			screen.queryByRole('link', { name: 'See all' }),
 		).not.toBeInTheDocument()
 		fireEvent.click(screen.getByRole('button', { name: 'See all' }))
+		expect(onSeeAll).toHaveBeenCalledOnce()
+	})
+
+	it("links the title to the card's reviews", () => {
+		query.data = dated.slice(1)
+		renderPanel()
+
+		expect(screen.getByRole('link', { name: 'Reviews' })).toHaveAttribute(
+			'href',
+			'/cards/card-1/reviews',
+		)
+	})
+
+	it('shows all reviews in place from the title', () => {
+		query.data = dated.slice(1)
+		const onSeeAll = vi.fn()
+		renderPanel(onSeeAll)
+
+		expect(
+			screen.queryByRole('link', { name: 'Reviews' }),
+		).not.toBeInTheDocument()
+		fireEvent.click(screen.getByRole('button', { name: 'Reviews' }))
 		expect(onSeeAll).toHaveBeenCalledOnce()
 	})
 })
