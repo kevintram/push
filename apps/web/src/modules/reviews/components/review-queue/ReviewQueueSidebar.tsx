@@ -2,12 +2,14 @@ import * as stylex from '@stylexjs/stylex'
 import { X } from 'lucide-react'
 import { useId } from 'react'
 
+import { ResizeHandle } from '~/components/ResizeHandle'
 import {
 	Button,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
+import { useResizableWidth } from '~/hooks/useResizableWidth'
 import type { CardTypeFilter } from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
 import { CardTypeFilterBadges } from '~/modules/reviews/components/card-type-filter/CardTypeFilterBadges'
 import { CardItem } from '~/modules/reviews/components/CardItem'
@@ -48,7 +50,6 @@ const styles = stylex.create({
 		borderRadius: radii['2xl'],
 		borderStyle: 'solid',
 		borderWidth: 1,
-		overflow: 'hidden',
 		backgroundColor: colorsSemantic.surfacePrimary,
 		blockSize: '100%',
 		boxShadow: {
@@ -59,8 +60,18 @@ const styles = stylex.create({
 		flexDirection: 'column',
 		flexShrink: 0,
 		// TODO: add mobile drawer
-		inlineSize: 'clamp(200px, 30%, 320px)',
+		// Leaves the card at least half the row; the only bound on dragging wider.
+		maxInlineSize: '50%',
 		minBlockSize: 0,
+		position: 'relative',
+	},
+	width: (width: number) => ({
+		inlineSize: `${width}px`,
+	}),
+	// The middle of the workspace gap beside the card. Insets start inside
+	// the panel's 1px border, hence the extra pixel.
+	resizeHandle: {
+		insetInlineStart: `calc(${spacing.sm} / -2 - 1px)`,
 	},
 	header: {
 		gap: spacing.xs,
@@ -109,12 +120,18 @@ export function ReviewQueueSidebar({
 	onClose,
 }: ReviewQueueSidebarProps) {
 	const headingId = useId()
+	const { width, handleProps } = useResizableWidth({
+		storageKey: 'reviewQueueSidebarWidth',
+		defaultWidth: 320,
+		minWidth: 240,
+		edge: 'start',
+	})
 
 	return (
 		<aside
 			id={REVIEW_QUEUE_SIDEBAR_ID}
 			aria-labelledby={headingId}
-			{...stylex.props(styles.panel)}
+			{...stylex.props(styles.panel, styles.width(width))}
 		>
 			<div {...stylex.props(styles.header)}>
 				<div {...stylex.props(styles.titleRow)}>
@@ -169,6 +186,7 @@ export function ReviewQueueSidebar({
 					))}
 				</CardList>
 			</div>
+			<ResizeHandle {...handleProps} xstyle={styles.resizeHandle} />
 		</aside>
 	)
 }

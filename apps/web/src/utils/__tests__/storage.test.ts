@@ -2,9 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
 	readStoredBoolean,
+	readStoredNumber,
 	readStoredStringArray,
 	readStoredValue,
 	writeStoredBoolean,
+	writeStoredNumber,
 	writeStoredValue,
 } from '../storage'
 
@@ -67,6 +69,21 @@ describe('storage', () => {
 		},
 	)
 
+	it('round-trips a stored number', () => {
+		writeStoredNumber(KEY, 312)
+		expect(readStoredNumber(KEY, 0)).toBe(312)
+	})
+
+	it.each([null, 'wide', 'Infinity'])(
+		'falls back when the stored number is %j',
+		value => {
+			if (value !== null) {
+				window.localStorage.setItem(KEY, value)
+			}
+			expect(readStoredNumber(KEY, 240)).toBe(240)
+		},
+	)
+
 	it('tolerates unavailable storage', () => {
 		vi.spyOn(window.localStorage, 'getItem').mockImplementation(() => {
 			throw new Error('Storage unavailable')
@@ -77,5 +94,6 @@ describe('storage', () => {
 		expect(readStoredBoolean(KEY, true)).toBe(true)
 		expect(() => writeStoredBoolean(KEY, false)).not.toThrow()
 		expect(readStoredStringArray(KEY)).toEqual([])
+		expect(readStoredNumber(KEY, 240)).toBe(240)
 	})
 })
