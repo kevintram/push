@@ -53,7 +53,6 @@ export function useResizableWidth({
 		clamp(readStoredNumber(storageKey, defaultWidth), minWidth, maxWidth),
 	)
 	const drag = useRef<Drag | null>(null)
-	const [isDragging, setIsDragging] = useState(false)
 
 	function onPointerDown(event: PointerEvent<HTMLElement>) {
 		if (event.button !== 0) {
@@ -67,7 +66,6 @@ export function useResizableWidth({
 			startWidth: measureSidebar(event) ?? width,
 			width,
 		}
-		setIsDragging(true)
 	}
 
 	function onPointerMove(event: PointerEvent<HTMLElement>) {
@@ -103,7 +101,6 @@ export function useResizableWidth({
 		setWidth(finalWidth)
 		writeStoredNumber(storageKey, finalWidth)
 		drag.current = null
-		setIsDragging(false)
 	}
 
 	function resetWidth() {
@@ -114,7 +111,6 @@ export function useResizableWidth({
 	return {
 		width,
 		handleProps: {
-			isDragging,
 			onPointerDown,
 			onPointerMove,
 			onPointerUp: endDrag,
