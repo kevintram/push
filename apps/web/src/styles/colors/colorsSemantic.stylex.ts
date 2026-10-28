@@ -202,6 +202,12 @@ export const colorsSemantic = stylex.defineVars({
 	// A subdued boundary for an element that is unavailable.
 	borderDisabled: { default: neutral.s200, [DARK]: neutral.s800 },
 
+	// Scrollbar
+	// The thumb of an always-visible scrollbar. Overlay scrollbars keep the
+	// platform's own colors. `scrollbars.stylex.ts` resolves it once at the
+	// root, so a subtree theme must override `scrollbarVars`, not this token.
+	scrollbarThumb: { default: neutral.s400, [DARK]: neutral.s500 },
+
 	// Shadow
 	// The default shadow for depth and surface separation.
 	shadowPrimary: { default: blackAlpha.s10, [DARK]: blackAlpha.s30 },

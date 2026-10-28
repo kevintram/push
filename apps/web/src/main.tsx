@@ -4,6 +4,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { App } from './app/App'
+import { trackClassicScrollbars } from './utils/trackClassicScrollbars'
 
 if (import.meta.env.DEV && !import.meta.env.VITEST) {
 	const branchLabel = __APP_BRANCH__
@@ -11,6 +12,8 @@ if (import.meta.env.DEV && !import.meta.env.VITEST) {
 		document.title = `${document.title} ${branchLabel}`.trim()
 	}
 }
+trackClassicScrollbars()
+
 const container = document.querySelector('#root')
 
 if (container) {
