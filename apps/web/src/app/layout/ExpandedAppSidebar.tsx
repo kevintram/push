@@ -9,6 +9,7 @@ import { SidebarItem } from '~/components/sidebar'
 import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { useResizableWidth } from '~/hooks/useResizableWidth'
 import { CollectionsNavigation } from '~/modules/collections/components/collections-navigation/CollectionsNavigation'
+import { collectionsNavigationVars } from '~/modules/collections/components/collections-navigation/collectionsNavigation.stylex'
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { ReviewNavigation } from '~/modules/reviews/components/review-navigation/ReviewNavigation'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
@@ -21,6 +22,8 @@ const styles = stylex.create({
 	// Matches the gap AppShell leaves around the page surface.
 	container: {
 		padding: layout.appShellInset,
+		// Lets the collection scrollbar reach through the end padding.
+		[collectionsNavigationVars.edgeInset]: layout.appShellInset,
 		// Separates the header and each section.
 		gap: spacing.md,
 		blockSize: '100%',
@@ -31,9 +34,10 @@ const styles = stylex.create({
 	width: (width: number) => ({
 		inlineSize: `${width}px`,
 	}),
-	// The middle of the inset between the sidebar and the page.
+	// Starts the handle half an inset before the page, so it covers only the
+	// collection scrollbar's empty end and not its thumb.
 	resizeHandle: {
-		insetInlineStart: `calc(100% - ${layout.appShellInset} / 2)`,
+		insetInlineStart: `calc(100% + ${layout.appShellInset} / 2)`,
 	},
 	brandRow: {
 		alignItems: 'center',
