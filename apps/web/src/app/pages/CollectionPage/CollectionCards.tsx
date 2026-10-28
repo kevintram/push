@@ -25,6 +25,7 @@ import {
 	planCardMove,
 	planSectionMove,
 } from './collectionOrder'
+import type { SelectMode } from './collectionSelection'
 import { groupCardsBySection } from './groupCardsBySection'
 import { SectionActions } from './SectionActions'
 import { SectionTitle } from './SectionTitle'
@@ -56,6 +57,22 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 	)
 	const { selected, select, clear, selectAdjacent } =
 		useCollectionSelection(grouped)
+	const selectedSectionId =
+		selected?.items.length === 1 && selected.cursor.kind === 'section'
+			? selected.cursor.id
+			: null
+	// In page order, so batch actions and moves keep the cards' order.
+	const selectedCards = useMemo(() => {
+		const ids = new Set(
+			selected?.items.flatMap(item =>
+				item.kind === 'card' ? [item.id] : [],
+			),
+		)
+		return [
+			...grouped.unsectioned,
+			...grouped.sections.flatMap(({ cards }) => cards),
+		].filter(card => ids.has(card._id))
+	}, [grouped, selected])
 
 	// The section whose title is a field. A new section starts out renaming so
 	// it can be named right away.
@@ -99,41 +116,48 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 
 	const handleMove = useCallback(
 		(direction: MoveDirection) => {
-			if (selected?.kind === 'card') {
-				const placement = planCardMove(grouped, selected.id, direction)
-				if (placement) {
-					moveCard.mutate({ cardIds: [selected.id], ...placement })
-				}
-			} else if (selected?.kind === 'section') {
+			if (selectedSectionId) {
 				const placement = planSectionMove(
 					grouped,
-					selected.id,
+					selectedSectionId,
 					direction,
 				)
 				if (placement) {
-					moveSection.mutate({ sectionId: selected.id, ...placement })
+					moveSection.mutate({
+						sectionId: selectedSectionId,
+						...placement,
+					})
 				}
+			} else if (selectedCards.length > 0) {
+				const plan = planCardMove(
+					grouped,
+					new Set(selectedCards.map(card => card._id)),
+					direction,
+				)
+				if (plan) moveCard.mutate(plan)
 			}
 		},
-		[grouped, selected, moveCard, moveSection],
+		[grouped, selectedSectionId, selectedCards, moveCard, moveSection],
 	)
 
+	// Only a single card or section opens; several have nowhere to go.
 	const handleOpen = useCallback(() => {
-		if (selected?.kind === 'card') {
+		const [card, ...rest] = selectedCards
+		if (card && rest.length === 0) {
 			void navigate({
 				to: '/cards/$cardId',
-				params: { cardId: selected.id },
+				params: { cardId: card._id },
 			})
-		} else if (selected?.kind === 'section') {
-			setRenamingSectionId(selected.id)
+		} else if (selectedSectionId) {
+			setRenamingSectionId(selectedSectionId)
 		}
-	}, [navigate, selected])
+	}, [navigate, selectedCards, selectedSectionId])
 
 	const selectCard = useCallback(
-		(cardId: Id<'cards'>) => select({ kind: 'card', id: cardId }),
+		(cardId: Id<'cards'>, mode: SelectMode) =>
+			select({ kind: 'card', id: cardId }, mode),
 		[select],
 	)
-	const selectedCardId = selected?.kind === 'card' ? selected.id : null
 	const isAdding = createCard.isPending || createSection.isPending
 
 	return (
@@ -153,7 +177,7 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 				isAdding={isAdding}
 				onAddCard={() => handleCreateCard()}
 				onAddSection={handleCreateSection}
-				selectedCardId={selectedCardId}
+				selectedCards={selectedCards}
 				onSelectCard={selectCard}
 			/>
 			{grouped.sections.map(({ section, cards: sectionCards }) => (
@@ -164,10 +188,7 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 					title={
 						<SectionTitle
 							section={section}
-							isSelected={
-								selected?.kind === 'section' &&
-								selected.id === section._id
-							}
+							isSelected={section._id === selectedSectionId}
 							isRenaming={section._id === renamingSectionId}
 							onSelect={() =>
 								select({ kind: 'section', id: section._id })
@@ -182,7 +203,7 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 					isAdding={isAdding}
 					onAddCard={() => handleCreateCard(section._id)}
 					onAddSection={handleCreateSection}
-					selectedCardId={selectedCardId}
+					selectedCards={selectedCards}
 					onSelectCard={selectCard}
 				/>
 			))}

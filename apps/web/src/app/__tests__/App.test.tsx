@@ -1259,6 +1259,58 @@ describe('v2 app setup', () => {
 			)
 		})
 
+		it('selects several cards with Shift and Mod, and moves them as one run', async () => {
+			const user = userEvent.setup()
+			const { mutation } = renderCollection()
+			const first = await screen.findByRole('link', {
+				name: firstCard.primaryText,
+			})
+			const second = screen.getByRole('link', {
+				name: secondCard.primaryText,
+			})
+
+			await user.click(first)
+			await user.keyboard('{Shift>}{ArrowDown}{/Shift}')
+			expect(second).toHaveFocus()
+			await user.keyboard('{Control>}{ArrowDown}{/Control}')
+			expect(mutation).toHaveBeenLastCalledWith(
+				expect.anything(),
+				{
+					cardIds: [firstCard._id, secondCard._id],
+					sectionId: section._id,
+					afterId: null,
+				},
+				expect.anything(),
+			)
+
+			// Mod-click takes the first card back out, leaving the second.
+			await user.keyboard('{Control>}')
+			await user.click(first)
+			await user.keyboard('{/Control}')
+			await user.keyboard('{Control>}{ArrowUp}{/Control}')
+			expect(mutation).toHaveBeenLastCalledWith(
+				expect.anything(),
+				{ cardIds: [secondCard._id], sectionId: null, afterId: null },
+				expect.anything(),
+			)
+
+			// Shift-click selects the range from the anchor.
+			await user.click(first)
+			await user.keyboard('{Shift>}')
+			await user.click(second)
+			await user.keyboard('{/Shift}')
+			await user.keyboard('{Control>}{ArrowDown}{/Control}')
+			expect(mutation).toHaveBeenLastCalledWith(
+				expect.anything(),
+				{
+					cardIds: [firstCard._id, secondCard._id],
+					sectionId: section._id,
+					afterId: null,
+				},
+				expect.anything(),
+			)
+		})
+
 		it('opens the selected card with Enter, and clears the selection with Escape or an empty click', async () => {
 			const user = userEvent.setup()
 			const { router, mutation } = renderCollection()
