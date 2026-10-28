@@ -6,7 +6,7 @@ import { Textarea } from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useUpdateSection } from '~/modules/collections/api/sectionQueries'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { layout, radii, spacing } from '~/styles/tokens.stylex'
+import { layout, radii } from '~/styles/tokens.stylex'
 
 // Typography comes from the section's h3, set by `CardList`.
 const styles = stylex.create({
@@ -17,15 +17,14 @@ const styles = stylex.create({
 		color: 'inherit',
 		letterSpacing: 'inherit',
 	},
-	// The title as shown when not renaming. It bleeds past the text like a card
-	// row, so the text stays where the textarea puts it.
+	// The title as shown when not renaming. Like a card row's link, it
+	// stretches over its whole header row, so a click anywhere on the header
+	// selects the section, and the row highlights as one piece. `CardList`
+	// makes the header row the containing block and lifts its actions above.
 	label: {
-		marginBlock: `calc(${spacing['2xs']} * -1)`,
-		marginInline: `calc(${layout.rowBleed} * -1)`,
-		paddingBlock: spacing['2xs'],
-		paddingInline: layout.rowBleed,
+		padding: 0,
 		display: 'block',
-		inlineSize: `calc(100% + ${layout.rowBleed} * 2)`,
+		inlineSize: '100%',
 
 		fontFamily: 'inherit',
 		fontSize: 'inherit',
@@ -34,27 +33,49 @@ const styles = stylex.create({
 		lineHeight: 'inherit',
 		textAlign: 'start',
 
-		borderRadius: radii.md,
 		borderWidth: 0,
-		backgroundColor: {
-			default: colorsSemantic.surfaceTransparent,
-			':hover': colorsSemantic.surfaceTransparentHover,
-		},
+		backgroundColor: 'transparent',
 		color: 'inherit',
 		cursor: 'default',
+		outlineStyle: 'none',
 
-		outlineColor: {
-			default: colorsSemantic.surfaceTransparent,
-			':focus-visible': colorsSemantic.borderFocus,
+		// The click target, over the column labels.
+		'::after': {
+			inset: 0,
+			content: '""',
+			position: 'absolute',
+			zIndex: 1,
 		},
-		outlineOffset: '-2px',
-		outlineStyle: 'solid',
-		outlineWidth: '2px',
+		// The highlight, behind the header's text. It bleeds past the text like
+		// a card row, and stops above the section's rule.
+		'::before': {
+			insetBlock: 0,
+			insetInline: `calc(${layout.rowBleed} * -1)`,
+			content: '""',
+			position: 'absolute',
+			zIndex: -1,
+
+			borderRadius: radii.md,
+			backgroundColor: {
+				default: colorsSemantic.surfaceTransparent,
+				':hover': colorsSemantic.surfaceTransparentHover,
+			},
+
+			outlineColor: {
+				default: colorsSemantic.surfaceTransparent,
+				':focus-visible': colorsSemantic.borderFocus,
+			},
+			outlineOffset: '-2px',
+			outlineStyle: 'solid',
+			outlineWidth: '2px',
+		},
 	},
 	selected: {
-		backgroundColor: {
-			default: colorsSemantic.surfaceTransparentActive,
-			':hover': colorsSemantic.surfaceTransparentActive,
+		'::before': {
+			backgroundColor: {
+				default: colorsSemantic.surfaceTransparentActive,
+				':hover': colorsSemantic.surfaceTransparentActive,
+			},
 		},
 	},
 	untitled: {

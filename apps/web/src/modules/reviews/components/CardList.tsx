@@ -73,14 +73,17 @@ const styles = stylex.create({
 			default: null,
 			[wide]: 'subgrid',
 		},
+		// Contains the visually hidden labels, which are absolutely positioned.
+		// Otherwise they anchor to an ancestor outside the page's scroll area and
+		// stretch that ancestor's scroll height. A title can also stretch over
+		// the row, and isolating the row keeps the highlight it draws behind
+		// the row's text but in front of whatever sits behind the table.
+		isolation: 'isolate',
 		// Stacked, only a title takes up space.
 		minBlockSize: {
 			default: null,
 			[wide]: '32px',
 		},
-		// Contains the visually hidden labels, which are absolutely positioned.
-		// Otherwise they anchor to an ancestor outside the page's scroll area and
-		// stretch that ancestor's scroll height.
 		position: 'relative',
 	},
 	// A visible title gets a little room above the first row.
@@ -173,9 +176,12 @@ const styles = stylex.create({
 			[wide]: 'visible',
 		},
 	},
+	// Above a title stretched over the row, so the actions stay clickable.
 	headerActions: {
 		display: 'flex',
 		justifyContent: 'flex-end',
+		position: 'relative',
+		zIndex: 2,
 	},
 	due: { gridColumnStart: '2' },
 	lastReviewed: { gridColumnStart: '3' },
