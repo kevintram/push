@@ -60,6 +60,31 @@ export function writeStoredBoolean(
 }
 
 /**
+ * Read a stored finite number, returning `fallback` when the key is missing,
+ * holds anything else, or browser storage is unavailable.
+ */
+export function readStoredNumber(
+	key: string,
+	fallback: number,
+	area: StorageArea = 'local',
+): number {
+	try {
+		const value = Number(getStorage(area).getItem(key) ?? Number.NaN)
+		return Number.isFinite(value) ? value : fallback
+	} catch {
+		return fallback
+	}
+}
+
+export function writeStoredNumber(
+	key: string,
+	value: number,
+	area: StorageArea = 'local',
+): void {
+	writeStoredValue(key, String(value), area)
+}
+
+/**
  * Read a JSON array of strings, as stored by `writeStoredValue`, returning an empty array when the key
  * is missing, holds anything else, or browser storage is unavailable.
  */
