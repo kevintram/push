@@ -31,6 +31,8 @@ const styles = stylex.create({
 
 type PanelProps = {
 	title: string
+	/** Renders the title's content, e.g. to make it a link. */
+	renderTitle?: (title: string) => ReactNode
 	actions?: ReactNode
 	children: ReactNode
 	xstyle?: stylex.StyleXStyles
@@ -40,11 +42,19 @@ type PanelProps = {
  * A titled panel. Callers own layout (flex sizing, scrolling) through
  * `xstyle`.
  */
-export function Panel({ title, actions, children, xstyle }: PanelProps) {
+export function Panel({
+	title,
+	renderTitle,
+	actions,
+	children,
+	xstyle,
+}: PanelProps) {
 	return (
 		<section aria-label={title} {...stylex.props(styles.container, xstyle)}>
 			<div {...stylex.props(styles.header)}>
-				<p {...stylex.props(styles.title)}>{title}</p>
+				<p {...stylex.props(styles.title)}>
+					{renderTitle ? renderTitle(title) : title}
+				</p>
 				{actions}
 			</div>
 			{children}

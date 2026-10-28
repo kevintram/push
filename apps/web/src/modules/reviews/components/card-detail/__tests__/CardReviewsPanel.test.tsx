@@ -106,4 +106,25 @@ describe('CardReviewsPanel', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'See all' }))
 		expect(onSeeAll).toHaveBeenCalledOnce()
 	})
+
+	it("links the title to the card's reviews", () => {
+		query.data = dated.slice(1)
+		renderPanel()
+
+		expect(
+			screen.getByRole('link', { name: 'Reviews' }),
+		).toBeInTheDocument()
+	})
+
+	it('shows all reviews in place from the title', () => {
+		query.data = dated.slice(1)
+		const onSeeAll = vi.fn()
+		renderPanel(onSeeAll)
+
+		expect(
+			screen.queryByRole('link', { name: 'Reviews' }),
+		).not.toBeInTheDocument()
+		fireEvent.click(screen.getByRole('button', { name: 'Reviews' }))
+		expect(onSeeAll).toHaveBeenCalledOnce()
+	})
 })
