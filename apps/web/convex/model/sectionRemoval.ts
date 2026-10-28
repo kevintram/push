@@ -16,7 +16,7 @@ export async function remove(
 ): Promise<Section> {
 	const section = await Sections.requireUserOwns(ctx, userId, sectionId)
 
-	await Cards.deleteAllForSection(ctx, sectionId)
+	await Cards.deleteAllForSection(ctx, section)
 	await ctx.db.delete('sections', sectionId)
 
 	// Returned so callers can tell which collection the section left.

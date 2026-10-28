@@ -4,7 +4,12 @@ import { mutation, query } from './_generated/server'
 import { requireIdentity } from './model/auth'
 import * as SectionRemoval from './model/sectionRemoval'
 import * as Sections from './model/sections'
-import { sectionCreate, sectionPatch, sectionRead } from './validators/sections'
+import {
+	sectionCreate,
+	sectionMove,
+	sectionPatch,
+	sectionRead,
+} from './validators/sections'
 
 export const listByCollection = query({
 	args: {
@@ -39,6 +44,19 @@ export const update = mutation({
 		const { sectionId, ...patch } = args
 
 		await Sections.update(ctx, userId, sectionId, patch)
+	},
+})
+
+export const move = mutation({
+	args: {
+		sectionId: v.id('sections'),
+		...sectionMove.fields,
+	},
+	returns: v.null(),
+	handler: async (ctx, args) => {
+		const { subject: userId } = await requireIdentity(ctx)
+
+		await Sections.move(ctx, userId, args.sectionId, args.afterId)
 	},
 })
 

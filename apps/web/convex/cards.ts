@@ -5,6 +5,7 @@ import { requireIdentity } from './model/auth'
 import * as Cards from './model/cards'
 import {
 	cardCreate,
+	cardMove,
 	cardPatch,
 	cardRead,
 	cardSearchResult,
@@ -77,6 +78,20 @@ export const update = mutation({
 		const { cardId, ...patch } = args
 
 		await Cards.update(ctx, userId, cardId, patch)
+	},
+})
+
+export const move = mutation({
+	args: {
+		cardId: v.id('cards'),
+		...cardMove.fields,
+	},
+	returns: v.null(),
+	handler: async (ctx, args) => {
+		const { subject: userId } = await requireIdentity(ctx)
+		const { cardId, ...placement } = args
+
+		await Cards.move(ctx, userId, cardId, placement)
 	},
 })
 

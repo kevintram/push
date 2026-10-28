@@ -1,3 +1,4 @@
+import { placeInLine, rankAfter } from '../../shared/ordering'
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import type {
@@ -40,7 +41,7 @@ export async function requireUserOwnsInCollection(
 	return section
 }
 
-/** Lists a collection's sections, oldest first. */
+/** Lists a collection's sections in display order. */
 export async function listByCollection(
 	ctx: QueryCtx,
 	userId: string,
@@ -50,7 +51,9 @@ export async function listByCollection(
 
 	const sections = await ctx.db
 		.query('sections')
-		.withIndex('by_collectionId', q => q.eq('collectionId', collectionId))
+		.withIndex('by_collectionId_rank', q =>
+			q.eq('collectionId', collectionId),
+		)
 		.collect()
 
 	// Sections share their collection's owner given well-formed data. The check
@@ -65,10 +68,20 @@ export async function create(
 ): Promise<Id<'sections'>> {
 	await Collections.requireUserOwns(ctx, userId, fields.collectionId)
 
+	// New sections go to the bottom.
+	const last = await ctx.db
+		.query('sections')
+		.withIndex('by_collectionId_rank', q =>
+			q.eq('collectionId', fields.collectionId),
+		)
+		.order('desc')
+		.first()
+
 	return await ctx.db.insert('sections', {
 		collectionId: fields.collectionId,
 		ownerId: userId,
 		title: fields.title ?? '',
+		rank: rankAfter(last?.rank),
 	})
 }
 
@@ -83,6 +96,27 @@ export async function update(
 }
 
 /**
+ * Places `sectionId` right after `afterId` among its collection's sections, or
+ * first when `afterId` is null. Writes the one section, plus keys for any
+ * sections still unranked.
+ */
+export async function move(
+	ctx: MutationCtx,
+	userId: string,
+	sectionId: Id<'sections'>,
+	afterId: Id<'sections'> | null,
+): Promise<void> {
+	const section = await requireUserOwns(ctx, userId, sectionId)
+	const sections = await listByCollection(ctx, userId, section.collectionId)
+	const { rank, backfill } = placeInLine(sections, sectionId, afterId)
+
+	for (const row of backfill) {
+		await ctx.db.patch('sections', row._id, { rank: row.rank })
+	}
+	await ctx.db.patch('sections', sectionId, { rank })
+}
+
+/**
  * Deletes every section belonging to `collectionId`. Called while removing a
  * collection subtree, after its cards are gone.
  */
@@ -92,7 +126,9 @@ export async function deleteAllForCollection(
 ): Promise<void> {
 	const sections = ctx.db
 		.query('sections')
-		.withIndex('by_collectionId', q => q.eq('collectionId', collectionId))
+		.withIndex('by_collectionId_rank', q =>
+			q.eq('collectionId', collectionId),
+		)
 
 	for await (const section of sections) {
 		await ctx.db.delete('sections', section._id)
