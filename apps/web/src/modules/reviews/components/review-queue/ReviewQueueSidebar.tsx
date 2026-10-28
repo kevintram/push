@@ -2,12 +2,14 @@ import * as stylex from '@stylexjs/stylex'
 import { X } from 'lucide-react'
 import { useId } from 'react'
 
+import { ResizeHandle } from '~/components/ResizeHandle'
 import {
 	Button,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
+import { useResizableWidth } from '~/hooks/useResizableWidth'
 import type { CardTypeFilter } from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
 import { CardTypeFilterBadges } from '~/modules/reviews/components/card-type-filter/CardTypeFilterBadges'
 import { CardItem } from '~/modules/reviews/components/CardItem'
@@ -59,9 +61,14 @@ const styles = stylex.create({
 		flexDirection: 'column',
 		flexShrink: 0,
 		// TODO: add mobile drawer
-		inlineSize: 'clamp(200px, 30%, 320px)',
+		// Leaves the card at least half the row on narrow windows.
+		maxInlineSize: '50%',
 		minBlockSize: 0,
+		position: 'relative',
 	},
+	width: (width: number) => ({
+		inlineSize: `${width}px`,
+	}),
 	header: {
 		gap: spacing.xs,
 		paddingBlock: spacing.sm,
@@ -109,12 +116,19 @@ export function ReviewQueueSidebar({
 	onClose,
 }: ReviewQueueSidebarProps) {
 	const headingId = useId()
+	const { width, handleProps } = useResizableWidth({
+		storageKey: 'reviewQueueSidebarWidth',
+		defaultWidth: 320,
+		minWidth: 200,
+		maxWidth: 480,
+		edge: 'start',
+	})
 
 	return (
 		<aside
 			id={REVIEW_QUEUE_SIDEBAR_ID}
 			aria-labelledby={headingId}
-			{...stylex.props(styles.panel)}
+			{...stylex.props(styles.panel, styles.width(width))}
 		>
 			<div {...stylex.props(styles.header)}>
 				<div {...stylex.props(styles.titleRow)}>
@@ -169,6 +183,7 @@ export function ReviewQueueSidebar({
 					))}
 				</CardList>
 			</div>
+			<ResizeHandle {...handleProps} />
 		</aside>
 	)
 }
