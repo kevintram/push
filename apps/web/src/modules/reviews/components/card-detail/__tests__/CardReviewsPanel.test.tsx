@@ -14,9 +14,15 @@ vi.mock('../../../api/reviewQueries', () => ({
 	reviewQueries: { listByCard: () => ({ queryKey: ['reviews'] }) },
 }))
 vi.mock('@tanstack/react-router', () => ({
-	Link: ({ children }: { children: React.ReactNode }) => (
-		<a href='#'>{children}</a>
-	),
+	Link: ({
+		children,
+		to,
+		params,
+	}: {
+		children: React.ReactNode
+		to: string
+		params: { cardId: string }
+	}) => <a href={to.replace('$cardId', params.cardId)}>{children}</a>,
 }))
 vi.mock('../../ReviewList', () => ({
 	ReviewList: ({ reviews }: { reviews: Array<Review> }) => (
@@ -111,9 +117,10 @@ describe('CardReviewsPanel', () => {
 		query.data = dated.slice(1)
 		renderPanel()
 
-		expect(
-			screen.getByRole('link', { name: 'Reviews' }),
-		).toBeInTheDocument()
+		expect(screen.getByRole('link', { name: 'Reviews' })).toHaveAttribute(
+			'href',
+			'/cards/card-1/reviews',
+		)
 	})
 
 	it('shows all reviews in place from the title', () => {

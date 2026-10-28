@@ -88,7 +88,7 @@ export function CardReviewsPanel({ cardId, onSeeAll }: CardReviewsPanelProps) {
 	return (
 		<Panel
 			title='Reviews'
-			renderTitle={title => renderReviewsLink(title)}
+			renderTitle={renderReviewsLink}
 			xstyle={styles.container}
 		>
 			<ReviewList reviews={recentReviews} />
