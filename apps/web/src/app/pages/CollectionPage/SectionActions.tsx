@@ -11,7 +11,10 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '~/components/ui'
-import { useDeleteSection } from '~/modules/collections/api/sectionQueries'
+import {
+	useConvertSectionToCollection,
+	useDeleteSection,
+} from '~/modules/collections/api/sectionQueries'
 import { iconSizes, radii } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -35,6 +38,7 @@ type SectionActionsProps = {
 
 /** The "more" menu in a section's header. */
 export function SectionActions({ section }: SectionActionsProps) {
+	const convertSection = useConvertSectionToCollection()
 	const deleteSection = useDeleteSection()
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
@@ -63,6 +67,14 @@ export function SectionActions({ section }: SectionActionsProps) {
 					<Ellipsis aria-hidden='true' size={iconSizes.sm} />
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align='end'>
+					<DropdownMenuItem
+						disabled={convertSection.isPending}
+						onClick={() =>
+							convertSection.mutate({ sectionId: section._id })
+						}
+					>
+						Convert to subcollection
+					</DropdownMenuItem>
 					<DropdownMenuItem
 						onClick={() => setIsDeleteDialogOpen(true)}
 					>

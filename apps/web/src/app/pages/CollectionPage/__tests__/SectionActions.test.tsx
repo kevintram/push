@@ -5,9 +5,14 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { SectionActions } from '../SectionActions'
 
+const convertMutate = vi.fn()
 const deleteMutate = vi.fn()
 
 vi.mock('~/modules/collections/api/sectionQueries', () => ({
+	useConvertSectionToCollection: () => ({
+		mutate: convertMutate,
+		isPending: false,
+	}),
 	useDeleteSection: () => ({ mutate: deleteMutate, isPending: false }),
 }))
 
@@ -17,6 +22,20 @@ const section = {
 } as Section
 
 describe('SectionActions', () => {
+	it('converts the section to a subcollection without confirming', async () => {
+		const user = userEvent.setup()
+		render(<SectionActions section={section} />)
+
+		await user.click(
+			screen.getByRole('button', { name: 'Section actions' }),
+		)
+		await user.click(
+			screen.getByRole('menuitem', { name: 'Convert to subcollection' }),
+		)
+
+		expect(convertMutate).toHaveBeenCalledWith({ sectionId: section._id })
+	})
+
 	it('deletes only after the confirmation is accepted', async () => {
 		const user = userEvent.setup()
 		render(<SectionActions section={section} />)

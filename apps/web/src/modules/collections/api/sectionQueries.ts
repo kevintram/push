@@ -73,6 +73,17 @@ export function useMoveSection() {
 	})
 }
 
+export function useConvertSectionToCollection() {
+	const mutationFn = useConvexMutation(api.sections.convertToCollection)
+	return useMutation({
+		mutationFn,
+		onError: error =>
+			toast.error('Failed to convert section', {
+				description: getErrorMessage(error),
+			}),
+	})
+}
+
 export function useDeleteSection() {
 	const mutationFn = useConvexMutation(api.sections.remove)
 	return useMutation({
