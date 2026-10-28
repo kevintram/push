@@ -61,4 +61,31 @@ describe('groupCardsBySection', () => {
 		expect(ids(grouped.unsectioned)).toEqual(['a'])
 		expect(grouped.sections).toEqual([])
 	})
+
+	it('orders sections and each group of cards by rank, unranked first', () => {
+		const ranked = <T extends Section | Card>(
+			entry: T,
+			rank: string | undefined,
+			_creationTime: number,
+		): T => ({ ...entry, rank, _creationTime })
+
+		const grouped = groupCardsBySection(
+			[
+				ranked(section('second'), 'a1', 1),
+				ranked(section('first'), 'a0', 2),
+			],
+			[
+				ranked(card('late'), 'a1', 1),
+				ranked(card('early'), 'a0', 2),
+				ranked(card('legacy'), undefined, 3),
+				ranked(card('only', 'second'), 'a0', 4),
+			],
+		)
+
+		expect(grouped.sections.map(group => group.section._id)).toEqual([
+			'first',
+			'second',
+		])
+		expect(ids(grouped.unsectioned)).toEqual(['legacy', 'early', 'late'])
+	})
 })
