@@ -3,7 +3,6 @@ import { Link } from '@tanstack/react-router'
 import { Archive, ArrowUpRight, Ellipsis, Flag, Zap } from 'lucide-react'
 import { useState } from 'react'
 
-import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	Button,
 	DropdownMenu,
@@ -20,7 +19,7 @@ import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { useCardActions } from '../hooks/useCardActions'
 import type { Card } from '../types/review.types'
-import { MoveCardDialog } from './MoveCardDialog'
+import { CardActionDialogs, type CardDialog } from './CardActionDialogs'
 
 const styles = stylex.create({
 	container: {
@@ -75,16 +74,8 @@ export function CardActions({
 	isMenuHoverRevealed = false,
 	xstyle,
 }: CardActionsProps) {
-	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
-	const {
-		confirmDelete,
-		isDeleteDialogOpen,
-		isDeleting,
-		setIsDeleteDialogOpen,
-		toggleFlag,
-		toggleRetire,
-		toggleType,
-	} = useCardActions(card)
+	const [dialog, setDialog] = useState<CardDialog>(null)
+	const { toggleFlag, toggleRetire, toggleType } = useCardActions()
 
 	const isFlashcard = card.type === 'flashcard'
 	const isFlagged = card.flaggedAt !== undefined
@@ -132,7 +123,7 @@ export function CardActions({
 								shape='round'
 								variant='ghost'
 								size='small'
-								onClick={toggleType}
+								onClick={() => toggleType([card])}
 							>
 								<Zap
 									aria-hidden='true'
@@ -155,7 +146,7 @@ export function CardActions({
 								shape='round'
 								variant='ghost'
 								size='small'
-								onClick={toggleFlag}
+								onClick={() => toggleFlag([card])}
 							>
 								<Flag
 									aria-hidden='true'
@@ -178,7 +169,7 @@ export function CardActions({
 								shape='round'
 								variant='ghost'
 								size='small'
-								onClick={toggleRetire}
+								onClick={() => toggleRetire([card])}
 							>
 								<Archive
 									aria-hidden='true'
@@ -218,7 +209,7 @@ export function CardActions({
 								)}
 							/>
 						}
-						onClick={toggleType}
+						onClick={() => toggleType([card])}
 					>
 						{isFlashcard
 							? 'Remove as flashcard'
@@ -232,7 +223,7 @@ export function CardActions({
 								{...stylex.props(isFlagged && styles.flagOn)}
 							/>
 						}
-						onClick={toggleFlag}
+						onClick={() => toggleFlag([card])}
 					>
 						{isFlagged ? 'Unflag' : 'Flag'}
 					</DropdownMenuItem>
@@ -244,36 +235,24 @@ export function CardActions({
 								{...stylex.props(isRetired && styles.retiredOn)}
 							/>
 						}
-						onClick={toggleRetire}
+						onClick={() => toggleRetire([card])}
 					>
 						{isRetired ? 'Unretire' : 'Retire'}
 					</DropdownMenuItem>
-					<DropdownMenuItem onClick={() => setIsMoveDialogOpen(true)}>
+					<DropdownMenuItem onClick={() => setDialog('move')}>
 						Move
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
-					<DropdownMenuItem
-						onClick={() => setIsDeleteDialogOpen(true)}
-					>
+					<DropdownMenuItem onClick={() => setDialog('delete')}>
 						Delete
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
 
-			{isMoveDialogOpen ? (
-				<MoveCardDialog
-					onOpenChange={setIsMoveDialogOpen}
-					card={card}
-				/>
-			) : null}
-
-			<DeleteConfirmationDialog
-				description='This card and its content will be permanently deleted.'
-				isPending={isDeleting}
-				onConfirm={confirmDelete}
-				onOpenChange={setIsDeleteDialogOpen}
-				open={isDeleteDialogOpen}
-				title='Delete card?'
+			<CardActionDialogs
+				cards={[card]}
+				dialog={dialog}
+				onDialogChange={setDialog}
 			/>
 		</div>
 	)

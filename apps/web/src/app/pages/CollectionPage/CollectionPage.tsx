@@ -72,6 +72,9 @@ const styles = stylex.create({
 		flexGrow: 1,
 		flexShrink: 1,
 		paddingBlockEnd: spacing.lg,
+		// Anchors the selected cards' action bar, which floats over the
+		// scroll area rather than scrolling with it.
+		position: 'relative',
 		minHeight: 0,
 		minWidth: 0,
 	},

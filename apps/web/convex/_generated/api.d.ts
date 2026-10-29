@@ -18,6 +18,8 @@ import type * as model_collectionRemoval from "../model/collectionRemoval.js";
 import type * as model_collections from "../model/collections.js";
 import type * as model_due from "../model/due.js";
 import type * as model_reviews from "../model/reviews.js";
+import type * as model_sectionConversion from "../model/sectionConversion.js";
+import type * as model_sectionMove from "../model/sectionMove.js";
 import type * as model_sectionRemoval from "../model/sectionRemoval.js";
 import type * as model_sections from "../model/sections.js";
 import type * as model_srs_replay from "../model/srs/replay.js";
@@ -48,6 +50,8 @@ declare const fullApi: ApiFromModules<{
   "model/collections": typeof model_collections;
   "model/due": typeof model_due;
   "model/reviews": typeof model_reviews;
+  "model/sectionConversion": typeof model_sectionConversion;
+  "model/sectionMove": typeof model_sectionMove;
   "model/sectionRemoval": typeof model_sectionRemoval;
   "model/sections": typeof model_sections;
   "model/srs/replay": typeof model_srs_replay;

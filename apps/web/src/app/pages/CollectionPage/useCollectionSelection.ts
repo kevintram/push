@@ -1,43 +1,69 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { type SelectableItem, selectionOrder } from './collectionOrder'
 import {
-	type CollectionSelection,
-	isSameSelection,
-	selectionOrder,
-} from './collectionOrder'
+	extendSelection,
+	pruneSelection,
+	type Selection,
+	type SelectMode,
+	selectOnly,
+	selectRange,
+	stepSelection,
+	toggleItem,
+} from './collectionSelection'
 import type { GroupedCards } from './groupCardsBySection'
 
 /** Matches the focus target of any selectable card or section. */
 export const SELECTABLE_SELECTOR = '[data-card-id], [data-section-id]'
 
-// Rows, controls, and anything layered above the page keep the selection.
+// Rows, controls, the selection's action bar, and anything layered above the
+// page keep the selection.
 const INTERACTIVE_SELECTOR =
-	'tr, a, button, input, textarea, [role="menu"], [role="dialog"]'
+	'tr, a, button, input, textarea, [role="toolbar"], [role="menu"], [role="dialog"]'
 
-function selectorFor(selection: CollectionSelection) {
-	return selection.kind === 'card'
-		? `[data-card-id="${selection.id}"]`
-		: `[data-section-id="${selection.id}"]`
+function selectorFor(item: SelectableItem) {
+	return item.kind === 'card'
+		? `[data-card-id="${item.id}"]`
+		: `[data-section-id="${item.id}"]`
 }
 
 /**
- * The collection page's single selection. It follows its item through moves
- * and lapses once the item is gone, such as after a delete.
+ * The collection page's selection. It follows its items through moves and
+ * drops each one once it is gone, such as after a delete.
  */
 export function useCollectionSelection(grouped: GroupedCards) {
-	const [selection, setSelection] = useState<CollectionSelection | null>(null)
+	const [selection, setSelection] = useState<Selection | null>(null)
 	const order = useMemo(() => selectionOrder(grouped), [grouped])
-	const selected = order.some(entry => isSameSelection(entry, selection))
-		? selection
-		: null
+	// Memoized so the effects below don't rerun on every render while an item
+	// is gone and the state still names it.
+	const selected = useMemo(
+		() => pruneSelection(selection, order),
+		[selection, order],
+	)
 
+	const select = useCallback(
+		(item: SelectableItem, mode: SelectMode = 'only') => {
+			switch (mode) {
+				case 'only':
+					return setSelection(selectOnly(item))
+				case 'range':
+					return setSelection(selectRange(selected, order, item))
+				case 'toggle':
+					return setSelection(toggleItem(selected, item))
+			}
+		},
+		[order, selected],
+	)
+
+	/** Steps to the next item, or with `extend` grows the range to the next card. */
 	const selectAdjacent = useCallback(
-		(step: -1 | 1) => {
-			const index = order.findIndex(entry =>
-				isSameSelection(entry, selected),
+		(step: -1 | 1, extend: boolean) => {
+			if (!selected) return
+			setSelection(
+				extend
+					? extendSelection(selected, order, step)
+					: stepSelection(selected, order, step),
 			)
-			const next = order[index + step]
-			if (index !== -1 && next) setSelection(next)
 		},
 		[order, selected],
 	)
@@ -88,10 +114,10 @@ export function useCollectionSelection(grouped: GroupedCards) {
 		}
 
 		const target = document.querySelector<HTMLElement>(
-			selectorFor(selected),
+			selectorFor(selected.cursor),
 		)
 		if (target && target !== active) target.focus()
 	}, [selected, order])
 
-	return { selected, select: setSelection, clear, selectAdjacent }
+	return { selected, select, clear, selectAdjacent }
 }

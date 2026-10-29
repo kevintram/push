@@ -95,10 +95,28 @@ const styles = stylex.create({
 			order: 1,
 		},
 	},
+	// Adjacent active rows join into one block, squaring the corners where
+	// they meet. Each row marks itself `data-active` for its neighbors.
 	active: {
 		backgroundColor: {
 			default: colorsSemantic.surfaceTransparentActive,
 			':hover': colorsSemantic.surfaceTransparentActive,
+		},
+		borderEndEndRadius: {
+			default: radii.lg,
+			':has(+ [data-active])': 0,
+		},
+		borderEndStartRadius: {
+			default: radii.lg,
+			':has(+ [data-active])': 0,
+		},
+		borderStartEndRadius: {
+			default: radii.lg,
+			':is([data-active] + *)': 0,
+		},
+		borderStartStartRadius: {
+			default: radii.lg,
+			':is([data-active] + *)': 0,
 		},
 	},
 
@@ -203,11 +221,12 @@ type CardItemProps = {
 	/** Run on activation. Without it, the row links to the card's page. */
 	onClick?: () => void
 	/**
-	 * Makes a linked row selectable: a click selects it and a double click
-	 * opens the card. Mod-, Shift-, and middle-clicks still open it in a new tab
-	 * or window, and Enter on the focused link still opens it.
+	 * Makes a linked row selectable: a click selects it, with the click's
+	 * Shift and Mod keys left to the caller, and a double click opens the card.
+	 * Middle-clicks still open it in a new tab, and Enter on the focused link
+	 * still opens it.
 	 */
-	onSelect?: () => void
+	onSelect?: (event: MouseEvent) => void
 	buttonProps?: Omit<
 		React.ComponentProps<'button'>,
 		'onClick' | 'type' | 'className' | 'style'
@@ -238,18 +257,12 @@ export function CardItem({
 	const handleDoubleClick = onSelect ? open : undefined
 
 	const handleLinkClick = (event: MouseEvent<HTMLAnchorElement>) => {
-		// A keyboard click has no detail. Modified clicks keep opening a new tab
-		// or window.
-		const isPlainClick =
-			event.detail > 0 &&
-			!event.metaKey &&
-			!event.ctrlKey &&
-			!event.shiftKey &&
-			!event.altKey
-		if (!onSelect || !isPlainClick) return
+		// A keyboard click has no detail, and an Alt-click keeps its browser
+		// meaning.
+		if (!onSelect || event.detail === 0 || event.altKey) return
 
 		event.preventDefault()
-		onSelect()
+		onSelect(event)
 	}
 
 	const titleText = <span {...stylex.props(textFade.line)}>{title}</span>
@@ -258,6 +271,7 @@ export function CardItem({
 	return (
 		<tr
 			role='row'
+			data-active={active || undefined}
 			{...stylex.props(
 				styles.row,
 				stylex.defaultMarker(),

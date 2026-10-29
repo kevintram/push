@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
-import { useDeleteCard } from '../cardQueries'
+import { useDeleteCards } from '../cardQueries'
 
 const navigate = vi.fn()
 const matchRoute = vi.fn()
@@ -39,17 +39,17 @@ function wrapper({ children }: { children: ReactNode }) {
 	)
 }
 
-describe('useDeleteCard', () => {
+describe('useDeleteCards', () => {
 	beforeEach(() => {
-		removeCard.mockResolvedValue(removedCard)
+		removeCard.mockResolvedValue([removedCard])
 	})
 
 	it('falls back to the collection when the open card is deleted', async () => {
 		matchRoute.mockReturnValue({ cardId })
-		const { result } = renderHook(() => useDeleteCard(), { wrapper })
+		const { result } = renderHook(() => useDeleteCards(), { wrapper })
 
 		await act(async () => {
-			result.current.mutate({ cardId })
+			result.current.mutate({ cardIds: [cardId] })
 		})
 
 		await waitFor(() => {
@@ -62,10 +62,10 @@ describe('useDeleteCard', () => {
 
 	it('stays put when a card other than the open one is deleted', async () => {
 		matchRoute.mockReturnValue(false)
-		const { result } = renderHook(() => useDeleteCard(), { wrapper })
+		const { result } = renderHook(() => useDeleteCards(), { wrapper })
 
 		await act(async () => {
-			result.current.mutate({ cardId })
+			result.current.mutate({ cardIds: [cardId] })
 		})
 
 		await waitFor(() => {

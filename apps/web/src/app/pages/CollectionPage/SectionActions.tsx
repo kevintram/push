@@ -11,7 +11,11 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '~/components/ui'
-import { useDeleteSection } from '~/modules/collections/api/sectionQueries'
+import {
+	useConvertSectionToCollection,
+	useDeleteSection,
+} from '~/modules/collections/api/sectionQueries'
+import { MoveSectionDialog } from '~/modules/collections/components/MoveSectionDialog'
 import { iconSizes, radii } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -35,7 +39,9 @@ type SectionActionsProps = {
 
 /** The "more" menu in a section's header. */
 export function SectionActions({ section }: SectionActionsProps) {
+	const convertSection = useConvertSectionToCollection()
 	const deleteSection = useDeleteSection()
+	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
 	const confirmDelete = () => {
@@ -63,6 +69,17 @@ export function SectionActions({ section }: SectionActionsProps) {
 					<Ellipsis aria-hidden='true' size={iconSizes.sm} />
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align='end'>
+					<DropdownMenuItem onClick={() => setIsMoveDialogOpen(true)}>
+						Move
+					</DropdownMenuItem>
+					<DropdownMenuItem
+						disabled={convertSection.isPending}
+						onClick={() =>
+							convertSection.mutate({ sectionId: section._id })
+						}
+					>
+						Convert to subcollection
+					</DropdownMenuItem>
 					<DropdownMenuItem
 						onClick={() => setIsDeleteDialogOpen(true)}
 					>
@@ -70,6 +87,13 @@ export function SectionActions({ section }: SectionActionsProps) {
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
+
+			{isMoveDialogOpen ? (
+				<MoveSectionDialog
+					onOpenChange={setIsMoveDialogOpen}
+					section={section}
+				/>
+			) : null}
 
 			<DeleteConfirmationDialog
 				description='This section, its cards, and their review history will be permanently deleted.'

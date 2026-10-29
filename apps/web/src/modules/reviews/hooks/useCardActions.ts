@@ -1,90 +1,122 @@
 import { DateTime } from 'luxon'
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { toast } from 'sonner'
 
-import { useDeleteCard, useUpdateCard } from '../api/cardQueries'
+import { useDeleteCards, useUpdateCards } from '../api/cardQueries'
 import type { Card } from '../types/review.types'
 
+const idsOf = (cards: ReadonlyArray<Card>) => cards.map(card => card._id)
+
+/** `message`, ending in "card", made plural for several cards. */
+export const plural = (cards: ReadonlyArray<Card>, message: string) =>
+	cards.length > 1 ? `${message}s` : message
+
 type UseCardActionsReturn = {
-	isDeleteDialogOpen: boolean
 	isDeleting: boolean
-	/** Swaps the card between `flashcard` and `practice`. */
-	toggleType: () => void
-	/** Flags an unflagged card, or clears the flag on a flagged one. */
-	toggleFlag: () => void
+	/** Makes every card a flashcard, or practice cards when all already are. */
+	toggleType: (cards: ReadonlyArray<Card>) => void
+	/** Flags every card, or clears the flags when all are already flagged. */
+	toggleFlag: (cards: ReadonlyArray<Card>) => void
 	/**
-	 * Retires an active card, or brings a retired one back. A retired card
-	 * drops out of every review queue; see `due.list`.
+	 * Retires every card, or brings them back when all are already retired. A
+	 * retired card drops out of every review queue; see `due.list`.
 	 */
-	toggleRetire: () => void
-	setIsDeleteDialogOpen: (open: boolean) => void
-	confirmDelete: () => void
+	toggleRetire: (cards: ReadonlyArray<Card>) => void
+	remove: (cards: ReadonlyArray<Card>, onSuccess: () => void) => void
 }
 
 /**
- * The mutations behind a card's action menu. Shared so the list card and
- * the card detail page cannot drift apart on what those actions do.
+ * The mutations behind a card's action menu, for one card or several. Shared
+ * so the list card and the card detail page cannot drift apart on what those
+ * actions do.
  */
-export function useCardActions(card: Card): UseCardActionsReturn {
-	const updateCard = useUpdateCard()
-	const deleteCard = useDeleteCard()
+export function useCardActions(): UseCardActionsReturn {
+	const updateCards = useUpdateCards()
+	const deleteCards = useDeleteCards()
 
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+	const toggleType = useCallback(
+		(cards: ReadonlyArray<Card>) => {
+			updateCards.mutate(
+				{
+					cardIds: idsOf(cards),
+					type: cards.every(card => card.type === 'flashcard')
+						? 'practice'
+						: 'flashcard',
+				},
+				{
+					onError: () =>
+						toast.error(
+							plural(cards, 'Failed to update card type'),
+						),
+				},
+			)
+		},
+		[updateCards],
+	)
 
-	const toggleType = useCallback(() => {
-		updateCard.mutate(
-			{
-				cardId: card._id,
-				type: card.type === 'flashcard' ? 'practice' : 'flashcard',
-			},
-			{ onError: () => toast.error('Failed to update card type') },
-		)
-	}, [card._id, card.type, updateCard])
+	const toggleFlag = useCallback(
+		(cards: ReadonlyArray<Card>) => {
+			const unflagged = cards.filter(card => card.flaggedAt === undefined)
+			updateCards.mutate(
+				// Only the unflagged cards get a flag, so the others keep the
+				// time they were flagged, which orders the flagged list.
+				unflagged.length > 0
+					? {
+							cardIds: idsOf(unflagged),
+							flaggedAt: DateTime.now().toMillis(),
+						}
+					: // `null` unsets the field; see `cards.update`.
+						{ cardIds: idsOf(cards), flaggedAt: null },
+				{
+					onError: () =>
+						toast.error(
+							plural(cards, 'Failed to update card flag'),
+						),
+				},
+			)
+		},
+		[updateCards],
+	)
 
-	const toggleFlag = useCallback(() => {
-		updateCard.mutate(
-			{
-				cardId: card._id,
-				// `null` unsets the field; see `cards.update`.
-				flaggedAt:
-					card.flaggedAt === undefined
-						? DateTime.now().toMillis()
-						: null,
-			},
-			{ onError: () => toast.error('Failed to update card flag') },
-		)
-	}, [card._id, card.flaggedAt, updateCard])
+	const toggleRetire = useCallback(
+		(cards: ReadonlyArray<Card>) => {
+			const active = cards.filter(card => card.retiredAt === undefined)
+			updateCards.mutate(
+				// Same as `toggleFlag`: retired cards keep their retirement time.
+				active.length > 0
+					? {
+							cardIds: idsOf(active),
+							retiredAt: DateTime.now().toMillis(),
+						}
+					: { cardIds: idsOf(cards), retiredAt: null },
+				{
+					onError: () =>
+						toast.error(
+							plural(cards, 'Failed to update card retirement'),
+						),
+				},
+			)
+		},
+		[updateCards],
+	)
 
-	const toggleRetire = useCallback(() => {
-		updateCard.mutate(
-			{
-				cardId: card._id,
-				// `null` unsets the field; see `cards.update`.
-				retiredAt:
-					card.retiredAt === undefined
-						? DateTime.now().toMillis()
-						: null,
-			},
-			{ onError: () => toast.error('Failed to update card retirement') },
-		)
-	}, [card._id, card.retiredAt, updateCard])
-
-	const confirmDelete = useCallback(() => {
-		deleteCard.mutate(
-			{ cardId: card._id },
-			{
-				onError: () => toast.error('Failed to delete card'),
-				// Leave the dialog open on failure so the toast has context.
-				onSuccess: () => setIsDeleteDialogOpen(false),
-			},
-		)
-	}, [deleteCard, card._id])
+	const remove = useCallback(
+		(cards: ReadonlyArray<Card>, onSuccess: () => void) => {
+			deleteCards.mutate(
+				{ cardIds: idsOf(cards) },
+				{
+					onError: () =>
+						toast.error(plural(cards, 'Failed to delete card')),
+					onSuccess,
+				},
+			)
+		},
+		[deleteCards],
+	)
 
 	return {
-		confirmDelete,
-		isDeleteDialogOpen,
-		isDeleting: deleteCard.isPending,
-		setIsDeleteDialogOpen,
+		isDeleting: deleteCards.isPending,
+		remove,
 		toggleFlag,
 		toggleRetire,
 		toggleType,

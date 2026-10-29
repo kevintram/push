@@ -2,6 +2,7 @@ import {
 	backfillRanks,
 	placeInLine,
 	placeNewInLine,
+	rankAfter,
 } from '../../shared/ordering'
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
@@ -43,6 +44,22 @@ export async function requireUserOwnsInCollection(
 	}
 
 	return section
+}
+
+/** A key that sorts after every section in `collectionId`. */
+export async function rankAtEnd(
+	ctx: QueryCtx,
+	collectionId: Id<'collections'>,
+): Promise<string> {
+	const last = await ctx.db
+		.query('sections')
+		.withIndex('by_collectionId_rank', q =>
+			q.eq('collectionId', collectionId),
+		)
+		.order('desc')
+		.first()
+
+	return rankAfter(last?.rank)
 }
 
 /** Lists a collection's sections in display order. */
@@ -118,12 +135,11 @@ export async function move(
 ): Promise<void> {
 	const section = await requireUserOwns(ctx, userId, sectionId)
 	const sections = await listByCollection(ctx, userId, section.collectionId)
-	const { rank, backfill } = placeInLine(sections, sectionId, afterId)
+	const { ranks, backfill } = placeInLine(sections, [sectionId], afterId)
 
-	for (const row of backfill) {
+	for (const row of [...backfill, ...ranks]) {
 		await ctx.db.patch('sections', row._id, { rank: row.rank })
 	}
-	await ctx.db.patch('sections', sectionId, { rank })
 }
 
 /**
