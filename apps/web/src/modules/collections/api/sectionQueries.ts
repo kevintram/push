@@ -34,22 +34,22 @@ export function useUpdateSection() {
 	})
 }
 
-/** Reorders a section, showing its new place before the server confirms it. */
-export function useMoveSection() {
+/** Reorders sections, showing their new place before the server confirms it. */
+export function useMoveSections() {
 	const mutationFn = useConvexMutation(
 		api.sections.move,
-	).withOptimisticUpdate((localStore, { sectionId, afterId }) => {
+	).withOptimisticUpdate((localStore, { sectionIds, afterId }) => {
 		for (const { args, value: sections } of localStore.getAllQueries(
 			api.sections.listByCollection,
 		)) {
 			const ids = new Set(sections?.map(section => section._id))
-			if (!sections || !ids.has(sectionId)) continue
+			if (!sections || !sectionIds.every(id => ids.has(id))) continue
 			// The server rejects the move, so there is nothing to show.
 			if (afterId !== null && !ids.has(afterId)) continue
 
 			const { ranks: placed, backfill } = placeInLine(
 				sections,
-				[sectionId],
+				sectionIds,
 				afterId,
 			)
 			const ranks = new Map(
@@ -76,35 +76,18 @@ export function useMoveSection() {
 	})
 }
 
-export function useMoveSectionToCollection() {
-	const mutationFn = useConvexMutation(api.sections.moveToCollection)
-	return useMutation({
-		mutationFn,
-		onError: error =>
-			toast.error('Failed to move section', {
-				description: getErrorMessage(error),
-			}),
-	})
-}
-
-export function useConvertSectionToCollection() {
+export function useConvertSectionsToCollections() {
 	const mutationFn = useConvexMutation(api.sections.convertToCollection)
 	return useMutation({
 		mutationFn,
-		onError: error =>
-			toast.error('Failed to convert section', {
-				description: getErrorMessage(error),
-			}),
-	})
-}
-
-export function useDeleteSection() {
-	const mutationFn = useConvexMutation(api.sections.remove)
-	return useMutation({
-		mutationFn,
-		onError: error =>
-			toast.error('Failed to delete section', {
-				description: getErrorMessage(error),
-			}),
+		onError: (error, { sectionIds }) =>
+			toast.error(
+				sectionIds.length > 1
+					? 'Failed to convert sections'
+					: 'Failed to convert section',
+				{
+					description: getErrorMessage(error),
+				},
+			),
 	})
 }

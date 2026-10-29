@@ -9,18 +9,26 @@ const convertMutate = vi.fn()
 const deleteMutate = vi.fn()
 
 vi.mock('~/modules/collections/api/sectionQueries', () => ({
-	useConvertSectionToCollection: () => ({
+	useConvertSectionsToCollections: () => ({
 		mutate: convertMutate,
 		isPending: false,
 	}),
-	useDeleteSection: () => ({ mutate: deleteMutate, isPending: false }),
+}))
+
+vi.mock('~/modules/collections/api/collectionItemQueries', () => ({
+	useDeleteCollectionItems: () => ({
+		mutate: deleteMutate,
+		isPending: false,
+	}),
 }))
 
 // The dialog has its own tests; this checks only that the menu opens it.
-vi.mock('~/modules/collections/components/MoveSectionDialog', () => ({
-	MoveSectionDialog: ({ section }: { section: Section }) => (
-		<div role='dialog' aria-label={`Move ${section.title}`} />
-	),
+vi.mock('~/modules/collections/components/MoveCollectionItemsDialog', () => ({
+	MoveCollectionItemsDialog: ({
+		sectionIds,
+	}: {
+		sectionIds: ReadonlyArray<string>
+	}) => <div role='dialog' aria-label={`Move ${sectionIds.join()}`} />,
 }))
 
 const section = {
@@ -40,7 +48,9 @@ describe('SectionActions', () => {
 			screen.getByRole('menuitem', { name: 'Convert to subcollection' }),
 		)
 
-		expect(convertMutate).toHaveBeenCalledWith({ sectionId: section._id })
+		expect(convertMutate).toHaveBeenCalledWith({
+			sectionIds: [section._id],
+		})
 	})
 
 	it('opens the move dialog for the section', async () => {
@@ -55,7 +65,7 @@ describe('SectionActions', () => {
 		await user.click(screen.getByRole('menuitem', { name: 'Move' }))
 
 		expect(
-			screen.getByRole('dialog', { name: 'Move Cell anatomy' }),
+			screen.getByRole('dialog', { name: 'Move section-1' }),
 		).toBeInTheDocument()
 	})
 
@@ -76,7 +86,7 @@ describe('SectionActions', () => {
 		await user.click(screen.getByRole('button', { name: 'Delete' }))
 
 		expect(deleteMutate).toHaveBeenCalledWith(
-			{ sectionId: section._id },
+			{ sectionIds: [section._id], cardIds: [] },
 			expect.anything(),
 		)
 	})

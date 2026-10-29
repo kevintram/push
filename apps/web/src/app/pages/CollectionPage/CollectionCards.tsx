@@ -9,7 +9,7 @@ import { useToday } from '~/hooks/useToday'
 import {
 	sectionQueries,
 	useCreateSection,
-	useMoveSection,
+	useMoveSections,
 } from '~/modules/collections/api/sectionQueries'
 import {
 	cardQueries,
@@ -25,11 +25,12 @@ import {
 	planCardMove,
 	planSectionMove,
 } from './collectionOrder'
-import type { SelectMode } from './collectionSelection'
+import { type SelectMode, selectModeFor } from './collectionSelection'
 import { groupCardsBySection } from './groupCardsBySection'
 import { SectionActions } from './SectionActions'
 import { SectionTitle } from './SectionTitle'
 import { SelectionActionBar } from './SelectionActionBar'
+import { selectionContents } from './selectionContents'
 import { useCollectionSelection } from './useCollectionSelection'
 
 const styles = stylex.create({
@@ -61,12 +62,17 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 		() => groupCardsBySection(sections, cards),
 		[sections, cards],
 	)
-	const { selected, select, clear, selectAdjacent } =
+	const { selected, select, selectAll, clear, selectAdjacent } =
 		useCollectionSelection(grouped)
-	const selectedSectionId =
-		selected?.items.length === 1 && selected.cursor.kind === 'section'
-			? selected.cursor.id
-			: null
+	const selectedSectionIds = useMemo(
+		() =>
+			new Set(
+				selected?.items.flatMap(item =>
+					item.kind === 'section' ? [item.id] : [],
+				),
+			),
+		[selected],
+	)
 	const selectedCardIds = useMemo(
 		() =>
 			new Set(
@@ -76,14 +82,10 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 			),
 		[selected],
 	)
-	// In page order, so batch actions and moves keep the cards' order.
-	const selectedCards = useMemo(
-		() =>
-			[
-				...grouped.unsectioned,
-				...grouped.sections.flatMap(({ cards }) => cards),
-			].filter(card => selectedCardIds.has(card._id)),
-		[grouped, selectedCardIds],
+	// In page order, so batch actions keep the items' order.
+	const contents = useMemo(
+		() => selectionContents(grouped, selectedSectionIds, selectedCardIds),
+		[grouped, selectedSectionIds, selectedCardIds],
 	)
 
 	// The section whose title is a field. A new section starts out renaming so
@@ -92,7 +94,7 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 		useState<Id<'sections'> | null>(null)
 	const createSection = useCreateSection()
 	const createCard = useCreateCard()
-	const moveSection = useMoveSection()
+	const moveSections = useMoveSections()
 	const moveCard = useMoveCards()
 	const navigate = useNavigate()
 	const today = useToday()
@@ -131,47 +133,36 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 		[createSection, collectionId, select],
 	)
 
+	// Sections reorder among sections and cards among cards, so a selection
+	// of both has nowhere to move.
 	const handleMove = useCallback(
 		(direction: MoveDirection) => {
-			if (selectedSectionId) {
-				const placement = planSectionMove(
+			if (selectedCardIds.size === 0) {
+				const plan = planSectionMove(
 					grouped,
-					selectedSectionId,
+					selectedSectionIds,
 					direction,
 				)
-				if (placement) {
-					moveSection.mutate({
-						sectionId: selectedSectionId,
-						...placement,
-					})
-				}
-			} else if (selectedCards.length > 0) {
+				if (plan) moveSections.mutate(plan)
+			} else if (selectedSectionIds.size === 0) {
 				const plan = planCardMove(grouped, selectedCardIds, direction)
 				if (plan) moveCard.mutate(plan)
 			}
 		},
-		[
-			grouped,
-			selectedSectionId,
-			selectedCards,
-			selectedCardIds,
-			moveCard,
-			moveSection,
-		],
+		[grouped, selectedSectionIds, selectedCardIds, moveCard, moveSections],
 	)
 
 	// Only a single card or section opens; several have nowhere to go.
 	const handleOpen = useCallback(() => {
-		const [card, ...rest] = selectedCards
-		if (card && rest.length === 0) {
-			void navigate({
-				to: '/cards/$cardId',
-				params: { cardId: card._id },
-			})
-		} else if (selectedSectionId) {
-			setRenamingSectionId(selectedSectionId)
+		const [item, ...rest] = selected?.items ?? []
+		if (!item || rest.length > 0) return
+
+		if (item.kind === 'card') {
+			void navigate({ to: '/cards/$cardId', params: { cardId: item.id } })
+		} else {
+			setRenamingSectionId(item.id)
 		}
-	}, [navigate, selectedCards, selectedSectionId])
+	}, [navigate, selected])
 
 	const selectCard = useCallback(
 		(cardId: Id<'cards'>, mode: SelectMode) =>
@@ -184,12 +175,17 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 		<div
 			{...stylex.props(
 				styles.groups,
-				selectedCards.length > 0 && styles.clearsActionBar,
+				selected !== null && styles.clearsActionBar,
 			)}
 		>
 			<CollectionHotkeys
 				hasSelection={selected !== null}
+				hasItems={
+					grouped.unsectioned.length > 0 ||
+					grouped.sections.length > 0
+				}
 				onSelectAdjacent={selectAdjacent}
+				onSelectAll={selectAll}
 				onMove={handleMove}
 				onOpen={handleOpen}
 				onClear={clear}
@@ -213,10 +209,13 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 					title={
 						<SectionTitle
 							section={section}
-							isSelected={section._id === selectedSectionId}
+							isSelected={selectedSectionIds.has(section._id)}
 							isRenaming={section._id === renamingSectionId}
-							onSelect={() =>
-								select({ kind: 'section', id: section._id })
+							onSelect={event =>
+								select(
+									{ kind: 'section', id: section._id },
+									selectModeFor(event),
+								)
 							}
 							onRename={() => setRenamingSectionId(section._id)}
 							onRenameEnd={() => setRenamingSectionId(null)}
@@ -232,8 +231,11 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 					onSelectCard={selectCard}
 				/>
 			))}
-			{selectedCards.length > 0 ? (
-				<SelectionActionBar cards={selectedCards} />
+			{selected !== null ? (
+				<SelectionActionBar
+					collectionId={collectionId}
+					contents={contents}
+				/>
 			) : null}
 		</div>
 	)

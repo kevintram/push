@@ -3,8 +3,6 @@ import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { requireIdentity } from './model/auth'
 import * as SectionConversion from './model/sectionConversion'
-import * as SectionMove from './model/sectionMove'
-import * as SectionRemoval from './model/sectionRemoval'
 import * as Sections from './model/sections'
 import {
 	sectionCreate,
@@ -51,60 +49,29 @@ export const update = mutation({
 
 export const move = mutation({
 	args: {
-		sectionId: v.id('sections'),
+		sectionIds: v.array(v.id('sections')),
 		...sectionMove.fields,
 	},
 	returns: v.null(),
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
 
-		await Sections.move(ctx, userId, args.sectionId, args.afterId)
-	},
-})
-
-export const moveToCollection = mutation({
-	args: {
-		sectionId: v.id('sections'),
-		collectionId: v.id('collections'),
-	},
-	returns: v.null(),
-	handler: async (ctx, args) => {
-		const { subject: userId } = await requireIdentity(ctx)
-
-		await SectionMove.moveToCollection(
-			ctx,
-			userId,
-			args.sectionId,
-			args.collectionId,
-		)
+		await Sections.move(ctx, userId, args.sectionIds, args.afterId)
 	},
 })
 
 export const convertToCollection = mutation({
 	args: {
-		sectionId: v.id('sections'),
+		sectionIds: v.array(v.id('sections')),
 	},
-	returns: v.id('collections'),
+	returns: v.array(v.id('collections')),
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
 
-		return await SectionConversion.convertToCollection(
+		return await SectionConversion.convertToCollections(
 			ctx,
 			userId,
-			args.sectionId,
+			args.sectionIds,
 		)
-	},
-})
-
-/* AKA delete (we don't use `delete` because it's a reserved JS keyword) */
-export const remove = mutation({
-	args: {
-		sectionId: v.id('sections'),
-	},
-	returns: sectionRead,
-	handler: async (ctx, args) => {
-		const { subject: userId } = await requireIdentity(ctx)
-
-		return await SectionRemoval.remove(ctx, userId, args.sectionId)
 	},
 })

@@ -11,11 +11,9 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '~/components/ui'
-import {
-	useConvertSectionToCollection,
-	useDeleteSection,
-} from '~/modules/collections/api/sectionQueries'
-import { MoveSectionDialog } from '~/modules/collections/components/MoveSectionDialog'
+import { useDeleteCollectionItems } from '~/modules/collections/api/collectionItemQueries'
+import { useConvertSectionsToCollections } from '~/modules/collections/api/sectionQueries'
+import { MoveCollectionItemsDialog } from '~/modules/collections/components/MoveCollectionItemsDialog'
 import { iconSizes, radii } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -39,14 +37,14 @@ type SectionActionsProps = {
 
 /** The "more" menu in a section's header. */
 export function SectionActions({ section }: SectionActionsProps) {
-	const convertSection = useConvertSectionToCollection()
-	const deleteSection = useDeleteSection()
+	const convertSection = useConvertSectionsToCollections()
+	const deleteSection = useDeleteCollectionItems()
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
 	const confirmDelete = () => {
 		deleteSection.mutate(
-			{ sectionId: section._id },
+			{ sectionIds: [section._id], cardIds: [] },
 			// Leave the dialog open on failure so the toast has context.
 			{ onSuccess: () => setIsDeleteDialogOpen(false) },
 		)
@@ -75,7 +73,7 @@ export function SectionActions({ section }: SectionActionsProps) {
 					<DropdownMenuItem
 						disabled={convertSection.isPending}
 						onClick={() =>
-							convertSection.mutate({ sectionId: section._id })
+							convertSection.mutate({ sectionIds: [section._id] })
 						}
 					>
 						Convert to subcollection
@@ -89,9 +87,12 @@ export function SectionActions({ section }: SectionActionsProps) {
 			</DropdownMenu>
 
 			{isMoveDialogOpen ? (
-				<MoveSectionDialog
+				<MoveCollectionItemsDialog
 					onOpenChange={setIsMoveDialogOpen}
-					section={section}
+					collectionId={section.collectionId}
+					sectionIds={[section._id]}
+					cardIds={[]}
+					title='Move section'
 				/>
 			) : null}
 

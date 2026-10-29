@@ -1,7 +1,7 @@
 import { isSameItem, type SelectableItem } from './collectionOrder'
 
 /**
- * The collection page's selection: one section, or one or more cards. A range
+ * The collection page's selection: one or more sections and cards. A range
  * runs from `anchor`, where it started, to `cursor`, the end that moves and
  * holds focus.
  */
@@ -36,44 +36,31 @@ export function selectOnly(item: SelectableItem): Selection {
 	return { items: [item], anchor: item, cursor: item }
 }
 
-/**
- * The cards from `selection`'s anchor through `item`, in page order. Sections
- * in between are skipped, since only cards select together. A section target
- * selects just that section.
- */
+/** The items from `selection`'s anchor through `item`, in page order. */
 export function selectRange(
 	selection: Selection | null,
 	order: ReadonlyArray<SelectableItem>,
 	item: SelectableItem,
 ): Selection {
-	if (!selection || item.kind === 'section') return selectOnly(item)
+	if (!selection) return selectOnly(item)
 
 	const from = order.findIndex(entry => isSameItem(entry, selection.anchor))
 	const to = order.findIndex(entry => isSameItem(entry, item))
 	if (from === -1 || to === -1) return selectOnly(item)
 
-	const items = order
-		.slice(Math.min(from, to), Math.max(from, to) + 1)
-		.filter(entry => entry.kind === 'card')
-
-	return { items, anchor: selection.anchor, cursor: item }
+	return {
+		items: order.slice(Math.min(from, to), Math.max(from, to) + 1),
+		anchor: selection.anchor,
+		cursor: item,
+	}
 }
 
-/**
- * Adds a card to the selection or takes it out. A section can't join cards,
- * so toggling one, or a card while a section is selected, starts over.
- */
+/** Adds an item to the selection or takes it out. */
 export function toggleItem(
 	selection: Selection | null,
 	item: SelectableItem,
 ): Selection | null {
-	if (
-		!selection ||
-		item.kind === 'section' ||
-		selection.items.some(entry => entry.kind === 'section')
-	) {
-		return selectOnly(item)
-	}
+	if (!selection) return selectOnly(item)
 
 	if (!isSelected(selection, item)) {
 		return { items: [...selection.items, item], anchor: item, cursor: item }
@@ -82,6 +69,20 @@ export function toggleItem(
 	const items = selection.items.filter(entry => !isSameItem(entry, item))
 	const last = items.at(-1)
 	return last ? { items, anchor: last, cursor: last } : null
+}
+
+/**
+ * Every item on the page. The first item is the cursor, so focus stays at the
+ * top of the page rather than jumping to the bottom. Null when there are none.
+ */
+export function selectAll(
+	order: ReadonlyArray<SelectableItem>,
+): Selection | null {
+	const first = order[0]
+	const last = order.at(-1)
+	if (!first || !last) return null
+
+	return { items: [...order], anchor: last, cursor: first }
 }
 
 /** Selects only the item `step` places from the cursor, or the cursor itself at an edge. */
@@ -94,16 +95,14 @@ export function stepSelection(
 	return selectOnly(order[index + step] ?? selection.cursor)
 }
 
-/** Moves the cursor to the next card `step` away, extending the range to it. */
+/** Moves the cursor `step` places, extending the range to it. */
 export function extendSelection(
 	selection: Selection,
 	order: ReadonlyArray<SelectableItem>,
 	step: -1 | 1,
 ): Selection {
 	const index = order.findIndex(entry => isSameItem(entry, selection.cursor))
-	const ahead =
-		step === 1 ? order.slice(index + 1) : order.slice(0, index).reverse()
-	const next = ahead.find(entry => entry.kind === 'card')
+	const next = order[index + step]
 
 	return next ? selectRange(selection, order, next) : selection
 }

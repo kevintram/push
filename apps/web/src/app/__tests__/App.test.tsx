@@ -1259,7 +1259,7 @@ describe('v2 app setup', () => {
 			)
 		})
 
-		it('selects several cards with Shift and Mod, and moves them as one run', async () => {
+		it('selects several items with Shift and Mod, and moves cards as one run', async () => {
 			const user = userEvent.setup()
 			const { mutation } = renderCollection()
 			const first = await screen.findByRole('link', {
@@ -1270,12 +1270,12 @@ describe('v2 app setup', () => {
 			})
 
 			await user.click(first)
-			expect(screen.getByRole('toolbar')).toHaveTextContent('1 selected')
+			expect(screen.getByRole('toolbar')).toHaveTextContent('1 card')
 			await user.keyboard('{Shift>}{ArrowDown}{/Shift}')
 			expect(second).toHaveFocus()
 			// Clicks on the action bar itself keep the selection.
-			await user.click(screen.getByText('2 selected'))
-			expect(screen.getByRole('toolbar')).toHaveTextContent('2 selected')
+			await user.click(screen.getByText('2 cards'))
+			expect(screen.getByRole('toolbar')).toHaveTextContent('2 cards')
 			await user.keyboard('{Control>}{ArrowDown}{/Control}')
 			expect(mutation).toHaveBeenLastCalledWith(
 				expect.anything(),
@@ -1314,8 +1314,69 @@ describe('v2 app setup', () => {
 				expect.anything(),
 			)
 
+			// Extending past the cards takes in the section header below. A
+			// selection of sections and cards has nowhere to move.
+			await user.keyboard('{Shift>}{ArrowDown}{/Shift}')
+			expect(screen.getByRole('toolbar')).toHaveTextContent(
+				'1 section, 2 cards',
+			)
+			const calls = mutation.mock.calls.length
+			await user.keyboard('{Control>}{ArrowDown}{/Control}')
+			expect(mutation).toHaveBeenCalledTimes(calls)
+
 			await user.keyboard('{Escape}')
 			expect(screen.queryByRole('toolbar')).not.toBeInTheDocument()
+		})
+
+		it('starts a selection with the arrows: down at the first item, up at the last', async () => {
+			const user = userEvent.setup()
+			renderCollection()
+			const first = await screen.findByRole('link', {
+				name: firstCard.primaryText,
+			})
+
+			// Arrows typed in a field keep moving its caret.
+			await user.click(
+				screen.getByRole('textbox', { name: 'Collection description' }),
+			)
+			await user.keyboard('{ArrowDown}')
+			expect(screen.queryByRole('toolbar')).not.toBeInTheDocument()
+
+			// Focus on another control, like the sidebar link that opened the
+			// page, moves to the selected item.
+			screen.getByRole('link', { name: 'Settings' }).focus()
+			await user.keyboard('{ArrowDown}')
+			expect(first).toHaveFocus()
+			expect(screen.getByRole('toolbar')).toHaveTextContent('1 card')
+
+			await user.keyboard('{Escape}')
+			await user.keyboard('{ArrowUp}')
+			const items = document.querySelectorAll(
+				'[data-card-id], [data-section-id]',
+			)
+			expect(items[items.length - 1]).toHaveFocus()
+		})
+
+		it('selects everything with Mod+A, but leaves it to a field', async () => {
+			const user = userEvent.setup()
+			renderCollection()
+			const first = await screen.findByRole('link', {
+				name: firstCard.primaryText,
+			})
+
+			await user.click(
+				screen.getByRole('textbox', { name: 'Collection description' }),
+			)
+			await user.keyboard('{Control>}a{/Control}')
+			expect(screen.queryByRole('toolbar')).not.toBeInTheDocument()
+
+			screen.getByRole('link', { name: 'Settings' }).focus()
+			await user.keyboard('{Control>}a{/Control}')
+			expect(screen.getByRole('toolbar')).toHaveTextContent(
+				'1 section, 2 cards',
+			)
+			// Focus stays at the top rather than jumping to the last item.
+			expect(first).toHaveFocus()
 		})
 
 		it('opens the selected card with Enter, and clears the selection with Escape or an empty click', async () => {

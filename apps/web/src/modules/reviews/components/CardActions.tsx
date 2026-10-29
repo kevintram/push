@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { Archive, ArrowUpRight, Ellipsis, Flag, Zap } from 'lucide-react'
 import { useState } from 'react'
 
+import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	Button,
 	DropdownMenu,
@@ -19,7 +20,7 @@ import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { useCardActions } from '../hooks/useCardActions'
 import type { Card } from '../types/review.types'
-import { CardActionDialogs, type CardDialog } from './CardActionDialogs'
+import { MoveCardDialog } from './MoveCardDialog'
 
 const styles = stylex.create({
 	container: {
@@ -74,8 +75,12 @@ export function CardActions({
 	isMenuHoverRevealed = false,
 	xstyle,
 }: CardActionsProps) {
-	const [dialog, setDialog] = useState<CardDialog>(null)
-	const { toggleFlag, toggleRetire, toggleType } = useCardActions()
+	const [dialog, setDialog] = useState<'move' | 'delete' | null>(null)
+	const { isDeleting, remove, toggleFlag, toggleRetire, toggleType } =
+		useCardActions()
+	const closeOnDismiss = (open: boolean) => {
+		if (!open) setDialog(null)
+	}
 
 	const isFlashcard = card.type === 'flashcard'
 	const isFlagged = card.flaggedAt !== undefined
@@ -249,10 +254,18 @@ export function CardActions({
 				</DropdownMenuContent>
 			</DropdownMenu>
 
-			<CardActionDialogs
-				cards={[card]}
-				dialog={dialog}
-				onDialogChange={setDialog}
+			{dialog === 'move' ? (
+				<MoveCardDialog cards={[card]} onOpenChange={closeOnDismiss} />
+			) : null}
+
+			<DeleteConfirmationDialog
+				description='This card and its content will be permanently deleted.'
+				isPending={isDeleting}
+				// Leave the dialog open on failure so the toast has context.
+				onConfirm={() => remove([card], () => setDialog(null))}
+				onOpenChange={closeOnDismiss}
+				open={dialog === 'delete'}
+				title='Delete card?'
 			/>
 		</div>
 	)

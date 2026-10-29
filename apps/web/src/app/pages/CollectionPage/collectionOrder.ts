@@ -35,42 +35,56 @@ export function selectionOrder(grouped: GroupedCards): Array<SelectableItem> {
 }
 
 /**
- * Where `ids[index]` lands when moved within its own list, as the item it goes
- * after. Null when the move would leave it where it is.
+ * `ids` with `run` taken out and put back, in its own order, right after
+ * `afterId`, or first when it is null.
  */
-function placementInList<T>(
+function withRunPlaced<T>(
 	ids: ReadonlyArray<T>,
-	index: number,
-	direction: MoveDirection,
-): { afterId: T | null } | null {
-	const isFirst = index === 0
-	const isLast = index === ids.length - 1
+	run: ReadonlyArray<T>,
+	afterId: T | null,
+): Array<T> {
+	const moving = new Set(run)
+	const others = ids.filter(id => !moving.has(id))
+	const index = afterId === null ? 0 : others.indexOf(afterId) + 1
+	return [...others.slice(0, index), ...run, ...others.slice(index)]
+}
 
-	switch (direction) {
-		case 'up':
-			return isFirst ? null : { afterId: ids[index - 2] ?? null }
-		case 'down':
-			return isLast ? null : { afterId: ids[index + 1]! }
-		case 'top':
-			return isFirst ? null : { afterId: null }
-		case 'bottom':
-			return isLast ? null : { afterId: ids.at(-1)! }
-	}
+/** Sections placed as one run, in the given order. */
+export type SectionBlockMove = SectionMove & {
+	sectionIds: Array<Id<'sections'>>
 }
 
 /**
- * Plans moving a section among the collection's sections. The unsectioned
- * cards stay above every section.
+ * Plans moving the selected sections one step as a block among the
+ * collection's sections. Like cards, they keep their order and gather into one
+ * run, placed against the first selected section for up and top, and against
+ * the last for down and bottom. The unsectioned cards stay above every
+ * section. Null when the move would leave everything where it is.
  */
 export function planSectionMove(
 	grouped: GroupedCards,
-	sectionId: Id<'sections'>,
+	selectedIds: ReadonlySet<Id<'sections'>>,
 	direction: MoveDirection,
-): SectionMove | null {
+): SectionBlockMove | null {
 	const ids = grouped.sections.map(({ section }) => section._id)
-	const index = ids.indexOf(sectionId)
+	const sectionIds = ids.filter(id => selectedIds.has(id))
+	if (sectionIds.length === 0) return null
 
-	return index === -1 ? null : placementInList(ids, index, direction)
+	const first = ids.indexOf(sectionIds[0]!)
+	const last = ids.indexOf(sectionIds.at(-1)!)
+
+	const lastUnselected = ids.findLast(id => !selectedIds.has(id)) ?? null
+	const afterIds: Record<MoveDirection, Id<'sections'> | null> = {
+		// Above the section just above the first, which is two places up.
+		up: ids[first - 2] ?? null,
+		down: ids[last + 1] ?? lastUnselected,
+		top: null,
+		bottom: lastUnselected,
+	}
+
+	const plan = { sectionIds, afterId: afterIds[direction] }
+	const after = withRunPlaced(ids, sectionIds, plan.afterId)
+	return after.every((id, index) => id === ids[index]) ? null : plan
 }
 
 type CardLine = {
@@ -99,13 +113,10 @@ function linesAfterMove(
 ): Array<Array<Id<'cards'>>> {
 	const moving = new Set(cardIds)
 	return lines.map(line => {
-		const ids = line.cards
-			.map(card => card._id)
-			.filter(id => !moving.has(id))
-		if (line.sectionId !== sectionId) return ids
-
-		const index = afterId === null ? 0 : ids.indexOf(afterId) + 1
-		return [...ids.slice(0, index), ...cardIds, ...ids.slice(index)]
+		const ids = line.cards.map(card => card._id)
+		return line.sectionId === sectionId
+			? withRunPlaced(ids, cardIds, afterId)
+			: ids.filter(id => !moving.has(id))
 	})
 }
 

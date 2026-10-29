@@ -1,5 +1,6 @@
+import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
-import { Archive, Ellipsis, Flag, Zap } from 'lucide-react'
+import { Archive, Ellipsis, Flag, FolderTree, Zap } from 'lucide-react'
 import { useState } from 'react'
 
 import {
@@ -9,12 +10,8 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '~/components/ui'
-import {
-	CardActionDialogs,
-	type CardDialog,
-} from '~/modules/reviews/components/CardActionDialogs'
+import { useConvertSectionsToCollections } from '~/modules/collections/api/sectionQueries'
 import { useCardActions } from '~/modules/reviews/hooks/useCardActions'
-import type { Card } from '~/modules/reviews/types/review.types'
 import { orange } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
@@ -24,6 +21,9 @@ import {
 	radii,
 	spacing,
 } from '~/styles/tokens.stylex'
+
+import { countItems, type SelectionContents } from './selectionContents'
+import { type SelectionDialog, SelectionDialogs } from './SelectionDialogs'
 
 // The bar rises from the bottom edge it sits on.
 const enter = stylex.keyframes({
@@ -95,44 +95,55 @@ const styles = stylex.create({
 })
 
 type SelectionActionBarProps = {
-	/** The selected cards, at least one, in page order. */
-	cards: ReadonlyArray<Card>
+	/** The collection the page shows. */
+	collectionId: Id<'collections'>
+	/** What is selected, at least one item. */
+	contents: SelectionContents
 }
 
-/** The actions for the selected cards, floating at the bottom of the page. */
-export function SelectionActionBar({ cards }: SelectionActionBarProps) {
-	const [dialog, setDialog] = useState<CardDialog>(null)
+/** The actions for the selection, floating at the bottom of the page. */
+export function SelectionActionBar({
+	collectionId,
+	contents,
+}: SelectionActionBarProps) {
+	const [dialog, setDialog] = useState<SelectionDialog>(null)
 	const { toggleFlag, toggleRetire, toggleType } = useCardActions()
+	const convertSections = useConvertSectionsToCollections()
 
+	const { sections, coveredCards: cards } = contents
 	const areAllFlagged = cards.every(card => card.flaggedAt !== undefined)
 	const areAllRetired = cards.every(card => card.retiredAt !== undefined)
 	const areAllFlashcards = cards.every(card => card.type === 'flashcard')
 	const flashcards = cards.length > 1 ? 'flashcards' : 'flashcard'
+	const subcollections =
+		sections.length > 1 ? 'subcollections' : 'subcollection'
 
 	return (
 		<div {...stylex.props(styles.dock)}>
 			<div
 				role='toolbar'
-				aria-label='Selected cards'
+				aria-label='Selection actions'
 				{...stylex.props(styles.bar)}
 			>
 				<span aria-live='polite' {...stylex.props(styles.count)}>
-					{cards.length} selected
+					{countItems(contents)}
 				</span>
-				<Button
-					variant='ghost'
-					size='small'
-					shape='round'
-					xstyle={styles.action}
-					onClick={() => toggleFlag(cards)}
-				>
-					<Flag
-						aria-hidden='true'
-						size={iconSizes.sm}
-						{...stylex.props(areAllFlagged && styles.flagOn)}
-					/>
-					{areAllFlagged ? 'Unflag' : 'Flag'}
-				</Button>
+				{cards.length > 0 ? (
+					<Button
+						variant='ghost'
+						size='small'
+						shape='round'
+						xstyle={styles.action}
+						onClick={() => toggleFlag(cards)}
+					>
+						<Flag
+							aria-hidden='true'
+							size={iconSizes.sm}
+							{...stylex.props(areAllFlagged && styles.flagOn)}
+						/>
+						{areAllFlagged ? 'Unflag' : 'Flag'}
+					</Button>
+				) : null}
 				<Button
 					variant='ghost'
 					size='small'
@@ -167,33 +178,61 @@ export function SelectionActionBar({ cards }: SelectionActionBarProps) {
 						<Ellipsis aria-hidden='true' size={iconSizes.sm} />
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align='end' side='top'>
-						<DropdownMenuItem
-							icon={
-								<Archive
-									aria-hidden='true'
-									size={iconSizes.sm}
-								/>
-							}
-							onClick={() => toggleRetire(cards)}
-						>
-							{areAllRetired ? 'Unretire' : 'Retire'}
-						</DropdownMenuItem>
-						<DropdownMenuItem
-							icon={
-								<Zap aria-hidden='true' size={iconSizes.sm} />
-							}
-							onClick={() => toggleType(cards)}
-						>
-							{areAllFlashcards
-								? `Remove as ${flashcards}`
-								: `Mark as ${flashcards}`}
-						</DropdownMenuItem>
+						{cards.length > 0 ? (
+							<>
+								<DropdownMenuItem
+									icon={
+										<Archive
+											aria-hidden='true'
+											size={iconSizes.sm}
+										/>
+									}
+									onClick={() => toggleRetire(cards)}
+								>
+									{areAllRetired ? 'Unretire' : 'Retire'}
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									icon={
+										<Zap
+											aria-hidden='true'
+											size={iconSizes.sm}
+										/>
+									}
+									onClick={() => toggleType(cards)}
+								>
+									{areAllFlashcards
+										? `Remove as ${flashcards}`
+										: `Mark as ${flashcards}`}
+								</DropdownMenuItem>
+							</>
+						) : null}
+						{sections.length > 0 ? (
+							<DropdownMenuItem
+								disabled={convertSections.isPending}
+								icon={
+									<FolderTree
+										aria-hidden='true'
+										size={iconSizes.sm}
+									/>
+								}
+								onClick={() =>
+									convertSections.mutate({
+										sectionIds: sections.map(
+											section => section._id,
+										),
+									})
+								}
+							>
+								{`Convert to ${subcollections}`}
+							</DropdownMenuItem>
+						) : null}
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</div>
 
-			<CardActionDialogs
-				cards={cards}
+			<SelectionDialogs
+				collectionId={collectionId}
+				contents={contents}
 				dialog={dialog}
 				onDialogChange={setDialog}
 			/>

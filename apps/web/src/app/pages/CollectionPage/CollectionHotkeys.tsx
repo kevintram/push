@@ -30,8 +30,14 @@ function isOnSelectable(event: KeyboardEvent) {
 
 type CollectionHotkeysProps = {
 	hasSelection: boolean
-	/** Steps the selection, or with `extend` grows its range of cards. */
+	/** Whether the page has any card or section to select. */
+	hasItems: boolean
+	/**
+	 * Steps the selection, or with `extend` grows its range. With nothing
+	 * selected, starts at the first item going down or the last going up.
+	 */
 	onSelectAdjacent: (step: -1 | 1, extend: boolean) => void
+	onSelectAll: () => void
 	onMove: (direction: MoveDirection) => void
 	/** Opens the selected card, or renames the selected section. */
 	onOpen: () => void
@@ -39,13 +45,15 @@ type CollectionHotkeysProps = {
 }
 
 /**
- * Keyboard control of the collection page's selection, active while something
- * is selected. Keys typed into a field, or pressed inside a dialog or menu,
- * keep their own meaning.
+ * Keyboard control of the collection page's selection. The arrows and Mod+A
+ * also start a selection; the other keys act only on one. Keys typed into a
+ * field, or pressed inside a dialog or menu, keep their own meaning.
  */
 export function CollectionHotkeys({
 	hasSelection,
+	hasItems,
 	onSelectAdjacent,
+	onSelectAll,
 	onMove,
 	onOpen,
 	onClear,
@@ -62,6 +70,8 @@ export function CollectionHotkeys({
 			event.preventDefault()
 			run()
 		}
+
+	const withSelection = { enabled: hasSelection }
 
 	useHotkeys(
 		[
@@ -81,9 +91,11 @@ export function CollectionHotkeys({
 				hotkey: 'Shift+ArrowDown',
 				callback: claim(() => onSelectAdjacent(1, true)),
 			},
+			{ hotkey: 'Mod+A', callback: claim(onSelectAll) },
 			...MOVES.map(({ hotkey, direction }) => ({
 				hotkey,
 				callback: claim(() => onMove(direction)),
+				options: withSelection,
 			})),
 			// Selectable items are buttons and links, which `ignoreInputs`
 			// leaves Enter to, so this hotkey filters with `isOnSelectable`
@@ -92,12 +104,18 @@ export function CollectionHotkeys({
 			{
 				hotkey: 'Enter',
 				callback: claim(onOpen, isOnSelectable),
-				options: { ignoreInputs: false },
+				options: { ...withSelection, ignoreInputs: false },
 			},
-			{ hotkey: 'Escape', callback: claim(onClear) },
+			{
+				hotkey: 'Escape',
+				callback: claim(onClear),
+				options: withSelection,
+			},
 		],
 		{
-			enabled: hasSelection,
+			// On an empty page the arrows have nothing to select, so they keep
+			// their browser behavior.
+			enabled: hasItems,
 			ignoreInputs: true,
 			preventDefault: false,
 			stopPropagation: false,

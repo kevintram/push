@@ -1,9 +1,11 @@
+import type { Id } from '@convex/_generated/dataModel'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { type SelectableItem, selectionOrder } from './collectionOrder'
 import {
 	extendSelection,
 	pruneSelection,
+	selectAll as selectAllItems,
 	type Selection,
 	type SelectMode,
 	selectOnly,
@@ -20,6 +22,29 @@ export const SELECTABLE_SELECTOR = '[data-card-id], [data-section-id]'
 // page keep the selection.
 const INTERACTIVE_SELECTOR =
 	'tr, a, button, input, textarea, [role="toolbar"], [role="menu"], [role="dialog"]'
+
+/** The card or section whose row the pointer is over, if any. */
+function hoveredItem(): SelectableItem | null {
+	const target = document.querySelector<HTMLElement>(
+		`tr:hover :is(${SELECTABLE_SELECTOR})`,
+	)
+	const { cardId, sectionId } = target?.dataset ?? {}
+	if (cardId) return { kind: 'card', id: cardId as Id<'cards'> }
+	if (sectionId) return { kind: 'section', id: sectionId as Id<'sections'> }
+	return null
+}
+
+/**
+ * Takes focus off any control outside the cards and sections, such as the
+ * sidebar link that opened the page. Keys that make a selection call this so
+ * focus follows it, which the focus effect would otherwise leave alone.
+ */
+function releaseFocus() {
+	const active = document.activeElement
+	if (active instanceof HTMLElement && !active.closest(SELECTABLE_SELECTOR)) {
+		active.blur()
+	}
+}
 
 function selectorFor(item: SelectableItem) {
 	return item.kind === 'card'
@@ -55,10 +80,21 @@ export function useCollectionSelection(grouped: GroupedCards) {
 		[order, selected],
 	)
 
-	/** Steps to the next item, or with `extend` grows the range to the next card. */
+	/**
+	 * Steps to the next item, or with `extend` grows the range to it. With
+	 * nothing selected, selects the hovered item, or else the first item going
+	 * down or the last going up.
+	 */
 	const selectAdjacent = useCallback(
 		(step: -1 | 1, extend: boolean) => {
-			if (!selected) return
+			releaseFocus()
+
+			if (!selected) {
+				const start =
+					hoveredItem() ?? (step === 1 ? order[0] : order.at(-1))
+				if (start) setSelection(selectOnly(start))
+				return
+			}
 			setSelection(
 				extend
 					? extendSelection(selected, order, step)
@@ -67,6 +103,11 @@ export function useCollectionSelection(grouped: GroupedCards) {
 		},
 		[order, selected],
 	)
+
+	const selectAll = useCallback(() => {
+		releaseFocus()
+		setSelection(selectAllItems(order))
+	}, [order])
 
 	const clear = useCallback(() => {
 		setSelection(null)
@@ -119,5 +160,5 @@ export function useCollectionSelection(grouped: GroupedCards) {
 		if (target && target !== active) target.focus()
 	}, [selected, order])
 
-	return { selected, select, clear, selectAdjacent }
+	return { selected, select, selectAll, clear, selectAdjacent }
 }
