@@ -266,7 +266,11 @@ export function CardItem({
 	}
 
 	const titleText = (
-		<FadeText side='bottom' align='start' xstyle={styles.raised}>
+		<FadeText
+			tooltipSide='bottom'
+			tooltipAlign='start'
+			xstyle={styles.raised}
+		>
 			{title}
 		</FadeText>
 	)

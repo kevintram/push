@@ -17,8 +17,8 @@ const styles = stylex.create({
 
 export interface FadeTextProps {
 	children: ReactNode
-	align?: TooltipContentProps['align']
-	side?: TooltipContentProps['side']
+	tooltipAlign?: TooltipContentProps['align']
+	tooltipSide?: TooltipContentProps['side']
 	xstyle?: stylex.StyleXStyles
 }
 
@@ -28,8 +28,8 @@ export interface FadeTextProps {
  */
 export function FadeText({
 	children,
-	align,
-	side = 'inline-end',
+	tooltipAlign,
+	tooltipSide = 'inline-end',
 	xstyle,
 }: FadeTextProps) {
 	return (
@@ -39,7 +39,11 @@ export function FadeText({
 			>
 				{children}
 			</TooltipTrigger>
-			<TooltipContent align={align} side={side} xstyle={styles.tooltip}>
+			<TooltipContent
+				align={tooltipAlign}
+				side={tooltipSide}
+				xstyle={styles.tooltip}
+			>
 				{children}
 			</TooltipContent>
 		</Tooltip>
