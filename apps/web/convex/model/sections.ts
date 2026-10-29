@@ -123,19 +123,27 @@ export async function update(
 }
 
 /**
- * Places `sectionId` right after `afterId` among its collection's sections, or
- * first when `afterId` is null. Writes the one section, plus keys for any
- * sections still unranked.
+ * Places `sectionIds`, in that order, as a run among their collection's
+ * sections, right after `afterId` or first when it is null. Writes each moving
+ * section, plus keys for any sections still unranked.
  */
 export async function move(
 	ctx: MutationCtx,
 	userId: string,
-	sectionId: Id<'sections'>,
+	sectionIds: ReadonlyArray<Id<'sections'>>,
 	afterId: Id<'sections'> | null,
 ): Promise<void> {
-	const section = await requireUserOwns(ctx, userId, sectionId)
-	const sections = await listByCollection(ctx, userId, section.collectionId)
-	const { ranks, backfill } = placeInLine(sections, [sectionId], afterId)
+	const moving = await Promise.all(
+		sectionIds.map(sectionId => requireUserOwns(ctx, userId, sectionId)),
+	)
+	const collectionId = moving[0]?.collectionId
+	if (collectionId === undefined) return
+	if (moving.some(section => section.collectionId !== collectionId)) {
+		throw new Error('Sections can only move together within one collection')
+	}
+
+	const sections = await listByCollection(ctx, userId, collectionId)
+	const { ranks, backfill } = placeInLine(sections, sectionIds, afterId)
 
 	for (const row of [...backfill, ...ranks]) {
 		await ctx.db.patch('sections', row._id, { rank: row.rank })

@@ -6,10 +6,26 @@ import * as Collections from './collections'
 import * as Sections from './sections'
 
 /**
+ * Converts each section, in order, as `convertToCollection` does. Returns the
+ * new collections' ids in the same order.
+ */
+export async function convertToCollections(
+	ctx: MutationCtx,
+	userId: string,
+	sectionIds: ReadonlyArray<Id<'sections'>>,
+): Promise<Array<Id<'collections'>>> {
+	const collectionIds = []
+	for (const sectionId of new Set(sectionIds)) {
+		collectionIds.push(await convertToCollection(ctx, userId, sectionId))
+	}
+	return collectionIds
+}
+
+/**
  * Replaces `sectionId` with a subcollection of its collection that has the
  * section's title and holds its cards, in order, as unsectioned cards.
  */
-export async function convertToCollection(
+async function convertToCollection(
 	ctx: MutationCtx,
 	userId: string,
 	sectionId: Id<'sections'>,

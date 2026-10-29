@@ -131,20 +131,39 @@ describe('planCardMove', () => {
 })
 
 describe('planSectionMove', () => {
+	const plan = (ids: Array<string>, direction: MoveDirection) =>
+		planSectionMove(grouped, new Set(ids.map(sectionId)), direction)
+
 	it('moves among sections and stays put at the edges', () => {
-		expect(planSectionMove(grouped, sectionId('C'), 'up')).toEqual({
-			afterId: 'A',
-		})
-		expect(planSectionMove(grouped, sectionId('B'), 'up')).toEqual({
-			afterId: null,
-		})
-		expect(planSectionMove(grouped, sectionId('A'), 'down')).toEqual({
+		expect(plan(['C'], 'up')).toEqual({ sectionIds: ['C'], afterId: 'A' })
+		expect(plan(['B'], 'up')).toEqual({ sectionIds: ['B'], afterId: null })
+		expect(plan(['A'], 'down')).toEqual({
+			sectionIds: ['A'],
 			afterId: 'B',
 		})
-		expect(planSectionMove(grouped, sectionId('B'), 'bottom')).toEqual({
+		expect(plan(['B'], 'bottom')).toEqual({
+			sectionIds: ['B'],
 			afterId: 'C',
 		})
-		expect(planSectionMove(grouped, sectionId('A'), 'up')).toBeNull()
-		expect(planSectionMove(grouped, sectionId('C'), 'bottom')).toBeNull()
+		expect(plan(['A'], 'up')).toBeNull()
+		expect(plan(['C'], 'bottom')).toBeNull()
+	})
+
+	it('moves several sections as one run, gathering a scattered selection', () => {
+		expect(plan(['B', 'C'], 'up')).toEqual({
+			sectionIds: ['B', 'C'],
+			afterId: null,
+		})
+		expect(plan(['A', 'B'], 'down')).toEqual({
+			sectionIds: ['A', 'B'],
+			afterId: 'C',
+		})
+		// A and C gather at the top, above B.
+		expect(plan(['A', 'C'], 'top')).toEqual({
+			sectionIds: ['A', 'C'],
+			afterId: null,
+		})
+		expect(plan(['A', 'B'], 'top')).toBeNull()
+		expect(plan(['B', 'C'], 'bottom')).toBeNull()
 	})
 })

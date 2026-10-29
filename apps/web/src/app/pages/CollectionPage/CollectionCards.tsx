@@ -9,7 +9,7 @@ import { useToday } from '~/hooks/useToday'
 import {
 	sectionQueries,
 	useCreateSection,
-	useMoveSection,
+	useMoveSections,
 } from '~/modules/collections/api/sectionQueries'
 import {
 	cardQueries,
@@ -92,7 +92,7 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 		useState<Id<'sections'> | null>(null)
 	const createSection = useCreateSection()
 	const createCard = useCreateCard()
-	const moveSection = useMoveSection()
+	const moveSections = useMoveSections()
 	const moveCard = useMoveCards()
 	const navigate = useNavigate()
 	const today = useToday()
@@ -134,17 +134,12 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 	const handleMove = useCallback(
 		(direction: MoveDirection) => {
 			if (selectedSectionId) {
-				const placement = planSectionMove(
+				const plan = planSectionMove(
 					grouped,
-					selectedSectionId,
+					new Set([selectedSectionId]),
 					direction,
 				)
-				if (placement) {
-					moveSection.mutate({
-						sectionId: selectedSectionId,
-						...placement,
-					})
-				}
+				if (plan) moveSections.mutate(plan)
 			} else if (selectedCards.length > 0) {
 				const plan = planCardMove(grouped, selectedCardIds, direction)
 				if (plan) moveCard.mutate(plan)
@@ -156,7 +151,7 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 			selectedCards,
 			selectedCardIds,
 			moveCard,
-			moveSection,
+			moveSections,
 		],
 	)
 

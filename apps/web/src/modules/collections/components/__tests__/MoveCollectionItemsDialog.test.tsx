@@ -1,12 +1,11 @@
 import type { Id } from '@convex/_generated/dataModel'
-import type { Section } from '@convex/validators/sections'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { Collection } from '~/modules/collections/types/collection.types'
 
-import { MoveSectionDialog } from '../MoveSectionDialog'
+import { MoveCollectionItemsDialog } from '../MoveCollectionItemsDialog'
 
 const moveMutate = vi.fn()
 
@@ -40,8 +39,8 @@ vi.mock('~/modules/collections/api/collectionQueries', () => ({
 	},
 }))
 
-vi.mock('~/modules/collections/api/sectionQueries', () => ({
-	useMoveSectionToCollection: () => ({
+vi.mock('~/modules/collections/api/collectionItemQueries', () => ({
+	useMoveCollectionItems: () => ({
 		mutate: moveMutate,
 		isPending: false,
 	}),
@@ -60,19 +59,19 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 	}
 })
 
-const section = {
-	_id: 'section-1' as Section['_id'],
-	collectionId: 'collection-1' as Id<'collections'>,
-	title: 'Cell anatomy',
-} as Section
-
-describe('MoveSectionDialog', () => {
-	it('moves the section to the picked collection and closes on success', async () => {
+describe('MoveCollectionItemsDialog', () => {
+	it('moves the items to the picked collection and closes on success', async () => {
 		const user = userEvent.setup()
 		const onOpenChange = vi.fn()
 
 		render(
-			<MoveSectionDialog onOpenChange={onOpenChange} section={section} />,
+			<MoveCollectionItemsDialog
+				onOpenChange={onOpenChange}
+				collectionId={'collection-1' as Id<'collections'>}
+				sectionIds={['section-1' as Id<'sections'>]}
+				cardIds={['card-1' as Id<'cards'>]}
+				title='Move 1 section and 1 card'
+			/>,
 		)
 
 		await user.click(screen.getByRole('button', { name: 'Chemistry' }))
@@ -83,7 +82,8 @@ describe('MoveSectionDialog', () => {
 			{ onSuccess: () => void },
 		]
 		expect(args).toEqual({
-			sectionId: 'section-1',
+			sectionIds: ['section-1'],
+			cardIds: ['card-1'],
 			collectionId: 'collection-2',
 		})
 		expect(onOpenChange).not.toHaveBeenCalled()
