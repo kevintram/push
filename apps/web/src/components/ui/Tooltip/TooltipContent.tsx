@@ -12,6 +12,7 @@ export interface TooltipContentProps extends Omit<
 	alignOffset?: React.ComponentProps<typeof Tooltip.Positioner>['alignOffset']
 	side?: React.ComponentProps<typeof Tooltip.Positioner>['side']
 	sideOffset?: React.ComponentProps<typeof Tooltip.Positioner>['sideOffset']
+	xstyle?: stylex.StyleXStyles
 }
 
 const styles = stylex.create({
@@ -56,6 +57,7 @@ export function TooltipContent({
 	role = 'tooltip',
 	side = 'bottom',
 	sideOffset = 4,
+	xstyle,
 	...props
 }: TooltipContentProps) {
 	return (
@@ -69,7 +71,7 @@ export function TooltipContent({
 			>
 				<Tooltip.Popup
 					role={role}
-					{...stylex.props(styles.popup)}
+					{...stylex.props(styles.popup, xstyle)}
 					{...props}
 				/>
 			</Tooltip.Positioner>

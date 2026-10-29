@@ -2,8 +2,8 @@ import * as stylex from '@stylexjs/stylex'
 import { Link, useNavigate } from '@tanstack/react-router'
 import type { MouseEvent } from 'react'
 
+import { FadeText } from '~/components/ui'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { textFade } from '~/styles/textFade'
 import {
 	fontSizes,
 	fontWeights,
@@ -124,7 +124,7 @@ const styles = stylex.create({
 		padding: 0,
 	},
 	// Above the row's stretched target, so tooltips can show. Clicks on these
-	// cells are forwarded to the target.
+	// cells are forwarded to the target; clicks on the title bubble to it.
 	raised: {
 		position: 'relative',
 		zIndex: 1,
@@ -265,7 +265,15 @@ export function CardItem({
 		onSelect(event)
 	}
 
-	const titleText = <span {...stylex.props(textFade.line)}>{title}</span>
+	const titleText = (
+		<FadeText
+			tooltipSide='bottom'
+			tooltipAlign='start'
+			xstyle={styles.raised}
+		>
+			{title}
+		</FadeText>
+	)
 
 	// The table's grid layout can drop its native roles, so name them.
 	return (
