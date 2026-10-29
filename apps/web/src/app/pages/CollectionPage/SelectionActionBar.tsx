@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { Archive, Ellipsis, Flag, FolderInput, Trash2, Zap } from 'lucide-react'
+import { Archive, Ellipsis, Flag, Zap } from 'lucide-react'
 import { useState } from 'react'
 
 import {
@@ -15,6 +15,7 @@ import {
 } from '~/modules/reviews/components/CardActionDialogs'
 import { useCardActions } from '~/modules/reviews/hooks/useCardActions'
 import type { Card } from '~/modules/reviews/types/review.types'
+import { orange } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	fontSizes,
@@ -74,6 +75,10 @@ const styles = stylex.create({
 		fontWeight: fontWeights.medium,
 		whiteSpace: 'nowrap',
 	},
+	flagOn: {
+		fill: orange.s500,
+		color: orange.s500,
+	},
 	// Ghost buttons recolored for the inverse surface.
 	action: {
 		backgroundColor: {
@@ -121,7 +126,11 @@ export function SelectionActionBar({ cards }: SelectionActionBarProps) {
 					xstyle={styles.action}
 					onClick={() => toggleFlag(cards)}
 				>
-					<Flag aria-hidden='true' size={iconSizes.sm} />
+					<Flag
+						aria-hidden='true'
+						size={iconSizes.sm}
+						{...stylex.props(areAllFlagged && styles.flagOn)}
+					/>
 					{areAllFlagged ? 'Unflag' : 'Flag'}
 				</Button>
 				<Button
@@ -131,7 +140,6 @@ export function SelectionActionBar({ cards }: SelectionActionBarProps) {
 					xstyle={styles.action}
 					onClick={() => setDialog('move')}
 				>
-					<FolderInput aria-hidden='true' size={iconSizes.sm} />
 					Move
 				</Button>
 				<Button
@@ -141,7 +149,6 @@ export function SelectionActionBar({ cards }: SelectionActionBarProps) {
 					xstyle={styles.action}
 					onClick={() => setDialog('delete')}
 				>
-					<Trash2 aria-hidden='true' size={iconSizes.sm} />
 					Delete
 				</Button>
 				<DropdownMenu>
