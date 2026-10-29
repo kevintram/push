@@ -73,18 +73,24 @@ export async function listByCollection(
 export async function create(
 	ctx: MutationCtx,
 	userId: string,
-	{ afterId, ...fields }: SectionCreate,
+	{ afterId, collectionId, title }: SectionCreate,
 ): Promise<Id<'sections'>> {
-	const sections = await listByCollection(ctx, userId, fields.collectionId)
-	const { rank, backfill } = placeNewInLine(sections, afterId)
+	const sections = await listByCollection(ctx, userId, collectionId)
+	// A client with a stale list can name a section deleted since. The new
+	// section still gets created, at the bottom.
+	const anchorId =
+		afterId !== null && (await ctx.db.get('sections', afterId)) === null
+			? (sections.at(-1)?._id ?? null)
+			: afterId
+	const { rank, backfill } = placeNewInLine(sections, anchorId)
 
 	for (const row of backfill) {
 		await ctx.db.patch('sections', row._id, { rank: row.rank })
 	}
 	return await ctx.db.insert('sections', {
-		collectionId: fields.collectionId,
+		collectionId,
 		ownerId: userId,
-		title: fields.title ?? '',
+		title: title ?? '',
 		rank,
 	})
 }

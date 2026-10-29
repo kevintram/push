@@ -106,6 +106,17 @@ describe('placeNewInLine', () => {
 		])
 	})
 
+	it('backfills unranked rows so the new key fits between them', () => {
+		const unranked = [row('a', 1), row('b', 2)]
+		const { rank, backfill } = placeNewInLine(unranked, 'a')
+		const assigned = new Map(backfill.map(({ _id, rank }) => [_id, rank]))
+
+		expect([...assigned.keys()]).toEqual(['a', 'b'])
+		expect(assigned.get('a')! < rank && rank < assigned.get('b')!).toBe(
+			true,
+		)
+	})
+
 	it('rejects an anchor that is not in the list', () => {
 		expect(() => placeNewInLine(line, 'missing')).toThrow(
 			'The item to place after is not in this list',

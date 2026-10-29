@@ -163,7 +163,7 @@ describe('sections', () => {
 		})
 		const keptSectionId = await asUserA.mutation(api.sections.create, {
 			collectionId,
-			afterId: null,
+			afterId: removedSectionId,
 		})
 		const removedCardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
@@ -313,6 +313,63 @@ describe('sections', () => {
 		})
 		expect(sections.map(section => section._id)).toEqual([a, created, b])
 		expect(sections.every(section => section.rank !== undefined)).toBe(true)
+	})
+
+	it('backfills unranked sections when creating one first', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const [a, b] = await t.run(async ctx =>
+			Promise.all(
+				['A', 'B'].map(title =>
+					ctx.db.insert('sections', {
+						collectionId,
+						ownerId: userAIdentity.subject,
+						title,
+					}),
+				),
+			),
+		)
+
+		const created = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: null,
+		})
+
+		const sections = await asUserA.query(api.sections.listByCollection, {
+			collectionId,
+		})
+		expect(sections.map(section => section._id)).toEqual([created, a, b])
+		expect(sections.every(section => section.rank !== undefined)).toBe(true)
+	})
+
+	it('creates a section at the bottom when its anchor was deleted', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const a = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: null,
+		})
+		const deleted = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: a,
+		})
+		const b = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: deleted,
+		})
+		await asUserA.mutation(api.sections.remove, { sectionId: deleted })
+
+		const created = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: deleted,
+		})
+
+		const sections = await asUserA.query(api.sections.listByCollection, {
+			collectionId,
+		})
+		expect(sections.map(section => section._id)).toEqual([a, b, created])
 	})
 
 	it('rejects creating after a section in another collection', async () => {
