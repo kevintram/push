@@ -5,6 +5,7 @@ import type { SelectableItem } from '../collectionOrder'
 import {
 	extendSelection,
 	pruneSelection,
+	selectAll,
 	selectOnly,
 	selectRange,
 	toggleItem,
@@ -62,6 +63,15 @@ describe('collection selection', () => {
 		])
 		expect(ids(toggleItem(both, card('u1'))?.items)).toEqual(['B'])
 		expect(toggleItem(selectOnly(section('A')), section('A'))).toBeNull()
+	})
+
+	it('selects every item with the cursor on the first', () => {
+		const all = selectAll(order)
+
+		expect(ids(all?.items)).toEqual(['u1', 'A', 'a1', 'a2', 'B', 'b1'])
+		expect(all?.cursor).toEqual(card('u1'))
+		expect(all?.anchor).toEqual(card('b1'))
+		expect(selectAll([])).toBeNull()
 	})
 
 	it('drops items that leave the page and keeps the anchor and cursor on it', () => {

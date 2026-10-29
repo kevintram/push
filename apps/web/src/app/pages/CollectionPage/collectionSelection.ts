@@ -71,6 +71,20 @@ export function toggleItem(
 	return last ? { items, anchor: last, cursor: last } : null
 }
 
+/**
+ * Every item on the page. The first item is the cursor, so focus stays at the
+ * top of the page rather than jumping to the bottom. Null when there are none.
+ */
+export function selectAll(
+	order: ReadonlyArray<SelectableItem>,
+): Selection | null {
+	const first = order[0]
+	const last = order.at(-1)
+	if (!first || !last) return null
+
+	return { items: [...order], anchor: last, cursor: first }
+}
+
 /** Selects only the item `step` places from the cursor, or the cursor itself at an edge. */
 export function stepSelection(
 	selection: Selection,

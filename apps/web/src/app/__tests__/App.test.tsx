@@ -1357,6 +1357,28 @@ describe('v2 app setup', () => {
 			expect(items[items.length - 1]).toHaveFocus()
 		})
 
+		it('selects everything with Mod+A, but leaves it to a field', async () => {
+			const user = userEvent.setup()
+			renderCollection()
+			const first = await screen.findByRole('link', {
+				name: firstCard.primaryText,
+			})
+
+			await user.click(
+				screen.getByRole('textbox', { name: 'Collection description' }),
+			)
+			await user.keyboard('{Control>}a{/Control}')
+			expect(screen.queryByRole('toolbar')).not.toBeInTheDocument()
+
+			screen.getByRole('link', { name: 'Settings' }).focus()
+			await user.keyboard('{Control>}a{/Control}')
+			expect(screen.getByRole('toolbar')).toHaveTextContent(
+				'1 section, 2 cards',
+			)
+			// Focus stays at the top rather than jumping to the last item.
+			expect(first).toHaveFocus()
+		})
+
 		it('opens the selected card with Enter, and clears the selection with Escape or an empty click', async () => {
 			const user = userEvent.setup()
 			const { router, mutation } = renderCollection()

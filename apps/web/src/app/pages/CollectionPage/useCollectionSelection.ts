@@ -5,6 +5,7 @@ import { type SelectableItem, selectionOrder } from './collectionOrder'
 import {
 	extendSelection,
 	pruneSelection,
+	selectAll as selectAllItems,
 	type Selection,
 	type SelectMode,
 	selectOnly,
@@ -31,6 +32,18 @@ function hoveredItem(): SelectableItem | null {
 	if (cardId) return { kind: 'card', id: cardId as Id<'cards'> }
 	if (sectionId) return { kind: 'section', id: sectionId as Id<'sections'> }
 	return null
+}
+
+/**
+ * Takes focus off any control outside the cards and sections, such as the
+ * sidebar link that opened the page. Keys that make a selection call this so
+ * focus follows it, which the focus effect would otherwise leave alone.
+ */
+function releaseFocus() {
+	const active = document.activeElement
+	if (active instanceof HTMLElement && !active.closest(SELECTABLE_SELECTOR)) {
+		active.blur()
+	}
 }
 
 function selectorFor(item: SelectableItem) {
@@ -74,16 +87,7 @@ export function useCollectionSelection(grouped: GroupedCards) {
 	 */
 	const selectAdjacent = useCallback(
 		(step: -1 | 1, extend: boolean) => {
-			// The arrows drive the selection, so focus follows it even from a
-			// control elsewhere, like the sidebar link that opened this page,
-			// which the focus effect below would otherwise leave alone.
-			const active = document.activeElement
-			if (
-				active instanceof HTMLElement &&
-				!active.closest(SELECTABLE_SELECTOR)
-			) {
-				active.blur()
-			}
+			releaseFocus()
 
 			if (!selected) {
 				const start =
@@ -99,6 +103,11 @@ export function useCollectionSelection(grouped: GroupedCards) {
 		},
 		[order, selected],
 	)
+
+	const selectAll = useCallback(() => {
+		releaseFocus()
+		setSelection(selectAllItems(order))
+	}, [order])
 
 	const clear = useCallback(() => {
 		setSelection(null)
@@ -151,5 +160,5 @@ export function useCollectionSelection(grouped: GroupedCards) {
 		if (target && target !== active) target.focus()
 	}, [selected, order])
 
-	return { selected, select, clear, selectAdjacent }
+	return { selected, select, selectAll, clear, selectAdjacent }
 }

@@ -62,7 +62,7 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 		() => groupCardsBySection(sections, cards),
 		[sections, cards],
 	)
-	const { selected, select, clear, selectAdjacent } =
+	const { selected, select, selectAll, clear, selectAdjacent } =
 		useCollectionSelection(grouped)
 	const selectedSectionIds = useMemo(
 		() =>
@@ -185,6 +185,7 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 					grouped.sections.length > 0
 				}
 				onSelectAdjacent={selectAdjacent}
+				onSelectAll={selectAll}
 				onMove={handleMove}
 				onOpen={handleOpen}
 				onClear={clear}
