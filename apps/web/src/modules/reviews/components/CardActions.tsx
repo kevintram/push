@@ -3,7 +3,6 @@ import { Link } from '@tanstack/react-router'
 import { Archive, ArrowUpRight, Ellipsis, Flag, Zap } from 'lucide-react'
 import { useState } from 'react'
 
-import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	Button,
 	DropdownMenu,
@@ -20,7 +19,7 @@ import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { useCardActions } from '../hooks/useCardActions'
 import type { Card } from '../types/review.types'
-import { MoveCardDialog } from './MoveCardDialog'
+import { CardActionDialogs, type CardDialog } from './CardActionDialogs'
 
 const styles = stylex.create({
 	container: {
@@ -81,10 +80,8 @@ export function CardActions({
 	isMenuHoverRevealed = false,
 	xstyle,
 }: CardActionsProps) {
-	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-	const { isDeleting, remove, toggleFlag, toggleRetire, toggleType } =
-		useCardActions()
+	const [dialog, setDialog] = useState<CardDialog>(null)
+	const { toggleFlag, toggleRetire, toggleType } = useCardActions()
 
 	const isFlashcard = card.type === 'flashcard'
 	const isFlagged = card.flaggedAt !== undefined
@@ -271,41 +268,20 @@ export function CardActions({
 					>
 						{label(areAllRetired ? 'Unretire' : 'Retire')}
 					</DropdownMenuItem>
-					<DropdownMenuItem onClick={() => setIsMoveDialogOpen(true)}>
+					<DropdownMenuItem onClick={() => setDialog('move')}>
 						{label('Move')}
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
-					<DropdownMenuItem
-						onClick={() => setIsDeleteDialogOpen(true)}
-					>
+					<DropdownMenuItem onClick={() => setDialog('delete')}>
 						{label('Delete')}
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
 
-			{isMoveDialogOpen ? (
-				<MoveCardDialog
-					onOpenChange={setIsMoveDialogOpen}
-					cards={targets}
-				/>
-			) : null}
-
-			<DeleteConfirmationDialog
-				description={
-					isBatch
-						? 'These cards and their content will be permanently deleted.'
-						: 'This card and its content will be permanently deleted.'
-				}
-				isPending={isDeleting}
-				onConfirm={() =>
-					// Leave the dialog open on failure so the toast has context.
-					remove(targets, () => setIsDeleteDialogOpen(false))
-				}
-				onOpenChange={setIsDeleteDialogOpen}
-				open={isDeleteDialogOpen}
-				title={
-					isBatch ? `Delete ${targets.length} cards?` : 'Delete card?'
-				}
+			<CardActionDialogs
+				cards={targets}
+				dialog={dialog}
+				onDialogChange={setDialog}
 			/>
 		</div>
 	)
