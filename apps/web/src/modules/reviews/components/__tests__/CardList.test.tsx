@@ -101,6 +101,17 @@ describe('CardList', () => {
 		).not.toBeInTheDocument()
 	})
 
+	it('shows the whole title in a tooltip on hover', async () => {
+		const user = userEvent.setup()
+		renderList(reviewed)
+
+		await user.hover(screen.getByText('What problem do generics solve?'))
+
+		expect(await screen.findByRole('tooltip')).toHaveTextContent(
+			'What problem do generics solve?',
+		)
+	})
+
 	it('shows the due date for both layouts', () => {
 		renderList(reviewed)
 
