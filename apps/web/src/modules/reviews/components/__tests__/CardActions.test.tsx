@@ -78,8 +78,8 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 })
 
 vi.mock('../../api/cardQueries', () => ({
-	useUpdateCard: () => ({ mutate: updateMutate, isPending: false }),
-	useDeleteCard: () => ({ mutate: deleteMutate, isPending: false }),
+	useUpdateCards: () => ({ mutate: updateMutate, isPending: false }),
+	useDeleteCards: () => ({ mutate: deleteMutate, isPending: false }),
 }))
 
 const card: Card = {
@@ -135,7 +135,7 @@ describe('CardActions', () => {
 			)
 
 		expect(updateMutate).toHaveBeenCalledWith(
-			{ cardId: card._id, type: 'practice' },
+			{ cardIds: [card._id], type: 'practice' },
 			expect.anything(),
 		)
 	})
@@ -151,7 +151,7 @@ describe('CardActions', () => {
 
 		expect(updateMutate).toHaveBeenCalledWith(
 			{
-				cardId: card._id,
+				cardIds: [card._id],
 				flaggedAt: expect.any(Number) as number,
 			},
 			expect.anything(),
@@ -168,7 +168,7 @@ describe('CardActions', () => {
 			.click(screen.getByRole('button', { name: 'Unflag' }))
 
 		expect(updateMutate).toHaveBeenCalledWith(
-			{ cardId: card._id, flaggedAt: null },
+			{ cardIds: [card._id], flaggedAt: null },
 			expect.anything(),
 		)
 	})
@@ -184,7 +184,7 @@ describe('CardActions', () => {
 
 		expect(updateMutate).toHaveBeenCalledWith(
 			{
-				cardId: card._id,
+				cardIds: [card._id],
 				retiredAt: expect.any(Number) as number,
 			},
 			expect.anything(),
@@ -201,7 +201,7 @@ describe('CardActions', () => {
 			.click(screen.getByRole('button', { name: 'Unretire' }))
 
 		expect(updateMutate).toHaveBeenCalledWith(
-			{ cardId: card._id, retiredAt: null },
+			{ cardIds: [card._id], retiredAt: null },
 			expect.anything(),
 		)
 	})
@@ -226,7 +226,7 @@ describe('CardActions', () => {
 		await user.click(screen.getByRole('button', { name: 'Delete' }))
 
 		expect(deleteMutate).toHaveBeenCalledWith(
-			{ cardId: card._id },
+			{ cardIds: [card._id] },
 			expect.anything(),
 		)
 	})
@@ -250,7 +250,7 @@ describe('CardActions', () => {
 
 		expect(updateMutate).toHaveBeenCalledWith(
 			{
-				cardId: card._id,
+				cardIds: [card._id],
 				collectionId: collections[1]._id,
 			},
 			expect.anything(),

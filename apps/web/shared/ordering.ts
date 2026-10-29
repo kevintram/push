@@ -51,23 +51,25 @@ export function backfillRanks<Id extends string>(
 }
 
 /**
- * Places `movingId` in `line` right after `afterId`, or first when `afterId` is
- * null. `line` is the destination list and may or may not contain the moving
- * row. Returns the moving row's new key, plus keys for any of the list's other
- * rows that were still unranked, since a key can only be placed between ranked
- * neighbors.
+ * Places `movingIds`, in that order, as a run right after `afterId` in `line`,
+ * or first when `afterId` is null. `line` is the destination list and may hold
+ * some of the moving rows. Returns the moving rows' new keys, plus keys for any
+ * of the list's other rows that were still unranked, since a key can only be
+ * placed between ranked neighbors.
  */
 export function placeInLine<Id extends string>(
 	line: ReadonlyArray<Ranked<Id>>,
-	movingId: Id,
+	movingIds: ReadonlyArray<Id>,
 	afterId: Id | null,
-): { rank: string; backfill: Array<RankAssignment<Id>> } {
+): { ranks: Array<RankAssignment<Id>>; backfill: Array<RankAssignment<Id>> } {
+	// A row named twice still takes one key.
+	const moving = new Set(movingIds)
 	const backfill = backfillRanks(line)
 	const backfilled = new Map(backfill.map(row => [row._id, row.rank]))
 	const others = line
 		.map(row => ({ ...row, rank: row.rank ?? backfilled.get(row._id) }))
 		.sort(compareRanked)
-		.filter(row => row._id !== movingId)
+		.filter(row => !moving.has(row._id))
 
 	const anchorIndex =
 		afterId === null ? -1 : others.findIndex(row => row._id === afterId)
@@ -77,9 +79,10 @@ export function placeInLine<Id extends string>(
 
 	const before = anchorIndex === -1 ? null : others[anchorIndex]!.rank
 	const after = others[anchorIndex + 1]?.rank ?? null
+	const ranks = generateNKeysBetween(before, after, moving.size)
 
 	return {
-		rank: generateKeyBetween(before, after),
-		backfill: backfill.filter(row => row._id !== movingId),
+		ranks: [...moving].map((_id, index) => ({ _id, rank: ranks[index]! })),
+		backfill: backfill.filter(row => !moving.has(row._id)),
 	}
 }

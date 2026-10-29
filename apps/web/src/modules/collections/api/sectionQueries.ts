@@ -47,11 +47,14 @@ export function useMoveSection() {
 			// The server rejects the move, so there is nothing to show.
 			if (afterId !== null && !ids.has(afterId)) continue
 
-			const { rank, backfill } = placeInLine(sections, sectionId, afterId)
-			const ranks = new Map([
-				...backfill.map(row => [row._id, row.rank] as const),
-				[sectionId, rank],
-			])
+			const { ranks: placed, backfill } = placeInLine(
+				sections,
+				[sectionId],
+				afterId,
+			)
+			const ranks = new Map(
+				[...backfill, ...placed].map(row => [row._id, row.rank]),
+			)
 			localStore.setQuery(
 				api.sections.listByCollection,
 				args,
@@ -68,6 +71,28 @@ export function useMoveSection() {
 		mutationFn,
 		onError: error =>
 			toast.error('Failed to move section', {
+				description: getErrorMessage(error),
+			}),
+	})
+}
+
+export function useMoveSectionToCollection() {
+	const mutationFn = useConvexMutation(api.sections.moveToCollection)
+	return useMutation({
+		mutationFn,
+		onError: error =>
+			toast.error('Failed to move section', {
+				description: getErrorMessage(error),
+			}),
+	})
+}
+
+export function useConvertSectionToCollection() {
+	const mutationFn = useConvexMutation(api.sections.convertToCollection)
+	return useMutation({
+		mutationFn,
+		onError: error =>
+			toast.error('Failed to convert section', {
 				description: getErrorMessage(error),
 			}),
 	})

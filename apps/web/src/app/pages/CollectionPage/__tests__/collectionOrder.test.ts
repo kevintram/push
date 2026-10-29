@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import type { Card } from '~/modules/reviews/types/review.types'
 
 import {
+	type MoveDirection,
 	planCardMove,
 	planSectionMove,
 	selectionOrder,
@@ -44,48 +45,88 @@ describe('selectionOrder', () => {
 })
 
 describe('planCardMove', () => {
+	const plan = (ids: Array<string>, direction: MoveDirection) =>
+		planCardMove(grouped, new Set(ids.map(cardId)), direction)
+
 	it('moves within a list', () => {
-		expect(planCardMove(grouped, cardId('a2'), 'up')).toEqual({
+		expect(plan(['a2'], 'up')).toEqual({
+			cardIds: ['a2'],
 			sectionId: 'A',
 			afterId: null,
 		})
-		expect(planCardMove(grouped, cardId('u1'), 'down')).toEqual({
+		expect(plan(['u1'], 'down')).toEqual({
+			cardIds: ['u1'],
 			sectionId: null,
 			afterId: 'u2',
 		})
-		expect(planCardMove(grouped, cardId('a2'), 'top')).toEqual({
+		expect(plan(['a2'], 'top')).toEqual({
+			cardIds: ['a2'],
 			sectionId: 'A',
 			afterId: null,
 		})
-		expect(planCardMove(grouped, cardId('u1'), 'bottom')).toEqual({
+		expect(plan(['u1'], 'bottom')).toEqual({
+			cardIds: ['u1'],
 			sectionId: null,
 			afterId: 'u2',
 		})
 	})
 
 	it('crosses into the bottom of the list above from the top of a section', () => {
-		expect(planCardMove(grouped, cardId('a1'), 'up')).toEqual({
+		expect(plan(['a1'], 'up')).toEqual({
+			cardIds: ['a1'],
 			sectionId: null,
 			afterId: 'u2',
 		})
-		expect(planCardMove(grouped, cardId('c1'), 'up')).toEqual({
+		expect(plan(['c1'], 'up')).toEqual({
+			cardIds: ['c1'],
 			sectionId: 'B',
 			afterId: null,
 		})
 	})
 
 	it('crosses into the top of the list below from the bottom of a list', () => {
-		expect(planCardMove(grouped, cardId('u2'), 'down')).toEqual({
+		expect(plan(['u2'], 'down')).toEqual({
+			cardIds: ['u2'],
 			sectionId: 'A',
 			afterId: null,
 		})
 	})
 
 	it('stays put at the very top and bottom, and for top or bottom at an edge', () => {
-		expect(planCardMove(grouped, cardId('u1'), 'up')).toBeNull()
-		expect(planCardMove(grouped, cardId('c1'), 'down')).toBeNull()
-		expect(planCardMove(grouped, cardId('a1'), 'top')).toBeNull()
-		expect(planCardMove(grouped, cardId('a2'), 'bottom')).toBeNull()
+		expect(plan(['u1'], 'up')).toBeNull()
+		expect(plan(['c1'], 'down')).toBeNull()
+		expect(plan(['a1'], 'top')).toBeNull()
+		expect(plan(['a2'], 'bottom')).toBeNull()
+		expect(plan(['u1', 'u2'], 'top')).toBeNull()
+	})
+
+	it('moves several cards as one run in page order, from their outer edges', () => {
+		// Up goes from the first card, so the run crosses into the list above.
+		expect(plan(['a2', 'u2'], 'up')).toEqual({
+			cardIds: ['u2', 'a2'],
+			sectionId: null,
+			afterId: null,
+		})
+		// Down goes from the last card, into the top of the next list.
+		expect(plan(['u1', 'a2'], 'down')).toEqual({
+			cardIds: ['u1', 'a2'],
+			sectionId: 'B',
+			afterId: null,
+		})
+		// Bottom gathers into the last card's list, after its other cards.
+		expect(plan(['u1', 'a1'], 'bottom')).toEqual({
+			cardIds: ['u1', 'a1'],
+			sectionId: 'A',
+			afterId: 'a2',
+		})
+	})
+
+	it('gathers a scattered selection that has nowhere further to go', () => {
+		expect(plan(['u1', 'a1'], 'top')).toEqual({
+			cardIds: ['u1', 'a1'],
+			sectionId: null,
+			afterId: null,
+		})
 	})
 })
 

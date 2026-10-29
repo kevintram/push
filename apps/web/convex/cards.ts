@@ -4,6 +4,7 @@ import { mutation, query } from './_generated/server'
 import { requireIdentity } from './model/auth'
 import * as Cards from './model/cards'
 import {
+	cardBatchPatch,
 	cardCreate,
 	cardMove,
 	cardPatch,
@@ -81,29 +82,43 @@ export const update = mutation({
 	},
 })
 
+export const updateMany = mutation({
+	args: {
+		cardIds: v.array(v.id('cards')),
+		...cardBatchPatch.fields,
+	},
+	returns: v.null(),
+	handler: async (ctx, args) => {
+		const { subject: userId } = await requireIdentity(ctx)
+		const { cardIds, ...patch } = args
+
+		await Cards.updateMany(ctx, userId, cardIds, patch)
+	},
+})
+
 export const move = mutation({
 	args: {
-		cardId: v.id('cards'),
+		cardIds: v.array(v.id('cards')),
 		...cardMove.fields,
 	},
 	returns: v.null(),
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
-		const { cardId, ...placement } = args
+		const { cardIds, ...placement } = args
 
-		await Cards.move(ctx, userId, cardId, placement)
+		await Cards.move(ctx, userId, cardIds, placement)
 	},
 })
 
 /* AKA delete (we don't use `delete` because it's a reserved JS keyword) */
 export const remove = mutation({
 	args: {
-		cardId: v.id('cards'),
+		cardIds: v.array(v.id('cards')),
 	},
-	returns: cardRead,
+	returns: v.array(cardRead),
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
 
-		return await Cards.remove(ctx, userId, args.cardId)
+		return await Cards.remove(ctx, userId, args.cardIds)
 	},
 })

@@ -23,8 +23,8 @@ export const sectionCreate = v.object({
 	collectionId: v.id('collections'), // require collectionId
 })
 
-// Only the title is mutable. A section cannot move to another collection, and
-// `ownerId` stays unsettable. Reordering goes through `sectionMove`.
+// Only the title is mutable, and `ownerId` stays unsettable. Reordering goes
+// through `sectionMove`, and changing collections through `moveToCollection`.
 export const sectionPatch = sectionBase.pick('title').partial()
 
 // Places the section right after `afterId`, or first when it is `null`. The

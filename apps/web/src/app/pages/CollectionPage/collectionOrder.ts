@@ -2,29 +2,26 @@ import type { Id } from '@convex/_generated/dataModel'
 import type { CardMove } from '@convex/validators/cards'
 import type { SectionMove } from '@convex/validators/sections'
 
+import type { Card } from '~/modules/reviews/types/review.types'
+
 import type { GroupedCards } from './groupCardsBySection'
 
-/** The one card or section selected on the collection page. */
-export type CollectionSelection =
+/** A card or section that can be selected on the collection page. */
+export type SelectableItem =
 	| { kind: 'card'; id: Id<'cards'> }
 	| { kind: 'section'; id: Id<'sections'> }
 
 export type MoveDirection = 'up' | 'down' | 'top' | 'bottom'
 
-export function isSameSelection(
-	a: CollectionSelection | null,
-	b: CollectionSelection | null,
-): boolean {
-	return a?.kind === b?.kind && a?.id === b?.id
+export function isSameItem(a: SelectableItem, b: SelectableItem): boolean {
+	return a.kind === b.kind && a.id === b.id
 }
 
 /**
  * Everything selectable in the order the page shows it: the unsectioned cards,
  * then each section followed by its cards.
  */
-export function selectionOrder(
-	grouped: GroupedCards,
-): Array<CollectionSelection> {
+export function selectionOrder(grouped: GroupedCards): Array<SelectableItem> {
 	return [
 		...grouped.unsectioned.map(card => ({
 			kind: 'card' as const,
@@ -76,46 +73,108 @@ export function planSectionMove(
 	return index === -1 ? null : placementInList(ids, index, direction)
 }
 
-/**
- * Plans moving a card. Up and down cross into the neighboring list at its
- * edges: up from the top of a section lands at the bottom of the list above,
- * and down from the bottom lands at the top of the list below. Top and bottom
- * stay within the card's own list.
- */
-export function planCardMove(
-	grouped: GroupedCards,
-	cardId: Id<'cards'>,
-	direction: MoveDirection,
-): CardMove | null {
-	const lists = [
+type CardLine = {
+	sectionId: Id<'sections'> | null
+	cards: ReadonlyArray<Card>
+}
+
+/** Cards placed as one run in a list, in the given order. */
+export type CardBlockMove = CardMove & { cardIds: Array<Id<'cards'>> }
+
+/** The page's card lists, top to bottom: the unsectioned cards, then each section's. */
+function cardLines(grouped: GroupedCards): Array<CardLine> {
+	return [
 		{ sectionId: null, cards: grouped.unsectioned },
 		...grouped.sections.map(({ section, cards }) => ({
 			sectionId: section._id,
 			cards,
 		})),
 	]
-	const listIndex = lists.findIndex(list =>
-		list.cards.some(card => card._id === cardId),
+}
+
+/** Each list's card ids after `move`. */
+function linesAfterMove(
+	lines: ReadonlyArray<CardLine>,
+	{ cardIds, sectionId, afterId }: CardBlockMove,
+): Array<Array<Id<'cards'>>> {
+	const moving = new Set(cardIds)
+	return lines.map(line => {
+		const ids = line.cards
+			.map(card => card._id)
+			.filter(id => !moving.has(id))
+		if (line.sectionId !== sectionId) return ids
+
+		const index = afterId === null ? 0 : ids.indexOf(afterId) + 1
+		return [...ids.slice(0, index), ...cardIds, ...ids.slice(index)]
+	})
+}
+
+/**
+ * Plans moving the selected cards one step as a block. They keep their order
+ * and gather into one run, placed against the first selected card for up and
+ * top, and against the last for down and bottom. Up and down cross into the
+ * neighboring list at its edges: up from the top of a list lands at the bottom
+ * of the list above, and down from the bottom lands at the top of the list
+ * below. Top and bottom stay within that card's list. Null when the move would
+ * leave everything where it is.
+ */
+export function planCardMove(
+	grouped: GroupedCards,
+	selectedIds: ReadonlySet<Id<'cards'>>,
+	direction: MoveDirection,
+): CardBlockMove | null {
+	const lines = cardLines(grouped)
+	const located = lines.flatMap((line, lineIndex) =>
+		line.cards.flatMap((card, index) =>
+			selectedIds.has(card._id)
+				? [{ id: card._id, lineIndex, index }]
+				: [],
+		),
 	)
-	if (listIndex === -1) return null
+	const first = located[0]
+	const last = located.at(-1)
+	if (!first || !last) return null
 
-	const { sectionId, cards } = lists[listIndex]!
-	const ids = cards.map(card => card._id)
-	const placement = placementInList(ids, ids.indexOf(cardId), direction)
-	if (placement) return { sectionId, ...placement }
+	const firstLine = lines[first.lineIndex]!
+	const lastLine = lines[last.lineIndex]!
+	const previous = lines[first.lineIndex - 1]
+	const next = lines[last.lineIndex + 1]
+	const lastUnselected = (line: CardLine) =>
+		line.cards.findLast(card => !selectedIds.has(card._id))?._id ?? null
 
-	const previous = lists[listIndex - 1]
-	if (direction === 'up' && previous) {
-		return {
-			sectionId: previous.sectionId,
-			afterId: previous.cards.at(-1)?._id ?? null,
-		}
+	const top = { sectionId: firstLine.sectionId, afterId: null }
+	const bottom = {
+		sectionId: lastLine.sectionId,
+		afterId: lastUnselected(lastLine),
+	}
+	const below = lastLine.cards[last.index + 1]
+	const targets: Record<MoveDirection, CardMove> = {
+		top,
+		bottom,
+		// Above the card just above the first, which is two places up.
+		up:
+			first.index > 0
+				? {
+						sectionId: firstLine.sectionId,
+						afterId: firstLine.cards[first.index - 2]?._id ?? null,
+					}
+				: previous
+					? {
+							sectionId: previous.sectionId,
+							afterId: lastUnselected(previous),
+						}
+					: top,
+		down: below
+			? { sectionId: lastLine.sectionId, afterId: below._id }
+			: next
+				? { sectionId: next.sectionId, afterId: null }
+				: bottom,
 	}
 
-	const next = lists[listIndex + 1]
-	if (direction === 'down' && next) {
-		return { sectionId: next.sectionId, afterId: null }
-	}
-
-	return null
+	const plan = { cardIds: located.map(({ id }) => id), ...targets[direction] }
+	const before = JSON.stringify(
+		lines.map(line => line.cards.map(card => card._id)),
+	)
+	const after = JSON.stringify(linesAfterMove(lines, plan))
+	return before === after ? null : plan
 }

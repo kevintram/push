@@ -30,7 +30,8 @@ function isOnSelectable(event: KeyboardEvent) {
 
 type CollectionHotkeysProps = {
 	hasSelection: boolean
-	onSelectAdjacent: (step: -1 | 1) => void
+	/** Steps the selection, or with `extend` grows its range of cards. */
+	onSelectAdjacent: (step: -1 | 1, extend: boolean) => void
 	onMove: (direction: MoveDirection) => void
 	/** Opens the selected card, or renames the selected section. */
 	onOpen: () => void
@@ -64,8 +65,22 @@ export function CollectionHotkeys({
 
 	useHotkeys(
 		[
-			{ hotkey: 'ArrowUp', callback: claim(() => onSelectAdjacent(-1)) },
-			{ hotkey: 'ArrowDown', callback: claim(() => onSelectAdjacent(1)) },
+			{
+				hotkey: 'ArrowUp',
+				callback: claim(() => onSelectAdjacent(-1, false)),
+			},
+			{
+				hotkey: 'ArrowDown',
+				callback: claim(() => onSelectAdjacent(1, false)),
+			},
+			{
+				hotkey: 'Shift+ArrowUp',
+				callback: claim(() => onSelectAdjacent(-1, true)),
+			},
+			{
+				hotkey: 'Shift+ArrowDown',
+				callback: claim(() => onSelectAdjacent(1, true)),
+			},
 			...MOVES.map(({ hotkey, direction }) => ({
 				hotkey,
 				callback: claim(() => onMove(direction)),
