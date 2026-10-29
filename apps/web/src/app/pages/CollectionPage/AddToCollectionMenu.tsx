@@ -82,11 +82,9 @@ export function AddToCollectionMenu({
 				</span>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align='start'>
-				<DropdownMenuItem onClick={onAddCard}>
-					Add card
-				</DropdownMenuItem>
+				<DropdownMenuItem onClick={onAddCard}>Card</DropdownMenuItem>
 				<DropdownMenuItem onClick={onAddSection}>
-					Add section
+					Section
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
