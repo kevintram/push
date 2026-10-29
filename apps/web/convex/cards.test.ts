@@ -519,6 +519,7 @@ describe('cards', () => {
 		const collectionId = await asUserA.mutation(api.collections.create, {})
 		const sectionId = await asUserA.mutation(api.sections.create, {
 			collectionId,
+			afterId: null,
 		})
 		const otherCollectionId = await asUserA.mutation(
 			api.collections.create,
@@ -526,6 +527,7 @@ describe('cards', () => {
 		)
 		const otherSectionId = await asUserA.mutation(api.sections.create, {
 			collectionId: otherCollectionId,
+			afterId: null,
 		})
 		const foreignCollectionId = await asUserB.mutation(
 			api.collections.create,
@@ -533,6 +535,7 @@ describe('cards', () => {
 		)
 		const foreignSectionId = await asUserB.mutation(api.sections.create, {
 			collectionId: foreignCollectionId,
+			afterId: null,
 		})
 
 		await expect(
@@ -563,6 +566,7 @@ describe('cards', () => {
 		const collectionId = await asUserA.mutation(api.collections.create, {})
 		const sectionId = await asUserA.mutation(api.sections.create, {
 			collectionId,
+			afterId: null,
 		})
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
@@ -598,6 +602,7 @@ describe('cards', () => {
 		)
 		const sectionId = await asUserA.mutation(api.sections.create, {
 			collectionId: sourceCollectionId,
+			afterId: null,
 		})
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId: sourceCollectionId,
@@ -627,10 +632,11 @@ describe('cards', () => {
 		)
 		const sourceSectionId = await asUserA.mutation(api.sections.create, {
 			collectionId: sourceCollectionId,
+			afterId: null,
 		})
 		const destinationSectionId = await asUserA.mutation(
 			api.sections.create,
-			{ collectionId: destinationCollectionId },
+			{ collectionId: destinationCollectionId, afterId: null },
 		)
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId: sourceCollectionId,
@@ -1048,6 +1054,7 @@ describe('cards', () => {
 			)
 			const sectionId = await asUserA.mutation(api.sections.create, {
 				collectionId,
+				afterId: null,
 			})
 
 			const first = await asUserA.mutation(api.cards.create, {
@@ -1076,6 +1083,7 @@ describe('cards', () => {
 			)
 			const sectionId = await asUserA.mutation(api.sections.create, {
 				collectionId,
+				afterId: null,
 			})
 			const [a, b, c] = [
 				await asUserA.mutation(api.cards.create, { collectionId }),
@@ -1132,6 +1140,7 @@ describe('cards', () => {
 			)
 			const sectionId = await asUserA.mutation(api.sections.create, {
 				collectionId,
+				afterId: null,
 			})
 			const [a, b, c] = [
 				await asUserA.mutation(api.cards.create, { collectionId }),
@@ -1202,9 +1211,11 @@ describe('cards', () => {
 			)
 			const sectionId = await asUserA.mutation(api.sections.create, {
 				collectionId,
+				afterId: null,
 			})
 			const otherSectionId = await asUserA.mutation(api.sections.create, {
 				collectionId: otherCollectionId,
+				afterId: null,
 			})
 			const cardId = await asUserA.mutation(api.cards.create, {
 				collectionId,
@@ -1297,6 +1308,7 @@ describe('cards', () => {
 			)
 			const sectionId = await asUserA.mutation(api.sections.create, {
 				collectionId,
+				afterId: null,
 			})
 			// Created first, so keeping its key would tie it with the others'
 			// first keys and sort it above them.

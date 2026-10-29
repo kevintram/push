@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { compareRanked, placeInLine, type Ranked } from './ordering'
+import {
+	compareRanked,
+	placeInLine,
+	placeNewInLine,
+	type Ranked,
+} from './ordering'
 
 const row = (_id: string, _creationTime: number, rank?: string): Ranked => ({
 	_id,
@@ -99,6 +104,44 @@ describe('placeInLine', () => {
 			'The item to place after is not in this list',
 		)
 		expect(() => placeInLine(line, ['a', 'b'], 'b')).toThrow(
+			'The item to place after is not in this list',
+		)
+	})
+})
+
+describe('placeNewInLine', () => {
+	const line = [row('a', 1, 'a0'), row('b', 2, 'a1')]
+	const order = (rank: string) =>
+		ids([...line, row('new', 3, rank)].sort(compareRanked))
+
+	it('places a new row after its anchor', () => {
+		const { rank, backfill } = placeNewInLine(line, 'a')
+
+		expect(backfill).toEqual([])
+		expect(order(rank)).toEqual(['a', 'new', 'b'])
+	})
+
+	it('places a new row first when there is no anchor', () => {
+		expect(order(placeNewInLine(line, null).rank)).toEqual([
+			'new',
+			'a',
+			'b',
+		])
+	})
+
+	it('backfills unranked rows so the new key fits between them', () => {
+		const unranked = [row('a', 1), row('b', 2)]
+		const { rank, backfill } = placeNewInLine(unranked, 'a')
+		const assigned = new Map(backfill.map(({ _id, rank }) => [_id, rank]))
+
+		expect([...assigned.keys()]).toEqual(['a', 'b'])
+		expect(assigned.get('a')! < rank && rank < assigned.get('b')!).toBe(
+			true,
+		)
+	})
+
+	it('rejects an anchor that is not in the list', () => {
+		expect(() => placeNewInLine(line, 'missing')).toThrow(
 			'The item to place after is not in this list',
 		)
 	})
