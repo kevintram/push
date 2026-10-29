@@ -22,8 +22,7 @@ type CardGroupProps = {
 	isAdding: boolean
 	onAddCard: () => void
 	onAddSection: () => void
-	/** The selected cards across the page, in page order. */
-	selectedCards: ReadonlyArray<Card>
+	selectedCardIds: ReadonlySet<Id<'cards'>>
 	onSelectCard: (cardId: Id<'cards'>, mode: SelectMode) => void
 }
 
@@ -38,7 +37,7 @@ export function CardGroup({
 	isAdding,
 	onAddCard,
 	onAddSection,
-	selectedCards,
+	selectedCardIds,
 	onSelectCard,
 }: CardGroupProps) {
 	return (
@@ -54,13 +53,10 @@ export function CardGroup({
 						card={card}
 						srs={deriveCardSrsState(card, today)}
 						today={today}
-						active={selectedCards.some(
-							({ _id }) => _id === card._id,
-						)}
+						active={selectedCardIds.has(card._id)}
 						onSelect={event =>
 							onSelectCard(card._id, selectModeFor(event))
 						}
-						selection={selectedCards}
 					/>
 				))}
 			</CardList>

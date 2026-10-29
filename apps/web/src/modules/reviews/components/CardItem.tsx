@@ -227,8 +227,6 @@ type CardItemProps = {
 	 * still opens it.
 	 */
 	onSelect?: (event: MouseEvent) => void
-	/** The cards the row's menu acts on when this card is one of them. */
-	selection?: ReadonlyArray<CardModel>
 	buttonProps?: Omit<
 		React.ComponentProps<'button'>,
 		'onClick' | 'type' | 'className' | 'style'
@@ -243,7 +241,6 @@ export function CardItem({
 	active = false,
 	onClick,
 	onSelect,
-	selection,
 	buttonProps,
 }: CardItemProps) {
 	const navigate = useNavigate()
@@ -358,11 +355,7 @@ export function CardItem({
 				role='cell'
 				{...stylex.props(styles.cell, styles.raised, styles.actions)}
 			>
-				<CardActions
-					card={card}
-					selection={selection}
-					isMenuHoverRevealed
-				/>
+				<CardActions card={card} isMenuHoverRevealed />
 			</td>
 		</tr>
 	)

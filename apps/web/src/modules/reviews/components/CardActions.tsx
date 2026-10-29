@@ -59,11 +59,6 @@ const styles = stylex.create({
 
 type CardActionsProps = {
 	card: Card
-	/**
-	 * The selected cards. When `card` is one of several, the menu acts on all
-	 * of them; the quick toggles beside it still act on `card` alone.
-	 */
-	selection?: ReadonlyArray<Card>
 	showGoToCard?: boolean
 	/**
 	 * Hide the menu trigger until an ancestor marked with
@@ -75,7 +70,6 @@ type CardActionsProps = {
 
 export function CardActions({
 	card,
-	selection,
 	showGoToCard = false,
 	isMenuHoverRevealed = false,
 	xstyle,
@@ -86,23 +80,6 @@ export function CardActions({
 	const isFlashcard = card.type === 'flashcard'
 	const isFlagged = card.flaggedAt !== undefined
 	const isRetired = card.retiredAt !== undefined
-
-	const targets =
-		selection &&
-		selection.length > 1 &&
-		selection.some(({ _id }) => _id === card._id)
-			? selection
-			: [card]
-	const isBatch = targets.length > 1
-	// Names the menu's action for a single card, or counts the cards.
-	const label = (action: string) =>
-		isBatch ? `${action} ${targets.length} cards` : action
-	const areAllFlagged = targets.every(
-		({ flaggedAt }) => flaggedAt !== undefined,
-	)
-	const areAllRetired = targets.every(
-		({ retiredAt }) => retiredAt !== undefined,
-	)
 
 	return (
 		<div {...stylex.props(styles.container, xstyle)}>
@@ -222,64 +199,58 @@ export function CardActions({
 					<Ellipsis aria-hidden='true' size={iconSizes.sm} />
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align='end'>
-					{isBatch ? null : (
-						<DropdownMenuItem
-							icon={
-								<Zap
-									aria-hidden='true'
-									size={iconSizes.sm}
-									{...stylex.props(
-										isFlashcard && styles.flashcardOn,
-									)}
-								/>
-							}
-							onClick={() => toggleType(targets)}
-						>
-							{isFlashcard
-								? 'Remove as flashcard'
-								: 'Mark as flashcard'}
-						</DropdownMenuItem>
-					)}
+					<DropdownMenuItem
+						icon={
+							<Zap
+								aria-hidden='true'
+								size={iconSizes.sm}
+								{...stylex.props(
+									isFlashcard && styles.flashcardOn,
+								)}
+							/>
+						}
+						onClick={() => toggleType([card])}
+					>
+						{isFlashcard
+							? 'Remove as flashcard'
+							: 'Mark as flashcard'}
+					</DropdownMenuItem>
 					<DropdownMenuItem
 						icon={
 							<Flag
 								aria-hidden='true'
 								size={iconSizes.sm}
-								{...stylex.props(
-									areAllFlagged && styles.flagOn,
-								)}
+								{...stylex.props(isFlagged && styles.flagOn)}
 							/>
 						}
-						onClick={() => toggleFlag(targets)}
+						onClick={() => toggleFlag([card])}
 					>
-						{label(areAllFlagged ? 'Unflag' : 'Flag')}
+						{isFlagged ? 'Unflag' : 'Flag'}
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						icon={
 							<Archive
 								aria-hidden='true'
 								size={iconSizes.sm}
-								{...stylex.props(
-									areAllRetired && styles.retiredOn,
-								)}
+								{...stylex.props(isRetired && styles.retiredOn)}
 							/>
 						}
-						onClick={() => toggleRetire(targets)}
+						onClick={() => toggleRetire([card])}
 					>
-						{label(areAllRetired ? 'Unretire' : 'Retire')}
+						{isRetired ? 'Unretire' : 'Retire'}
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={() => setDialog('move')}>
-						{label('Move')}
+						Move
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem onClick={() => setDialog('delete')}>
-						{label('Delete')}
+						Delete
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
 
 			<CardActionDialogs
-				cards={targets}
+				cards={[card]}
 				dialog={dialog}
 				onDialogChange={setDialog}
 			/>

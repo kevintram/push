@@ -16,7 +16,7 @@ import {
 	useCreateCard,
 	useMoveCards,
 } from '~/modules/reviews/api/cardQueries'
-import { spacing } from '~/styles/tokens.stylex'
+import { buttonSizes, spacing } from '~/styles/tokens.stylex'
 
 import { CardGroup } from './CardGroup'
 import { CollectionHotkeys } from './CollectionHotkeys'
@@ -29,6 +29,7 @@ import type { SelectMode } from './collectionSelection'
 import { groupCardsBySection } from './groupCardsBySection'
 import { SectionActions } from './SectionActions'
 import { SectionTitle } from './SectionTitle'
+import { SelectionActionBar } from './SelectionActionBar'
 import { useCollectionSelection } from './useCollectionSelection'
 
 const styles = stylex.create({
@@ -36,6 +37,11 @@ const styles = stylex.create({
 		gap: spacing['3xl'],
 		display: 'flex',
 		flexDirection: 'column',
+	},
+	// Room to scroll the last row clear of the action bar floating over the
+	// bottom of the page.
+	clearsActionBar: {
+		paddingBlockEnd: `calc(${buttonSizes.small} + ${spacing['4xl']})`,
 	},
 })
 
@@ -61,18 +67,24 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 		selected?.items.length === 1 && selected.cursor.kind === 'section'
 			? selected.cursor.id
 			: null
-	// In page order, so batch actions and moves keep the cards' order.
-	const selectedCards = useMemo(() => {
-		const ids = new Set(
-			selected?.items.flatMap(item =>
-				item.kind === 'card' ? [item.id] : [],
+	const selectedCardIds = useMemo(
+		() =>
+			new Set(
+				selected?.items.flatMap(item =>
+					item.kind === 'card' ? [item.id] : [],
+				),
 			),
-		)
-		return [
-			...grouped.unsectioned,
-			...grouped.sections.flatMap(({ cards }) => cards),
-		].filter(card => ids.has(card._id))
-	}, [grouped, selected])
+		[selected],
+	)
+	// In page order, so batch actions and moves keep the cards' order.
+	const selectedCards = useMemo(
+		() =>
+			[
+				...grouped.unsectioned,
+				...grouped.sections.flatMap(({ cards }) => cards),
+			].filter(card => selectedCardIds.has(card._id)),
+		[grouped, selectedCardIds],
+	)
 
 	// The section whose title is a field. A new section starts out renaming so
 	// it can be named right away.
@@ -129,15 +141,18 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 					})
 				}
 			} else if (selectedCards.length > 0) {
-				const plan = planCardMove(
-					grouped,
-					new Set(selectedCards.map(card => card._id)),
-					direction,
-				)
+				const plan = planCardMove(grouped, selectedCardIds, direction)
 				if (plan) moveCard.mutate(plan)
 			}
 		},
-		[grouped, selectedSectionId, selectedCards, moveCard, moveSection],
+		[
+			grouped,
+			selectedSectionId,
+			selectedCards,
+			selectedCardIds,
+			moveCard,
+			moveSection,
+		],
 	)
 
 	// Only a single card or section opens; several have nowhere to go.
@@ -161,7 +176,12 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 	const isAdding = createCard.isPending || createSection.isPending
 
 	return (
-		<div {...stylex.props(styles.groups)}>
+		<div
+			{...stylex.props(
+				styles.groups,
+				selectedCards.length > 0 && styles.clearsActionBar,
+			)}
+		>
 			<CollectionHotkeys
 				hasSelection={selected !== null}
 				onSelectAdjacent={selectAdjacent}
@@ -177,7 +197,7 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 				isAdding={isAdding}
 				onAddCard={() => handleCreateCard()}
 				onAddSection={handleCreateSection}
-				selectedCards={selectedCards}
+				selectedCardIds={selectedCardIds}
 				onSelectCard={selectCard}
 			/>
 			{grouped.sections.map(({ section, cards: sectionCards }) => (
@@ -203,10 +223,13 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 					isAdding={isAdding}
 					onAddCard={() => handleCreateCard(section._id)}
 					onAddSection={handleCreateSection}
-					selectedCards={selectedCards}
+					selectedCardIds={selectedCardIds}
 					onSelectCard={selectCard}
 				/>
 			))}
+			{selectedCards.length > 0 ? (
+				<SelectionActionBar cards={selectedCards} />
+			) : null}
 		</div>
 	)
 }

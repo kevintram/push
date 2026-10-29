@@ -16,9 +16,10 @@ import type { GroupedCards } from './groupCardsBySection'
 /** Matches the focus target of any selectable card or section. */
 export const SELECTABLE_SELECTOR = '[data-card-id], [data-section-id]'
 
-// Rows, controls, and anything layered above the page keep the selection.
+// Rows, controls, the selection's action bar, and anything layered above the
+// page keep the selection.
 const INTERACTIVE_SELECTOR =
-	'tr, a, button, input, textarea, [role="menu"], [role="dialog"]'
+	'tr, a, button, input, textarea, [role="toolbar"], [role="menu"], [role="dialog"]'
 
 function selectorFor(item: SelectableItem) {
 	return item.kind === 'card'

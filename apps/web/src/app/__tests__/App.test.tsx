@@ -1270,8 +1270,12 @@ describe('v2 app setup', () => {
 			})
 
 			await user.click(first)
+			expect(screen.getByRole('toolbar')).toHaveTextContent('1 selected')
 			await user.keyboard('{Shift>}{ArrowDown}{/Shift}')
 			expect(second).toHaveFocus()
+			// Clicks on the action bar itself keep the selection.
+			await user.click(screen.getByText('2 selected'))
+			expect(screen.getByRole('toolbar')).toHaveTextContent('2 selected')
 			await user.keyboard('{Control>}{ArrowDown}{/Control}')
 			expect(mutation).toHaveBeenLastCalledWith(
 				expect.anything(),
@@ -1309,6 +1313,9 @@ describe('v2 app setup', () => {
 				},
 				expect.anything(),
 			)
+
+			await user.keyboard('{Escape}')
+			expect(screen.queryByRole('toolbar')).not.toBeInTheDocument()
 		})
 
 		it('opens the selected card with Enter, and clears the selection with Escape or an empty click', async () => {
