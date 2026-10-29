@@ -180,6 +180,10 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 		>
 			<CollectionHotkeys
 				hasSelection={selected !== null}
+				hasItems={
+					grouped.unsectioned.length > 0 ||
+					grouped.sections.length > 0
+				}
 				onSelectAdjacent={selectAdjacent}
 				onMove={handleMove}
 				onOpen={handleOpen}

@@ -1332,6 +1332,37 @@ describe('v2 app setup', () => {
 			expect(screen.queryByRole('toolbar')).not.toBeInTheDocument()
 		})
 
+		it('starts a selection with the arrows: down at the first item, up at the last', async () => {
+			const user = userEvent.setup()
+			renderCollection()
+			const first = await screen.findByRole('link', {
+				name: firstCard.primaryText,
+			})
+
+			// Arrows typed in a field keep moving its caret.
+			await user.click(
+				screen.getByRole('textbox', { name: 'Collection description' }),
+			)
+			await user.keyboard('{ArrowDown}')
+			expect(screen.queryByRole('toolbar')).not.toBeInTheDocument()
+
+			// Focus on another control, like the sidebar link that opened the
+			// page, moves to the selected item.
+			screen.getByRole('link', { name: 'Settings' }).focus()
+			await user.keyboard('{ArrowDown}')
+			expect(first).toHaveFocus()
+			expect(screen.getByRole('toolbar')).toHaveTextContent(
+				'1 card selected',
+			)
+
+			await user.keyboard('{Escape}')
+			await user.keyboard('{ArrowUp}')
+			const items = document.querySelectorAll(
+				'[data-card-id], [data-section-id]',
+			)
+			expect(items[items.length - 1]).toHaveFocus()
+		})
+
 		it('opens the selected card with Enter, and clears the selection with Escape or an empty click', async () => {
 			const user = userEvent.setup()
 			const { router, mutation } = renderCollection()

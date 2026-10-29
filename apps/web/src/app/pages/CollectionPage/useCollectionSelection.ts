@@ -55,10 +55,28 @@ export function useCollectionSelection(grouped: GroupedCards) {
 		[order, selected],
 	)
 
-	/** Steps to the next item, or with `extend` grows the range to the next card. */
+	/**
+	 * Steps to the next item, or with `extend` grows the range to it. With
+	 * nothing selected, selects the first item going down or the last going up.
+	 */
 	const selectAdjacent = useCallback(
 		(step: -1 | 1, extend: boolean) => {
-			if (!selected) return
+			// The arrows drive the selection, so focus follows it even from a
+			// control elsewhere, like the sidebar link that opened this page,
+			// which the focus effect below would otherwise leave alone.
+			const active = document.activeElement
+			if (
+				active instanceof HTMLElement &&
+				!active.closest(SELECTABLE_SELECTOR)
+			) {
+				active.blur()
+			}
+
+			if (!selected) {
+				const edge = step === 1 ? order[0] : order.at(-1)
+				if (edge) setSelection(selectOnly(edge))
+				return
+			}
 			setSelection(
 				extend
 					? extendSelection(selected, order, step)
