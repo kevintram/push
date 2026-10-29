@@ -1,6 +1,6 @@
 import type { Section } from '@convex/validators/sections'
 import * as stylex from '@stylexjs/stylex'
-import { type KeyboardEvent, useCallback } from 'react'
+import { type KeyboardEvent, type MouseEvent, useCallback } from 'react'
 
 import { Textarea } from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -88,7 +88,8 @@ type SectionTitleProps = {
 	isSelected: boolean
 	/** Shows the title as a field, focused, until Enter, Escape, or blur. */
 	isRenaming: boolean
-	onSelect: () => void
+	/** Selects the section, or with Shift or Mod extends or toggles it. */
+	onSelect: (event: MouseEvent) => void
 	onRename: () => void
 	onRenameEnd: () => void
 }

@@ -1259,7 +1259,7 @@ describe('v2 app setup', () => {
 			)
 		})
 
-		it('selects several cards with Shift and Mod, and moves them as one run', async () => {
+		it('selects several items with Shift and Mod, and moves cards as one run', async () => {
 			const user = userEvent.setup()
 			const { mutation } = renderCollection()
 			const first = await screen.findByRole('link', {
@@ -1270,12 +1270,16 @@ describe('v2 app setup', () => {
 			})
 
 			await user.click(first)
-			expect(screen.getByRole('toolbar')).toHaveTextContent('1 selected')
+			expect(screen.getByRole('toolbar')).toHaveTextContent(
+				'1 card selected',
+			)
 			await user.keyboard('{Shift>}{ArrowDown}{/Shift}')
 			expect(second).toHaveFocus()
 			// Clicks on the action bar itself keep the selection.
-			await user.click(screen.getByText('2 selected'))
-			expect(screen.getByRole('toolbar')).toHaveTextContent('2 selected')
+			await user.click(screen.getByText('2 cards selected'))
+			expect(screen.getByRole('toolbar')).toHaveTextContent(
+				'2 cards selected',
+			)
 			await user.keyboard('{Control>}{ArrowDown}{/Control}')
 			expect(mutation).toHaveBeenLastCalledWith(
 				expect.anything(),
@@ -1313,6 +1317,16 @@ describe('v2 app setup', () => {
 				},
 				expect.anything(),
 			)
+
+			// Extending past the cards takes in the section header below. A
+			// selection of sections and cards has nowhere to move.
+			await user.keyboard('{Shift>}{ArrowDown}{/Shift}')
+			expect(screen.getByRole('toolbar')).toHaveTextContent(
+				'1 section, 2 cards selected',
+			)
+			const calls = mutation.mock.calls.length
+			await user.keyboard('{Control>}{ArrowDown}{/Control}')
+			expect(mutation).toHaveBeenCalledTimes(calls)
 
 			await user.keyboard('{Escape}')
 			expect(screen.queryByRole('toolbar')).not.toBeInTheDocument()

@@ -32,33 +32,36 @@ const order = [
 ]
 
 describe('collection selection', () => {
-	it('selects the cards of a range and skips the sections in it', () => {
+	it('selects every item of a range, sections included', () => {
 		const range = selectRange(selectOnly(card('a2')), order, card('u1'))
 
-		expect(ids(range.items)).toEqual(['u1', 'a1', 'a2'])
+		expect(ids(range.items)).toEqual(['u1', 'A', 'a1', 'a2'])
 		expect(range.cursor).toEqual(card('u1'))
 		expect(ids(selectRange(range, order, section('B')).items)).toEqual([
+			'a2',
 			'B',
 		])
 	})
 
-	it('extends from the cursor to the next card, past a section', () => {
+	it('extends from the cursor onto the next item, a section included', () => {
 		const extended = extendSelection(selectOnly(card('a2')), order, 1)
+		expect(ids(extended.items)).toEqual(['a2', 'B'])
 
-		expect(ids(extended.items)).toEqual(['a2', 'b1'])
-		expect(extendSelection(extended, order, 1)).toBe(extended)
+		const end = extendSelection(extended, order, 1)
+		expect(ids(end.items)).toEqual(['a2', 'B', 'b1'])
+		expect(extendSelection(end, order, 1)).toBe(end)
 	})
 
-	it('toggles cards in and out, but never mixes in a section', () => {
-		const both = toggleItem(selectOnly(card('u1')), card('b1'))
-		expect(ids(both?.items)).toEqual(['u1', 'b1'])
-		expect(ids(toggleItem(both, card('u1'))?.items)).toEqual(['b1'])
-		expect(toggleItem(selectOnly(card('u1')), card('u1'))).toBeNull()
-
-		expect(ids(toggleItem(both, section('A'))?.items)).toEqual(['A'])
-		expect(
-			ids(toggleItem(selectOnly(section('A')), card('a1'))?.items),
-		).toEqual(['a1'])
+	it('toggles sections and cards in and out together', () => {
+		const both = toggleItem(selectOnly(card('u1')), section('B'))
+		expect(ids(both?.items)).toEqual(['u1', 'B'])
+		expect(ids(toggleItem(both, card('a1'))?.items)).toEqual([
+			'u1',
+			'B',
+			'a1',
+		])
+		expect(ids(toggleItem(both, card('u1'))?.items)).toEqual(['B'])
+		expect(toggleItem(selectOnly(section('A')), section('A'))).toBeNull()
 	})
 
 	it('drops items that leave the page and keeps the anchor and cursor on it', () => {
@@ -68,7 +71,7 @@ describe('collection selection', () => {
 			order.filter(item => item.id !== 'a1'),
 		)
 
-		expect(ids(pruned?.items)).toEqual(['a2', 'b1'])
+		expect(ids(pruned?.items)).toEqual(['a2', 'B', 'b1'])
 		expect(pruned?.anchor).toEqual(card('a2'))
 		expect(pruned?.cursor).toEqual(card('b1'))
 		expect(pruneSelection(range, [])).toBeNull()
