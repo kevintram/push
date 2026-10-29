@@ -10,12 +10,13 @@ export type SelectionContents = {
 	sections: Array<Section>
 	/**
 	 * The selected cards outside the selected sections. A card inside one goes
-	 * wherever its section goes, so it isn't counted or acted on twice.
+	 * wherever its section goes, so moves and deletes don't name it twice.
 	 */
 	cards: Array<Card>
 	/**
-	 * Every card the card actions apply to: the selected cards and every card in
-	 * the selected sections.
+	 * Every card the selection reaches: the selected cards and every card in the
+	 * selected sections. The card actions apply to these, and the counts count
+	 * them.
 	 */
 	coveredCards: Array<Card>
 }
@@ -46,22 +47,29 @@ export function selectionContents(
 const count = (n: number, noun: string) =>
 	n === 0 ? null : `${n} ${noun}${n === 1 ? '' : 's'}`
 
-/** The selection counted by kind, as in "2 sections, 1 card". */
-export function countItems({ sections, cards }: SelectionContents): string {
-	return [count(sections.length, 'section'), count(cards.length, 'card')]
-		.filter(Boolean)
-		.join(', ')
+/**
+ * The selection counted by kind. The cards in the selected sections count,
+ * since the selection reaches them too.
+ */
+const counts = ({ sections, coveredCards }: SelectionContents) =>
+	[
+		count(sections.length, 'section'),
+		count(coveredCards.length, 'card'),
+	].filter(Boolean)
+
+/** The selection counted, as in "2 sections, 5 cards". */
+export function countItems(contents: SelectionContents): string {
+	return counts(contents).join(', ')
 }
 
 /**
  * The selection named for a dialog title: "section" or "card" for one item, or
- * counted, as in "2 sections and 1 card".
+ * counted, as in "2 sections and 5 cards".
  */
-export function nameItems({ sections, cards }: SelectionContents): string {
-	if (sections.length + cards.length === 1) {
+export function nameItems(contents: SelectionContents): string {
+	const { sections, coveredCards } = contents
+	if (sections.length + coveredCards.length === 1) {
 		return sections.length === 1 ? 'section' : 'card'
 	}
-	return [count(sections.length, 'section'), count(cards.length, 'card')]
-		.filter(Boolean)
-		.join(' and ')
+	return counts(contents).join(' and ')
 }

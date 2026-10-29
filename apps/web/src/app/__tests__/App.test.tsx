@@ -1270,16 +1270,12 @@ describe('v2 app setup', () => {
 			})
 
 			await user.click(first)
-			expect(screen.getByRole('toolbar')).toHaveTextContent(
-				'1 card selected',
-			)
+			expect(screen.getByRole('toolbar')).toHaveTextContent('1 card')
 			await user.keyboard('{Shift>}{ArrowDown}{/Shift}')
 			expect(second).toHaveFocus()
 			// Clicks on the action bar itself keep the selection.
-			await user.click(screen.getByText('2 cards selected'))
-			expect(screen.getByRole('toolbar')).toHaveTextContent(
-				'2 cards selected',
-			)
+			await user.click(screen.getByText('2 cards'))
+			expect(screen.getByRole('toolbar')).toHaveTextContent('2 cards')
 			await user.keyboard('{Control>}{ArrowDown}{/Control}')
 			expect(mutation).toHaveBeenLastCalledWith(
 				expect.anything(),
@@ -1322,7 +1318,7 @@ describe('v2 app setup', () => {
 			// selection of sections and cards has nowhere to move.
 			await user.keyboard('{Shift>}{ArrowDown}{/Shift}')
 			expect(screen.getByRole('toolbar')).toHaveTextContent(
-				'1 section, 2 cards selected',
+				'1 section, 2 cards',
 			)
 			const calls = mutation.mock.calls.length
 			await user.keyboard('{Control>}{ArrowDown}{/Control}')
@@ -1351,9 +1347,7 @@ describe('v2 app setup', () => {
 			screen.getByRole('link', { name: 'Settings' }).focus()
 			await user.keyboard('{ArrowDown}')
 			expect(first).toHaveFocus()
-			expect(screen.getByRole('toolbar')).toHaveTextContent(
-				'1 card selected',
-			)
+			expect(screen.getByRole('toolbar')).toHaveTextContent('1 card')
 
 			await user.keyboard('{Escape}')
 			await user.keyboard('{ArrowUp}')

@@ -58,9 +58,7 @@ describe('SelectionActionBar', () => {
 			/>,
 		)
 
-		expect(screen.getByRole('toolbar')).toHaveTextContent(
-			'2 cards selected',
-		)
+		expect(screen.getByRole('toolbar')).toHaveTextContent('2 cards')
 		expect(
 			screen.queryByRole('menuitem', { name: /Convert/ }),
 		).not.toBeInTheDocument()
@@ -89,7 +87,7 @@ describe('SelectionActionBar', () => {
 		)
 
 		expect(screen.getByRole('toolbar')).toHaveTextContent(
-			'1 section, 1 card selected',
+			'1 section, 2 cards',
 		)
 		await user.click(screen.getByRole('button', { name: 'More actions' }))
 		await user.click(screen.getByRole('menuitem', { name: 'Retire' }))
@@ -143,7 +141,7 @@ describe('SelectionActionBar', () => {
 
 		await user.click(screen.getByRole('button', { name: 'Delete' }))
 		const dialog = screen.getByRole('dialog', {
-			name: 'Delete 1 section and 1 card?',
+			name: 'Delete 1 section and 2 cards?',
 		})
 		expect(dialog).toHaveTextContent(
 			'This section, its cards, the other selected cards, and their review history will be permanently deleted.',

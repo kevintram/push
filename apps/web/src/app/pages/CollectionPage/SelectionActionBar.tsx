@@ -126,7 +126,7 @@ export function SelectionActionBar({
 				{...stylex.props(styles.bar)}
 			>
 				<span aria-live='polite' {...stylex.props(styles.count)}>
-					{countItems(contents)} selected
+					{countItems(contents)}
 				</span>
 				{cards.length > 0 ? (
 					<Button

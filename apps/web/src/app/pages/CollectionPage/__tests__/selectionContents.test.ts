@@ -22,7 +22,7 @@ const grouped: GroupedCards = {
 }
 
 describe('selectionContents', () => {
-	it("covers a selected section's cards without counting them as selected", () => {
+	it("counts a selected section's cards, but leaves them out of its own cards", () => {
 		const contents = selectionContents(
 			grouped,
 			new Set(['A' as Id<'sections'>]),
@@ -33,18 +33,18 @@ describe('selectionContents', () => {
 		expect(ids(contents.sections)).toEqual(['A'])
 		expect(ids(contents.cards)).toEqual(['u1', 'b1'])
 		expect(ids(contents.coveredCards)).toEqual(['u1', 'a1', 'a2', 'b1'])
-		expect(countItems(contents)).toBe('1 section, 2 cards')
-		expect(nameItems(contents)).toBe('1 section and 2 cards')
+		expect(countItems(contents)).toBe('1 section, 4 cards')
+		expect(nameItems(contents)).toBe('1 section and 4 cards')
 	})
 
 	it('names a single item without a count', () => {
 		const one = selectionContents(
 			grouped,
-			new Set(['B' as Id<'sections'>]),
 			new Set(),
+			new Set(['u1' as Id<'cards'>]),
 		)
 
-		expect(countItems(one)).toBe('1 section')
-		expect(nameItems(one)).toBe('section')
+		expect(countItems(one)).toBe('1 card')
+		expect(nameItems(one)).toBe('card')
 	})
 })
