@@ -1,4 +1,8 @@
-import { backfillRanks, placeInLine, rankAfter } from '../../shared/ordering'
+import {
+	backfillRanks,
+	placeInLine,
+	placeNewInLine,
+} from '../../shared/ordering'
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import type {
@@ -61,27 +65,27 @@ export async function listByCollection(
 	return sections.filter(section => section.ownerId === userId)
 }
 
+/**
+ * Creates a section right after `afterId` among its collection's sections, or
+ * first when `afterId` is null. Also writes keys for any sections still
+ * unranked.
+ */
 export async function create(
 	ctx: MutationCtx,
 	userId: string,
-	fields: SectionCreate,
+	{ afterId, ...fields }: SectionCreate,
 ): Promise<Id<'sections'>> {
-	await Collections.requireUserOwns(ctx, userId, fields.collectionId)
+	const sections = await listByCollection(ctx, userId, fields.collectionId)
+	const { rank, backfill } = placeNewInLine(sections, afterId)
 
-	// New sections go to the bottom.
-	const last = await ctx.db
-		.query('sections')
-		.withIndex('by_collectionId_rank', q =>
-			q.eq('collectionId', fields.collectionId),
-		)
-		.order('desc')
-		.first()
-
+	for (const row of backfill) {
+		await ctx.db.patch('sections', row._id, { rank: row.rank })
+	}
 	return await ctx.db.insert('sections', {
 		collectionId: fields.collectionId,
 		ownerId: userId,
 		title: fields.title ?? '',
-		rank: rankAfter(last?.rank),
+		rank,
 	})
 }
 

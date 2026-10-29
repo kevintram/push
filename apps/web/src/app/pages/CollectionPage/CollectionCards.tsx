@@ -85,17 +85,22 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 		[createCard, navigate, collectionId],
 	)
 
-	const handleCreateSection = useCallback(() => {
-		createSection.mutate(
-			{ collectionId },
-			{
-				onSuccess: sectionId => {
-					select({ kind: 'section', id: sectionId })
-					setRenamingSectionId(sectionId)
+	// A new section goes right below the group whose menu added it. The
+	// unsectioned cards come first, so their menu adds the first section.
+	const handleCreateSection = useCallback(
+		(afterId: Id<'sections'> | null) => {
+			createSection.mutate(
+				{ collectionId, afterId },
+				{
+					onSuccess: sectionId => {
+						select({ kind: 'section', id: sectionId })
+						setRenamingSectionId(sectionId)
+					},
 				},
-			},
-		)
-	}, [createSection, collectionId, select])
+			)
+		},
+		[createSection, collectionId, select],
+	)
 
 	const handleMove = useCallback(
 		(direction: MoveDirection) => {
@@ -152,7 +157,7 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 				addLabel='Add to cards'
 				isAdding={isAdding}
 				onAddCard={() => handleCreateCard()}
-				onAddSection={handleCreateSection}
+				onAddSection={() => handleCreateSection(null)}
 				selectedCardId={selectedCardId}
 				onSelectCard={selectCard}
 			/>
@@ -181,7 +186,7 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 					addLabel={`Add to ${section.title || 'untitled section'}`}
 					isAdding={isAdding}
 					onAddCard={() => handleCreateCard(section._id)}
-					onAddSection={handleCreateSection}
+					onAddSection={() => handleCreateSection(section._id)}
 					selectedCardId={selectedCardId}
 					onSelectCard={selectCard}
 				/>

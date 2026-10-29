@@ -17,10 +17,12 @@ export const sectionRead = sectionBase.extend({
 
 // Sections are created from an empty "add" button, so the title is optional.
 // The parent collection remains required and `ownerId` comes from the
-// caller's identity.
+// caller's identity. The section goes right after `afterId`, or first when it
+// is `null`; the server picks the key.
 export const sectionCreate = v.object({
 	...sectionBase.omit('ownerId', 'rank').partial().fields,
 	collectionId: v.id('collections'), // require collectionId
+	afterId: v.union(v.id('sections'), v.null()),
 })
 
 // Only the title is mutable. A section cannot move to another collection, and

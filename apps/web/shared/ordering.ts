@@ -62,24 +62,35 @@ export function placeInLine<Id extends string>(
 	movingId: Id,
 	afterId: Id | null,
 ): { rank: string; backfill: Array<RankAssignment<Id>> } {
+	return placeNewInLine(
+		line.filter(row => row._id !== movingId),
+		afterId,
+	)
+}
+
+/**
+ * Places a row that is not yet in `line` right after `afterId`, or first when
+ * `afterId` is null. Returns the new row's key, plus keys for any of the
+ * list's rows that were still unranked.
+ */
+export function placeNewInLine<Id extends string>(
+	line: ReadonlyArray<Ranked<Id>>,
+	afterId: Id | null,
+): { rank: string; backfill: Array<RankAssignment<Id>> } {
 	const backfill = backfillRanks(line)
 	const backfilled = new Map(backfill.map(row => [row._id, row.rank]))
-	const others = line
+	const ranked = line
 		.map(row => ({ ...row, rank: row.rank ?? backfilled.get(row._id) }))
 		.sort(compareRanked)
-		.filter(row => row._id !== movingId)
 
 	const anchorIndex =
-		afterId === null ? -1 : others.findIndex(row => row._id === afterId)
+		afterId === null ? -1 : ranked.findIndex(row => row._id === afterId)
 	if (afterId !== null && anchorIndex === -1) {
 		throw new Error('The item to place after is not in this list')
 	}
 
-	const before = anchorIndex === -1 ? null : others[anchorIndex]!.rank
-	const after = others[anchorIndex + 1]?.rank ?? null
+	const before = anchorIndex === -1 ? null : ranked[anchorIndex]!.rank
+	const after = ranked[anchorIndex + 1]?.rank ?? null
 
-	return {
-		rank: generateKeyBetween(before, after),
-		backfill: backfill.filter(row => row._id !== movingId),
-	}
+	return { rank: generateKeyBetween(before, after), backfill }
 }
