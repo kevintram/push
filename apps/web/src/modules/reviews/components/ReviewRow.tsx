@@ -13,9 +13,11 @@ import { ReviewNotesIndicator } from './ReviewNotesIndicator'
 import { ReviewRowActions } from './ReviewRowActions'
 import { ReviewStrength } from './ReviewStrength'
 
-// A local string, not a shared constant: StyleX can leave an imported
-// at-rule key unresolved in dev, emitting invalid CSS.
-const wide = '@container (min-width: 560px)'
+// The columns beside the description take about 300px, so below this the
+// description would have too little room to read. Matches `ReviewList`. A
+// local string, not a shared constant: StyleX can leave an imported at-rule
+// key unresolved in dev, emitting invalid CSS.
+const wide = '@container (min-width: 440px)'
 // Stacked rows run out of room for the whole details line, so the strength
 // change drops first, then the strength itself.
 const noStrengthChange = '@container (width < 300px)'

@@ -9,7 +9,8 @@ import { Review } from './Review'
 
 // A local string, not a shared constant: StyleX can leave an imported
 // at-rule key unresolved in dev, emitting invalid CSS.
-const wide = '@container (min-width: 560px)'
+// See `ReviewRow`.
+const wide = '@container (min-width: 440px)'
 
 const styles = stylex.create({
 	// Rows lay themselves out against this width, so the same table reads as a
