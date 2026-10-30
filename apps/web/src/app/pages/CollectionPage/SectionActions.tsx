@@ -19,15 +19,16 @@ import { iconSizes, radii } from '~/styles/tokens.stylex'
 const styles = stylex.create({
 	// A short, wide pill that sits on the title's line, as in Things, rather
 	// than a full-height button towering over the title. The margin centers it
-	// on the column labels' 21px line, which ends at the bottom of the row, so
-	// its dots line up with the labels beside it.
+	// on the column labels' 21px line, which sits 1px above the bottom of the
+	// row to share the title's baseline, so its dots line up with the labels
+	// beside it.
 	trigger: {
 		borderRadius: radii.xs,
 
 		aspectRatio: 'auto',
 		blockSize: '20px',
 		inlineSize: '28px',
-		marginBlockEnd: '0.5px',
+		marginBlockEnd: '1.5px',
 	},
 })
 

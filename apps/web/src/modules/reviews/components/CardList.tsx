@@ -48,11 +48,12 @@ const styles = stylex.create({
 		textAlign: 'start',
 	},
 	// Rules off a section from the rows above it, with the title sitting just
-	// over the rule rather than centered. Table rows don't draw borders, so
-	// each cell draws its part of the rule.
+	// over the rule rather than centered. The title and column labels differ
+	// in size, so they align on their baselines rather than their bottoms.
+	// Table rows don't draw borders, so each cell draws its part of the rule.
 	underlinedHeaderCell: {
 		paddingBlockEnd: spacing['2xs'],
-		verticalAlign: 'bottom',
+		verticalAlign: 'baseline',
 
 		borderBlockEndColor: colorsSemantic.borderSubtle,
 		borderBlockEndStyle: 'solid',
@@ -121,8 +122,10 @@ const styles = stylex.create({
 		fontSize: fontSizes.sm,
 	},
 	// Above a title stretched over the row, so the actions stay clickable.
+	// Icons have no text baseline, so they sit at the bottom of the row.
 	headerActions: {
 		position: 'relative',
+		verticalAlign: 'bottom',
 		zIndex: 2,
 	},
 	headerActionsContent: {
