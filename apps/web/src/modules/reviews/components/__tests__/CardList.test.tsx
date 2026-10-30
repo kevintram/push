@@ -27,8 +27,12 @@ vi.mock('@tanstack/react-router', () => ({
 	useNavigate: () => navigate,
 }))
 
-vi.mock('../CardActions', () => ({
-	CardActions: () => null,
+vi.mock('../CardMenu', () => ({
+	CardMenu: () => null,
+}))
+
+vi.mock('../CardStatusToggles', () => ({
+	CardStatusToggles: () => null,
 }))
 
 const card = {
@@ -73,7 +77,14 @@ describe('CardList', () => {
 
 		expect(
 			screen.getAllByRole('columnheader').map(cell => cell.textContent),
-		).toEqual(['Cards', 'Due', 'Last reviewed', 'Strength', 'Actions'])
+		).toEqual([
+			'Cards',
+			'Due',
+			'Last reviewed',
+			'Strength',
+			'Status',
+			'Actions',
+		])
 	})
 
 	it('heads its title at the given level', () => {

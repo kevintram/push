@@ -14,10 +14,11 @@ import {
 import type { DateString } from '~/types/date'
 
 import type { Card as CardModel, CardSrsState } from '../types/review.types'
-import { CardActions } from './CardActions'
 import { CardDueDate } from './CardDueDate'
 import { CardLastReviewed } from './CardLastReviewed'
+import { CardMenu } from './CardMenu'
 import { CardNewIndicator } from './CardNewIndicator'
+import { CardStatusToggles } from './CardStatusToggles'
 import { StrengthSignal } from './StrengthSignal'
 
 // A local string, not a shared constant: StyleX can leave an imported
@@ -182,15 +183,27 @@ const styles = stylex.create({
 		fontSize: fontSizes.sm,
 		fontVariantNumeric: 'tabular-nums',
 	},
-	actions: {
-		paddingInlineStart: {
-			default: spacing.sm,
-			[wide]: spacing.lg,
-		},
+	// The status toggles and the menu get a column each, so every row's menu
+	// lines up at the end whichever toggles it shows. Only the buttons are
+	// raised, so a click elsewhere in these cells still reaches the row.
+	actionCell: {
 		verticalAlign: {
 			default: 'top',
 			[wide]: 'middle',
 		},
+	},
+	status: {
+		paddingInlineStart: {
+			default: spacing.sm,
+			[wide]: spacing.lg,
+		},
+	},
+	menu: {
+		paddingInlineStart: spacing.xs,
+	},
+	// Hugs the toggles, so the raised box leaves the rest of the cell to the row.
+	toggles: {
+		inlineSize: 'fit-content',
 	},
 	// In the table, the menu trigger shows while the row is hovered, keyboard
 	// focused, or has its menu open. Stacked, or on touch, where there is no
@@ -369,10 +382,19 @@ export function CardItem({
 				<StrengthSignal stability={stability} />
 			</td>
 
-			<td {...stylex.props(styles.cell, styles.actions, styles.raised)}>
-				<CardActions
+			<td
+				{...stylex.props(styles.cell, styles.actionCell, styles.status)}
+			>
+				<CardStatusToggles
 					card={card}
-					menuTriggerXstyle={styles.menuTrigger}
+					xstyle={[styles.raised, styles.toggles]}
+				/>
+			</td>
+
+			<td {...stylex.props(styles.cell, styles.actionCell, styles.menu)}>
+				<CardMenu
+					card={card}
+					triggerXstyle={[styles.raised, styles.menuTrigger]}
 				/>
 			</td>
 		</tr>

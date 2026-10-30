@@ -189,6 +189,11 @@ export function CardList({
 								</span>
 							</th>
 						))}
+						<th {...stylex.props(headerCell)}>
+							<span {...stylex.props(a11y.visuallyHidden)}>
+								Status
+							</span>
+						</th>
 						<th
 							{...stylex.props(
 								headerCell,

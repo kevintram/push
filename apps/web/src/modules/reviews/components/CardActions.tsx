@@ -26,16 +26,10 @@ const styles = stylex.create({
 type CardActionsProps = {
 	card: Card
 	showGoToCard?: boolean
-	/** Styles for the menu trigger, such as revealing it on hover. */
-	menuTriggerXstyle?: stylex.StyleXStyles
 }
 
 /** A card's toolbar: a link to its page, its status toggles, and its menu. */
-export function CardActions({
-	card,
-	showGoToCard = false,
-	menuTriggerXstyle,
-}: CardActionsProps) {
+export function CardActions({ card, showGoToCard = false }: CardActionsProps) {
 	return (
 		<div {...stylex.props(styles.container)}>
 			{showGoToCard ? (
@@ -69,7 +63,7 @@ export function CardActions({
 				</Tooltip>
 			) : null}
 			<CardStatusToggles card={card} />
-			<CardMenu card={card} triggerXstyle={menuTriggerXstyle} />
+			<CardMenu card={card} />
 		</div>
 	)
 }
