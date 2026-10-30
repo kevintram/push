@@ -3,8 +3,9 @@ import type { Id } from '@convex/_generated/dataModel'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { compareRanked, placeInLine } from '@shared/ordering'
 import { useMutation } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 
-import { toastError } from '~/components/ui/Toast'
+import { toast, toastError } from '~/components/ui/Toast'
 
 export const sectionQueries = {
 	listByCollection: (collectionId: Id<'collections'>) =>
@@ -66,7 +67,12 @@ export function useMoveSections() {
 	})
 }
 
+/**
+ * Turns sections into subcollections, confirming it since their cards leave
+ * the page. A single new subcollection gets a button to open it.
+ */
 export function useConvertSectionsToCollections() {
+	const navigate = useNavigate()
 	const mutationFn = useConvexMutation(api.sections.convertToCollection)
 	return useMutation({
 		mutationFn,
@@ -77,5 +83,31 @@ export function useConvertSectionsToCollections() {
 					: 'Failed to convert section',
 				error,
 			),
+		onSuccess: collectionIds => {
+			const [collectionId] = collectionIds
+			if (collectionId === undefined) return
+			if (collectionIds.length > 1) {
+				toast.add({
+					title: `Converted ${collectionIds.length} sections to subcollections`,
+					type: 'success',
+				})
+				return
+			}
+
+			const id = toast.add({
+				actionProps: {
+					children: 'Open',
+					onClick: () => {
+						toast.close(id)
+						void navigate({
+							to: '/collection/$collectionId',
+							params: { collectionId },
+						})
+					},
+				},
+				title: 'Converted to subcollection',
+				type: 'success',
+			})
+		},
 	})
 }
