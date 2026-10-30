@@ -4,8 +4,8 @@ import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { placeInLine } from '@shared/ordering'
 import { useMutation } from '@tanstack/react-query'
 import { useMatchRoute, useNavigate } from '@tanstack/react-router'
-import { toast } from 'sonner'
 
+import { toast } from '~/components/ui/Toast'
 import { getErrorMessage } from '~/utils/error'
 
 export const cardQueries = {
@@ -75,8 +75,10 @@ export function useMoveCard() {
 	return useMutation({
 		mutationFn,
 		onError: error =>
-			toast.error('Failed to move card', {
+			toast.add({
 				description: getErrorMessage(error),
+				title: 'Failed to move card',
+				type: 'error',
 			}),
 	})
 }

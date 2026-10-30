@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { toast } from 'sonner'
 
+import { toast } from '~/components/ui/Toast'
 import { todayIso } from '~/utils/date'
 
 import { useCreateReview } from '../api/reviewQueries'
@@ -72,7 +72,11 @@ export function ReviewComposerProvider({
 						...(draft.date === null ? {} : { date: draft.date }),
 					},
 					{
-						onError: () => toast.error('Failed to create review'),
+						onError: () =>
+							toast.add({
+								title: 'Failed to create review',
+								type: 'error',
+							}),
 						onSuccess: () => {
 							setDraft(emptyReviewDraft)
 							setLocalDock(closedReviewComposerDock)

@@ -4,7 +4,6 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { Ellipsis } from 'lucide-react'
 import { useCallback, useState } from 'react'
-import { toast } from 'sonner'
 
 import {
 	BreadcrumbItem,
@@ -16,6 +15,7 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
+import { toast } from '~/components/ui/Toast'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import {
 	collectionQueries,
@@ -132,7 +132,10 @@ export function CollectionPage() {
 			try {
 				await updateCollection.mutateAsync({ collectionId, title })
 			} catch {
-				toast.error('Failed to update collection title')
+				toast.add({
+					title: 'Failed to update collection title',
+					type: 'error',
+				})
 			}
 		},
 		[collection, collectionId, updateCollection],
@@ -147,7 +150,10 @@ export function CollectionPage() {
 					description,
 				})
 			} catch {
-				toast.error('Failed to update collection description')
+				toast.add({
+					title: 'Failed to update collection description',
+					type: 'error',
+				})
 			}
 		},
 		[collection, collectionId, updateCollection],

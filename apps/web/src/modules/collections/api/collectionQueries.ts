@@ -3,8 +3,8 @@ import type { Id } from '@convex/_generated/dataModel'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { useMatchRoute, useNavigate } from '@tanstack/react-router'
-import { toast } from 'sonner'
 
+import { toast } from '~/components/ui/Toast'
 import { getErrorMessage } from '~/utils/error'
 
 // `expandPath` decides whether `path` holds ancestor ids or the documents they
@@ -28,8 +28,10 @@ export function useCreateCollection() {
 	return useMutation({
 		mutationFn,
 		onError: error =>
-			toast.error('Failed to create collection', {
+			toast.add({
 				description: getErrorMessage(error),
+				title: 'Failed to create collection',
+				type: 'error',
 			}),
 	})
 }
@@ -39,8 +41,10 @@ export function useUpdateCollection() {
 	return useMutation({
 		mutationFn,
 		onError: error =>
-			toast.error('Failed to update collection', {
+			toast.add({
 				description: getErrorMessage(error),
+				title: 'Failed to update collection',
+				type: 'error',
 			}),
 	})
 }

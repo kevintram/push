@@ -3,8 +3,8 @@ import * as stylex from '@stylexjs/stylex'
 import { queryOptions, useSuspenseQueries } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useMemo, useState } from 'react'
-import { toast } from 'sonner'
 
+import { toast } from '~/components/ui/Toast'
 import { useToday } from '~/hooks/useToday'
 import {
 	sectionQueries,
@@ -73,7 +73,11 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 			createCard.mutate(
 				{ collectionId, sectionId },
 				{
-					onError: () => toast.error('Failed to create card'),
+					onError: () =>
+						toast.add({
+							title: 'Failed to create card',
+							type: 'error',
+						}),
 					onSuccess: cardId =>
 						void navigate({
 							to: '/cards/$cardId',

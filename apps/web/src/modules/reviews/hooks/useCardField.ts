@@ -1,7 +1,7 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { useCallback } from 'react'
-import { toast } from 'sonner'
 
+import { toast } from '~/components/ui/Toast'
 import { useAutoSave } from '~/hooks/useAutoSave'
 
 import { useUpdateCard } from '../api/cardQueries'
@@ -55,7 +55,7 @@ export function useCardField({
 				// and this page unmounts. Needs a `cancel` on `useAutoSave`
 				// invoked before the delete; matching on the thrown message
 				// would be brittle.
-				toast.error(errorMessage)
+				toast.add({ title: errorMessage, type: 'error' })
 			}
 		},
 		[errorMessage, field, cardId, updateCard, value],

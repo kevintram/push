@@ -1,7 +1,7 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { useCallback } from 'react'
-import { toast } from 'sonner'
 
+import { toast } from '~/components/ui/Toast'
 import { useAutoSave } from '~/hooks/useAutoSave'
 
 import { useUpdateReview } from '../api/reviewQueries'
@@ -54,7 +54,7 @@ export function useReviewField({
 				// still pending when Convex pushes the removal and this page
 				// unmounts. Needs a `cancel` on `useAutoSave` invoked before the
 				// delete; matching on the thrown message would be brittle.
-				toast.error(errorMessage)
+				toast.add({ title: errorMessage, type: 'error' })
 			}
 		},
 		[errorMessage, field, reviewId, updateReview, value],

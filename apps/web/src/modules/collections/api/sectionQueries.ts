@@ -3,8 +3,8 @@ import type { Id } from '@convex/_generated/dataModel'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { compareRanked, placeInLine } from '@shared/ordering'
 import { useMutation } from '@tanstack/react-query'
-import { toast } from 'sonner'
 
+import { toast } from '~/components/ui/Toast'
 import { getErrorMessage } from '~/utils/error'
 
 export const sectionQueries = {
@@ -17,8 +17,10 @@ export function useCreateSection() {
 	return useMutation({
 		mutationFn,
 		onError: error =>
-			toast.error('Failed to create section', {
+			toast.add({
 				description: getErrorMessage(error),
+				title: 'Failed to create section',
+				type: 'error',
 			}),
 	})
 }
@@ -28,8 +30,10 @@ export function useUpdateSection() {
 	return useMutation({
 		mutationFn,
 		onError: error =>
-			toast.error('Failed to update section', {
+			toast.add({
 				description: getErrorMessage(error),
+				title: 'Failed to update section',
+				type: 'error',
 			}),
 	})
 }
@@ -67,8 +71,10 @@ export function useMoveSection() {
 	return useMutation({
 		mutationFn,
 		onError: error =>
-			toast.error('Failed to move section', {
+			toast.add({
 				description: getErrorMessage(error),
+				title: 'Failed to move section',
+				type: 'error',
 			}),
 	})
 }
@@ -78,8 +84,10 @@ export function useDeleteSection() {
 	return useMutation({
 		mutationFn,
 		onError: error =>
-			toast.error('Failed to delete section', {
+			toast.add({
 				description: getErrorMessage(error),
+				title: 'Failed to delete section',
+				type: 'error',
 			}),
 	})
 }

@@ -1,6 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
-import { toast } from 'sonner'
 
+import { toast } from '~/components/ui/Toast'
 import { MoveCollectionDialogBase } from '~/modules/collections/components/move-collection'
 
 import { useUpdateCard } from '../api/cardQueries'
@@ -21,7 +21,11 @@ export function MoveCardDialog({ onOpenChange, card }: MoveCardDialogProps) {
 				collectionId: destination,
 			},
 			{
-				onError: () => toast.error('Failed to move card'),
+				onError: () =>
+					toast.add({
+						title: 'Failed to move card',
+						type: 'error',
+					}),
 				onSuccess: () => onOpenChange(false),
 			},
 		)

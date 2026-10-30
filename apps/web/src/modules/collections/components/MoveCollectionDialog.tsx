@@ -1,6 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
-import { toast } from 'sonner'
 
+import { toast } from '~/components/ui/Toast'
 import { useUpdateCollection } from '~/modules/collections/api/collectionQueries'
 
 import { MoveCollectionDialogBase } from './move-collection'
@@ -25,7 +25,11 @@ export function MoveCollectionDialog({
 				parentId: destination ?? null,
 			},
 			{
-				onError: () => toast.error('Failed to move collection'),
+				onError: () =>
+					toast.add({
+						title: 'Failed to move collection',
+						type: 'error',
+					}),
 				onSuccess: () => onOpenChange(false),
 			},
 		)

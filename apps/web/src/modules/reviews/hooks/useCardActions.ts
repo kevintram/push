@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
 import { useCallback, useState } from 'react'
-import { toast } from 'sonner'
+
+import { toast } from '~/components/ui/Toast'
 
 import { useDeleteCard, useUpdateCard } from '../api/cardQueries'
 import type { Card } from '../types/review.types'
@@ -37,7 +38,13 @@ export function useCardActions(card: Card): UseCardActionsReturn {
 				cardId: card._id,
 				type: card.type === 'flashcard' ? 'practice' : 'flashcard',
 			},
-			{ onError: () => toast.error('Failed to update card type') },
+			{
+				onError: () =>
+					toast.add({
+						title: 'Failed to update card type',
+						type: 'error',
+					}),
+			},
 		)
 	}, [card._id, card.type, updateCard])
 
@@ -51,7 +58,13 @@ export function useCardActions(card: Card): UseCardActionsReturn {
 						? DateTime.now().toMillis()
 						: null,
 			},
-			{ onError: () => toast.error('Failed to update card flag') },
+			{
+				onError: () =>
+					toast.add({
+						title: 'Failed to update card flag',
+						type: 'error',
+					}),
+			},
 		)
 	}, [card._id, card.flaggedAt, updateCard])
 
@@ -65,7 +78,13 @@ export function useCardActions(card: Card): UseCardActionsReturn {
 						? DateTime.now().toMillis()
 						: null,
 			},
-			{ onError: () => toast.error('Failed to update card retirement') },
+			{
+				onError: () =>
+					toast.add({
+						title: 'Failed to update card retirement',
+						type: 'error',
+					}),
+			},
 		)
 	}, [card._id, card.retiredAt, updateCard])
 
@@ -73,7 +92,11 @@ export function useCardActions(card: Card): UseCardActionsReturn {
 		deleteCard.mutate(
 			{ cardId: card._id },
 			{
-				onError: () => toast.error('Failed to delete card'),
+				onError: () =>
+					toast.add({
+						title: 'Failed to delete card',
+						type: 'error',
+					}),
 				// Leave the dialog open on failure so the toast has context.
 				onSuccess: () => setIsDeleteDialogOpen(false),
 			},
