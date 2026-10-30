@@ -91,9 +91,10 @@ const styles = stylex.create({
 		marginBlockEnd: spacing.xs,
 	},
 	// Rules off a section from the rows above it, with the title sitting just
-	// over the rule rather than centered.
+	// over the rule rather than centered. The title and column labels differ
+	// in size, so they align on their baselines rather than their bottoms.
 	underlinedHeaderRow: {
-		alignItems: 'end',
+		alignItems: 'last baseline',
 		paddingBlockEnd: spacing['2xs'],
 
 		borderBlockEndColor: colorsSemantic.borderSubtle,
@@ -177,7 +178,9 @@ const styles = stylex.create({
 		},
 	},
 	// Above a title stretched over the row, so the actions stay clickable.
+	// Icons have no text baseline, so they sit at the bottom of the row.
 	headerActions: {
+		alignSelf: 'end',
 		display: 'flex',
 		justifyContent: 'flex-end',
 		position: 'relative',
