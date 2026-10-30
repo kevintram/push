@@ -1,4 +1,5 @@
 import type { Id } from '@convex/_generated/dataModel'
+import type { CollectionSearchResult } from '@convex/validators/collections'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -38,6 +39,31 @@ const collections = [
 	},
 ] as const satisfies ReadonlyArray<Collection>
 
+const searchHits: Record<string, ReadonlyArray<CollectionSearchResult>> = {
+	s: [
+		{
+			_id: 'collection-2' as Id<'collections'>,
+			title: 'Spanish',
+			description: 'Verbs and vocab',
+			pathTitles: ['Languages'],
+		},
+		{
+			_id: 'collection-3' as Id<'collections'>,
+			title: 'Science',
+			description: '',
+			pathTitles: [],
+		},
+	],
+	lang: [
+		{
+			_id: 'collection-1' as Id<'collections'>,
+			title: 'Languages',
+			description: '',
+			pathTitles: [],
+		},
+	],
+}
+
 const COLLECTION_LIST_KEY = ['convex', 'collections', 'list']
 
 type QueryState = {
@@ -46,7 +72,7 @@ type QueryState = {
 	isPending: boolean
 }
 
-let queryState: QueryState
+let listState: QueryState
 
 type CollectionOnlyDialogProps = Extract<
 	React.ComponentProps<typeof MoveCollectionDialogBase>,
@@ -55,9 +81,9 @@ type CollectionOnlyDialogProps = Extract<
 
 vi.mock('~/modules/collections/api/collectionQueries', () => ({
 	collectionQueries: {
-		list: () => ({
-			queryKey: COLLECTION_LIST_KEY,
-			queryFn: () => collections,
+		list: () => ({ queryKey: COLLECTION_LIST_KEY }),
+		search: (query: string) => ({
+			queryKey: ['convex', 'collections', 'search', query],
 		}),
 	},
 }))
@@ -67,7 +93,17 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 		await importOriginal<typeof import('@tanstack/react-query')>()
 	return {
 		...actual,
-		useQuery: () => queryState,
+		useQuery: (options: { enabled?: boolean; queryKey: Array<string> }) => {
+			if (options.queryKey === COLLECTION_LIST_KEY) return listState
+			if (options.enabled === false) {
+				return { data: undefined, isError: false, isPending: true }
+			}
+			return {
+				data: searchHits[options.queryKey[3]!] ?? [],
+				isError: false,
+				isPending: false,
+			}
+		},
 	}
 })
 
@@ -85,9 +121,30 @@ function renderDialog(overrides: Partial<CollectionOnlyDialogProps> = {}) {
 	return props
 }
 
+function renderRootDialog(
+	overrides: Partial<
+		Extract<
+			React.ComponentProps<typeof MoveCollectionDialogBase>,
+			{ allowRoot: true }
+		>
+	> = {},
+) {
+	const props = {
+		allowRoot: true as const,
+		initialDestination: 'collection-1' as Id<'collections'> | null,
+		isPending: false,
+		onMove: vi.fn(),
+		onOpenChange: vi.fn(),
+		title: 'Move collection',
+		...overrides,
+	}
+	render(<MoveCollectionDialogBase {...props} />)
+	return props
+}
+
 describe('MoveCollectionDialogBase', () => {
 	beforeEach(() => {
-		queryState = {
+		listState = {
 			data: [...collections],
 			isError: false,
 			isPending: false,
@@ -95,14 +152,14 @@ describe('MoveCollectionDialogBase', () => {
 	})
 
 	it('renders loading state', () => {
-		queryState = { data: undefined, isError: false, isPending: true }
+		listState = { data: undefined, isError: false, isPending: true }
 		renderDialog()
 
 		expect(screen.getByText('Loading collections…')).toBeInTheDocument()
 	})
 
 	it('renders error state', () => {
-		queryState = { data: undefined, isError: true, isPending: false }
+		listState = { data: undefined, isError: true, isPending: false }
 		renderDialog()
 
 		expect(
@@ -111,7 +168,7 @@ describe('MoveCollectionDialogBase', () => {
 	})
 
 	it('renders empty state', () => {
-		queryState = { data: [], isError: false, isPending: false }
+		listState = { data: [], isError: false, isPending: false }
 		renderDialog()
 
 		expect(
@@ -155,37 +212,174 @@ describe('MoveCollectionDialogBase', () => {
 	})
 
 	it('disables Move when destination has not changed', () => {
-		renderDialog({
-			initialDestination: 'collection-1' as Id<'collections'>,
-		})
+		renderDialog()
 
 		expect(screen.getByRole('button', { name: 'Move' })).toBeDisabled()
 	})
 
-	it('enables Move when a different destination is selected', async () => {
-		renderDialog({
-			initialDestination: 'collection-1' as Id<'collections'>,
-		})
-
-		const user = userEvent.setup()
-		await user.click(
-			screen.getByRole('button', { name: 'Toggle Languages' }),
-		)
-		await user.click(screen.getByRole('button', { name: 'Spanish' }))
-
-		expect(screen.getByRole('button', { name: 'Move' })).toBeEnabled()
-	})
-
 	it('calls onMove with the selected destination', async () => {
-		const { onMove } = renderDialog({
-			initialDestination: 'collection-1' as Id<'collections'>,
-		})
+		const { onMove } = renderDialog()
 		const user = userEvent.setup()
 
 		await user.click(screen.getByRole('button', { name: 'Science' }))
 		await user.click(screen.getByRole('button', { name: 'Move' }))
 
 		expect(onMove).toHaveBeenCalledWith('collection-3')
+	})
+
+	it('shows search results in place of the tree', async () => {
+		renderDialog()
+		const user = userEvent.setup()
+
+		await user.type(
+			screen.getByRole('searchbox', { name: 'Search collections' }),
+			's',
+		)
+
+		expect(
+			await screen.findByRole('list', { name: 'Matching collections' }),
+		).toBeInTheDocument()
+		expect(screen.getByText('Languages / Spanish')).toBeInTheDocument()
+		expect(screen.getByText('Verbs and vocab')).toBeInTheDocument()
+		expect(
+			screen.queryByRole('button', { name: 'Collapse all' }),
+		).not.toBeInTheDocument()
+	})
+
+	it('moves to a destination chosen from the results', async () => {
+		const { onMove } = renderDialog()
+		const user = userEvent.setup()
+
+		await user.type(
+			screen.getByRole('searchbox', { name: 'Search collections' }),
+			's',
+		)
+		await user.click(
+			await screen.findByRole('button', {
+				name: /^Languages \/ Spanish/,
+			}),
+		)
+		await user.click(screen.getByRole('button', { name: 'Move' }))
+
+		expect(onMove).toHaveBeenCalledWith('collection-2')
+	})
+
+	it('reveals the chosen result once the query is cleared', async () => {
+		renderDialog({
+			initialDestination: 'collection-3' as Id<'collections'>,
+		})
+		const user = userEvent.setup()
+
+		await user.type(
+			screen.getByRole('searchbox', { name: 'Search collections' }),
+			's',
+		)
+		await user.click(
+			await screen.findByRole('button', {
+				name: /^Languages \/ Spanish/,
+			}),
+		)
+		await user.click(screen.getByRole('button', { name: 'Clear search' }))
+
+		expect(screen.getByRole('button', { name: 'Spanish' })).toHaveAttribute(
+			'aria-pressed',
+			'true',
+		)
+		expect(
+			screen.getByRole('searchbox', { name: 'Search collections' }),
+		).toHaveFocus()
+	})
+
+	it('says when nothing matches', async () => {
+		renderDialog()
+		const user = userEvent.setup()
+
+		await user.type(
+			screen.getByRole('searchbox', { name: 'Search collections' }),
+			'astronomy',
+		)
+
+		expect(
+			await screen.findByText('No collections match “astronomy”'),
+		).toBeInTheDocument()
+	})
+
+	it('leaves the moved collection and its subtree out of the results', async () => {
+		renderRootDialog({
+			excludeCollectionId: 'collection-1' as Id<'collections'>,
+			initialDestination: null,
+		})
+		const user = userEvent.setup()
+
+		await user.type(
+			screen.getByRole('searchbox', { name: 'Search collections' }),
+			's',
+		)
+
+		expect(
+			await screen.findByRole('button', { name: /^Science/ }),
+		).toBeInTheDocument()
+		expect(
+			screen.queryByRole('button', { name: /Spanish/ }),
+		).not.toBeInTheDocument()
+	})
+
+	it('holds back results until the tree can exclude the moved subtree', async () => {
+		listState = { data: undefined, isError: false, isPending: true }
+		renderRootDialog({
+			excludeCollectionId: 'collection-1' as Id<'collections'>,
+			initialDestination: null,
+		})
+		const user = userEvent.setup()
+
+		await user.type(
+			screen.getByRole('searchbox', { name: 'Search collections' }),
+			's',
+		)
+
+		expect(await screen.findByText('Searching…')).toBeInTheDocument()
+		expect(
+			screen.queryByRole('button', { name: /Spanish/ }),
+		).not.toBeInTheDocument()
+	})
+
+	it('keeps a collapse-all when the query is cleared without a pick', async () => {
+		renderDialog({
+			initialDestination: 'collection-2' as Id<'collections'>,
+		})
+		const user = userEvent.setup()
+
+		await user.click(screen.getByRole('button', { name: 'Collapse all' }))
+		await user.type(
+			screen.getByRole('searchbox', { name: 'Search collections' }),
+			's',
+		)
+		await user.click(screen.getByRole('button', { name: 'Clear search' }))
+
+		expect(
+			screen.queryByRole('button', { name: 'Spanish' }),
+		).not.toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Show Spanish in Collections' }),
+		).toBeInTheDocument()
+	})
+
+	it('clears the search on Escape before closing the dialog', async () => {
+		const { onOpenChange } = renderDialog()
+		const user = userEvent.setup()
+		const searchbox = screen.getByRole('searchbox', {
+			name: 'Search collections',
+		})
+
+		await user.type(searchbox, 's')
+		await user.keyboard('{Escape}')
+
+		expect(searchbox).toHaveValue('')
+		expect(onOpenChange).not.toHaveBeenCalled()
+
+		await user.keyboard('{Escape}')
+
+		expect(onOpenChange).toHaveBeenCalledWith(false)
 	})
 
 	it('disables controls while pending', () => {
@@ -198,28 +392,15 @@ describe('MoveCollectionDialogBase', () => {
 	it('prevents dismissal while pending', () => {
 		const { onOpenChange } = renderDialog({ isPending: true })
 
-		const dialog = screen.getByRole('dialog')
-		expect(dialog).toBeInTheDocument()
+		expect(screen.getByRole('dialog')).toBeInTheDocument()
 
-		// attempt to close via the close button
-		const closeButton = screen.getByRole('button', { name: 'Close' })
-		closeButton.click()
+		screen.getByRole('button', { name: 'Close' }).click()
 
 		expect(onOpenChange).not.toHaveBeenCalled()
 	})
 
-	it('calls onMove with null when the root is selected', async () => {
-		const onMove = vi.fn()
-		render(
-			<MoveCollectionDialogBase
-				allowRoot
-				initialDestination={'collection-1' as Id<'collections'>}
-				isPending={false}
-				onMove={onMove}
-				onOpenChange={vi.fn()}
-				title='Move item'
-			/>,
-		)
+	it('calls onMove with null when the top level is selected', async () => {
+		const { onMove } = renderRootDialog()
 		const user = userEvent.setup()
 
 		await user.click(screen.getByRole('button', { name: 'Collections' }))

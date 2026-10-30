@@ -9,20 +9,23 @@ import { scrollFadeVars } from '~/styles/scrollFade.stylex'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { MoveCollectionTree } from './MoveCollectionTree'
+import { MoveDestinationResults } from './MoveDestinationResults'
+import { MoveDestinationSearchBar } from './MoveDestinationSearchBar'
 import type { MoveDestination } from './useMoveDestination'
 
 const styles = stylex.create({
 	// The border sits on the frame so the scroll fade dissolves the rows
-	// without fading the border.
+	// without fading the border. The frame keeps one height so the dialog
+	// doesn't resize as the tree, results, and messages swap in.
 	frame: {
 		borderColor: colorsSemantic.borderSubtle,
 		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		overflow: 'hidden',
+		blockSize: '24rem',
 		display: 'flex',
 		flexDirection: 'column',
-		maxBlockSize: '24rem',
 	},
 	// Anchors the reveal pill to the list's edges.
 	listArea: {
@@ -33,13 +36,20 @@ const styles = stylex.create({
 		position: 'relative',
 	},
 	scrollArea: {
-		padding: spacing.sm,
 		flexGrow: 1,
 		minBlockSize: 0,
 		// Keeps revealed rows clear of the edge fades.
 		scrollPaddingBlockEnd: scrollFadeVars.size,
 		scrollPaddingBlockStart: scrollFadeVars.size,
 		overflowY: 'auto',
+	},
+	treePadding: {
+		padding: spacing.sm,
+	},
+	// Lines result text up with the search icon, as in the search dialog.
+	resultsPadding: {
+		paddingBlock: spacing.xs,
+		paddingInline: spacing.xs,
 	},
 	// Lets the last row scroll above the reveal pill.
 	treeWithPill: {
@@ -58,21 +68,29 @@ type MoveDestinationPickerProps = {
 	destination: MoveDestination
 }
 
-/** Chooses a destination by browsing the collection tree. */
+/** Chooses a destination by browsing the collection tree or searching. */
 export function MoveDestinationPicker({
 	allowRoot,
 	destination,
 }: MoveDestinationPickerProps) {
-	const { collections, hiddenSelection, selectedDestination } = destination
+	const {
+		collections,
+		hiddenSelection,
+		isSearching,
+		query,
+		search,
+		selectedDestination,
+	} = destination
 	const scrollAreaRef = useRef<HTMLElement>(null)
 	const findSelectedLabel = () =>
 		scrollAreaRef.current?.querySelector<HTMLElement>(
 			'[aria-pressed="true"]',
 		)
 
-	// The tree mounts scrolled to the top, so scroll to the selection, whose
-	// branch is already open by then.
-	const isShowingTree = collections.roots.length > 0
+	// The tree mounts scrolled to the top, both when the dialog opens and
+	// when clearing the query brings it back, so scroll to the selection,
+	// whose branch is already open by then.
+	const isShowingTree = !isSearching && collections.roots.length > 0
 	useLayoutEffect(() => {
 		if (isShowingTree)
 			findSelectedLabel()?.scrollIntoView({ block: 'nearest' })
@@ -88,15 +106,37 @@ export function MoveDestinationPicker({
 		label?.scrollIntoView({ block: 'nearest' })
 	}
 
+	const showRevealSelectionPill =
+		!isSearching && hiddenSelection !== undefined
+
 	return (
 		<div {...stylex.props(styles.frame)}>
+			<MoveDestinationSearchBar
+				query={query}
+				onQueryChange={destination.setQuery}
+			/>
 			<div {...stylex.props(styles.listArea)}>
 				<nav
 					aria-label='Destination collection'
 					ref={scrollAreaRef}
-					{...stylex.props(styles.scrollArea, scrollFade.y)}
+					{...stylex.props(
+						styles.scrollArea,
+						scrollFade.y,
+						isSearching
+							? styles.resultsPadding
+							: styles.treePadding,
+					)}
 				>
-					{collections.isPending ? (
+					{isSearching ? (
+						<MoveDestinationResults
+							isError={search.isError}
+							isLoading={search.isLoading}
+							onSelect={destination.setSelectedDestination}
+							query={query}
+							results={search.results}
+							selectedDestination={selectedDestination}
+						/>
+					) : collections.isPending ? (
 						<p {...stylex.props(styles.status)}>
 							Loading collections…
 						</p>
@@ -120,13 +160,12 @@ export function MoveDestinationPicker({
 							openCollectionIds={destination.openCollectionIds}
 							selectedDestination={selectedDestination}
 							xstyle={
-								hiddenSelection !== undefined &&
-								styles.treeWithPill
+								showRevealSelectionPill && styles.treeWithPill
 							}
 						/>
 					)}
 				</nav>
-				{hiddenSelection !== undefined ? (
+				{showRevealSelectionPill ? (
 					<RevealSelectionPill
 						title={hiddenSelection.title.trim() || 'Untitled'}
 						onClick={handleRevealSelection}
