@@ -119,6 +119,17 @@ describe('MoveCollectionDialogBase', () => {
 		).toBeInTheDocument()
 	})
 
+	it('opens with the current destination revealed', () => {
+		renderDialog({
+			initialDestination: 'collection-2' as Id<'collections'>,
+		})
+
+		expect(screen.getByRole('button', { name: 'Spanish' })).toHaveAttribute(
+			'aria-pressed',
+			'true',
+		)
+	})
+
 	it('disables Move when destination has not changed', () => {
 		renderDialog({
 			initialDestination: 'collection-1' as Id<'collections'>,

@@ -12,6 +12,11 @@ import type { CollectionWithChildren } from '~/modules/collections/types/collect
 type MoveCollectionItemProps = CollectionWithChildren & {
 	onSelect: (collectionId: Id<'collections'>) => void
 	selectedCollectionId: Id<'collections'> | null
+	openCollectionIds: ReadonlySet<Id<'collections'>>
+	onCollectionOpenChange: (
+		collectionId: Id<'collections'>,
+		open: boolean,
+	) => void
 }
 
 export function MoveCollectionItem({
@@ -20,13 +25,20 @@ export function MoveCollectionItem({
 	childCollections,
 	onSelect,
 	selectedCollectionId,
+	openCollectionIds,
+	onCollectionOpenChange,
 }: MoveCollectionItemProps) {
 	const collectionTitle = title.trim() || 'Untitled'
 	const hasChildren = childCollections.length > 0
 	const isSelected = selectedCollectionId === _id
 
 	return (
-		<TreeItem collapsible={hasChildren} selected={isSelected}>
+		<TreeItem
+			collapsible={hasChildren}
+			open={openCollectionIds.has(_id)}
+			onOpenChange={open => onCollectionOpenChange(_id, open)}
+			selected={isSelected}
+		>
 			<TreeItemContent>
 				<TreeItemCollapsibleTrigger
 					aria-label={`Toggle ${collectionTitle}`}
@@ -46,6 +58,8 @@ export function MoveCollectionItem({
 						{...child}
 						onSelect={onSelect}
 						selectedCollectionId={selectedCollectionId}
+						openCollectionIds={openCollectionIds}
+						onCollectionOpenChange={onCollectionOpenChange}
 					/>
 				))}
 			</TreeItemChildren>

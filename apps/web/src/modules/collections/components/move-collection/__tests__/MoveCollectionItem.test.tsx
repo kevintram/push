@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
+import { useOpenCollectionIds } from '~/modules/collections/hooks/useOpenCollectionIds'
 import type { CollectionWithChildren } from '~/modules/collections/types/collection.types'
 
 import { MoveCollectionItem } from '../MoveCollectionItem'
@@ -23,20 +24,38 @@ function collection(
 	}
 }
 
+type ItemProps = React.ComponentProps<typeof MoveCollectionItem>
+
+// Owns the open branches the way the dialog does.
+function ControlledItem(
+	props: Omit<ItemProps, 'openCollectionIds' | 'onCollectionOpenChange'>,
+) {
+	const { openCollectionIds, setCollectionOpen } = useOpenCollectionIds(
+		() => new Set(),
+	)
+	return (
+		<ul>
+			<MoveCollectionItem
+				{...props}
+				openCollectionIds={openCollectionIds}
+				onCollectionOpenChange={setCollectionOpen}
+			/>
+		</ul>
+	)
+}
+
 describe('MoveCollectionItem', () => {
 	it('renders a collection and its children recursively', async () => {
 		const user = userEvent.setup()
 
 		render(
-			<ul>
-				<MoveCollectionItem
-					{...collection('parent', [
-						collection('child', [collection('grandchild')]),
-					])}
-					onSelect={vi.fn()}
-					selectedCollectionId={null}
-				/>
-			</ul>,
+			<ControlledItem
+				{...collection('parent', [
+					collection('child', [collection('grandchild')]),
+				])}
+				onSelect={vi.fn()}
+				selectedCollectionId={null}
+			/>,
 		)
 
 		expect(
@@ -60,15 +79,13 @@ describe('MoveCollectionItem', () => {
 		const user = userEvent.setup()
 
 		render(
-			<ul>
-				<MoveCollectionItem
-					{...collection('parent', [
-						collection('child', [collection('grandchild')]),
-					])}
-					onSelect={vi.fn()}
-					selectedCollectionId={'parent' as Id<'collections'>}
-				/>
-			</ul>,
+			<ControlledItem
+				{...collection('parent', [
+					collection('child', [collection('grandchild')]),
+				])}
+				onSelect={vi.fn()}
+				selectedCollectionId={'parent' as Id<'collections'>}
+			/>,
 		)
 
 		await user.click(screen.getByRole('button', { name: 'Toggle parent' }))
@@ -93,17 +110,33 @@ describe('MoveCollectionItem', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('marks the selected collection with aria-pressed', async () => {
-		const user = userEvent.setup()
-
+	it('opens the branches it is given', () => {
 		render(
 			<ul>
 				<MoveCollectionItem
 					{...collection('parent', [collection('child')])}
 					onSelect={vi.fn()}
-					selectedCollectionId={'child' as Id<'collections'>}
+					selectedCollectionId={null}
+					openCollectionIds={new Set(['parent' as Id<'collections'>])}
+					onCollectionOpenChange={vi.fn()}
 				/>
 			</ul>,
+		)
+
+		expect(
+			screen.getByRole('button', { name: 'child' }),
+		).toBeInTheDocument()
+	})
+
+	it('marks the selected collection with aria-pressed', async () => {
+		const user = userEvent.setup()
+
+		render(
+			<ControlledItem
+				{...collection('parent', [collection('child')])}
+				onSelect={vi.fn()}
+				selectedCollectionId={'child' as Id<'collections'>}
+			/>,
 		)
 
 		expect(screen.getByRole('button', { name: 'parent' })).toHaveAttribute(
@@ -124,13 +157,11 @@ describe('MoveCollectionItem', () => {
 		const user = userEvent.setup()
 
 		render(
-			<ul>
-				<MoveCollectionItem
-					{...collection('parent', [collection('child')])}
-					onSelect={onSelect}
-					selectedCollectionId={null}
-				/>
-			</ul>,
+			<ControlledItem
+				{...collection('parent', [collection('child')])}
+				onSelect={onSelect}
+				selectedCollectionId={null}
+			/>,
 		)
 
 		await user.click(screen.getByRole('button', { name: 'Toggle parent' }))
@@ -141,14 +172,12 @@ describe('MoveCollectionItem', () => {
 
 	it('renders untitled collections with a fallback label', () => {
 		render(
-			<ul>
-				<MoveCollectionItem
-					{...collection('id')}
-					title='   '
-					onSelect={vi.fn()}
-					selectedCollectionId={null}
-				/>
-			</ul>,
+			<ControlledItem
+				{...collection('id')}
+				title='   '
+				onSelect={vi.fn()}
+				selectedCollectionId={null}
+			/>,
 		)
 
 		expect(

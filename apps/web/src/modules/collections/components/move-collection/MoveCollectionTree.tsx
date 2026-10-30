@@ -1,5 +1,4 @@
 import type { Id } from '@convex/_generated/dataModel'
-import { useMemo } from 'react'
 
 import {
 	Tree,
@@ -14,27 +13,24 @@ import { MoveCollectionItem } from './MoveCollectionItem'
 
 type MoveCollectionTreeProps = {
 	allowRoot?: boolean
-	excludeCollectionId?: Id<'collections'>
+	collections: ReadonlyArray<CollectionWithChildren>
+	onCollectionOpenChange: (
+		collectionId: Id<'collections'>,
+		open: boolean,
+	) => void
 	onSelect: (destination: Id<'collections'> | null) => void
+	openCollectionIds: ReadonlySet<Id<'collections'>>
 	selectedDestination: Id<'collections'> | null
-	collections: Array<CollectionWithChildren>
 }
 
 export function MoveCollectionTree({
 	allowRoot = false,
-	excludeCollectionId,
-	onSelect,
-	selectedDestination,
 	collections,
+	onCollectionOpenChange,
+	onSelect,
+	openCollectionIds,
+	selectedDestination,
 }: MoveCollectionTreeProps) {
-	const filteredCollections = useMemo(
-		() =>
-			excludeCollectionId
-				? excludeSubtree(collections, excludeCollectionId)
-				: collections,
-		[collections, excludeCollectionId],
-	)
-
 	const isRootSelected = selectedDestination === null
 
 	return (
@@ -52,29 +48,16 @@ export function MoveCollectionTree({
 					</TreeItemContent>
 				</TreeItem>
 			) : null}
-			{filteredCollections.map(collection => (
+			{collections.map(collection => (
 				<MoveCollectionItem
 					key={collection._id}
 					{...collection}
 					onSelect={onSelect}
 					selectedCollectionId={selectedDestination}
+					openCollectionIds={openCollectionIds}
+					onCollectionOpenChange={onCollectionOpenChange}
 				/>
 			))}
 		</Tree>
 	)
-}
-
-function excludeSubtree(
-	collections: Array<CollectionWithChildren>,
-	excludeId: Id<'collections'>,
-): Array<CollectionWithChildren> {
-	return collections
-		.filter(collection => collection._id !== excludeId)
-		.map(collection => ({
-			...collection,
-			childCollections: excludeSubtree(
-				collection.childCollections,
-				excludeId,
-			),
-		}))
 }
