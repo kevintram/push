@@ -3,9 +3,10 @@ import { Link } from '@tanstack/react-router'
 
 import { DialogClose } from '~/components/ui'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
+import { radii, spacing } from '~/styles/tokens.stylex'
 
 import type { SearchResultItem as SearchResultItemModel } from '../utils/searchResults'
+import { SearchResultContent } from './SearchResultContent'
 
 const styles = stylex.create({
 	item: {
@@ -34,30 +35,6 @@ const styles = stylex.create({
 		outlineStyle: 'solid',
 		outlineWidth: '2px',
 	},
-	title: {
-		overflow: 'hidden',
-		fontSize: fontSizes.md,
-		fontWeight: fontWeights.medium,
-		lineHeight: 1.4,
-		textOverflow: 'ellipsis',
-		whiteSpace: 'nowrap',
-	},
-	secondary: {
-		overflow: 'hidden',
-		color: colorsSemantic.textSecondary,
-		fontSize: fontSizes.sm,
-		lineHeight: 1.4,
-		textOverflow: 'ellipsis',
-		whiteSpace: 'nowrap',
-	},
-	path: {
-		overflow: 'hidden',
-		color: colorsSemantic.textSecondary,
-		fontSize: fontSizes.xs,
-		lineHeight: 1.4,
-		textOverflow: 'ellipsis',
-		whiteSpace: 'nowrap',
-	},
 })
 
 type SearchResultItemProps = {
@@ -65,17 +42,7 @@ type SearchResultItemProps = {
 }
 
 export function SearchResultItem({ result }: SearchResultItemProps) {
-	const content = (
-		<>
-			<span {...stylex.props(styles.path)}>{result.pathText}</span>
-			<span {...stylex.props(styles.title)}>{result.title}</span>
-			{result.secondaryText ? (
-				<span {...stylex.props(styles.secondary)}>
-					{result.secondaryText}
-				</span>
-			) : null}
-		</>
-	)
+	const content = <SearchResultContent result={result} />
 
 	return (
 		<li {...stylex.props(styles.item)}>

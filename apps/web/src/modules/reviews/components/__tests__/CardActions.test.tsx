@@ -57,6 +57,10 @@ vi.mock('~/modules/collections/api/collectionQueries', () => ({
 			queryKey: COLLECTION_LIST_KEY,
 			queryFn: () => collections,
 		}),
+		search: (query: string) => ({
+			queryKey: ['convex', 'collections', 'search', query],
+			queryFn: () => [],
+		}),
 	},
 }))
 

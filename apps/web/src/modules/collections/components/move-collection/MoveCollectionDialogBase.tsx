@@ -1,7 +1,5 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
-import { useQuery } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
 
 import {
 	Button,
@@ -11,35 +9,13 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '~/components/ui'
-import { collectionQueries } from '~/modules/collections/api/collectionQueries'
-import { treeifyCollections } from '~/modules/collections/utils/treeifyCollections'
-import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { scrollFade } from '~/styles/scrollFade'
-import { radii, spacing } from '~/styles/tokens.stylex'
 
-import { MoveCollectionTree } from './MoveCollectionTree'
+import { MoveDestinationPicker } from './MoveDestinationPicker'
+import { useMoveDestination } from './useMoveDestination'
 
 const styles = stylex.create({
 	header: {
 		flexDirection: 'column',
-	},
-	// The border sits on a wrapper so the scroll fade dissolves the tree rows
-	// without fading the border.
-	collectionTreeFrame: {
-		borderColor: colorsSemantic.borderSubtle,
-		borderRadius: radii.lg,
-		borderStyle: 'solid',
-		borderWidth: '1px',
-	},
-	collectionTreeContainer: {
-		padding: spacing.md,
-		maxBlockSize: '24rem',
-		overflowY: 'auto',
-	},
-	status: {
-		margin: 0,
-		padding: spacing.sm,
-		color: colorsSemantic.textSecondary,
 	},
 })
 
@@ -74,19 +50,11 @@ export function MoveCollectionDialogBase(props: MoveCollectionDialogBaseProps) {
 		onOpenChange,
 		title,
 	} = props
-	const [selectedDestination, setSelectedDestination] =
-		useState<Id<'collections'> | null>(initialDestination)
-
-	const {
-		data: collections,
-		isError: collectionsHaveError,
-		isPending: collectionsArePending,
-	} = useQuery(collectionQueries.list())
-
-	const collectionTree = useMemo(
-		() => treeifyCollections(collections ?? []).roots,
-		[collections],
-	)
+	const destination = useMoveDestination({
+		excludeCollectionId,
+		initialDestination,
+	})
+	const { selectedDestination } = destination
 	const canMove = selectedDestination !== initialDestination
 
 	const handleOpenChange = (open: boolean) => {
@@ -107,37 +75,10 @@ export function MoveCollectionDialogBase(props: MoveCollectionDialogBaseProps) {
 					<DialogTitle>{title}</DialogTitle>
 				</DialogHeader>
 
-				<div {...stylex.props(styles.collectionTreeFrame)}>
-					<nav
-						aria-label='Destination collection'
-						{...stylex.props(
-							styles.collectionTreeContainer,
-							scrollFade.y,
-						)}
-					>
-						{collectionsArePending ? (
-							<p {...stylex.props(styles.status)}>
-								Loading collections…
-							</p>
-						) : collectionsHaveError ? (
-							<p {...stylex.props(styles.status)}>
-								Could not load collections.
-							</p>
-						) : collectionTree.length === 0 ? (
-							<p {...stylex.props(styles.status)}>
-								No collections available.
-							</p>
-						) : (
-							<MoveCollectionTree
-								allowRoot={props.allowRoot ?? false}
-								excludeCollectionId={excludeCollectionId}
-								onSelect={setSelectedDestination}
-								selectedDestination={selectedDestination}
-								collections={collectionTree}
-							/>
-						)}
-					</nav>
-				</div>
+				<MoveDestinationPicker
+					allowRoot={props.allowRoot ?? false}
+					destination={destination}
+				/>
 
 				<DialogFooter>
 					<Button

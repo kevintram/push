@@ -36,6 +36,10 @@ vi.mock('~/modules/collections/api/collectionQueries', () => ({
 			queryKey: ['convex', 'collections', 'list'],
 			queryFn: () => collections,
 		}),
+		search: (query: string) => ({
+			queryKey: ['convex', 'collections', 'search', query],
+			queryFn: () => [],
+		}),
 	},
 }))
 
@@ -51,11 +55,10 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 		await importOriginal<typeof import('@tanstack/react-query')>()
 	return {
 		...actual,
-		useQuery: () => ({
-			data: [...collections],
-			isError: false,
-			isPending: false,
-		}),
+		useQuery: (options: { queryKey: Array<string> }) =>
+			options.queryKey.includes('list')
+				? { data: [...collections], isError: false, isPending: false }
+				: { data: undefined, isError: false, isPending: true },
 	}
 })
 

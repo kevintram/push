@@ -23,170 +23,89 @@ function collection(
 	}
 }
 
+type TreeProps = React.ComponentProps<typeof MoveCollectionTree>
+
+function renderTree(overrides: Partial<TreeProps> = {}) {
+	const props = {
+		collections: [collection('A', [collection('B')]), collection('C')],
+		onCollapseAll: vi.fn(),
+		onCollectionOpenChange: vi.fn(),
+		onSelect: vi.fn(),
+		openCollectionIds: new Set<Id<'collections'>>(),
+		selectedDestination: null,
+		...overrides,
+	} satisfies TreeProps
+	render(<MoveCollectionTree {...props} />)
+	return props
+}
+
 describe('MoveCollectionTree', () => {
-	it('renders collections as a selectable tree', async () => {
-		const user = userEvent.setup()
+	it('renders collections as a selectable tree', () => {
+		renderTree({ openCollectionIds: new Set(['A' as Id<'collections'>]) })
 
-		render(
-			<MoveCollectionTree
-				onSelect={vi.fn()}
-				selectedDestination={null}
-				collections={[
-					collection('A', [collection('B')]),
-					collection('C'),
-				]}
-			/>,
-		)
-
-		expect(screen.getByRole('button', { name: 'A' })).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: 'C' })).toBeInTheDocument()
-
-		await user.click(screen.getByRole('button', { name: 'Toggle A' }))
-
-		expect(screen.getByRole('button', { name: 'B' })).toBeInTheDocument()
+		for (const name of ['A', 'B', 'C']) {
+			expect(screen.getByRole('button', { name })).toBeInTheDocument()
+		}
 	})
 
-	it('renders a selectable root when allowRoot is true', () => {
-		render(
-			<MoveCollectionTree
-				allowRoot
-				onSelect={vi.fn()}
-				selectedDestination={null}
-				collections={[collection('A')]}
-			/>,
-		)
+	it('reports branch toggles to its owner', async () => {
+		const { onCollectionOpenChange } = renderTree()
 
-		expect(
-			screen.getByRole('button', { name: 'Collections' }),
-		).toBeInTheDocument()
+		await userEvent
+			.setup()
+			.click(screen.getByRole('button', { name: 'Toggle A' }))
+
+		expect(onCollectionOpenChange).toHaveBeenCalledWith('A', true)
 	})
 
-	it('does not render the root by default', () => {
-		render(
-			<MoveCollectionTree
-				onSelect={vi.fn()}
-				selectedDestination={null}
-				collections={[collection('A')]}
-			/>,
-		)
+	it('labels the tree without offering the top level by default', () => {
+		renderTree()
 
+		expect(screen.getByText('Collections')).toBeInTheDocument()
 		expect(
 			screen.queryByRole('button', { name: 'Collections' }),
 		).not.toBeInTheDocument()
 	})
 
-	it('calls onSelect with null when the root is clicked', async () => {
-		const onSelect = vi.fn()
+	it('offers the top level when allowRoot is true', async () => {
+		const { onSelect } = renderTree({
+			allowRoot: true,
+			selectedDestination: 'A' as Id<'collections'>,
+		})
 
-		render(
-			<MoveCollectionTree
-				allowRoot
-				onSelect={onSelect}
-				selectedDestination={'A' as Id<'collections'>}
-				collections={[collection('A')]}
-			/>,
-		)
+		const root = screen.getByRole('button', { name: 'Collections' })
+		expect(root).toHaveAttribute('aria-pressed', 'false')
 
-		await userEvent
-			.setup()
-			.click(screen.getByRole('button', { name: 'Collections' }))
+		await userEvent.setup().click(root)
 
 		expect(onSelect).toHaveBeenCalledWith(null)
 	})
 
-	it('marks the root as selected when destination is null', () => {
-		render(
-			<MoveCollectionTree
-				allowRoot
-				onSelect={vi.fn()}
-				selectedDestination={null}
-				collections={[collection('A')]}
-			/>,
-		)
+	it('marks the top level as selected when destination is null', () => {
+		renderTree({ allowRoot: true, selectedDestination: null })
 
 		expect(
 			screen.getByRole('button', { name: 'Collections' }),
 		).toHaveAttribute('aria-pressed', 'true')
 	})
 
-	it('excludes the specified collection and its entire subtree', async () => {
-		const user = userEvent.setup()
+	it('disables Collapse all while every branch is closed', () => {
+		renderTree()
 
-		render(
-			<MoveCollectionTree
-				excludeCollectionId={'B' as Id<'collections'>}
-				onSelect={vi.fn()}
-				selectedDestination={null}
-				collections={[
-					collection('A', [
-						collection('B', [collection('B-child')]),
-						collection('C'),
-					]),
-				]}
-			/>,
-		)
-
-		expect(screen.getByRole('button', { name: 'A' })).toBeInTheDocument()
-
-		await user.click(screen.getByRole('button', { name: 'Toggle A' }))
-
-		expect(screen.getByRole('button', { name: 'C' })).toBeInTheDocument()
 		expect(
-			screen.queryByRole('button', { name: 'B' }),
-		).not.toBeInTheDocument()
-		expect(
-			screen.queryByRole('button', { name: 'B-child' }),
-		).not.toBeInTheDocument()
+			screen.getByRole('button', { name: 'Collapse all' }),
+		).toBeDisabled()
 	})
 
-	it('excludes a root-level collection and its subtree', () => {
-		render(
-			<MoveCollectionTree
-				excludeCollectionId={'A' as Id<'collections'>}
-				onSelect={vi.fn()}
-				selectedDestination={null}
-				collections={[
-					collection('A', [collection('A-child')]),
-					collection('B'),
-				]}
-			/>,
-		)
+	it('collapses all open branches', async () => {
+		const { onCollapseAll } = renderTree({
+			openCollectionIds: new Set(['A' as Id<'collections'>]),
+		})
 
-		expect(screen.getByRole('button', { name: 'B' })).toBeInTheDocument()
-		expect(
-			screen.queryByRole('button', { name: 'A' }),
-		).not.toBeInTheDocument()
-		expect(
-			screen.queryByRole('button', { name: 'A-child' }),
-		).not.toBeInTheDocument()
-	})
+		await userEvent
+			.setup()
+			.click(screen.getByRole('button', { name: 'Collapse all' }))
 
-	it('leaves unrelated branches available when excluding a subtree', async () => {
-		const user = userEvent.setup()
-
-		render(
-			<MoveCollectionTree
-				excludeCollectionId={'B' as Id<'collections'>}
-				onSelect={vi.fn()}
-				selectedDestination={null}
-				collections={[
-					collection('A', [collection('B'), collection('C')]),
-					collection('D', [collection('E')]),
-				]}
-			/>,
-		)
-
-		for (const name of ['A', 'D']) {
-			expect(screen.getByRole('button', { name })).toBeInTheDocument()
-		}
-
-		await user.click(screen.getByRole('button', { name: 'Toggle A' }))
-		await user.click(screen.getByRole('button', { name: 'Toggle D' }))
-
-		expect(screen.getByRole('button', { name: 'C' })).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: 'E' })).toBeInTheDocument()
-		expect(
-			screen.queryByRole('button', { name: 'B' }),
-		).not.toBeInTheDocument()
+		expect(onCollapseAll).toHaveBeenCalled()
 	})
 })

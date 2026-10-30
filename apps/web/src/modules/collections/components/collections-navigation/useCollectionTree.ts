@@ -1,11 +1,15 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import { readStoredStringArray, writeStoredValue } from '~/utils/storage'
 
 import { collectionQueries } from '../../api/collectionQueries'
+import {
+	isHiddenByClosedAncestor,
+	useOpenCollectionIds,
+} from '../../hooks/useOpenCollectionIds'
 import type { CollectionWithChildren } from '../../types/collection.types'
 import { treeifyCollections } from '../../utils/treeifyCollections'
 import type { CollectionOpenChangeHandler } from './CollectionTreeItem'
@@ -66,9 +70,12 @@ export function useCollectionTree(): CollectionTree {
 
 	// May name collections missing from the tree, such as ones deleted here or
 	// on another device. `openCollectionIds` leaves those out.
-	const [unfilteredOpenIds, setOpenCollectionIds] = useState<
-		ReadonlySet<CollectionId>
-	>(readStoredOpenCollectionIds)
+	const {
+		openCollectionIds: unfilteredOpenIds,
+		setCollectionOpen,
+		openCollections,
+		collapseAll,
+	} = useOpenCollectionIds(readStoredOpenCollectionIds)
 
 	// Unfiltered until the list loads: the tree is empty until then, and
 	// filtering would discard every saved branch.
@@ -89,37 +96,6 @@ export function useCollectionTree(): CollectionTree {
 		if (serializedOpenIds === null) return
 		writeStoredValue(OPEN_COLLECTIONS_STORAGE_KEY, serializedOpenIds)
 	}, [serializedOpenIds])
-
-	const setCollectionOpen = useCallback(
-		(collectionId: CollectionId, open: boolean) => {
-			setOpenCollectionIds(previousIds => {
-				if (previousIds.has(collectionId) === open) return previousIds
-				const nextIds = new Set(previousIds)
-				if (open) nextIds.add(collectionId)
-				else nextIds.delete(collectionId)
-				return nextIds
-			})
-		},
-		[],
-	)
-
-	const openCollections = useCallback(
-		(collectionIds: ReadonlyArray<CollectionId>) => {
-			setOpenCollectionIds(previousIds => {
-				if (collectionIds.every(id => previousIds.has(id))) {
-					return previousIds
-				}
-				return new Set([...previousIds, ...collectionIds])
-			})
-		},
-		[],
-	)
-
-	const collapseAll = useCallback(() => {
-		setOpenCollectionIds(previousIds =>
-			previousIds.size === 0 ? previousIds : new Set(),
-		)
-	}, [])
 
 	// Key the effect on the *identity* of the selection, not on array references.
 	// `path` gets a fresh reference on every refetch; a string key does not, so a
@@ -145,13 +121,11 @@ export function useCollectionTree(): CollectionTree {
 
 	useEffect(() => revealSelection(), [revealSelection])
 
-	// An ancestor missing from the list is not rendered, so it cannot hide the
-	// selection.
-	const hiddenSelection = selected?.path.some(
-		id => tree.nodesById.has(id) && !openCollectionIds.has(id),
-	)
-		? selected
-		: undefined
+	const hiddenSelection =
+		selected &&
+		isHiddenByClosedAncestor(selected, tree.nodesById, openCollectionIds)
+			? selected
+			: undefined
 
 	return {
 		rootCollections: tree.roots,
