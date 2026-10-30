@@ -60,6 +60,9 @@ function renderReview(value: ReviewModel) {
 	)
 }
 
+// Happy DOM evaluates no container queries, so the date, strength, and notes
+// marker render twice: in the details line for the stacked layout (first),
+// and in their columns for the table (second). CSS shows one.
 describe('Review', () => {
 	it('opens the review from its description', () => {
 		renderReview(review())
@@ -69,15 +72,20 @@ describe('Review', () => {
 				name: 'Review cellular respiration.',
 			}),
 		).toBeInTheDocument()
-		expect(screen.getByText('12d')).toBeInTheDocument()
+		expect(screen.getAllByText('12d')).toHaveLength(2)
 		expect(screen.queryByText('No description')).not.toBeInTheDocument()
 	})
 
 	// The date and strength sit above the row's trigger for their tooltips.
-	it.each(['Oct 13', '12d'])('opens the review from %s', async text => {
+	it.each([
+		['Oct 13', 'the stacked layout', 0],
+		['Oct 13', 'the table', 1],
+		['12d', 'the stacked layout', 0],
+		['12d', 'the table', 1],
+	])('opens the review from %s in %s', async (text, _, index) => {
 		renderReview(review())
 
-		await userEvent.click(screen.getByText(text))
+		await userEvent.click(screen.getAllByText(text)[index]!)
 
 		expect(screen.getByRole('dialog')).toBeInTheDocument()
 	})
@@ -85,10 +93,9 @@ describe('Review', () => {
 	it('shows the date as read-only text', () => {
 		renderReview(review())
 
-		expect(screen.getByText('Oct 13')).toHaveAttribute(
-			'datetime',
-			'2026-10-13',
-		)
+		for (const date of screen.getAllByText('Oct 13')) {
+			expect(date).toHaveAttribute('datetime', '2026-10-13')
+		}
 		expect(
 			screen.queryByRole('button', { name: /review date/ }),
 		).not.toBeInTheDocument()
@@ -97,9 +104,9 @@ describe('Review', () => {
 	it('gives screen readers the full date beside a short one', () => {
 		renderReview(review())
 
-		expect(screen.getByText('Oct 13').parentElement).toHaveTextContent(
-			'Oct 13, Oct 13, 2026',
-		)
+		for (const date of screen.getAllByText('Oct 13')) {
+			expect(date.parentElement).toHaveTextContent('Oct 13, Oct 13, 2026')
+		}
 	})
 
 	// Happy DOM evaluates no container queries, so this checks the table's
@@ -129,9 +136,6 @@ describe('Review', () => {
 		expect(screen.getByText('—', { exact: false })).toBeInTheDocument()
 	})
 
-	// Happy DOM evaluates no container queries, so both markers render: in the
-	// notes column for the table, and before the date for the stacked layout.
-	// CSS shows one.
 	it.each([
 		['with a description', 'Review cellular respiration.'],
 		['without a description', ''],
@@ -144,7 +148,7 @@ describe('Review', () => {
 	it('shows the full date on hover', async () => {
 		renderReview(review())
 
-		await userEvent.hover(screen.getByText('Oct 13'))
+		await userEvent.hover(screen.getAllByText('Oct 13')[0]!)
 
 		expect(
 			await screen.findByText('Completed Oct 13, 2026'),

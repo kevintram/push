@@ -1,7 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
 
-// StyleX's dev server only resolves shared constants through the `~` alias.
-import { reviewTable } from '~/modules/reviews/components/reviewTable.stylex'
 import { a11y } from '~/styles/a11y'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
@@ -16,17 +14,30 @@ const wide = '@container (min-width: 560px)'
 const styles = stylex.create({
 	// Rows lay themselves out against this width, so the same table reads as a
 	// table on the card page and stacks in the narrow card sidebar. Below the
-	// minimum, a stacked row's date line no longer fits.
+	// minimum, a stacked row's details line no longer fits.
 	container: {
 		containerType: 'inline-size',
 		minInlineSize: '200px',
 	},
+	// Stacked rows sit apart. Table rows take no margins, so the table spaces
+	// them, and pulls in its edges to drop the spacing above the first row and
+	// below the last. Wide, every column but the description fits its content,
+	// and the description takes the rest.
 	table: {
-		display: 'block',
+		marginBlock: {
+			default: `calc(${spacing.md} * -1)`,
+			[wide]: 0,
+		},
+		borderSpacing: {
+			default: `0 ${spacing.md}`,
+			[wide]: 0,
+		},
+		inlineSize: '100%',
 	},
 	// Stacked, the headers are visually hidden rather than removed, so screen
 	// readers still name each cell. Mirrors `a11y.visuallyHidden`, which can't
-	// sit behind a container query.
+	// sit behind a container query. Out of flow, the header also takes none of
+	// the table's row spacing.
 	head: {
 		blockSize: {
 			default: '1px',
@@ -40,7 +51,6 @@ const styles = stylex.create({
 			default: 'inset(50%)',
 			[wide]: 'none',
 		},
-		display: 'block',
 		inlineSize: {
 			default: '1px',
 			[wide]: 'auto',
@@ -49,10 +59,7 @@ const styles = stylex.create({
 			default: 'absolute',
 			[wide]: 'static',
 		},
-		whiteSpace: {
-			default: 'nowrap',
-			[wide]: 'normal',
-		},
+		whiteSpace: 'nowrap',
 		overflowX: {
 			default: 'hidden',
 			[wide]: 'visible',
@@ -62,66 +69,36 @@ const styles = stylex.create({
 			[wide]: 'visible',
 		},
 	},
-
-	body: {
-		display: 'flex',
-		flexDirection: 'column',
-		rowGap: {
-			default: spacing.md,
-			[wide]: spacing.none,
-		},
-	},
-	headerRow: {
-		gridTemplateAreas: reviewTable.areas,
-		alignItems: 'center',
+	headerCell: {
+		padding: 0,
+		// Acts as a minimum on a table cell.
 		blockSize: '32px',
-		columnGap: spacing.lg,
-		display: 'grid',
-		gridTemplateColumns: reviewTable.columns,
 
 		color: colorsSemantic.textSecondary,
 		fontSize: fontSizes.xs,
 		fontWeight: fontWeights.medium,
-	},
-	headerCell: {
-		padding: 0,
 		textAlign: 'start',
 	},
-	rating: {
-		gridColumnEnd: 'rating',
-		gridColumnStart: 'rating',
+	// Matches the gap `ReviewRow` pads before every cell after the rating's.
+	gap: {
+		paddingInlineStart: spacing.lg,
 	},
+	// See `ReviewRow`'s description cell.
 	description: {
-		gridColumnEnd: 'description',
-		gridColumnStart: 'description',
-	},
-	notes: {
-		gridColumnEnd: 'notes',
-		gridColumnStart: 'notes',
-	},
-	date: {
-		gridColumnEnd: 'date',
-		gridColumnStart: 'date',
-	},
-	strength: {
-		gridColumnEnd: 'strength',
-		gridColumnStart: 'strength',
-	},
-	actions: {
-		gridColumnEnd: 'actions',
-		gridColumnStart: 'actions',
+		inlineSize: '100%',
+		maxInlineSize: 0,
 	},
 })
 
 // The icon columns need no visible header, only a name for screen readers.
 const COLUMNS = [
-	{ area: 'rating', isIconColumn: true, label: 'Rating' },
-	{ area: 'description', isIconColumn: false, label: 'Description' },
-	{ area: 'notes', isIconColumn: true, label: 'Notes' },
-	{ area: 'date', isIconColumn: false, label: 'Date' },
-	{ area: 'strength', isIconColumn: false, label: 'Strength' },
-	{ area: 'actions', isIconColumn: true, label: 'Actions' },
-] as const
+	{ isIconColumn: true, label: 'Rating' },
+	{ isIconColumn: false, label: 'Description', xstyle: styles.description },
+	{ isIconColumn: true, label: 'Notes' },
+	{ isIconColumn: false, label: 'Date' },
+	{ isIconColumn: false, label: 'Strength' },
+	{ isIconColumn: true, label: 'Actions' },
+]
 
 type ReviewListProps = {
 	reviews: Array<ReviewModel>
@@ -130,17 +107,16 @@ type ReviewListProps = {
 export function ReviewList({ reviews }: ReviewListProps) {
 	return (
 		<div {...stylex.props(styles.container)}>
-			{/* The table's block and grid layout can drop its native roles, so name them. */}
-			<table role='table' {...stylex.props(styles.table)}>
-				<thead role='rowgroup' {...stylex.props(styles.head)}>
-					<tr role='row' {...stylex.props(styles.headerRow)}>
-						{COLUMNS.map(column => (
+			<table {...stylex.props(styles.table)}>
+				<thead {...stylex.props(styles.head)}>
+					<tr>
+						{COLUMNS.map((column, index) => (
 							<th
 								key={column.label}
-								role='columnheader'
 								{...stylex.props(
 									styles.headerCell,
-									styles[column.area],
+									index > 0 && styles.gap,
+									column.xstyle,
 								)}
 							>
 								{column.isIconColumn ? (
@@ -156,7 +132,7 @@ export function ReviewList({ reviews }: ReviewListProps) {
 						))}
 					</tr>
 				</thead>
-				<tbody role='rowgroup' {...stylex.props(styles.body)}>
+				<tbody>
 					{reviews.map(review => (
 						<Review key={review._id} review={review} />
 					))}

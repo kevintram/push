@@ -1,12 +1,8 @@
-import type { StyleXStyles } from '@stylexjs/stylex'
 import * as stylex from '@stylexjs/stylex'
 
 import { DialogTrigger } from '~/components/ui'
-// StyleX's dev server only resolves shared constants through the `~` alias.
-import { reviewTable } from '~/modules/reviews/components/reviewTable.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { textFade } from '~/styles/textFade'
-import { textFadeVars } from '~/styles/textFade.stylex'
 import { fontSizes, layout, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
@@ -20,80 +16,30 @@ import { ReviewStrength } from './ReviewStrength'
 // A local string, not a shared constant: StyleX can leave an imported
 // at-rule key unresolved in dev, emitting invalid CSS.
 const wide = '@container (min-width: 560px)'
-const stacked = '@container (width < 560px)'
-// Stacked rows run out of room for the date and strength on one line, so the
-// strength change drops first, then the strength itself.
+// Stacked rows run out of room for the whole details line, so the strength
+// change drops first, then the strength itself.
 const noStrengthChange = '@container (width < 300px)'
 const noStrength = '@container (width < 280px)'
 
-// `buttonSizes.micro`, inlined because constants must be static.
-const ACTIONS_CLEARANCE = '1.625rem'
-
 const styles = stylex.create({
-	// A table row laid out as a grid. Stacked by default, with the description
-	// above the notes, date, and strength. Once the list is wide enough the
-	// cells line up as table columns.
+	// A table row. Once the list is wide enough, the notes, date, and strength
+	// get their own columns. Stacked, they move to a details line under the
+	// description, so the row keeps only the rating, description, and actions
+	// columns.
 	row: {
-		gridTemplateAreas: {
-			default: `
-				'rating description description description description'
-				'. date strength . .'
-			`,
-			[wide]: reviewTable.areas,
-		},
-		alignItems: 'center',
-		columnGap: {
-			default: spacing.sm,
-			[wide]: spacing.lg,
-		},
-		display: 'grid',
-		gridTemplateColumns: {
-			default: 'auto auto auto minmax(0, 1fr) auto',
-			[wide]: reviewTable.columns,
-		},
-		minBlockSize: {
+		// Acts as a minimum on a table row.
+		blockSize: {
 			default: null,
 			[wide]: '44px',
 		},
+		// Contains the trigger's stretched highlight.
 		position: 'relative',
 
-		borderRadius: radii.lg,
-		marginInline: `calc(${layout.rowBleed} * -1)`,
-		paddingBlock: spacing.xs,
-		paddingInline: layout.rowBleed,
-		backgroundColor: {
-			default: colorsSemantic.surfaceTransparent,
-			':hover': colorsSemantic.surfaceTransparentHover,
-		},
 		cursor: 'pointer',
 	},
-	// Stacked, a row without a description fits on one line. The empty
-	// description cell stretches to push the actions to the end.
-	withoutDescription: {
-		gridTemplateAreas: {
-			default: `'rating date strength description .'`,
-			[wide]: reviewTable.areas,
-		},
-	},
-	// The second line's gap is a margin rather than a row gap, so the line
-	// takes no space when nothing on it shows.
-	secondLine: {
-		marginBlockStart: {
-			default: spacing.xs,
-			[wide]: spacing.none,
-		},
-	},
-
-	cell: {
-		padding: 0,
-	},
-	// Keep the date and strength whole; squeezing them shrinks their icons.
-	whole: {
-		minInlineSize: 'max-content',
-	},
-	// Above the row's open-review trigger, so the control stays clickable or
-	// its tooltip can show. Cells raised only for a tooltip forward clicks to
-	// `onOpen`.
+	// Above the trigger's stretched highlight, so the control stays clickable
+	// or its tooltip can show. Cells raised only for a tooltip forward clicks
+	// to `onOpen`.
 	raised: {
 		position: 'relative',
 		zIndex: 1,
@@ -104,41 +50,45 @@ const styles = stylex.create({
 	stackedHidden: {
 		display: {
 			default: 'none',
-			[wide]: 'block',
-		},
-	},
-	tableHidden: {
-		display: {
-			default: null,
-			[wide]: 'none',
+			[wide]: 'inline',
 		},
 	},
 
-	rating: {
-		gridColumnEnd: 'rating',
-		gridColumnStart: 'rating',
-		gridRowEnd: 'rating',
-		gridRowStart: 'rating',
+	cell: {
+		paddingBlock: spacing.xs,
+		paddingInline: 0,
 	},
-
+	// Every cell after the rating's.
+	gap: {
+		paddingInlineStart: {
+			default: spacing.sm,
+			[wide]: spacing.lg,
+		},
+	},
+	// Stacked, the rating and actions sit on the description's line.
+	edge: {
+		verticalAlign: {
+			default: 'top',
+			[wide]: 'middle',
+		},
+	},
+	// Takes the room the other columns, sized to their content, leave. The
+	// maximum stops a description, which never wraps, from widening the table
+	// past its container.
 	description: {
-		gridColumnEnd: 'description',
-		gridColumnStart: 'description',
-		gridRowEnd: 'description',
-		gridRowStart: 'description',
+		inlineSize: '100%',
+		maxInlineSize: 0,
+	},
+	// Opens the review. Fills the cell so the fade only reaches text long
+	// enough to run into it.
+	trigger: {
+		padding: 0,
 
 		alignItems: 'center',
 		display: 'flex',
-		minInlineSize: 0,
-	},
-	// Fills the cell so the fade only reaches text long enough to run into it.
-	descriptionTrigger: {
-		padding: 0,
+		inlineSize: '100%',
 
-		display: 'flex',
-		flexGrow: 1,
-		minInlineSize: 0,
-
+		fontFamily: 'inherit',
 		fontSize: fontSizes.sm,
 		textAlign: 'start',
 
@@ -147,85 +97,55 @@ const styles = stylex.create({
 		cursor: 'pointer',
 
 		borderWidth: 0,
+		outlineStyle: 'none',
 
-		// stretched link trick
+		// Stretched over the row, so the whole row is the trigger, and drawn as
+		// its highlight and focus ring. It bleeds past the text like a card row.
 		'::after': {
-			inset: 0,
+			insetBlock: 0,
+			insetInline: `calc(${layout.rowBleed} * -1)`,
 			content: '""',
 			position: 'absolute',
-		},
-	},
-	// Stacked, the description runs under the actions, so while they show the
-	// fade ends short of them, leaving a clear spot for the button.
-	descriptionText: {
-		// Null defaults leave the inherited inset in place. StyleX emits a
-		// var's default outside its layers, where it would beat every condition.
-		[textFadeVars.inset]: {
-			default: null,
-			[stacked]: {
-				default: null,
-				'@media (hover: hover)': {
-					default: null,
-					// Matches the trigger in `ReviewRowActions`.
-					[stylex.when.ancestor(':has(:focus-visible)')]:
-						ACTIONS_CLEARANCE,
-					[stylex.when.ancestor(':has([data-popup-open])')]:
-						ACTIONS_CLEARANCE,
-					[stylex.when.ancestor(':hover')]: ACTIONS_CLEARANCE,
-				},
-				// Touch shows the actions all the time.
-				'@media (hover: none)': ACTIONS_CLEARANCE,
+
+			borderRadius: radii.lg,
+			backgroundColor: {
+				default: colorsSemantic.surfaceTransparent,
+				[stylex.when.ancestor(':hover')]:
+					colorsSemantic.surfaceTransparentHover,
 			},
-		},
-	},
-	// Without a description there is nothing to label the row, so the trigger
-	// covers it directly and takes its name from aria-label.
-	overlayTrigger: {
-		inset: 0,
-		position: 'absolute',
 
-		backgroundColor: colorsSemantic.surfaceTransparent,
-		cursor: 'pointer',
-
-		borderRadius: radii.lg,
-		borderWidth: 0,
-	},
-
-	// Only the table has a notes column. Stacked, the marker leads the date.
-	notes: {
-		gridColumnEnd: 'notes',
-		gridColumnStart: 'notes',
-		gridRowEnd: 'notes',
-		gridRowStart: 'notes',
-
-		// Flex, not block, so the icon centers instead of sitting on a baseline.
-		display: {
-			default: 'none',
-			[wide]: 'flex',
+			outlineColor: {
+				default: colorsSemantic.surfaceTransparent,
+				':focus-visible': colorsSemantic.borderFocus,
+			},
+			outlineOffset: '-2px',
+			outlineStyle: 'solid',
+			outlineWidth: '2px',
 		},
 	},
 
-	date: {
-		gridColumnEnd: 'date',
-		gridColumnStart: 'date',
-		gridRowEnd: 'date',
-		gridRowStart: 'date',
-
+	// The stacked row's notes marker, date, and strength, under the
+	// description. It runs out of the description cell and under the actions.
+	details: {
 		alignItems: 'center',
 		columnGap: spacing.sm,
-		display: 'flex',
+		display: {
+			default: 'flex',
+			[wide]: 'none',
+		},
+		// Sized to its items, so they overflow the cell rather than shrink.
+		inlineSize: 'max-content',
 
 		fontSize: fontSizes.sm,
 	},
-
-	strength: {
-		gridColumnEnd: 'strength',
-		gridColumnStart: 'strength',
-		gridRowEnd: 'strength',
-		gridRowStart: 'strength',
-
+	// Sets the details line off from the description above it. Without a
+	// description, the details line is the row's only line and needs no gap.
+	secondLine: {
+		marginBlockStart: spacing.xs,
+	},
+	detailsStrength: {
 		display: {
-			default: null,
+			default: 'contents',
 			[noStrength]: 'none',
 		},
 	},
@@ -235,27 +155,19 @@ const styles = stylex.create({
 			[noStrengthChange]: 'none',
 		},
 	},
+	// A notes, date, or strength column, shown only in the table.
+	column: {
+		display: {
+			default: 'none',
+			[wide]: 'table-cell',
+		},
+		whiteSpace: 'nowrap',
 
-	// Stacked, the actions sit over the end of the first line, on top of the
-	// description.
-	actions: {
-		gridColumnEnd: {
-			default: '-1',
-			[wide]: 'actions',
-		},
-		gridColumnStart: {
-			default: '-2',
-			[wide]: 'actions',
-		},
-		gridRowEnd: {
-			default: '2',
-			[wide]: 'actions',
-		},
-		gridRowStart: {
-			default: '1',
-			[wide]: 'actions',
-		},
-		justifySelf: 'end',
+		fontSize: fontSizes.sm,
+	},
+	// Centers the icon on the line rather than sitting it on the baseline.
+	notesIndicator: {
+		verticalAlign: 'middle',
 	},
 })
 
@@ -268,7 +180,7 @@ type ReviewRowProps = {
 
 /**
  * A review as a table row. Render it inside the review's `Dialog`, which the
- * row's description or overlay opens.
+ * row's trigger opens.
  */
 export function ReviewRow({
 	onDelete,
@@ -283,61 +195,34 @@ export function ReviewRow({
 	const hasNotes = review.notes.trim().length > 0
 	const isCompleted = review.rating !== undefined
 	// A pending review has no strength yet. The table keeps its dash so the
-	// column stays readable, but the stacked layout drops it.
+	// column stays readable, but the details line drops it.
 	const hasStrength = isCompleted && review.stabilityAfter != null
-	// Stacked, the date cell also carries the notes marker.
-	const hasStackedDate = date !== null || hasNotes
 
-	// Rendered twice: in the table's notes column, and leading the stacked
-	// date. Raised above the row's trigger so its tooltip can show.
-	const notesIndicator = (xstyle?: StyleXStyles) =>
-		hasNotes && (
-			<ReviewNotesIndicator
-				notes={review.notes}
-				xstyle={[styles.raised, xstyle]}
-			/>
-		)
+	const metadataCell = [styles.cell, styles.gap, styles.column, styles.raised]
 
-	// The table's grid layout can drop its native roles, so name them.
 	return (
-		<tr
-			role='row'
-			{...stylex.props(
-				styles.row,
-				stylex.defaultMarker(),
-				!hasDescription && styles.withoutDescription,
-			)}
-		>
-			<td
-				role='cell'
-				{...stylex.props(styles.cell, styles.rating, styles.raised)}
-			>
+		<tr {...stylex.props(styles.row, stylex.defaultMarker())}>
+			<td {...stylex.props(styles.cell, styles.edge, styles.raised)}>
 				<RatingPicker
 					onSetRating={onSetRating}
 					rating={review.rating}
 				/>
 			</td>
 
-			<td role='cell' {...stylex.props(styles.cell, styles.description)}>
-				{hasDescription ? (
-					<DialogTrigger {...stylex.props(styles.descriptionTrigger)}>
-						<span
-							{...stylex.props(
-								textFade.line,
-								styles.descriptionText,
-							)}
-						>
+			<td {...stylex.props(styles.cell, styles.gap, styles.description)}>
+				{/* Without a description there is nothing to name the row, so
+				the trigger takes its name from aria-label. */}
+				<DialogTrigger
+					aria-label={hasDescription ? undefined : 'Open review'}
+					{...stylex.props(styles.trigger)}
+				>
+					{hasDescription ? (
+						<span {...stylex.props(textFade.line)}>
 							{description}
 						</span>
-					</DialogTrigger>
-				) : (
-					<>
-						<DialogTrigger
-							aria-label='Open review'
-							{...stylex.props(styles.overlayTrigger)}
-						/>
-						{/* The row's trigger already names it "Open review". The
-						table fills the empty cell with a dash, like the strength. */}
+					) : (
+						// The table fills the empty cell with a dash, like the
+						// strength.
 						<span
 							aria-hidden='true'
 							{...stylex.props(
@@ -347,67 +232,63 @@ export function ReviewRow({
 						>
 							—
 						</span>
-					</>
-				)}
+					)}
+				</DialogTrigger>
+				<div
+					onClick={onOpen}
+					{...stylex.props(
+						styles.details,
+						styles.raised,
+						hasDescription && styles.secondLine,
+					)}
+				>
+					{hasNotes ? (
+						<ReviewNotesIndicator notes={review.notes} />
+					) : null}
+					{date !== null ? (
+						<ReviewDate date={date} isCompleted={isCompleted} />
+					) : null}
+					{hasStrength ? (
+						<span {...stylex.props(styles.detailsStrength)}>
+							<ReviewStrength
+								changeXstyle={styles.strengthChange}
+								review={review}
+								size='micro'
+							/>
+						</span>
+					) : null}
+				</div>
 			</td>
 
-			<td
-				onClick={onOpen}
-				role='cell'
-				{...stylex.props(styles.cell, styles.notes)}
-			>
-				{notesIndicator()}
-			</td>
-
-			<td
-				onClick={onOpen}
-				role='cell'
-				{...stylex.props(
-					styles.cell,
-					styles.whole,
-					styles.date,
-					hasDescription && styles.secondLine,
-					!hasStackedDate && styles.stackedHidden,
-				)}
-			>
-				{notesIndicator(styles.tableHidden)}
-				{date === null ? (
-					// Like a pending strength, a missing date shows a dash only
-					// in the table.
-					<span {...stylex.props(styles.stackedHidden, styles.muted)}>
-						—
-					</span>
-				) : (
-					<ReviewDate
-						date={date}
-						isCompleted={isCompleted}
-						xstyle={styles.raised}
+			<td onClick={onOpen} {...stylex.props(metadataCell)}>
+				{hasNotes ? (
+					<ReviewNotesIndicator
+						notes={review.notes}
+						xstyle={styles.notesIndicator}
 					/>
+				) : null}
+			</td>
+
+			<td onClick={onOpen} {...stylex.props(metadataCell)}>
+				{date === null ? (
+					// Like a pending strength, a missing date shows a dash.
+					<span {...stylex.props(styles.muted)}>—</span>
+				) : (
+					<ReviewDate date={date} isCompleted={isCompleted} />
 				)}
 			</td>
 
+			<td onClick={onOpen} {...stylex.props(metadataCell)}>
+				<ReviewStrength review={review} size='micro' />
+			</td>
+
 			<td
-				onClick={onOpen}
-				role='cell'
 				{...stylex.props(
 					styles.cell,
-					styles.whole,
-					styles.strength,
+					styles.gap,
+					styles.edge,
 					styles.raised,
-					hasDescription && styles.secondLine,
-					!hasStrength && styles.stackedHidden,
 				)}
-			>
-				<ReviewStrength
-					changeXstyle={styles.strengthChange}
-					review={review}
-					size='micro'
-				/>
-			</td>
-
-			<td
-				role='cell'
-				{...stylex.props(styles.cell, styles.actions, styles.raised)}
 			>
 				<ReviewRowActions onDelete={onDelete} />
 			</td>
