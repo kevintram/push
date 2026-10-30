@@ -5,6 +5,7 @@ import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import type {
 	Card,
+	CardBatchPatch,
 	CardCreate,
 	CardMove,
 	CardPatch,
@@ -208,47 +209,57 @@ export async function update(
 }
 
 /**
- * Places `cardId` in `sectionId`'s list, or its collection's unsectioned cards
- * when `sectionId` is null, right after `afterId` or first when it is null.
- * Writes the one card, plus keys for any cards in that list still unranked.
+ * Places `cardIds`, in that order, as a run in `sectionId`'s list, or their
+ * collection's unsectioned cards when `sectionId` is null, right after
+ * `afterId` or first when it is null. Writes each moving card, plus keys for
+ * any cards in that list still unranked.
  */
 export async function move(
 	ctx: MutationCtx,
 	userId: string,
-	cardId: Id<'cards'>,
+	cardIds: ReadonlyArray<Id<'cards'>>,
 	{ sectionId, afterId }: CardMove,
 ): Promise<void> {
-	const card = await requireUserOwns(ctx, userId, cardId)
+	const cards = await Promise.all(
+		cardIds.map(cardId => requireUserOwns(ctx, userId, cardId)),
+	)
+	const collectionId = cards[0]?.collectionId
+	if (collectionId === undefined) return
+	if (cards.some(card => card.collectionId !== collectionId)) {
+		throw new Error('Cards can only move together within one collection')
+	}
 	if (sectionId !== null) {
 		await Sections.requireUserOwnsInCollection(
 			ctx,
 			userId,
 			sectionId,
-			card.collectionId,
+			collectionId,
 		)
 	}
 
 	const line = await queryLine(
 		ctx,
-		card.collectionId,
+		collectionId,
 		sectionId ?? undefined,
 	).collect()
-	const { rank, backfill } = placeInLine(
+	const { ranks, backfill } = placeInLine(
 		// Cards share their collection's owner given well-formed data. The
 		// check keeps a malformed foreign card from serving as an anchor.
 		line.filter(row => row.ownerId === userId),
-		cardId,
+		cardIds,
 		afterId,
 	)
 
 	for (const row of backfill) {
 		await ctx.db.patch('cards', row._id, { rank: row.rank })
 	}
-	await ctx.db.patch('cards', cardId, {
-		// Clearing in Convex means patching an explicit `undefined`.
-		sectionId: sectionId ?? undefined,
-		rank,
-	})
+	for (const row of ranks) {
+		await ctx.db.patch('cards', row._id, {
+			// Clearing in Convex means patching an explicit `undefined`.
+			sectionId: sectionId ?? undefined,
+			rank: row.rank,
+		})
+	}
 }
 
 /**
@@ -277,15 +288,36 @@ export async function backfillForCollection(
 	}
 }
 
+/** Applies the same patch to each card, as `update` would one by one. */
+export async function updateMany(
+	ctx: MutationCtx,
+	userId: string,
+	cardIds: ReadonlyArray<Id<'cards'>>,
+	patch: CardBatchPatch,
+): Promise<void> {
+	for (const cardId of new Set(cardIds)) {
+		await update(ctx, userId, cardId, patch)
+	}
+}
+
 export async function remove(
 	ctx: MutationCtx,
 	userId: string,
-	cardId: Id<'cards'>,
-): Promise<Card> {
-	const card = await requireUserOwns(ctx, userId, cardId)
-	await deleteCard(ctx, cardId)
-	// Returned so callers can navigate back to the card's collection.
-	return card
+	cardIds: ReadonlyArray<Id<'cards'>>,
+): Promise<Array<Card>> {
+	// A card named twice is deleted once.
+	const cards = await Promise.all(
+		[...new Set(cardIds)].map(cardId =>
+			requireUserOwns(ctx, userId, cardId),
+		),
+	)
+	// TODO(3): each card's reviews are deleted in this same mutation, so
+	// deleting many cards with long histories can exceed the write limit.
+	for (const card of cards) {
+		await deleteCard(ctx, card._id)
+	}
+	// Returned so callers can navigate back to a removed card's collection.
+	return cards
 }
 
 /**

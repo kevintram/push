@@ -1,6 +1,11 @@
 import { ConvexError } from 'convex/values'
 
-import { backfillRanks, placeInLine, rankAfter } from '../../shared/ordering'
+import {
+	backfillRanks,
+	placeInLine,
+	placeNewInLine,
+	rankAfter,
+} from '../../shared/ordering'
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import type {
@@ -43,6 +48,22 @@ export async function requireUserOwnsInCollection(
 	return section
 }
 
+/** A key that sorts after every section in `collectionId`. */
+export async function rankAtEnd(
+	ctx: QueryCtx,
+	collectionId: Id<'collections'>,
+): Promise<string> {
+	const last = await ctx.db
+		.query('sections')
+		.withIndex('by_collectionId_rank', q =>
+			q.eq('collectionId', collectionId),
+		)
+		.order('desc')
+		.first()
+
+	return rankAfter(last?.rank)
+}
+
 /** Lists a collection's sections in display order. */
 export async function listByCollection(
 	ctx: QueryCtx,
@@ -63,27 +84,33 @@ export async function listByCollection(
 	return sections.filter(section => section.ownerId === userId)
 }
 
+/**
+ * Creates a section right after `afterId` among its collection's sections, or
+ * first when `afterId` is null. Also writes keys for any sections still
+ * unranked.
+ */
 export async function create(
 	ctx: MutationCtx,
 	userId: string,
-	fields: SectionCreate,
+	{ afterId, collectionId, title }: SectionCreate,
 ): Promise<Id<'sections'>> {
-	await Collections.requireUserOwns(ctx, userId, fields.collectionId)
+	const sections = await listByCollection(ctx, userId, collectionId)
+	// A client with a stale list can name a section deleted since. The new
+	// section still gets created, at the bottom.
+	const anchorId =
+		afterId !== null && (await ctx.db.get('sections', afterId)) === null
+			? (sections.at(-1)?._id ?? null)
+			: afterId
+	const { rank, backfill } = placeNewInLine(sections, anchorId)
 
-	// New sections go to the bottom.
-	const last = await ctx.db
-		.query('sections')
-		.withIndex('by_collectionId_rank', q =>
-			q.eq('collectionId', fields.collectionId),
-		)
-		.order('desc')
-		.first()
-
+	for (const row of backfill) {
+		await ctx.db.patch('sections', row._id, { rank: row.rank })
+	}
 	return await ctx.db.insert('sections', {
-		collectionId: fields.collectionId,
+		collectionId,
 		ownerId: userId,
-		title: fields.title ?? '',
-		rank: rankAfter(last?.rank),
+		title: title ?? '',
+		rank,
 	})
 }
 
@@ -98,24 +125,31 @@ export async function update(
 }
 
 /**
- * Places `sectionId` right after `afterId` among its collection's sections, or
- * first when `afterId` is null. Writes the one section, plus keys for any
- * sections still unranked.
+ * Places `sectionIds`, in that order, as a run among their collection's
+ * sections, right after `afterId` or first when it is null. Writes each moving
+ * section, plus keys for any sections still unranked.
  */
 export async function move(
 	ctx: MutationCtx,
 	userId: string,
-	sectionId: Id<'sections'>,
+	sectionIds: ReadonlyArray<Id<'sections'>>,
 	afterId: Id<'sections'> | null,
 ): Promise<void> {
-	const section = await requireUserOwns(ctx, userId, sectionId)
-	const sections = await listByCollection(ctx, userId, section.collectionId)
-	const { rank, backfill } = placeInLine(sections, sectionId, afterId)
+	const moving = await Promise.all(
+		sectionIds.map(sectionId => requireUserOwns(ctx, userId, sectionId)),
+	)
+	const collectionId = moving[0]?.collectionId
+	if (collectionId === undefined) return
+	if (moving.some(section => section.collectionId !== collectionId)) {
+		throw new Error('Sections can only move together within one collection')
+	}
 
-	for (const row of backfill) {
+	const sections = await listByCollection(ctx, userId, collectionId)
+	const { ranks, backfill } = placeInLine(sections, sectionIds, afterId)
+
+	for (const row of [...backfill, ...ranks]) {
 		await ctx.db.patch('sections', row._id, { rank: row.rank })
 	}
-	await ctx.db.patch('sections', sectionId, { rank })
 }
 
 /**

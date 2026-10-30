@@ -10,9 +10,6 @@ import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 // A local string, not a shared constant: StyleX can leave an imported
 // at-rule key unresolved in dev, emitting invalid CSS.
 const wide = '@container (min-width: 560px)'
-// Title, due, last reviewed, strength, and actions. The actions column sizes
-// to the widest row, since rows show a toggle per active state.
-const columns = 'minmax(0, 1fr) 112px 112px 80px max-content'
 
 const styles = stylex.create({
 	// Rows lay themselves out against this width, so the same list reads as a
@@ -21,89 +18,63 @@ const styles = stylex.create({
 		containerType: 'inline-size',
 		minInlineSize: '200px',
 	},
-	// Wide, the table owns the columns and every row group and row joins
-	// them through subgrid.
+	// Stacked, rows show only the title and actions columns, with the rest
+	// under the title. Wide, the metadata columns appear. Every column but the
+	// title fits its content, and the title takes the rest.
 	table: {
-		// Stacked, the header cell lays out as a table cell, which would pick up
-		// the default spacing and push the title off the row titles.
 		borderSpacing: 0,
-		columnGap: spacing.lg,
-		display: {
-			default: 'block',
-			[wide]: 'grid',
-		},
-		gridTemplateColumns: {
-			default: null,
-			[wide]: columns,
-		},
-	},
-	group: {
-		display: {
-			default: 'block',
-			[wide]: 'grid',
-		},
-		gridColumnEnd: {
-			default: null,
-			[wide]: '-1',
-		},
-		gridColumnStart: {
-			default: null,
-			[wide]: '1',
-		},
-		gridTemplateColumns: {
-			default: null,
-			[wide]: 'subgrid',
-		},
+		inlineSize: '100%',
 	},
 	headerRow: {
-		alignItems: 'center',
-		display: {
-			default: 'block',
-			[wide]: 'grid',
-		},
-		gridColumnEnd: {
-			default: null,
-			[wide]: '-1',
-		},
-		gridColumnStart: {
-			default: null,
-			[wide]: '1',
-		},
-		gridTemplateColumns: {
-			default: null,
-			[wide]: 'subgrid',
-		},
-		// Contains the visually hidden labels, which are absolutely positioned.
+		// Contains the visually hidden column names, which are absolutely
+		// positioned.
 		// Otherwise they anchor to an ancestor outside the page's scroll area and
 		// stretch that ancestor's scroll height. A title can also stretch over
 		// the row, and isolating the row keeps the highlight it draws behind
 		// the row's text but in front of whatever sits behind the table.
 		isolation: 'isolate',
-		// Stacked, only a title takes up space.
-		minBlockSize: {
+		position: 'relative',
+	},
+	headerCell: {
+		padding: 0,
+		// Acts as a minimum on a table cell. Stacked, only a title takes up
+		// space.
+		blockSize: {
 			default: null,
 			[wide]: '32px',
 		},
-		position: 'relative',
-	},
-	// A visible title gets a little room above the first row.
-	titledHeaderRow: {
-		marginBlockEnd: spacing.xs,
+
+		fontWeight: fontWeights.semibold,
+		textAlign: 'start',
 	},
 	// Rules off a section from the rows above it, with the title sitting just
-	// over the rule rather than centered.
-	underlinedHeaderRow: {
-		alignItems: 'end',
+	// over the rule rather than centered. The title and column labels differ
+	// in size, so they align on their baselines rather than their bottoms. A
+	// table sets baseline-aligned cells at the top of the row, so the row
+	// drops its minimum height to leave no room below them. Table rows don't
+	// draw borders, so each cell draws its part of the rule.
+	underlinedHeaderCell: {
+		blockSize: null,
 		paddingBlockEnd: spacing['2xs'],
+		verticalAlign: 'baseline',
 
 		borderBlockEndColor: colorsSemantic.borderSubtle,
 		borderBlockEndStyle: 'solid',
 		borderBlockEndWidth: '1px',
 	},
-	headerCell: {
-		padding: 0,
-		fontWeight: fontWeights.regular,
-		textAlign: 'start',
+	// See `CardItem`'s title cell.
+	titleCell: {
+		inlineSize: '100%',
+		maxInlineSize: 0,
+	},
+	// A visible title gets a little room above the first row. Table rows take
+	// no margins, so an empty row makes the room.
+	titledBody: {
+		'::before': {
+			blockSize: spacing.xs,
+			content: '""',
+			display: 'table-row',
+		},
 	},
 	title: {
 		margin: 0,
@@ -123,7 +94,8 @@ const styles = stylex.create({
 	// Shown while the table is hovered, holds keyboard focus, or has a popup
 	// open, such as a header action's menu. Always shown on touch, where there
 	// is no hover to reveal it. The column labels and header actions share it,
-	// so they show together.
+	// so they show together. It applies inside the header cells, so the cells'
+	// rule stays.
 	revealed: {
 		opacity: {
 			default: null,
@@ -139,61 +111,33 @@ const styles = stylex.create({
 			},
 		},
 	},
-	// Stacked, the labels are visually hidden rather than removed, so screen
-	// readers still name each cell. Mirrors `a11y.visuallyHidden`, which can't
-	// sit behind a container query.
+	// Hidden with its column when stacked. Pads the gap before the column, like
+	// `CardItem`'s cells.
 	label: {
-		color: colorsSemantic.textSecondary,
-		fontSize: fontSizes.sm,
-
-		blockSize: {
-			default: '1px',
-			[wide]: 'auto',
+		display: {
+			default: 'none',
+			[wide]: 'table-cell',
 		},
-		clip: {
-			default: 'rect(0 0 0 0)',
-			[wide]: 'auto',
-		},
-		clipPath: {
-			default: 'inset(50%)',
-			[wide]: 'none',
-		},
-		inlineSize: {
-			default: '1px',
-			[wide]: 'auto',
-		},
-		position: {
-			default: 'absolute',
-			[wide]: 'static',
-		},
+		paddingInlineStart: spacing.lg,
 		whiteSpace: 'nowrap',
-		overflowX: {
-			default: 'hidden',
-			[wide]: 'visible',
-		},
-		overflowY: {
-			default: 'hidden',
-			[wide]: 'visible',
-		},
+
+		color: colorsSemantic.textTertiary,
+		fontSize: fontSizes.sm,
 	},
 	// Above a title stretched over the row, so the actions stay clickable.
+	// Icons have no text baseline, so they sit at the bottom of the row.
 	headerActions: {
-		display: 'flex',
-		justifyContent: 'flex-end',
 		position: 'relative',
+		verticalAlign: 'bottom',
 		zIndex: 2,
 	},
-	due: { gridColumnStart: '2' },
-	lastReviewed: { gridColumnStart: '3' },
-	strength: { gridColumnStart: '4' },
-	actions: { gridColumnStart: '5' },
+	headerActionsContent: {
+		display: 'flex',
+		justifyContent: 'flex-end',
+	},
 })
 
-const LABELS = [
-	{ column: 'due', label: 'Due' },
-	{ column: 'lastReviewed', label: 'Last reviewed' },
-	{ column: 'strength', label: 'Strength' },
-] as const
+const LABELS = ['Due', 'Last reviewed', 'Strength']
 
 type CardListProps = {
 	/** A visible heading over the title column, such as text or an editable title. */
@@ -215,25 +159,17 @@ export function CardList({
 }: CardListProps) {
 	const Heading = headingLevel === 3 ? 'h3' : 'h2'
 
+	const headerCell = [
+		styles.headerCell,
+		Boolean(title) && headingLevel === 3 && styles.underlinedHeaderCell,
+	]
+
 	return (
 		<div {...stylex.props(styles.container, cardTableMarker)}>
-			{/* The table's block and grid layout can drop its native roles, so name them. */}
-			<table role='table' {...stylex.props(styles.table)}>
-				<thead role='rowgroup' {...stylex.props(styles.group)}>
-					<tr
-						role='row'
-						{...stylex.props(
-							styles.headerRow,
-							title ? styles.titledHeaderRow : null,
-							title && headingLevel === 3
-								? styles.underlinedHeaderRow
-								: null,
-						)}
-					>
-						<th
-							role='columnheader'
-							{...stylex.props(styles.headerCell)}
-						>
+			<table {...stylex.props(styles.table)}>
+				<thead>
+					<tr {...stylex.props(styles.headerRow)}>
+						<th {...stylex.props(headerCell, styles.titleCell)}>
 							{title ? (
 								<Heading
 									{...stylex.props(
@@ -249,39 +185,44 @@ export function CardList({
 								</span>
 							)}
 						</th>
-						{LABELS.map(({ column, label }) => (
+						{LABELS.map(label => (
 							<th
-								key={column}
-								role='columnheader'
-								{...stylex.props(
-									styles.headerCell,
-									styles.label,
-									styles.revealed,
-									styles[column],
-								)}
+								key={label}
+								{...stylex.props(headerCell, styles.label)}
 							>
-								{label}
+								<span {...stylex.props(styles.revealed)}>
+									{label}
+								</span>
 							</th>
 						))}
+						<th {...stylex.props(headerCell)}>
+							<span {...stylex.props(a11y.visuallyHidden)}>
+								Status
+							</span>
+						</th>
 						<th
-							role='columnheader'
 							{...stylex.props(
-								styles.headerCell,
-								styles.actions,
-								actions !== undefined && [
-									styles.headerActions,
-									styles.revealed,
-								],
+								headerCell,
+								actions !== undefined && styles.headerActions,
 							)}
 						>
 							<span {...stylex.props(a11y.visuallyHidden)}>
 								Actions
 							</span>
-							{actions}
+							{actions !== undefined ? (
+								<div
+									{...stylex.props(
+										styles.headerActionsContent,
+										styles.revealed,
+									)}
+								>
+									{actions}
+								</div>
+							) : null}
 						</th>
 					</tr>
 				</thead>
-				<tbody role='rowgroup' {...stylex.props(styles.group)}>
+				<tbody {...stylex.props(title ? styles.titledBody : null)}>
 					{children}
 				</tbody>
 			</table>

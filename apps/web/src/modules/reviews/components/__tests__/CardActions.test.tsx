@@ -78,8 +78,8 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 })
 
 vi.mock('../../api/cardQueries', () => ({
-	useUpdateCard: () => ({ mutate: updateMutate, isPending: false }),
-	useDeleteCard: () => ({ mutate: deleteMutate, isPending: false }),
+	useUpdateCards: () => ({ mutate: updateMutate, isPending: false }),
+	useDeleteCards: () => ({ mutate: deleteMutate, isPending: false }),
 }))
 
 const card: Card = {
@@ -135,7 +135,7 @@ describe('CardActions', () => {
 			)
 
 		expect(updateMutate).toHaveBeenCalledWith({
-			cardId: card._id,
+			cardIds: [card._id],
 			type: 'practice',
 		})
 	})
@@ -150,7 +150,7 @@ describe('CardActions', () => {
 			.click(screen.getByRole('menuitem', { name: 'Flag' }))
 
 		expect(updateMutate).toHaveBeenCalledWith({
-			cardId: card._id,
+			cardIds: [card._id],
 			flaggedAt: expect.any(Number) as number,
 		})
 		const [args] = updateMutate.mock.calls[0] as [{ flaggedAt: number }]
@@ -165,7 +165,7 @@ describe('CardActions', () => {
 			.click(screen.getByRole('button', { name: 'Unflag' }))
 
 		expect(updateMutate).toHaveBeenCalledWith({
-			cardId: card._id,
+			cardIds: [card._id],
 			flaggedAt: null,
 		})
 	})
@@ -180,7 +180,7 @@ describe('CardActions', () => {
 			.click(screen.getByRole('menuitem', { name: 'Retire' }))
 
 		expect(updateMutate).toHaveBeenCalledWith({
-			cardId: card._id,
+			cardIds: [card._id],
 			retiredAt: expect.any(Number) as number,
 		})
 		const [args] = updateMutate.mock.calls[0] as [{ retiredAt: number }]
@@ -195,7 +195,7 @@ describe('CardActions', () => {
 			.click(screen.getByRole('button', { name: 'Unretire' }))
 
 		expect(updateMutate).toHaveBeenCalledWith({
-			cardId: card._id,
+			cardIds: [card._id],
 			retiredAt: null,
 		})
 	})
@@ -220,7 +220,7 @@ describe('CardActions', () => {
 		await user.click(screen.getByRole('button', { name: 'Delete' }))
 
 		expect(deleteMutate).toHaveBeenCalledWith(
-			{ cardId: card._id },
+			{ cardIds: [card._id] },
 			expect.anything(),
 		)
 	})
@@ -244,7 +244,7 @@ describe('CardActions', () => {
 
 		expect(updateMutate).toHaveBeenCalledWith(
 			{
-				cardId: card._id,
+				cardIds: [card._id],
 				collectionId: collections[1]._id,
 			},
 			expect.anything(),

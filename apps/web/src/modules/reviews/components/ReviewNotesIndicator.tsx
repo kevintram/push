@@ -18,6 +18,10 @@ const styles = stylex.create({
 		color: colorsSemantic.textSecondary,
 		display: 'block',
 		inlineSize: iconSizes.sm,
+		// Lifts the global `max-width: 100%`. A table column sized to its
+		// content counts a percentage maximum as no width at all, so a notes
+		// column holding only the icon would collapse to nothing.
+		maxInlineSize: 'none',
 	},
 })
 

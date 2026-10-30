@@ -85,7 +85,7 @@ describe('reviews', () => {
 		})
 
 		await asUserA.mutation(api.cards.remove, {
-			cardId: missingCardId,
+			cardIds: [missingCardId],
 		})
 
 		for (const cardId of [foreignCardId, missingCardId]) {

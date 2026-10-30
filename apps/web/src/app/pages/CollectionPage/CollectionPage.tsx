@@ -28,6 +28,7 @@ import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcr
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import {
+	buttonSizes,
 	fontSizes,
 	fontWeights,
 	iconSizes,
@@ -71,6 +72,9 @@ const styles = stylex.create({
 		flexGrow: 1,
 		flexShrink: 1,
 		paddingBlockEnd: spacing.lg,
+		// Anchors the selected cards' action bar, which floats over the
+		// scroll area rather than scrolling with it.
+		position: 'relative',
 		minHeight: 0,
 		minWidth: 0,
 	},
@@ -81,6 +85,10 @@ const styles = stylex.create({
 		flexGrow: 1,
 		flexShrink: 1,
 		justifyContent: 'center',
+		// Focus follows the selection and scrolls the focused item into view.
+		// This keeps it above the selection's action bar, which floats over
+		// the bottom of this area whenever something is selected.
+		scrollPaddingBlockEnd: `calc(${buttonSizes.small} + ${spacing['4xl']})`,
 		minHeight: 0,
 		minWidth: 0,
 	},

@@ -27,8 +27,12 @@ vi.mock('@tanstack/react-router', () => ({
 	useNavigate: () => navigate,
 }))
 
-vi.mock('../CardActions', () => ({
-	CardActions: () => null,
+vi.mock('../CardMenu', () => ({
+	CardMenu: () => null,
+}))
+
+vi.mock('../CardStatusToggles', () => ({
+	CardStatusToggles: () => null,
 }))
 
 const card = {
@@ -73,7 +77,14 @@ describe('CardList', () => {
 
 		expect(
 			screen.getAllByRole('columnheader').map(cell => cell.textContent),
-		).toEqual(['Cards', 'Due', 'Last reviewed', 'Strength', 'Actions'])
+		).toEqual([
+			'Cards',
+			'Due',
+			'Last reviewed',
+			'Strength',
+			'Status',
+			'Actions',
+		])
 	})
 
 	it('heads its title at the given level', () => {
@@ -101,6 +112,17 @@ describe('CardList', () => {
 		).not.toBeInTheDocument()
 	})
 
+	it('shows the whole title in a tooltip on hover', async () => {
+		const user = userEvent.setup()
+		renderList(reviewed)
+
+		await user.hover(screen.getByText('What problem do generics solve?'))
+
+		expect(await screen.findByRole('tooltip')).toHaveTextContent(
+			'What problem do generics solve?',
+		)
+	})
+
 	it('shows the due date for both layouts', () => {
 		renderList(reviewed)
 
@@ -111,12 +133,14 @@ describe('CardList', () => {
 		).toBeInTheDocument()
 	})
 
-	it('shows the last rating and when it was given', () => {
+	it('shows the last rating and when it was given for both layouts', () => {
 		renderList(reviewed)
 
-		expect(
-			screen.getByLabelText('Good, reviewed Aug 1, 2026'),
-		).toHaveTextContent('Aug 1')
+		for (const lastReviewed of screen.getAllByLabelText(
+			'Good, reviewed Aug 1, 2026',
+		)) {
+			expect(lastReviewed).toHaveTextContent('Aug 1')
+		}
 		expect(document.querySelector('svg.lucide-check')).toBeInTheDocument()
 	})
 
@@ -124,8 +148,23 @@ describe('CardList', () => {
 		const user = userEvent.setup()
 		renderList(unreviewed)
 
+		// The table's dash, named for screen readers.
 		expect(screen.getByText('Never')).toBeInTheDocument()
 		await user.hover(screen.getByText('New'))
+
+		expect(await screen.findByRole('tooltip')).toHaveTextContent(
+			'Not reviewed yet',
+		)
+	})
+
+	it('marks a new card by its title', async () => {
+		const user = userEvent.setup()
+		renderList(unreviewed)
+
+		const link = screen.getByRole('link', {
+			name: 'What problem do generics solve?',
+		})
+		await user.hover(link.querySelector('svg.lucide-sparkles')!)
 
 		expect(await screen.findByRole('tooltip')).toHaveTextContent(
 			'Not reviewed yet',

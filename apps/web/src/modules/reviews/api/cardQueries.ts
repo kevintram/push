@@ -1,5 +1,6 @@
 import { api } from '@convex/_generated/api'
 import type { Id } from '@convex/_generated/dataModel'
+import type { CardBatchPatch } from '@convex/validators/cards'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { placeInLine } from '@shared/ordering'
 import { useMutation } from '@tanstack/react-query'
@@ -37,17 +38,40 @@ export function useUpdateCard() {
 	})
 }
 
+/** Flags, retires, retypes, or moves several cards to another collection at once. */
+export function useUpdateCards() {
+	const mutationFn = useConvexMutation(api.cards.updateMany)
+	return useMutation({
+		mutationFn,
+		onError: (error, patch) =>
+			toastError(plural(patch.cardIds, updateCardsFailure(patch)), error),
+	})
+}
+
+function updateCardsFailure(patch: CardBatchPatch) {
+	if (patch.collectionId !== undefined) return 'Failed to move card'
+	if (patch.type !== undefined) return 'Failed to update card type'
+	if (patch.flaggedAt !== undefined) return 'Failed to update card flag'
+	if (patch.retiredAt !== undefined) return 'Failed to update card retirement'
+	return 'Failed to update card'
+}
+
+/** `message`, ending in "card", made plural for several cards. */
+function plural(cardIds: ReadonlyArray<unknown>, message: string) {
+	return cardIds.length > 1 ? `${message}s` : message
+}
+
 /**
- * Reorders a card, or moves it into another list of its collection, showing
- * its new place before the server confirms it.
+ * Reorders cards as one run, possibly into another list of their collection,
+ * showing their new place before the server confirms it.
  */
-export function useMoveCard() {
+export function useMoveCards() {
 	const mutationFn = useConvexMutation(api.cards.move).withOptimisticUpdate(
-		(localStore, { cardId, sectionId, afterId }) => {
+		(localStore, { cardIds, sectionId, afterId }) => {
 			for (const { args, value: cards } of localStore.getAllQueries(
 				api.cards.listByCollection,
 			)) {
-				if (!cards?.some(card => card._id === cardId)) continue
+				if (!cards?.some(card => cardIds.includes(card._id))) continue
 
 				const line = cards.filter(
 					card => (card.sectionId ?? null) === sectionId,
@@ -60,16 +84,20 @@ export function useMoveCard() {
 					continue
 				}
 
-				const { rank, backfill } = placeInLine(line, cardId, afterId)
-				const ranks = new Map(backfill.map(row => [row._id, row.rank]))
+				const { ranks, backfill } = placeInLine(line, cardIds, afterId)
+				const backfilled = new Map(
+					backfill.map(row => [row._id, row.rank]),
+				)
+				const placed = new Map(ranks.map(row => [row._id, row.rank]))
 				localStore.setQuery(
 					api.cards.listByCollection,
 					args,
 					cards.map(card => {
-						if (card._id !== cardId) {
-							const backfilled = ranks.get(card._id)
-							return backfilled
-								? { ...card, rank: backfilled }
+						const rank = placed.get(card._id)
+						if (rank === undefined) {
+							const backfilledRank = backfilled.get(card._id)
+							return backfilledRank
+								? { ...card, rank: backfilledRank }
 								: card
 						}
 						// Drops the old section rather than storing an
@@ -85,11 +113,12 @@ export function useMoveCard() {
 	)
 	return useMutation({
 		mutationFn,
-		onError: error => toastError('Failed to move card', error),
+		onError: (error, { cardIds }) =>
+			toastError(plural(cardIds, 'Failed to move card'), error),
 	})
 }
 
-export function useDeleteCard() {
+export function useDeleteCards() {
 	const navigate = useNavigate()
 	const matchRoute = useMatchRoute()
 
@@ -97,19 +126,21 @@ export function useDeleteCard() {
 
 	return useMutation({
 		mutationFn,
-		onError: error => toastError('Failed to delete card', error),
-		onSuccess: ({ _id, collectionId }) => {
-			// if deleted card is currently open, fall back to its collection
-			if (
+		onError: (error, { cardIds }) =>
+			toastError(plural(cardIds, 'Failed to delete card'), error),
+		onSuccess: removed => {
+			// if a deleted card is currently open, fall back to its collection
+			const open = removed.find(({ _id }) =>
 				matchRoute({
 					to: '/cards/$cardId',
 					params: { cardId: _id },
 					fuzzy: true,
-				})
-			) {
+				}),
+			)
+			if (open) {
 				void navigate({
 					to: '/collection/$collectionId',
-					params: { collectionId },
+					params: { collectionId: open.collectionId },
 				})
 			}
 		},

@@ -11,10 +11,6 @@ import {
 	getDueDateTone,
 } from '~/utils/date'
 
-// A local string, not a shared constant: StyleX can leave an imported
-// at-rule key unresolved in dev, emitting invalid CSS.
-const wide = '@container (min-width: 560px)'
-
 const styles = stylex.create({
 	date: {
 		alignItems: 'center',
@@ -29,29 +25,20 @@ const styles = stylex.create({
 	},
 	today: { color: colorsSemantic.textToday },
 	overdue: { color: colorsSemantic.textDanger },
-	// The table's column header already says "Due", so the icon and prefix
-	// only show in the stacked layout.
-	stackedOnly: {
-		display: {
-			default: null,
-			[wide]: 'none',
-		},
-	},
-	tableOnly: {
-		display: {
-			default: 'none',
-			[wide]: 'inline',
-		},
-	},
 })
 
 type CardDueDateProps = {
 	date: DateString | null
 	today: DateString
+	/**
+	 * The table's column header already says "Due", so only the details line
+	 * under a stacked title shows the icon and prefix.
+	 */
+	variant: 'column' | 'details'
 }
 
 /** When a card is next due, toned when due today or overdue. */
-export function CardDueDate({ date, today }: CardDueDateProps) {
+export function CardDueDate({ date, today, variant }: CardDueDateProps) {
 	if (date === null) {
 		return <span {...stylex.props(styles.date, styles.empty)}>—</span>
 	}
@@ -72,18 +59,14 @@ export function CardDueDate({ date, today }: CardDueDateProps) {
 					/>
 				}
 			>
-				<Calendar
-					aria-hidden='true'
-					size={iconSizes.sm}
-					{...stylex.props(styles.stackedOnly)}
-				/>
-				<span {...stylex.props(styles.stackedOnly)}>
-					Due {relativeDate}
-				</span>
-				<span {...stylex.props(styles.tableOnly)}>
-					{relativeDate.charAt(0).toUpperCase() +
-						relativeDate.slice(1)}
-				</span>
+				{variant === 'details' ? (
+					<>
+						<Calendar aria-hidden='true' size={iconSizes.sm} />
+						Due {relativeDate}
+					</>
+				) : (
+					relativeDate.charAt(0).toUpperCase() + relativeDate.slice(1)
+				)}
 			</TooltipTrigger>
 			<TooltipContent>Due {formatAbsoluteDate(date)}</TooltipContent>
 		</Tooltip>

@@ -1,7 +1,9 @@
 import { convexTest } from 'convex-test'
 import { describe, expect, it } from 'vitest'
 
+import { compareRanked } from '../shared/ordering'
 import { api } from './_generated/api'
+import type { Id } from './_generated/dataModel'
 import schema from './schema'
 import { modules } from './test.setup'
 
@@ -32,20 +34,25 @@ describe('sections', () => {
 			t.query(api.sections.listByCollection, { collectionId }),
 		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
-			t.mutation(api.sections.create, { collectionId }),
+			t.mutation(api.sections.create, { collectionId, afterId: null }),
 		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.sections.update, { sectionId, title: 'Renamed' }),
 		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
-			t.mutation(api.sections.move, { sectionId, afterId: null }),
+			t.mutation(api.sections.move, {
+				sectionIds: [sectionId],
+				afterId: null,
+			}),
 		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
-			t.mutation(api.sections.remove, { sectionId }),
+			t.mutation(api.sections.convertToCollection, {
+				sectionIds: [sectionId],
+			}),
 		).rejects.toMatchObject({ data: "You've been signed out" })
 	})
 
-	it('creates sections with an empty default title and lists them oldest first', async () => {
+	it('creates sections with an empty default title and lists them in order', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const collectionId = await asUserA.mutation(api.collections.create, {})
@@ -56,13 +63,16 @@ describe('sections', () => {
 
 		const firstId = await asUserA.mutation(api.sections.create, {
 			collectionId,
+			afterId: null,
 		})
 		const secondId = await asUserA.mutation(api.sections.create, {
 			collectionId,
 			title: 'Second',
+			afterId: firstId,
 		})
 		await asUserA.mutation(api.sections.create, {
 			collectionId: otherCollectionId,
+			afterId: null,
 		})
 
 		await expect(
@@ -84,6 +94,7 @@ describe('sections', () => {
 		const collectionId = await asUserA.mutation(api.collections.create, {})
 		const sectionId = await asUserA.mutation(api.sections.create, {
 			collectionId,
+			afterId: null,
 		})
 
 		await asUserA.mutation(api.sections.update, {
@@ -104,13 +115,17 @@ describe('sections', () => {
 		const sectionId = await asUserA.mutation(api.sections.create, {
 			collectionId,
 			title: 'Mine',
+			afterId: null,
 		})
 
 		await expect(
 			asUserB.query(api.sections.listByCollection, { collectionId }),
 		).rejects.toMatchObject({ data: 'Collection not found' })
 		await expect(
-			asUserB.mutation(api.sections.create, { collectionId }),
+			asUserB.mutation(api.sections.create, {
+				collectionId,
+				afterId: null,
+			}),
 		).rejects.toMatchObject({ data: 'Collection not found' })
 		await expect(
 			asUserB.mutation(api.sections.update, {
@@ -119,7 +134,9 @@ describe('sections', () => {
 			}),
 		).rejects.toMatchObject({ data: 'Section not found' })
 		await expect(
-			asUserB.mutation(api.sections.remove, { sectionId }),
+			asUserB.mutation(api.sections.convertToCollection, {
+				sectionIds: [sectionId],
+			}),
 		).rejects.toMatchObject({ data: 'Section not found' })
 
 		await expect(
@@ -144,51 +161,62 @@ describe('sections', () => {
 		).resolves.toEqual([])
 	})
 
-	it('deletes the cards and reviews of a removed section and leaves the rest', async () => {
+	it('converts a section into a subcollection holding its cards in order', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const collectionId = await asUserA.mutation(api.collections.create, {})
-		const removedSectionId = await asUserA.mutation(api.sections.create, {
+		const sectionId = await asUserA.mutation(api.sections.create, {
 			collectionId,
+			title: 'Verbs',
+			afterId: null,
 		})
 		const keptSectionId = await asUserA.mutation(api.sections.create, {
 			collectionId,
+			afterId: sectionId,
 		})
-		const removedCardId = await asUserA.mutation(api.cards.create, {
+		const firstId = await asUserA.mutation(api.cards.create, {
 			collectionId,
-			sectionId: removedSectionId,
+			sectionId,
 		})
-		const sectionedCardId = await asUserA.mutation(api.cards.create, {
+		const secondId = await asUserA.mutation(api.cards.create, {
+			collectionId,
+			sectionId,
+		})
+		const keptCardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 			sectionId: keptSectionId,
 		})
-		const unsectionedCardId = await asUserA.mutation(api.cards.create, {
+		// Reordered, so creation order alone would get it wrong.
+		await asUserA.mutation(api.cards.move, {
+			cardIds: [secondId],
+			sectionId,
+			afterId: null,
+		})
+
+		const [subcollectionId] = await asUserA.mutation(
+			api.sections.convertToCollection,
+			{ sectionIds: [sectionId] },
+		)
+
+		await expect(
+			asUserA.query(api.collections.listChildren, { collectionId }),
+		).resolves.toMatchObject([
+			{ _id: subcollectionId, title: 'Verbs', path: [collectionId] },
+		])
+		await expect(
+			asUserA.query(api.sections.listByCollection, { collectionId }),
+		).resolves.toMatchObject([{ _id: keptSectionId }])
+		const kept = await asUserA.query(api.cards.listByCollection, {
 			collectionId,
 		})
-		await asUserA.mutation(api.reviews.create, { cardId: removedCardId })
-		const keptReviewId = await asUserA.mutation(api.reviews.create, {
-			cardId: sectionedCardId,
+		expect(kept.map(card => card._id)).toEqual([keptCardId])
+		const moved = await asUserA.query(api.cards.listByCollection, {
+			collectionId: subcollectionId,
 		})
-
-		const removed = await asUserA.mutation(api.sections.remove, {
-			sectionId: removedSectionId,
-		})
-
-		expect(removed).toMatchObject({ _id: removedSectionId, collectionId })
-		const remaining = await t.run(async ctx => ({
-			sections: await ctx.db.query('sections').collect(),
-			cards: await ctx.db.query('cards').collect(),
-			reviews: await ctx.db.query('reviews').collect(),
-		}))
-		expect(remaining.sections.map(section => section._id)).toEqual([
-			keptSectionId,
-		])
-		expect(remaining.cards.map(card => card._id)).toEqual([
-			sectionedCardId,
-			unsectionedCardId,
-		])
-		expect(remaining.reviews.map(review => review._id)).toEqual([
-			keptReviewId,
+		expect(moved.every(card => card.sectionId === undefined)).toBe(true)
+		expect(moved.sort(compareRanked).map(card => card._id)).toEqual([
+			secondId,
+			firstId,
 		])
 	})
 
@@ -200,10 +228,17 @@ describe('sections', () => {
 			parentId: rootId,
 		})
 		const unrelatedId = await asUserA.mutation(api.collections.create, {})
-		await asUserA.mutation(api.sections.create, { collectionId: rootId })
-		await asUserA.mutation(api.sections.create, { collectionId: childId })
+		await asUserA.mutation(api.sections.create, {
+			collectionId: rootId,
+			afterId: null,
+		})
+		await asUserA.mutation(api.sections.create, {
+			collectionId: childId,
+			afterId: null,
+		})
 		const keptSectionId = await asUserA.mutation(api.sections.create, {
 			collectionId: unrelatedId,
+			afterId: null,
 		})
 
 		await asUserA.mutation(api.collections.remove, { collectionId: rootId })
@@ -218,9 +253,18 @@ describe('sections', () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const collectionId = await asUserA.mutation(api.collections.create, {})
-		const a = await asUserA.mutation(api.sections.create, { collectionId })
-		const b = await asUserA.mutation(api.sections.create, { collectionId })
-		const c = await asUserA.mutation(api.sections.create, { collectionId })
+		const a = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: null,
+		})
+		const b = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: a,
+		})
+		const c = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: b,
+		})
 		const order = async () =>
 			(
 				await asUserA.query(api.sections.listByCollection, {
@@ -228,21 +272,158 @@ describe('sections', () => {
 				})
 			).map(section => section._id)
 
-		await asUserA.mutation(api.sections.move, { sectionId: a, afterId: b })
+		await asUserA.mutation(api.sections.move, {
+			sectionIds: [a],
+			afterId: b,
+		})
 		await expect(order()).resolves.toEqual([b, a, c])
 
 		await asUserA.mutation(api.sections.move, {
-			sectionId: c,
+			sectionIds: [c],
 			afterId: null,
 		})
 		await expect(order()).resolves.toEqual([c, b, a])
 
-		// A section created after moves still goes to the bottom.
-		const d = await asUserA.mutation(api.sections.create, { collectionId })
-		await expect(order()).resolves.toEqual([c, b, a, d])
+		// Several sections land together as one run, in the order given.
+		await asUserA.mutation(api.sections.move, {
+			sectionIds: [a, c],
+			afterId: b,
+		})
+		await expect(order()).resolves.toEqual([b, a, c])
 	})
 
-	it('rejects moving after a section in another collection or of another user', async () => {
+	it('creates a section right after another, or first', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const create = (afterId: Id<'sections'> | null) =>
+			asUserA.mutation(api.sections.create, { collectionId, afterId })
+		const order = async () =>
+			(
+				await asUserA.query(api.sections.listByCollection, {
+					collectionId,
+				})
+			).map(section => section._id)
+
+		const a = await create(null)
+		const c = await create(a)
+		const b = await create(a)
+		await expect(order()).resolves.toEqual([a, b, c])
+
+		const first = await create(null)
+		await expect(order()).resolves.toEqual([first, a, b, c])
+	})
+
+	it('backfills unranked sections when creating one between them', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const [a, b] = await t.run(async ctx =>
+			Promise.all(
+				['A', 'B'].map(title =>
+					ctx.db.insert('sections', {
+						collectionId,
+						ownerId: userAIdentity.subject,
+						title,
+					}),
+				),
+			),
+		)
+
+		const created = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: a!,
+		})
+
+		const sections = await asUserA.query(api.sections.listByCollection, {
+			collectionId,
+		})
+		expect(sections.map(section => section._id)).toEqual([a, created, b])
+		expect(sections.every(section => section.rank !== undefined)).toBe(true)
+	})
+
+	it('backfills unranked sections when creating one first', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const [a, b] = await t.run(async ctx =>
+			Promise.all(
+				['A', 'B'].map(title =>
+					ctx.db.insert('sections', {
+						collectionId,
+						ownerId: userAIdentity.subject,
+						title,
+					}),
+				),
+			),
+		)
+
+		const created = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: null,
+		})
+
+		const sections = await asUserA.query(api.sections.listByCollection, {
+			collectionId,
+		})
+		expect(sections.map(section => section._id)).toEqual([created, a, b])
+		expect(sections.every(section => section.rank !== undefined)).toBe(true)
+	})
+
+	it('creates a section at the bottom when its anchor was deleted', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const a = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: null,
+		})
+		const deleted = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: a,
+		})
+		const b = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: deleted,
+		})
+		await asUserA.mutation(api.collectionItems.remove, {
+			sectionIds: [deleted],
+			cardIds: [],
+		})
+
+		const created = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: deleted,
+		})
+
+		const sections = await asUserA.query(api.sections.listByCollection, {
+			collectionId,
+		})
+		expect(sections.map(section => section._id)).toEqual([a, b, created])
+	})
+
+	it('rejects creating after a section in another collection', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const otherCollectionId = await asUserA.mutation(
+			api.collections.create,
+			{},
+		)
+		const otherSectionId = await asUserA.mutation(api.sections.create, {
+			collectionId: otherCollectionId,
+			afterId: null,
+		})
+
+		await expect(
+			asUserA.mutation(api.sections.create, {
+				collectionId,
+				afterId: otherSectionId,
+			}),
+		).rejects.toThrow('The item to place after is not in this list')
+	})
+
+	it('rejects moving after a section in another collection, across collections, or of another user', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
 		const asUserB = t.withIdentity(userBIdentity)
@@ -253,19 +434,32 @@ describe('sections', () => {
 		)
 		const sectionId = await asUserA.mutation(api.sections.create, {
 			collectionId,
+			afterId: null,
 		})
 		const otherSectionId = await asUserA.mutation(api.sections.create, {
 			collectionId: otherCollectionId,
+			afterId: null,
 		})
 
 		await expect(
 			asUserA.mutation(api.sections.move, {
-				sectionId,
+				sectionIds: [sectionId],
 				afterId: otherSectionId,
 			}),
 		).rejects.toThrow('The item to place after is not in this list')
 		await expect(
-			asUserB.mutation(api.sections.move, { sectionId, afterId: null }),
+			asUserA.mutation(api.sections.move, {
+				sectionIds: [sectionId, otherSectionId],
+				afterId: null,
+			}),
+		).rejects.toThrow(
+			'Sections can only move together within one collection',
+		)
+		await expect(
+			asUserB.mutation(api.sections.move, {
+				sectionIds: [sectionId],
+				afterId: null,
+			}),
 		).rejects.toMatchObject({ data: 'Section not found' })
 	})
 
@@ -286,7 +480,7 @@ describe('sections', () => {
 		)
 
 		await asUserA.mutation(api.sections.move, {
-			sectionId: a!,
+			sectionIds: [a!],
 			afterId: b!,
 		})
 
