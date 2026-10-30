@@ -44,6 +44,7 @@ const styles = stylex.create({
 			[wide]: '32px',
 		},
 
+		fontWeight: fontWeights.semibold,
 		textAlign: 'start',
 	},
 	// Rules off a section from the rows above it, with the title sitting just
