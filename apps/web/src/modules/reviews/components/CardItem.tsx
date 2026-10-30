@@ -211,6 +211,23 @@ const styles = stylex.create({
 			[wide]: spacing.none,
 		},
 	},
+	// In the table, the menu trigger shows while the row is hovered, keyboard
+	// focused, or has its menu open. Stacked, or on touch, where there is no
+	// hover to reveal it, it always shows.
+	menuTrigger: {
+		opacity: {
+			default: null,
+			[wide]: {
+				default: null,
+				'@media (hover: hover)': {
+					default: 0,
+					[stylex.when.ancestor(':has(:focus-visible)')]: 1,
+					[stylex.when.ancestor(':has([data-popup-open])')]: 1,
+					[stylex.when.ancestor(':hover')]: 1,
+				},
+			},
+		},
+	},
 })
 
 type CardItemProps = {
@@ -363,7 +380,10 @@ export function CardItem({
 				role='cell'
 				{...stylex.props(styles.cell, styles.raised, styles.actions)}
 			>
-				<CardActions card={card} isMenuHoverRevealed />
+				<CardActions
+					card={card}
+					menuTriggerXstyle={styles.menuTrigger}
+				/>
 			</td>
 		</tr>
 	)
