@@ -19,9 +19,8 @@ const styles = stylex.create({
 		minInlineSize: '200px',
 	},
 	// Stacked, rows show only the title and actions columns, with the rest
-	// under the title. Wide, the metadata columns appear at fixed widths, so
-	// they line up across a page's lists. The title takes what they leave, and
-	// the actions column fits the row with the most toggles.
+	// under the title. Wide, the metadata columns appear. Every column but the
+	// title fits its content, and the title takes the rest.
 	table: {
 		borderSpacing: 0,
 		inlineSize: '100%',
@@ -61,6 +60,7 @@ const styles = stylex.create({
 	},
 	// See `CardItem`'s title cell.
 	titleCell: {
+		inlineSize: '100%',
 		maxInlineSize: 0,
 	},
 	// A visible title gets a little room above the first row. Table rows take
@@ -107,8 +107,8 @@ const styles = stylex.create({
 			},
 		},
 	},
-	// Hidden with its column when stacked. The width includes the gap before
-	// the column, which `CardItem`'s cells pad to match.
+	// Hidden with its column when stacked. Pads the gap before the column, like
+	// `CardItem`'s cells.
 	label: {
 		display: {
 			default: 'none',
@@ -119,14 +119,6 @@ const styles = stylex.create({
 
 		color: colorsSemantic.textSecondary,
 		fontSize: fontSizes.sm,
-	},
-	due: { inlineSize: `calc(112px + ${spacing.lg})` },
-	lastReviewed: { inlineSize: `calc(112px + ${spacing.lg})` },
-	strength: { inlineSize: `calc(80px + ${spacing.lg})` },
-	// Shrinks to fit its widest cell.
-	actions: {
-		inlineSize: '1px',
-		whiteSpace: 'nowrap',
 	},
 	// Above a title stretched over the row, so the actions stay clickable.
 	headerActions: {
@@ -139,11 +131,7 @@ const styles = stylex.create({
 	},
 })
 
-const LABELS = [
-	{ column: 'due', label: 'Due' },
-	{ column: 'lastReviewed', label: 'Last reviewed' },
-	{ column: 'strength', label: 'Strength' },
-] as const
+const LABELS = ['Due', 'Last reviewed', 'Strength']
 
 type CardListProps = {
 	/** A visible heading over the title column, such as text or an editable title. */
@@ -191,14 +179,10 @@ export function CardList({
 								</span>
 							)}
 						</th>
-						{LABELS.map(({ column, label }) => (
+						{LABELS.map(label => (
 							<th
-								key={column}
-								{...stylex.props(
-									headerCell,
-									styles.label,
-									styles[column],
-								)}
+								key={label}
+								{...stylex.props(headerCell, styles.label)}
 							>
 								<span {...stylex.props(styles.revealed)}>
 									{label}
@@ -208,7 +192,6 @@ export function CardList({
 						<th
 							{...stylex.props(
 								headerCell,
-								styles.actions,
 								actions !== undefined && styles.headerActions,
 							)}
 						>

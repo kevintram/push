@@ -57,9 +57,11 @@ const styles = stylex.create({
 		},
 		paddingInline: 0,
 	},
-	// Lets the title column take whatever the fixed columns leave, rather than
-	// growing the table to fit a long title.
+	// Takes the room the other columns, sized to their content, leave. The
+	// maximum stops a title, which never wraps, from widening the table past
+	// its container.
 	title: {
+		inlineSize: '100%',
 		maxInlineSize: 0,
 	},
 	// Fills the cell so the fade only reaches text long enough to run into it.
@@ -168,7 +170,7 @@ const styles = stylex.create({
 			[noStrength]: 'none',
 		},
 	},
-	// A metadata column, shown only in the table. `CardList` sets its width.
+	// A metadata column, shown only in the table.
 	column: {
 		display: {
 			default: 'none',
