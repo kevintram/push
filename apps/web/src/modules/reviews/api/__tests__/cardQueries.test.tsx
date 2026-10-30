@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { toast } from '~/components/ui/Toast'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
-import { useDeleteCards, useUpdateCard, useUpdateCards } from '../cardQueries'
+import { useDeleteCards, useUpdateCards } from '../cardQueries'
 
 const navigate = vi.fn()
 const matchRoute = vi.fn()
@@ -77,36 +77,13 @@ describe('useDeleteCards', () => {
 	})
 })
 
-describe('useUpdateCard errors', () => {
-	it.each([
-		['an edit', { primaryText: 'Front' }, 'Failed to update card'],
-		['a move', { collectionId }, 'Failed to move card'],
-	])('titles the toast for %s', async (_name, patch, title) => {
-		const addToast = vi.spyOn(toast, 'add')
-		convexMutation.mockRejectedValue(new ConvexError('Card not found'))
-		const { result } = renderHook(() => useUpdateCard(), { wrapper })
-
-		await act(async () => {
-			result.current.mutate({ cardId, ...patch })
-		})
-
-		await waitFor(() => {
-			expect(addToast).toHaveBeenCalledWith({
-				description: 'Card not found',
-				title,
-				type: 'error',
-			})
-		})
-	})
-})
-
 describe('useUpdateCards errors', () => {
 	it.each([
 		[
-			'a move of one card',
+			'a retirement of one card',
 			[cardId],
-			{ collectionId },
-			'Failed to move card',
+			{ retiredAt: 1 },
+			'Failed to update card retirement',
 		],
 		[
 			'a flag of several cards',
@@ -129,6 +106,38 @@ describe('useUpdateCards errors', () => {
 				title,
 				type: 'error',
 			})
+		})
+	})
+})
+
+describe('useUpdateCards undo', () => {
+	it("puts back each card's own value for the patched field only", async () => {
+		const addToast = vi.spyOn(toast, 'add')
+		convexMutation.mockResolvedValue(null)
+		const flagged = { _id: cardId, flaggedAt: 5, type: 'practice' } as Card
+		const unflagged = {
+			_id: 'card-2' as Id<'cards'>,
+			type: 'flashcard',
+		} as Card
+		const { result } = renderHook(() => useUpdateCards(), { wrapper })
+
+		await act(async () => {
+			result.current.mutate({
+				cardIds: [flagged._id, unflagged._id],
+				flaggedAt: 9,
+				undo: { title: 'Flagged 2 cards', cards: [flagged, unflagged] },
+			})
+		})
+		await waitFor(() => expect(addToast).toHaveBeenCalled())
+		const [{ actionProps, title }] = addToast.mock.lastCall!
+		expect(title).toBe('Flagged 2 cards')
+		act(() => actionProps?.onClick?.({} as never))
+
+		expect(convexMutation).toHaveBeenLastCalledWith({
+			patches: [
+				{ cardId: flagged._id, flaggedAt: 5 },
+				{ cardId: unflagged._id, flaggedAt: null },
+			],
 		})
 	})
 })

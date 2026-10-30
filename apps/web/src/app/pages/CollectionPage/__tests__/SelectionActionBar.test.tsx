@@ -66,10 +66,12 @@ describe('SelectionActionBar', () => {
 			.setup()
 			.click(screen.getByRole('button', { name: 'Flag' }))
 
-		// The already flagged card keeps its flag time.
+		// The already flagged card keeps its flag time, and so is left out of
+		// the undo too.
 		expect(updateMutate).toHaveBeenCalledWith({
 			cardIds: [loose._id],
 			flaggedAt: expect.any(Number) as number,
+			undo: { title: 'Flagged 1 card', cards: [loose] },
 		})
 	})
 
@@ -99,6 +101,7 @@ describe('SelectionActionBar', () => {
 		expect(updateMutate).toHaveBeenCalledWith({
 			cardIds: [loose._id, inSection._id],
 			retiredAt: expect.any(Number) as number,
+			undo: { title: 'Retired 2 cards', cards: [loose, inSection] },
 		})
 		expect(convertMutate).toHaveBeenCalledWith({
 			sectionIds: [section._id],

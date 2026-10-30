@@ -179,9 +179,11 @@ describe('CardActions', () => {
 			.setup()
 			.click(screen.getByRole('menuitem', { name: 'Retire' }))
 
+		// Retiring drops the card from the queues, so it offers an undo.
 		expect(updateMutate).toHaveBeenCalledWith({
 			cardIds: [card._id],
 			retiredAt: expect.any(Number) as number,
+			undo: { title: 'Retired card', cards: [card] },
 		})
 		const [args] = updateMutate.mock.calls[0] as [{ retiredAt: number }]
 		expect(args.retiredAt).toBeGreaterThanOrEqual(before)

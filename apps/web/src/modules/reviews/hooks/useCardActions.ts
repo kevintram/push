@@ -1,6 +1,8 @@
 import { DateTime } from 'luxon'
 import { useCallback } from 'react'
 
+import { pluralize } from '~/utils/pluralize'
+
 import { useDeleteCards, useUpdateCards } from '../api/cardQueries'
 import type { Card } from '../types/review.types'
 
@@ -24,6 +26,10 @@ type UseCardActionsReturn = {
  * The mutations behind a card's action menu, for one card or several. Shared
  * so the list card and the card detail page cannot drift apart on what those
  * actions do.
+ *
+ * Retiring, and anything done to several cards at once, offers an undo: a
+ * retired card vanishes from the review queues, and a bulk change is easy to
+ * make by mistake. A change to one card shows on that card.
  */
 export function useCardActions(): UseCardActionsReturn {
 	const updateCards = useUpdateCards()
@@ -31,11 +37,18 @@ export function useCardActions(): UseCardActionsReturn {
 
 	const toggleType = useCallback(
 		(cards: ReadonlyArray<Card>) => {
+			const type = cards.every(card => card.type === 'flashcard')
+				? 'practice'
+				: 'flashcard'
 			updateCards.mutate({
 				cardIds: idsOf(cards),
-				type: cards.every(card => card.type === 'flashcard')
-					? 'practice'
-					: 'flashcard',
+				type,
+				...(cards.length > 1 && {
+					undo: {
+						title: `Made ${pluralize(cards.length, 'card')} ${type === 'flashcard' ? 'flashcards' : 'practice cards'}`,
+						cards,
+					},
+				}),
 			})
 		},
 		[updateCards],
@@ -44,17 +57,21 @@ export function useCardActions(): UseCardActionsReturn {
 	const toggleFlag = useCallback(
 		(cards: ReadonlyArray<Card>) => {
 			const unflagged = cards.filter(card => card.flaggedAt === undefined)
-			updateCards.mutate(
-				// Only the unflagged cards get a flag, so the others keep the
-				// time they were flagged, which orders the flagged list.
-				unflagged.length > 0
-					? {
-							cardIds: idsOf(unflagged),
-							flaggedAt: DateTime.now().toMillis(),
-						}
-					: // `null` unsets the field; see `cards.update`.
-						{ cardIds: idsOf(cards), flaggedAt: null },
-			)
+			// Only the unflagged cards get a flag, so the others keep the time
+			// they were flagged, which orders the flagged list.
+			const flagging = unflagged.length > 0
+			const changed = flagging ? unflagged : cards
+			updateCards.mutate({
+				cardIds: idsOf(changed),
+				// `null` unsets the field; see `cards.update`.
+				flaggedAt: flagging ? DateTime.now().toMillis() : null,
+				...(cards.length > 1 && {
+					undo: {
+						title: `${flagging ? 'Flagged' : 'Unflagged'} ${pluralize(changed.length, 'card')}`,
+						cards: changed,
+					},
+				}),
+			})
 		},
 		[updateCards],
 	)
@@ -62,15 +79,22 @@ export function useCardActions(): UseCardActionsReturn {
 	const toggleRetire = useCallback(
 		(cards: ReadonlyArray<Card>) => {
 			const active = cards.filter(card => card.retiredAt === undefined)
-			updateCards.mutate(
-				// Same as `toggleFlag`: retired cards keep their retirement time.
-				active.length > 0
-					? {
-							cardIds: idsOf(active),
-							retiredAt: DateTime.now().toMillis(),
-						}
-					: { cardIds: idsOf(cards), retiredAt: null },
-			)
+			// Same as `toggleFlag`: retired cards keep their retirement time.
+			const retiring = active.length > 0
+			const changed = retiring ? active : cards
+			// A bulk action counts the cards it changed, even just one.
+			const name =
+				cards.length === 1 ? 'card' : pluralize(changed.length, 'card')
+			updateCards.mutate({
+				cardIds: idsOf(changed),
+				retiredAt: retiring ? DateTime.now().toMillis() : null,
+				...((retiring || cards.length > 1) && {
+					undo: {
+						title: `${retiring ? 'Retired' : 'Unretired'} ${name}`,
+						cards: changed,
+					},
+				}),
+			})
 		},
 		[updateCards],
 	)

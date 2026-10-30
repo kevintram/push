@@ -1,12 +1,12 @@
 import { api } from '@convex/_generated/api'
 import type { Id } from '@convex/_generated/dataModel'
-import type { CardBatchPatch } from '@convex/validators/cards'
+import type { Card, CardBatchPatch } from '@convex/validators/cards'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { placeInLine } from '@shared/ordering'
 import { useMutation } from '@tanstack/react-query'
 import { useMatchRoute, useNavigate } from '@tanstack/react-router'
 
-import { toastError } from '~/components/ui/Toast'
+import { toastError, toastUndo } from '~/components/ui/Toast'
 
 export const cardQueries = {
 	listFlagged: () => convexQuery(api.cards.listFlagged, {}),
@@ -28,28 +28,51 @@ export function useUpdateCard() {
 	const mutationFn = useConvexMutation(api.cards.update)
 	return useMutation({
 		mutationFn,
-		onError: (error, { collectionId }) =>
-			toastError(
-				collectionId === undefined
-					? 'Failed to update card'
-					: 'Failed to move card',
-				error,
-			),
+		onError: error => toastError('Failed to update card', error),
 	})
 }
 
-/** Flags, retires, retypes, or moves several cards to another collection at once. */
+type CardsUpdate = CardBatchPatch & {
+	cardIds: Array<Id<'cards'>>
+	/**
+	 * Offers to undo the update under `title`, putting back the patched
+	 * fields of `cards` as they are now.
+	 */
+	undo?: { title: string; cards: ReadonlyArray<Card> }
+}
+
+/** Flags, retires, or retypes several cards at once. */
 export function useUpdateCards() {
-	const mutationFn = useConvexMutation(api.cards.updateMany)
+	const updateMany = useConvexMutation(api.cards.updateMany)
+	const updateEach = useConvexMutation(api.cards.updateEach)
 	return useMutation({
-		mutationFn,
+		mutationFn: ({ undo: _undo, ...patch }: CardsUpdate) =>
+			updateMany(patch),
 		onError: (error, patch) =>
 			toastError(plural(patch.cardIds, updateCardsFailure(patch)), error),
+		onSuccess: (_, { undo, ...patch }) => {
+			if (!undo) return
+
+			toastUndo(undo.title, () =>
+				updateEach({
+					patches: undo.cards.map(card => ({
+						cardId: card._id,
+						...(patch.type !== undefined && { type: card.type }),
+						// `null` clears a field the card did not have.
+						...(patch.flaggedAt !== undefined && {
+							flaggedAt: card.flaggedAt ?? null,
+						}),
+						...(patch.retiredAt !== undefined && {
+							retiredAt: card.retiredAt ?? null,
+						}),
+					})),
+				}),
+			)
+		},
 	})
 }
 
 function updateCardsFailure(patch: CardBatchPatch) {
-	if (patch.collectionId !== undefined) return 'Failed to move card'
 	if (patch.type !== undefined) return 'Failed to update card type'
 	if (patch.flaggedAt !== undefined) return 'Failed to update card flag'
 	if (patch.retiredAt !== undefined) return 'Failed to update card retirement'
