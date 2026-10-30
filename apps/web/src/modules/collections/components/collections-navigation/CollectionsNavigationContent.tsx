@@ -24,12 +24,12 @@ import { radii, spacing } from '~/styles/tokens.stylex'
 
 import { useCreateCollection } from '../../api/collectionQueries'
 import type { CollectionWithChildren } from '../../types/collection.types'
+import { RevealSelectionPill } from '../RevealSelectionPill'
 import { collectionsNavigationVars } from './collectionsNavigation.stylex'
 import {
 	type CollectionOpenChangeHandler,
 	CollectionTreeItem,
 } from './CollectionTreeItem'
-import { RevealSelectionPill } from './RevealSelectionPill'
 
 const COLLECTIONS_NAVIGATION_STORAGE_KEY = 'collectionsNavigationOpen'
 
