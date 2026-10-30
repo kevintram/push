@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 
-import { toast } from '~/components/ui/Toast'
 import type { DateString } from '~/types/date'
 import { todayIso } from '~/utils/date'
 
@@ -43,36 +42,18 @@ export function useReviewActions(review: Review): UseReviewActionsReturn {
 					? todayIso()
 					: undefined
 
-			updateReview.mutate(
-				{
-					...(date === undefined ? {} : { date }),
-					rating,
-					reviewId: review._id,
-				},
-				{
-					onError: () =>
-						toast.add({
-							title: 'Failed to update review rating',
-							type: 'error',
-						}),
-				},
-			)
+			updateReview.mutate({
+				...(date === undefined ? {} : { date }),
+				rating,
+				reviewId: review._id,
+			})
 		},
 		[review._id, review.rating, updateReview],
 	)
 
 	const setDate = useCallback(
 		(value: DateString | null) => {
-			updateReview.mutate(
-				{ date: value, reviewId: review._id },
-				{
-					onError: () =>
-						toast.add({
-							title: 'Failed to update review date',
-							type: 'error',
-						}),
-				},
-			)
+			updateReview.mutate({ date: value, reviewId: review._id })
 		},
 		[review._id, updateReview],
 	)
@@ -81,11 +62,6 @@ export function useReviewActions(review: Review): UseReviewActionsReturn {
 		deleteReview.mutate(
 			{ reviewId: review._id },
 			{
-				onError: () =>
-					toast.add({
-						title: 'Failed to delete review',
-						type: 'error',
-					}),
 				// Leave the dialog open on failure so the toast has context.
 				onSuccess: () => setIsDeleteDialogOpen(false),
 			},

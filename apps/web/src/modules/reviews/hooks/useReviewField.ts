@@ -1,7 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { useCallback } from 'react'
 
-import { toast } from '~/components/ui/Toast'
 import { useAutoSave } from '~/hooks/useAutoSave'
 
 import { useUpdateReview } from '../api/reviewQueries'
@@ -10,8 +9,6 @@ import { useUpdateReview } from '../api/reviewQueries'
 type EditableReviewField = 'description' | 'notes'
 
 type UseReviewFieldOptions = {
-	/** Shown when the save fails. */
-	errorMessage: string
 	field: EditableReviewField
 	reviewId: Id<'reviews'>
 	/** The value currently persisted for this field. */
@@ -26,7 +23,6 @@ type UseReviewFieldOptions = {
  * typed into rather than the one now on screen.
  */
 export function useReviewField({
-	errorMessage,
 	field,
 	reviewId,
 	value,
@@ -34,7 +30,7 @@ export function useReviewField({
 	const updateReview = useUpdateReview()
 
 	const onSave = useCallback(
-		async (nextValue: string) => {
+		(nextValue: string) => {
 			if (nextValue === value) return
 
 			// Named so the patch keeps the mutation's optional-field types
@@ -43,21 +39,17 @@ export function useReviewField({
 				[field]: nextValue,
 			}
 
-			try {
-				await updateReview.mutateAsync({ reviewId, ...patch })
-			} catch {
-				// TODO(3): A review deleted while an edit is queued reports a
-				// failure the user did not cause. `useAutoSave` flushes pending
-				// saves on unmount, so the save lands on a missing document and
-				// `requireUserOwns` throws. Reachable when the delete happens in
-				// another tab: nothing blurs the textarea first, so the debounce is
-				// still pending when Convex pushes the removal and this page
-				// unmounts. Needs a `cancel` on `useAutoSave` invoked before the
-				// delete; matching on the thrown message would be brittle.
-				toast.add({ title: errorMessage, type: 'error' })
-			}
+			// TODO(3): A review deleted while an edit is queued reports a
+			// failure the user did not cause. `useAutoSave` flushes pending
+			// saves on unmount, so the save lands on a missing document and
+			// `requireUserOwns` throws. Reachable when the delete happens in
+			// another tab: nothing blurs the textarea first, so the debounce is
+			// still pending when Convex pushes the removal and this page
+			// unmounts. Needs a `cancel` on `useAutoSave` invoked before the
+			// delete; matching on the thrown message would be brittle.
+			updateReview.mutate({ reviewId, ...patch })
 		},
-		[errorMessage, field, reviewId, updateReview, value],
+		[field, reviewId, updateReview, value],
 	)
 
 	return useAutoSave({

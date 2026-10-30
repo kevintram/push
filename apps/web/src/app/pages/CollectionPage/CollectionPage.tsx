@@ -15,7 +15,6 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
-import { toast } from '~/components/ui/Toast'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import {
 	collectionQueries,
@@ -126,35 +125,18 @@ export function CollectionPage() {
 	}, [deleteCollection, collectionId])
 
 	const saveTitle = useCallback(
-		async (title: string) => {
+		(title: string) => {
 			if (title === collection.title) return
 
-			try {
-				await updateCollection.mutateAsync({ collectionId, title })
-			} catch {
-				toast.add({
-					title: 'Failed to update collection title',
-					type: 'error',
-				})
-			}
+			updateCollection.mutate({ collectionId, title })
 		},
 		[collection, collectionId, updateCollection],
 	)
 	const saveDescription = useCallback(
-		async (description: string) => {
+		(description: string) => {
 			if (description === collection.description) return
 
-			try {
-				await updateCollection.mutateAsync({
-					collectionId,
-					description,
-				})
-			} catch {
-				toast.add({
-					title: 'Failed to update collection description',
-					type: 'error',
-				})
-			}
+			updateCollection.mutate({ collectionId, description })
 		},
 		[collection, collectionId, updateCollection],
 	)

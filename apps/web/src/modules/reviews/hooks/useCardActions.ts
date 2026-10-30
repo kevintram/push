@@ -1,8 +1,6 @@
 import { DateTime } from 'luxon'
 import { useCallback, useState } from 'react'
 
-import { toast } from '~/components/ui/Toast'
-
 import { useDeleteCard, useUpdateCard } from '../api/cardQueries'
 import type { Card } from '../types/review.types'
 
@@ -33,70 +31,34 @@ export function useCardActions(card: Card): UseCardActionsReturn {
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
 	const toggleType = useCallback(() => {
-		updateCard.mutate(
-			{
-				cardId: card._id,
-				type: card.type === 'flashcard' ? 'practice' : 'flashcard',
-			},
-			{
-				onError: () =>
-					toast.add({
-						title: 'Failed to update card type',
-						type: 'error',
-					}),
-			},
-		)
+		updateCard.mutate({
+			cardId: card._id,
+			type: card.type === 'flashcard' ? 'practice' : 'flashcard',
+		})
 	}, [card._id, card.type, updateCard])
 
 	const toggleFlag = useCallback(() => {
-		updateCard.mutate(
-			{
-				cardId: card._id,
-				// `null` unsets the field; see `cards.update`.
-				flaggedAt:
-					card.flaggedAt === undefined
-						? DateTime.now().toMillis()
-						: null,
-			},
-			{
-				onError: () =>
-					toast.add({
-						title: 'Failed to update card flag',
-						type: 'error',
-					}),
-			},
-		)
+		updateCard.mutate({
+			cardId: card._id,
+			// `null` unsets the field; see `cards.update`.
+			flaggedAt:
+				card.flaggedAt === undefined ? DateTime.now().toMillis() : null,
+		})
 	}, [card._id, card.flaggedAt, updateCard])
 
 	const toggleRetire = useCallback(() => {
-		updateCard.mutate(
-			{
-				cardId: card._id,
-				// `null` unsets the field; see `cards.update`.
-				retiredAt:
-					card.retiredAt === undefined
-						? DateTime.now().toMillis()
-						: null,
-			},
-			{
-				onError: () =>
-					toast.add({
-						title: 'Failed to update card retirement',
-						type: 'error',
-					}),
-			},
-		)
+		updateCard.mutate({
+			cardId: card._id,
+			// `null` unsets the field; see `cards.update`.
+			retiredAt:
+				card.retiredAt === undefined ? DateTime.now().toMillis() : null,
+		})
 	}, [card._id, card.retiredAt, updateCard])
 
 	const confirmDelete = useCallback(() => {
 		deleteCard.mutate(
 			{ cardId: card._id },
 			{
-				onError: () =>
-					toast.add({
-						title: 'Failed to delete card',
-						type: 'error',
-					}),
 				// Leave the dialog open on failure so the toast has context.
 				onSuccess: () => setIsDeleteDialogOpen(false),
 			},

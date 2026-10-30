@@ -4,7 +4,6 @@ import { queryOptions, useSuspenseQueries } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useMemo, useState } from 'react'
 
-import { toast } from '~/components/ui/Toast'
 import { useToday } from '~/hooks/useToday'
 import {
 	sectionQueries,
@@ -73,11 +72,6 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 			createCard.mutate(
 				{ collectionId, sectionId },
 				{
-					onError: () =>
-						toast.add({
-							title: 'Failed to create card',
-							type: 'error',
-						}),
 					onSuccess: cardId =>
 						void navigate({
 							to: '/cards/$cardId',

@@ -134,10 +134,10 @@ describe('CardActions', () => {
 				screen.getByRole('menuitem', { name: 'Remove as flashcard' }),
 			)
 
-		expect(updateMutate).toHaveBeenCalledWith(
-			{ cardId: card._id, type: 'practice' },
-			expect.anything(),
-		)
+		expect(updateMutate).toHaveBeenCalledWith({
+			cardId: card._id,
+			type: 'practice',
+		})
 	})
 
 	it('flags an unflagged card with the current time', async () => {
@@ -149,13 +149,10 @@ describe('CardActions', () => {
 			.setup()
 			.click(screen.getByRole('menuitem', { name: 'Flag' }))
 
-		expect(updateMutate).toHaveBeenCalledWith(
-			{
-				cardId: card._id,
-				flaggedAt: expect.any(Number) as number,
-			},
-			expect.anything(),
-		)
+		expect(updateMutate).toHaveBeenCalledWith({
+			cardId: card._id,
+			flaggedAt: expect.any(Number) as number,
+		})
 		const [args] = updateMutate.mock.calls[0] as [{ flaggedAt: number }]
 		expect(args.flaggedAt).toBeGreaterThanOrEqual(before)
 	})
@@ -167,10 +164,10 @@ describe('CardActions', () => {
 			.setup()
 			.click(screen.getByRole('button', { name: 'Unflag' }))
 
-		expect(updateMutate).toHaveBeenCalledWith(
-			{ cardId: card._id, flaggedAt: null },
-			expect.anything(),
-		)
+		expect(updateMutate).toHaveBeenCalledWith({
+			cardId: card._id,
+			flaggedAt: null,
+		})
 	})
 
 	it('retires an active card with the current time', async () => {
@@ -182,13 +179,10 @@ describe('CardActions', () => {
 			.setup()
 			.click(screen.getByRole('menuitem', { name: 'Retire' }))
 
-		expect(updateMutate).toHaveBeenCalledWith(
-			{
-				cardId: card._id,
-				retiredAt: expect.any(Number) as number,
-			},
-			expect.anything(),
-		)
+		expect(updateMutate).toHaveBeenCalledWith({
+			cardId: card._id,
+			retiredAt: expect.any(Number) as number,
+		})
 		const [args] = updateMutate.mock.calls[0] as [{ retiredAt: number }]
 		expect(args.retiredAt).toBeGreaterThanOrEqual(before)
 	})
@@ -200,10 +194,10 @@ describe('CardActions', () => {
 			.setup()
 			.click(screen.getByRole('button', { name: 'Unretire' }))
 
-		expect(updateMutate).toHaveBeenCalledWith(
-			{ cardId: card._id, retiredAt: null },
-			expect.anything(),
-		)
+		expect(updateMutate).toHaveBeenCalledWith({
+			cardId: card._id,
+			retiredAt: null,
+		})
 	})
 
 	it('offers no quick-access unretire button on an active card', () => {

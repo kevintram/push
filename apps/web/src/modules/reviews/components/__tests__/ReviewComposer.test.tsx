@@ -1,18 +1,23 @@
 import type { Id } from '@convex/_generated/dataModel'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { ConvexError } from 'convex/values'
 import type { ComponentProps } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { TooltipProvider } from '~/components/ui'
+import { toast } from '~/components/ui/Toast'
+import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
 import { ReviewComposer } from '../ReviewComposer'
 import { ReviewComposerProvider } from '../ReviewComposerProvider'
 
-const { mutate } = vi.hoisted(() => ({ mutate: vi.fn() }))
+const { createReview } = vi.hoisted(() => ({ createReview: vi.fn() }))
 
-vi.mock('../../api/reviewQueries', () => ({
-	useCreateReview: () => ({ isPending: false, mutate }),
+vi.mock('@convex-dev/react-query', () => ({
+	convexQuery: vi.fn(),
+	useConvexMutation: () => createReview,
 }))
 
 vi.mock('../RatingPicker', () => ({
@@ -29,38 +34,37 @@ function renderComposer(
 	props: Partial<ComponentProps<typeof ReviewComposer>> = {},
 ) {
 	return render(
-		<TooltipProvider delay={0}>
-			<ReviewComposerProvider cardId={cardId}>
-				<ReviewComposer {...props} />
-			</ReviewComposerProvider>
-		</TooltipProvider>,
+		<QueryClientProvider client={createTestQueryClient()}>
+			<TooltipProvider delay={0}>
+				<ReviewComposerProvider cardId={cardId}>
+					<ReviewComposer {...props} />
+				</ReviewComposerProvider>
+			</TooltipProvider>
+		</QueryClientProvider>,
 	)
 }
 
 describe('ReviewComposer', () => {
 	beforeEach(() => {
-		mutate.mockReset()
+		createReview.mockReset()
+		createReview.mockResolvedValue('review-1')
 	})
 
 	it.each(['Review description', 'Review notes'])(
 		'submits with Mod+Enter from the %s field',
-		fieldName => {
+		async fieldName => {
 			renderComposer()
 
 			const field = screen.getByRole('textbox', { name: fieldName })
 			fireEvent.change(field, { target: { value: 'A review' } })
 			fireEvent.keyDown(field, { key: 'Enter', ctrlKey: true })
 
-			expect(mutate).toHaveBeenCalledWith(
-				{
+			await waitFor(() =>
+				expect(createReview.mock.calls[0]?.[0]).toEqual({
 					cardId,
 					description:
 						fieldName === 'Review description' ? 'A review' : '',
 					notes: fieldName === 'Review notes' ? 'A review' : '',
-				},
-				expect.objectContaining({
-					onError: expect.any(Function),
-					onSuccess: expect.any(Function),
 				}),
 			)
 		},
@@ -74,7 +78,7 @@ describe('ReviewComposer', () => {
 		})
 		fireEvent.keyDown(description, { key: 'Enter', ctrlKey: true })
 
-		expect(mutate).not.toHaveBeenCalled()
+		expect(createReview).not.toHaveBeenCalled()
 	})
 
 	it('displays the shortcut in the Create button tooltip', async () => {
@@ -94,7 +98,6 @@ describe('ReviewComposer', () => {
 
 	it('clears the draft after a successful create', async () => {
 		const user = userEvent.setup()
-		mutate.mockImplementation((_args, options) => options.onSuccess())
 		renderComposer()
 
 		const description = screen.getByRole('textbox', {
@@ -103,12 +106,13 @@ describe('ReviewComposer', () => {
 		fireEvent.change(description, { target: { value: 'A review' } })
 		await user.click(screen.getByRole('button', { name: 'Create review' }))
 
-		expect(description).toHaveValue('')
+		await waitFor(() => expect(description).toHaveValue(''))
 	})
 
 	it('preserves the draft when creation fails', async () => {
 		const user = userEvent.setup()
-		mutate.mockImplementation((_args, options) => options.onError())
+		const addToast = vi.spyOn(toast, 'add')
+		createReview.mockRejectedValue(new ConvexError('Card not found'))
 		renderComposer()
 
 		const description = screen.getByRole('textbox', {
@@ -117,6 +121,13 @@ describe('ReviewComposer', () => {
 		fireEvent.change(description, { target: { value: 'Keep this draft' } })
 		await user.click(screen.getByRole('button', { name: 'Create review' }))
 
+		await waitFor(() =>
+			expect(addToast).toHaveBeenCalledWith({
+				description: 'Card not found',
+				title: 'Failed to create review',
+				type: 'error',
+			}),
+		)
 		expect(description).toHaveValue('Keep this draft')
 	})
 })

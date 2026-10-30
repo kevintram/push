@@ -2,16 +2,18 @@ import type { Id } from '@convex/_generated/dataModel'
 import type { Card } from '@convex/validators/cards'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
+import { ConvexError } from 'convex/values'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { toast } from '~/components/ui/Toast'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
-import { useDeleteCard } from '../cardQueries'
+import { useDeleteCard, useUpdateCard } from '../cardQueries'
 
 const navigate = vi.fn()
 const matchRoute = vi.fn()
-const removeCard = vi.fn()
+const convexMutation = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
 	useNavigate: () => navigate,
@@ -20,7 +22,7 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('@convex-dev/react-query', () => ({
 	convexQuery: vi.fn(),
-	useConvexMutation: () => removeCard,
+	useConvexMutation: () => convexMutation,
 }))
 
 const collectionId = 'collection-1' as Id<'collections'>
@@ -41,7 +43,7 @@ function wrapper({ children }: { children: ReactNode }) {
 
 describe('useDeleteCard', () => {
 	beforeEach(() => {
-		removeCard.mockResolvedValue(removedCard)
+		convexMutation.mockResolvedValue(removedCard)
 	})
 
 	it('falls back to the collection when the open card is deleted', async () => {
@@ -72,5 +74,28 @@ describe('useDeleteCard', () => {
 			expect(result.current.isSuccess).toBe(true)
 		})
 		expect(navigate).not.toHaveBeenCalled()
+	})
+})
+
+describe('useUpdateCard errors', () => {
+	it.each([
+		['an edit', { primaryText: 'Front' }, 'Failed to update card'],
+		['a move', { collectionId }, 'Failed to move card'],
+	])('titles the toast for %s', async (_name, patch, title) => {
+		const addToast = vi.spyOn(toast, 'add')
+		convexMutation.mockRejectedValue(new ConvexError('Card not found'))
+		const { result } = renderHook(() => useUpdateCard(), { wrapper })
+
+		await act(async () => {
+			result.current.mutate({ cardId, ...patch })
+		})
+
+		await waitFor(() => {
+			expect(addToast).toHaveBeenCalledWith({
+				description: 'Card not found',
+				title,
+				type: 'error',
+			})
+		})
 	})
 })

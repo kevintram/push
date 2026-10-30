@@ -41,29 +41,26 @@ describe('useReviewActions', () => {
 		)
 
 		act(() => result.current.setRating('good'))
-		expect(updateMutate).toHaveBeenLastCalledWith(
-			{
-				date: '2026-08-08',
-				rating: 'good',
-				reviewId: baseReview._id,
-			},
-			expect.anything(),
-		)
+		expect(updateMutate).toHaveBeenLastCalledWith({
+			date: '2026-08-08',
+			rating: 'good',
+			reviewId: baseReview._id,
+		})
 
 		rerender({
 			review: { ...baseReview, date: '2026-08-08', rating: 'good' },
 		})
 		// Re-rating leaves the stored completion day alone.
 		act(() => result.current.setRating('easy'))
-		expect(updateMutate).toHaveBeenLastCalledWith(
-			{ rating: 'easy', reviewId: baseReview._id },
-			expect.anything(),
-		)
+		expect(updateMutate).toHaveBeenLastCalledWith({
+			rating: 'easy',
+			reviewId: baseReview._id,
+		})
 
 		act(() => result.current.setRating(null))
-		expect(updateMutate).toHaveBeenLastCalledWith(
-			{ rating: null, reviewId: baseReview._id },
-			expect.anything(),
-		)
+		expect(updateMutate).toHaveBeenLastCalledWith({
+			rating: null,
+			reviewId: baseReview._id,
+		})
 	})
 })

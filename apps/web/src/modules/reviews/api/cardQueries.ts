@@ -5,8 +5,7 @@ import { placeInLine } from '@shared/ordering'
 import { useMutation } from '@tanstack/react-query'
 import { useMatchRoute, useNavigate } from '@tanstack/react-router'
 
-import { toast } from '~/components/ui/Toast'
-import { getErrorMessage } from '~/utils/error'
+import { toastError } from '~/components/ui/Toast'
 
 export const cardQueries = {
 	listFlagged: () => convexQuery(api.cards.listFlagged, {}),
@@ -18,12 +17,24 @@ export const cardQueries = {
 
 export function useCreateCard() {
 	const mutationFn = useConvexMutation(api.cards.create)
-	return useMutation({ mutationFn })
+	return useMutation({
+		mutationFn,
+		onError: error => toastError('Failed to create card', error),
+	})
 }
 
 export function useUpdateCard() {
 	const mutationFn = useConvexMutation(api.cards.update)
-	return useMutation({ mutationFn })
+	return useMutation({
+		mutationFn,
+		onError: (error, { collectionId }) =>
+			toastError(
+				collectionId === undefined
+					? 'Failed to update card'
+					: 'Failed to move card',
+				error,
+			),
+	})
 }
 
 /**
@@ -74,12 +85,7 @@ export function useMoveCard() {
 	)
 	return useMutation({
 		mutationFn,
-		onError: error =>
-			toast.add({
-				description: getErrorMessage(error),
-				title: 'Failed to move card',
-				type: 'error',
-			}),
+		onError: error => toastError('Failed to move card', error),
 	})
 }
 
@@ -91,6 +97,7 @@ export function useDeleteCard() {
 
 	return useMutation({
 		mutationFn,
+		onError: error => toastError('Failed to delete card', error),
 		onSuccess: ({ _id, collectionId }) => {
 			// if deleted card is currently open, fall back to its collection
 			if (

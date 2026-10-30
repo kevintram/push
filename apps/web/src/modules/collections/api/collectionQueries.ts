@@ -4,8 +4,7 @@ import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { useMatchRoute, useNavigate } from '@tanstack/react-router'
 
-import { toast } from '~/components/ui/Toast'
-import { getErrorMessage } from '~/utils/error'
+import { toastError } from '~/components/ui/Toast'
 
 // `expandPath` decides whether `path` holds ancestor ids or the documents they
 // name. It is a runtime argument, so `path` is typed as the union of both;
@@ -27,12 +26,7 @@ export function useCreateCollection() {
 	const mutationFn = useConvexMutation(api.collections.create)
 	return useMutation({
 		mutationFn,
-		onError: error =>
-			toast.add({
-				description: getErrorMessage(error),
-				title: 'Failed to create collection',
-				type: 'error',
-			}),
+		onError: error => toastError('Failed to create collection', error),
 	})
 }
 
@@ -40,12 +34,13 @@ export function useUpdateCollection() {
 	const mutationFn = useConvexMutation(api.collections.update)
 	return useMutation({
 		mutationFn,
-		onError: error =>
-			toast.add({
-				description: getErrorMessage(error),
-				title: 'Failed to update collection',
-				type: 'error',
-			}),
+		onError: (error, { parentId }) =>
+			toastError(
+				parentId === undefined
+					? 'Failed to update collection'
+					: 'Failed to move collection',
+				error,
+			),
 	})
 }
 
@@ -57,6 +52,7 @@ export function useDeleteCollection() {
 
 	return useMutation({
 		mutationFn,
+		onError: error => toastError('Failed to delete collection', error),
 		onSuccess: ({ _id, parentId }) => {
 			// if deleted collection is currently open
 			if (

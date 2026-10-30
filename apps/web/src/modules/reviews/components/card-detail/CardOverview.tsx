@@ -83,19 +83,16 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 	}, [hideMode, cardId])
 
 	const primaryText = useCardField({
-		errorMessage: 'Failed to update card',
 		field: 'primaryText',
 		cardId,
 		value: card.primaryText,
 	})
 	const secondaryText = useCardField({
-		errorMessage: 'Failed to update card',
 		field: 'secondaryText',
 		cardId,
 		value: card.secondaryText,
 	})
 	const notes = useCardField({
-		errorMessage: 'Failed to update card notes',
 		field: 'notes',
 		cardId,
 		value: card.notes,

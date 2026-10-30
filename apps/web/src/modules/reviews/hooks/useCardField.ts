@@ -1,7 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { useCallback } from 'react'
 
-import { toast } from '~/components/ui/Toast'
 import { useAutoSave } from '~/hooks/useAutoSave'
 
 import { useUpdateCard } from '../api/cardQueries'
@@ -10,8 +9,6 @@ import { useUpdateCard } from '../api/cardQueries'
 type EditableCardField = 'notes' | 'primaryText' | 'secondaryText'
 
 type UseCardFieldOptions = {
-	/** Shown when the save fails. */
-	errorMessage: string
 	field: EditableCardField
 	cardId: Id<'cards'>
 	/** The value currently persisted for this field. */
@@ -25,16 +22,11 @@ type UseCardFieldOptions = {
  * card flushes the pending save against the card the text was typed into rather
  * than the one now on screen.
  */
-export function useCardField({
-	errorMessage,
-	field,
-	cardId,
-	value,
-}: UseCardFieldOptions) {
+export function useCardField({ field, cardId, value }: UseCardFieldOptions) {
 	const updateCard = useUpdateCard()
 
 	const onSave = useCallback(
-		async (nextValue: string) => {
+		(nextValue: string) => {
 			if (nextValue === value) return
 
 			// Named so the patch keeps the mutation's optional-field types
@@ -43,22 +35,18 @@ export function useCardField({
 				[field]: nextValue,
 			}
 
-			try {
-				await updateCard.mutateAsync({ cardId, ...patch })
-			} catch {
-				// TODO(3): a card deleted while an edit is queued reports a
-				// failure the user did not cause. `useAutoSave` flushes pending
-				// saves on unmount, so the save lands on a missing document and
-				// `requireOwnedCard` throws. Reachable when the delete
-				// happens in another tab: nothing blurs the textarea first, so
-				// the debounce is still pending when Convex pushes the removal
-				// and this page unmounts. Needs a `cancel` on `useAutoSave`
-				// invoked before the delete; matching on the thrown message
-				// would be brittle.
-				toast.add({ title: errorMessage, type: 'error' })
-			}
+			// TODO(3): a card deleted while an edit is queued reports a
+			// failure the user did not cause. `useAutoSave` flushes pending
+			// saves on unmount, so the save lands on a missing document and
+			// `requireOwnedCard` throws. Reachable when the delete
+			// happens in another tab: nothing blurs the textarea first, so
+			// the debounce is still pending when Convex pushes the removal
+			// and this page unmounts. Needs a `cancel` on `useAutoSave`
+			// invoked before the delete; matching on the thrown message
+			// would be brittle.
+			updateCard.mutate({ cardId, ...patch })
 		},
-		[errorMessage, field, cardId, updateCard, value],
+		[field, cardId, updateCard, value],
 	)
 
 	return useAutoSave({
