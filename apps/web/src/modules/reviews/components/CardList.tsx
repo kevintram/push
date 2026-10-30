@@ -49,9 +49,12 @@ const styles = stylex.create({
 	},
 	// Rules off a section from the rows above it, with the title sitting just
 	// over the rule rather than centered. The title and column labels differ
-	// in size, so they align on their baselines rather than their bottoms.
-	// Table rows don't draw borders, so each cell draws its part of the rule.
+	// in size, so they align on their baselines rather than their bottoms. A
+	// table sets baseline-aligned cells at the top of the row, so the row
+	// drops its minimum height to leave no room below them. Table rows don't
+	// draw borders, so each cell draws its part of the rule.
 	underlinedHeaderCell: {
+		blockSize: null,
 		paddingBlockEnd: spacing['2xs'],
 		verticalAlign: 'baseline',
 
