@@ -44,7 +44,6 @@ const styles = stylex.create({
 			[wide]: '32px',
 		},
 
-		fontWeight: fontWeights.regular,
 		textAlign: 'start',
 	},
 	// Rules off a section from the rows above it, with the title sitting just
@@ -121,7 +120,7 @@ const styles = stylex.create({
 		paddingInlineStart: spacing.lg,
 		whiteSpace: 'nowrap',
 
-		color: colorsSemantic.textSecondary,
+		color: colorsSemantic.textTertiary,
 		fontSize: fontSizes.sm,
 	},
 	// Above a title stretched over the row, so the actions stay clickable.
