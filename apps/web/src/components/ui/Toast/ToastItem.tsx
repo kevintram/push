@@ -108,14 +108,18 @@ const styles = stylex.create({
 			width: '100%',
 		},
 	},
+	// Close comes last in the DOM so Tab reaches the action first, and the
+	// grid puts it back beside the heading.
 	content: {
 		padding: spacing.lg,
-		gap: spacing.xs,
+		columnGap: spacing.sm,
+		rowGap: spacing.xs,
 
 		overflow: 'hidden',
-		alignItems: 'stretch',
-		display: 'flex',
-		flexDirection: 'column',
+		alignContent: 'start',
+		alignItems: 'center',
+		display: 'grid',
+		gridTemplateColumns: 'minmax(0, 1fr) auto',
 		height: '100%',
 
 		opacity: {
@@ -130,23 +134,28 @@ const styles = stylex.create({
 		transitionProperty: 'opacity',
 		transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
 	},
-	header: {
-		gap: spacing.sm,
-		alignItems: 'center',
-		display: 'grid',
-		gridTemplateColumns: 'minmax(0, 1fr) auto',
-	},
 	heading: {
 		gap: spacing.md,
+		gridColumn: '1',
+		gridRow: '1',
 		alignItems: 'center',
 		display: 'flex',
 		minWidth: 0,
 	},
 	body: {
 		gap: spacing.sm,
+		// Under the close button too, so a long description gets the full width.
+		gridRow: '2',
 		display: 'grid',
+		gridColumnEnd: '-1',
+		gridColumnStart: '1',
 		justifyItems: 'start',
 		minWidth: 0,
+	},
+	close: {
+		gridColumn: '2',
+		gridRow: '1',
+		display: 'flex',
 	},
 	bodyWithIcon: {
 		paddingInlineStart: `calc(${iconSizes.sm} + ${spacing.md})`,
@@ -214,23 +223,18 @@ export function ToastItem({
 			{...stylex.props(styles.root, styles.stackOrder(index))}
 		>
 			<ToastPrimitive.Content {...stylex.props(styles.content)}>
-				<div {...stylex.props(styles.header)}>
-					<div {...stylex.props(styles.heading)}>
-						{icon && (
-							<icon.Icon
-								aria-hidden='true'
-								{...stylex.props(styles.icon, icon.xstyle)}
-							/>
-						)}
-						{hasTitle ? (
-							<ToastPrimitive.Title
-								{...stylex.props(styles.title)}
-							/>
-						) : (
-							description
-						)}
-					</div>
-					<ToastClose />
+				<div {...stylex.props(styles.heading)}>
+					{icon && (
+						<icon.Icon
+							aria-hidden='true'
+							{...stylex.props(styles.icon, icon.xstyle)}
+						/>
+					)}
+					{hasTitle ? (
+						<ToastPrimitive.Title {...stylex.props(styles.title)} />
+					) : (
+						description
+					)}
 				</div>
 				{hasBody && (
 					<div
@@ -245,6 +249,9 @@ export function ToastItem({
 						/>
 					</div>
 				)}
+				<div {...stylex.props(styles.close)}>
+					<ToastClose />
+				</div>
 			</ToastPrimitive.Content>
 		</ToastPrimitive.Root>
 	)
