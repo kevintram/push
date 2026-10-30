@@ -17,6 +17,7 @@ import type { Card as CardModel, CardSrsState } from '../types/review.types'
 import { CardActions } from './CardActions'
 import { CardDueDate } from './CardDueDate'
 import { CardLastReviewed } from './CardLastReviewed'
+import { CardNewIndicator } from './CardNewIndicator'
 import { StrengthSignal } from './StrengthSignal'
 
 // A local string, not a shared constant: StyleX can leave an imported
@@ -192,6 +193,15 @@ const styles = stylex.create({
 		},
 	},
 
+	// Only the table marks a new card by its title. Stacked, the metadata line
+	// already says "New".
+	newIndicator: {
+		display: {
+			default: 'none',
+			[wide]: 'inline-flex',
+		},
+	},
+
 	due: { gridColumnStart: '2' },
 	lastReviewed: { gridColumnStart: '3' },
 	strength: {
@@ -283,13 +293,20 @@ export function CardItem({
 	}
 
 	const titleText = (
-		<FadeText
-			tooltipSide='bottom'
-			tooltipAlign='start'
-			xstyle={styles.raised}
-		>
-			{title}
-		</FadeText>
+		<>
+			<FadeText
+				tooltipSide='bottom'
+				tooltipAlign='start'
+				xstyle={styles.raised}
+			>
+				{title}
+			</FadeText>
+			{isNew ? (
+				<CardNewIndicator
+					xstyle={[styles.raised, styles.newIndicator]}
+				/>
+			) : null}
+		</>
 	)
 
 	// The table's grid layout can drop its native roles, so name them.

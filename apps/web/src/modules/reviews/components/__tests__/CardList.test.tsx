@@ -135,8 +135,18 @@ describe('CardList', () => {
 		const user = userEvent.setup()
 		renderList(unreviewed)
 
-		expect(screen.getByText('Never')).toBeInTheDocument()
 		await user.hover(screen.getByText('New'))
+
+		expect(await screen.findByRole('tooltip')).toHaveTextContent(
+			'Not reviewed yet',
+		)
+	})
+
+	it('marks a new card by its title', async () => {
+		const user = userEvent.setup()
+		renderList(unreviewed)
+
+		await user.hover(screen.getByLabelText('New'))
 
 		expect(await screen.findByRole('tooltip')).toHaveTextContent(
 			'Not reviewed yet',

@@ -25,8 +25,8 @@ const styles = stylex.create({
 	},
 	today: { color: colorsSemantic.textToday },
 	// Stacked, a new card's line reads "New" in place of its dates. The table
-	// keeps the column and says "Never".
-	never: {
+	// keeps the column with a dash, like an empty due date.
+	empty: {
 		color: colorsSemantic.textTertiary,
 		display: {
 			default: 'none',
@@ -56,7 +56,7 @@ export function CardLastReviewed({
 	if (lastReviewedAt === null) {
 		return (
 			<>
-				<span {...stylex.props(styles.never)}>Never</span>
+				<span {...stylex.props(styles.empty)}>—</span>
 				<Tooltip>
 					<TooltipTrigger
 						render={
