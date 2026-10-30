@@ -2,6 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Sparkles } from 'lucide-react'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
+import { a11y } from '~/styles/a11y'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
@@ -56,7 +57,10 @@ export function CardLastReviewed({
 	if (lastReviewedAt === null) {
 		return (
 			<>
-				<span {...stylex.props(styles.empty)}>—</span>
+				<span {...stylex.props(styles.empty)}>
+					<span aria-hidden='true'>—</span>
+					<span {...stylex.props(a11y.visuallyHidden)}>Never</span>
+				</span>
 				<Tooltip>
 					<TooltipTrigger
 						render={

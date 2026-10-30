@@ -135,6 +135,8 @@ describe('CardList', () => {
 		const user = userEvent.setup()
 		renderList(unreviewed)
 
+		// The table's dash, named for screen readers.
+		expect(screen.getByText('Never')).toBeInTheDocument()
 		await user.hover(screen.getByText('New'))
 
 		expect(await screen.findByRole('tooltip')).toHaveTextContent(
@@ -146,7 +148,10 @@ describe('CardList', () => {
 		const user = userEvent.setup()
 		renderList(unreviewed)
 
-		await user.hover(screen.getByLabelText('New'))
+		const link = screen.getByRole('link', {
+			name: 'What problem do generics solve?',
+		})
+		await user.hover(link.querySelector('svg.lucide-sparkles')!)
 
 		expect(await screen.findByRole('tooltip')).toHaveTextContent(
 			'Not reviewed yet',

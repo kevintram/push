@@ -23,14 +23,17 @@ type CardNewIndicatorProps = {
 	xstyle?: StyleXStyles
 }
 
-/** Marks a card that has not been reviewed yet. */
+/**
+ * Marks a card that has not been reviewed yet. Hidden from screen readers, so
+ * it stays out of the title link's name; the last review column says it.
+ */
 export function CardNewIndicator({ xstyle }: CardNewIndicatorProps) {
 	return (
 		<Tooltip>
 			<TooltipTrigger
 				render={<span {...stylex.props(styles.trigger, xstyle)} />}
 			>
-				<Sparkles aria-label='New' {...stylex.props(styles.icon)} />
+				<Sparkles aria-hidden='true' {...stylex.props(styles.icon)} />
 			</TooltipTrigger>
 			<TooltipContent>Not reviewed yet</TooltipContent>
 		</Tooltip>
