@@ -91,7 +91,7 @@ describe('reviews', () => {
 		for (const cardId of [foreignCardId, missingCardId]) {
 			await expect(
 				asUserA.query(api.reviews.listByCard, { cardId }),
-			).rejects.toThrow('Card not found')
+			).rejects.toMatchObject({ data: 'Card not found' })
 		}
 	})
 
@@ -150,7 +150,7 @@ describe('reviews', () => {
 		for (const reviewId of [foreignReviewId, missingReviewId]) {
 			await expect(
 				asUserA.query(api.reviews.get, { reviewId }),
-			).rejects.toThrow('Review not found')
+			).rejects.toMatchObject({ data: 'Review not found' })
 		}
 	})
 
@@ -425,7 +425,9 @@ describe('reviews', () => {
 				date: dayAfterTomorrow,
 				reviewId: completedReviewId,
 			}),
-		).rejects.toThrow("Can't have a completed review in the future")
+		).rejects.toMatchObject({
+			data: "Can't have a completed review in the future",
+		})
 		expect(
 			await asUserA.query(api.reviews.get, {
 				reviewId: completedReviewId,
@@ -543,7 +545,7 @@ describe('reviews', () => {
 					api.reviews.update,
 					{ description: 'Hijacked', reviewId: targetId },
 				),
-			).rejects.toThrow('Review not found')
+			).rejects.toMatchObject({ data: 'Review not found' })
 		}
 	})
 
@@ -602,7 +604,7 @@ describe('reviews', () => {
 					api.reviews.remove,
 					{ reviewId: targetId },
 				),
-			).rejects.toThrow('Review not found')
+			).rejects.toMatchObject({ data: 'Review not found' })
 		}
 	})
 

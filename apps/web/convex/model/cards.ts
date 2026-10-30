@@ -1,3 +1,5 @@
+import { ConvexError } from 'convex/values'
+
 import { backfillRanks, placeInLine, rankAfter } from '../../shared/ordering'
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
@@ -20,7 +22,7 @@ export async function requireUserOwns(
 	const card = await ctx.db.get('cards', cardId)
 
 	if (!card || card.ownerId !== userId) {
-		throw new Error('Card not found')
+		throw new ConvexError('Card not found')
 	}
 
 	return card

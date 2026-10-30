@@ -1,3 +1,5 @@
+import { ConvexError } from 'convex/values'
+
 import { backfillRanks, placeInLine, rankAfter } from '../../shared/ordering'
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
@@ -16,7 +18,7 @@ export async function requireUserOwns(
 	const section = await ctx.db.get('sections', sectionId)
 
 	if (!section || section.ownerId !== userId) {
-		throw new Error('Section not found')
+		throw new ConvexError('Section not found')
 	}
 
 	return section

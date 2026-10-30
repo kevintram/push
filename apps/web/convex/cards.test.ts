@@ -39,35 +39,35 @@ describe('cards', () => {
 
 		await expect(
 			t.query(api.cards.listByCollection, { collectionId }),
-		).rejects.toThrow('Unauthenticated')
-		await expect(t.query(api.cards.listFlagged, {})).rejects.toThrow(
-			'Unauthenticated',
-		)
-		await expect(t.query(api.cards.get, { cardId })).rejects.toThrow(
-			'Unauthenticated',
-		)
+		).rejects.toMatchObject({ data: "You've been signed out" })
+		await expect(t.query(api.cards.listFlagged, {})).rejects.toMatchObject({
+			data: "You've been signed out",
+		})
+		await expect(t.query(api.cards.get, { cardId })).rejects.toMatchObject({
+			data: "You've been signed out",
+		})
 		await expect(
 			t.query(api.cards.search, { query: 'card' }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.cards.create, { collectionId }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.cards.update, {
 				primaryText: 'Updated',
 				cardId,
 			}),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.cards.move, {
 				cardId,
 				sectionId: null,
 				afterId: null,
 			}),
-		).rejects.toThrow('Unauthenticated')
-		await expect(t.mutation(api.cards.remove, { cardId })).rejects.toThrow(
-			'Unauthenticated',
-		)
+		).rejects.toMatchObject({ data: "You've been signed out" })
+		await expect(
+			t.mutation(api.cards.remove, { cardId }),
+		).rejects.toMatchObject({ data: "You've been signed out" })
 	})
 
 	it('creates cards with defaults and supplied fields', async () => {
@@ -154,7 +154,7 @@ describe('cards', () => {
 			asUserA.query(api.cards.listByCollection, {
 				collectionId: foreignCollectionId,
 			}),
-		).rejects.toThrow('Collection not found')
+		).rejects.toMatchObject({ data: 'Collection not found' })
 	})
 
 	it('omits cards on an owned collection that belong to someone else', async () => {
@@ -249,12 +249,12 @@ describe('cards', () => {
 			asUserA.mutation(api.cards.create, {
 				collectionId: missingCollectionId,
 			}),
-		).rejects.toThrow('Collection not found')
+		).rejects.toMatchObject({ data: 'Collection not found' })
 		await expect(
 			asUserA.mutation(api.cards.create, {
 				collectionId: foreignCollectionId,
 			}),
-		).rejects.toThrow('Collection not found')
+		).rejects.toMatchObject({ data: 'Collection not found' })
 	})
 
 	it('hides missing and foreign-owned cards from every card function', async () => {
@@ -280,16 +280,16 @@ describe('cards', () => {
 		for (const cardId of [foreignCardId, missingCardId]) {
 			await expect(
 				asUserA.query(api.cards.get, { cardId }),
-			).rejects.toThrow('Card not found')
+			).rejects.toMatchObject({ data: 'Card not found' })
 			await expect(
 				asUserA.mutation(api.cards.update, {
 					primaryText: 'Updated',
 					cardId,
 				}),
-			).rejects.toThrow('Card not found')
+			).rejects.toMatchObject({ data: 'Card not found' })
 			await expect(
 				asUserA.mutation(api.cards.remove, { cardId }),
-			).rejects.toThrow('Card not found')
+			).rejects.toMatchObject({ data: 'Card not found' })
 		}
 	})
 
@@ -453,7 +453,7 @@ describe('cards', () => {
 					cardId,
 					collectionId,
 				}),
-			).rejects.toThrow('Collection not found')
+			).rejects.toMatchObject({ data: 'Collection not found' })
 		}
 
 		await expect(
@@ -495,7 +495,7 @@ describe('cards', () => {
 				collectionId,
 				sectionId: foreignSectionId,
 			}),
-		).rejects.toThrow('Section not found')
+		).rejects.toMatchObject({ data: 'Section not found' })
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 			sectionId,
@@ -1116,7 +1116,7 @@ describe('cards', () => {
 					sectionId: null,
 					afterId: null,
 				}),
-			).rejects.toThrow('Card not found')
+			).rejects.toMatchObject({ data: 'Card not found' })
 		})
 
 		it('ranks the rest of an unranked list in place when a card moves into it', async () => {

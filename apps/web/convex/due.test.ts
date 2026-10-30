@@ -96,7 +96,7 @@ describe('due.list', () => {
 
 		await expect(
 			t.query(api.due.list, { dueDate: '2026-08-10' }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 	})
 
 	it('returns cards due on the date and cards with a review scheduled that day', async () => {

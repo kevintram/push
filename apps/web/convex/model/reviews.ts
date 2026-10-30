@@ -1,3 +1,4 @@
+import { ConvexError } from 'convex/values'
 import { DateTime } from 'luxon'
 
 import { assertIsoDate } from '../../shared/date'
@@ -43,7 +44,7 @@ export async function requireUserOwns(
 	const review = await ctx.db.get('reviews', reviewId)
 
 	if (!review || review.ownerId !== userId) {
-		throw new Error('Review not found')
+		throw new ConvexError('Review not found')
 	}
 
 	return review
@@ -240,6 +241,6 @@ function assertCompletedReviewIsValid(
 	// still rejecting dates that cannot be "today" in any timezone.
 	const latestCompletionDate = DateTime.utc().plus({ days: 1 }).toISODate()
 	if (latestCompletionDate === null || date > latestCompletionDate) {
-		throw new Error("Can't have a completed review in the future")
+		throw new ConvexError("Can't have a completed review in the future")
 	}
 }

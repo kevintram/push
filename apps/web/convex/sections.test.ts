@@ -30,19 +30,19 @@ describe('sections', () => {
 
 		await expect(
 			t.query(api.sections.listByCollection, { collectionId }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.sections.create, { collectionId }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.sections.update, { sectionId, title: 'Renamed' }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.sections.move, { sectionId, afterId: null }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.sections.remove, { sectionId }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 	})
 
 	it('creates sections with an empty default title and lists them oldest first', async () => {
@@ -108,19 +108,19 @@ describe('sections', () => {
 
 		await expect(
 			asUserB.query(api.sections.listByCollection, { collectionId }),
-		).rejects.toThrow('Collection not found')
+		).rejects.toMatchObject({ data: 'Collection not found' })
 		await expect(
 			asUserB.mutation(api.sections.create, { collectionId }),
-		).rejects.toThrow('Collection not found')
+		).rejects.toMatchObject({ data: 'Collection not found' })
 		await expect(
 			asUserB.mutation(api.sections.update, {
 				sectionId,
 				title: 'Stolen',
 			}),
-		).rejects.toThrow('Section not found')
+		).rejects.toMatchObject({ data: 'Section not found' })
 		await expect(
 			asUserB.mutation(api.sections.remove, { sectionId }),
-		).rejects.toThrow('Section not found')
+		).rejects.toMatchObject({ data: 'Section not found' })
 
 		await expect(
 			asUserA.query(api.sections.listByCollection, { collectionId }),
@@ -266,7 +266,7 @@ describe('sections', () => {
 		).rejects.toThrow('The item to place after is not in this list')
 		await expect(
 			asUserB.mutation(api.sections.move, { sectionId, afterId: null }),
-		).rejects.toThrow('Section not found')
+		).rejects.toMatchObject({ data: 'Section not found' })
 	})
 
 	it('ranks unranked sections in place when one of them moves', async () => {

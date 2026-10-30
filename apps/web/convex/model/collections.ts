@@ -1,3 +1,5 @@
+import { ConvexError } from 'convex/values'
+
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import type {
@@ -16,7 +18,7 @@ export async function requireUserOwns(
 	const collection = await ctx.db.get('collections', collectionId)
 
 	if (!collection || collection.ownerId !== userId) {
-		throw new Error(notFoundMessage)
+		throw new ConvexError(notFoundMessage)
 	}
 
 	return collection
@@ -157,11 +159,11 @@ export async function update(
 		)
 
 		if (newParentId === collectionId) {
-			throw new Error('A collection cannot be its own parent')
+			throw new ConvexError('A collection cannot be its own parent')
 		}
 
 		if (parent.path.includes(collectionId)) {
-			throw new Error(
+			throw new ConvexError(
 				'A collection cannot be nested below one of its descendants',
 			)
 		}
