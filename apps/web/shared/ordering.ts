@@ -35,6 +35,11 @@ export function rankAfter(lastRank: string | undefined | null): string {
 	return generateKeyBetween(lastRank ?? null, null)
 }
 
+/** Throws unless `rank` is a well-formed key, which every other key builds on. */
+export function assertRank(rank: string): void {
+	generateKeyBetween(rank, null)
+}
+
 /**
  * Keys for a list's unranked rows. They take the slots before its first ranked
  * row in their current order, so assigning them leaves the list's order as is.

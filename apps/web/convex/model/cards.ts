@@ -288,6 +288,17 @@ export async function backfillForCollection(
 	}
 }
 
+/** Applies each patch to its own card, as when putting back several cards' values. */
+export async function updateEach(
+	ctx: MutationCtx,
+	userId: string,
+	patches: ReadonlyArray<{ cardId: Id<'cards'> } & CardBatchPatch>,
+): Promise<void> {
+	for (const { cardId, ...patch } of patches) {
+		await update(ctx, userId, cardId, patch)
+	}
+}
+
 /** Applies the same patch to each card, as `update` would one by one. */
 export async function updateMany(
 	ctx: MutationCtx,

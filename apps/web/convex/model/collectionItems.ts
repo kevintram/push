@@ -1,9 +1,11 @@
 // removing and moving a mix of sections and cards in a separate file because
 // it's cross domain
 
+import { assertRank } from '../../shared/ordering'
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
-import type { Section } from '../validators/sections'
+import type { CardPlacement } from '../validators/cards'
+import type { Section, SectionPlacement } from '../validators/sections'
 import * as Cards from './cards'
 import * as Collections from './collections'
 import * as Sections from './sections'
@@ -52,25 +54,90 @@ export async function moveToCollection(
 	for (const section of sections) {
 		if (section.collectionId === collectionId) continue
 
-		await ctx.db.patch('sections', section._id, {
+		await moveSection(
+			ctx,
+			section,
 			collectionId,
-			rank: await Sections.rankAtEnd(ctx, collectionId),
-		})
-		// Collected first because each patch moves the card out of the range.
-		const cards = await ctx.db
-			.query('cards')
-			.withIndex('by_collectionId_sectionId_rank', q =>
-				q
-					.eq('collectionId', section.collectionId)
-					.eq('sectionId', section._id),
-			)
-			.collect()
-		for (const card of cards) {
-			await ctx.db.patch('cards', card._id, { collectionId })
-		}
+			await Sections.rankAtEnd(ctx, collectionId),
+		)
 	}
 
 	await Cards.updateMany(ctx, userId, looseCardIds, { collectionId })
+}
+
+/**
+ * Moves sections, with their cards, and cards to the exact places given.
+ * Sections go first, so a card can go into a section that is moving to its
+ * collection too.
+ */
+export async function moveToPlacements(
+	ctx: MutationCtx,
+	userId: string,
+	{
+		sections,
+		cards,
+	}: {
+		sections: ReadonlyArray<SectionPlacement>
+		cards: ReadonlyArray<CardPlacement>
+	},
+): Promise<void> {
+	for (const { sectionId, collectionId, rank } of sections) {
+		const section = await Sections.requireUserOwns(ctx, userId, sectionId)
+		await Collections.requireUserOwns(ctx, userId, collectionId)
+		if (rank !== null) assertRank(rank)
+
+		await moveSection(ctx, section, collectionId, rank ?? undefined)
+	}
+
+	// A card's old key returns it between its old neighbors, and
+	// `compareRanked` orders it by creation time should another card have
+	// taken that key since.
+	for (const { cardId, collectionId, sectionId, rank } of cards) {
+		await Cards.requireUserOwns(ctx, userId, cardId)
+		await Collections.requireUserOwns(ctx, userId, collectionId)
+		if (sectionId !== null) {
+			await Sections.requireUserOwnsInCollection(
+				ctx,
+				userId,
+				sectionId,
+				collectionId,
+			)
+		}
+		if (rank !== null) assertRank(rank)
+
+		await ctx.db.patch('cards', cardId, {
+			collectionId,
+			// Clearing in Convex means patching an explicit `undefined`.
+			sectionId: sectionId ?? undefined,
+			rank: rank ?? undefined,
+		})
+	}
+}
+
+/**
+ * Private helper (not exported) for moving `section` to `collectionId` at `rank`, 
+ * carrying every card in the section along, since each card stores its own 
+ * `collectionId`.
+ */
+async function moveSection(
+	ctx: MutationCtx,
+	section: Section,
+	collectionId: Id<'collections'>,
+	rank: string | undefined,
+): Promise<void> {
+	await ctx.db.patch('sections', section._id, { collectionId, rank })
+	// Collected first because each patch moves the card out of the range.
+	const cards = await ctx.db
+		.query('cards')
+		.withIndex('by_collectionId_sectionId_rank', q =>
+			q
+				.eq('collectionId', section.collectionId)
+				.eq('sectionId', section._id),
+		)
+		.collect()
+	for (const card of cards) {
+		await ctx.db.patch('cards', card._id, { collectionId })
+	}
 }
 
 /**

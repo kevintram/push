@@ -65,6 +65,11 @@ describe('cards', () => {
 			}),
 		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
+			t.mutation(api.cards.updateEach, {
+				patches: [{ cardId, flaggedAt: 1 }],
+			}),
+		).rejects.toMatchObject({ data: "You've been signed out" })
+		await expect(
 			t.mutation(api.cards.move, {
 				cardIds: [cardId],
 				sectionId: null,
@@ -472,6 +477,31 @@ describe('cards', () => {
 		await expect(
 			asUserA.query(api.cards.get, { cardId: untouched }),
 		).resolves.toMatchObject({ collectionId })
+	})
+
+	it('applies a separate patch to each card', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const first = await asUserA.mutation(api.cards.create, { collectionId })
+		const second = await asUserA.mutation(api.cards.create, {
+			collectionId,
+			flaggedAt: 5,
+		})
+
+		await asUserA.mutation(api.cards.updateEach, {
+			patches: [
+				{ cardId: first, flaggedAt: 1 },
+				{ cardId: second, flaggedAt: null, type: 'flashcard' },
+			],
+		})
+
+		await expect(
+			asUserA.query(api.cards.get, { cardId: first }),
+		).resolves.toMatchObject({ flaggedAt: 1 })
+		const updated = await asUserA.query(api.cards.get, { cardId: second })
+		expect(updated.flaggedAt).toBeUndefined()
+		expect(updated.type).toBe('flashcard')
 	})
 
 	it('rejects moving a card to a missing or foreign-owned collection', async () => {

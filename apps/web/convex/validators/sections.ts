@@ -36,7 +36,17 @@ export const sectionMove = v.object({
 	afterId: v.union(v.id('sections'), v.null()),
 })
 
+// Where a section sits: its collection, and its key there (`null` for a
+// section not yet ranked). Taken from a section before it moves, so the move
+// can be undone exactly.
+export const sectionPlacement = v.object({
+	sectionId: v.id('sections'),
+	collectionId: v.id('collections'),
+	rank: v.union(v.string(), v.null()),
+})
+
 export type Section = Infer<typeof sectionRead>
 export type SectionCreate = Infer<typeof sectionCreate>
+export type SectionPlacement = Infer<typeof sectionPlacement>
 export type SectionPatch = Infer<typeof sectionPatch>
 export type SectionMove = Infer<typeof sectionMove>

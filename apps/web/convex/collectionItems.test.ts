@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { compareRanked } from '../shared/ordering'
 import { api } from './_generated/api'
+import type { Id } from './_generated/dataModel'
 import schema from './schema'
 import { modules } from './test.setup'
 
@@ -27,6 +28,12 @@ describe('collectionItems', () => {
 				sectionIds: [],
 				cardIds: [],
 				collectionId,
+			}),
+		).rejects.toMatchObject({ data: "You've been signed out" })
+		await expect(
+			t.mutation(api.collectionItems.moveToPlacements, {
+				sections: [],
+				cards: [],
 			}),
 		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
@@ -219,5 +226,107 @@ describe('collectionItems', () => {
 		await expect(
 			asUserA.query(api.cards.listByCollection, { collectionId }),
 		).resolves.toMatchObject([{ _id: cardId }])
+	})
+
+	it('moves sections, with their cards, and cards back to their exact places', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const destinationId = await asUserA.mutation(api.collections.create, {})
+		const movingSectionId = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: null,
+		})
+		const keptSectionId = await asUserA.mutation(api.sections.create, {
+			collectionId,
+			afterId: movingSectionId,
+		})
+		const create = (sectionId?: Id<'sections'>) =>
+			asUserA.mutation(api.cards.create, { collectionId, sectionId })
+		await create(movingSectionId)
+		await create(movingSectionId)
+		await create(keptSectionId)
+		const looseCardId = await create(keptSectionId)
+		await create(keptSectionId)
+		const unsectionedCardId = await create()
+
+		/** The collection's sections, and each list's cards, in order. */
+		const layout = async (id: Id<'collections'>) => ({
+			sections: (
+				await asUserA.query(api.sections.listByCollection, {
+					collectionId: id,
+				})
+			).map(section => section._id),
+			cards: (
+				await asUserA.query(api.cards.listByCollection, {
+					collectionId: id,
+				})
+			)
+				.sort(compareRanked)
+				.map(card => [card._id, card.sectionId]),
+		})
+		const before = await layout(collectionId)
+		const section = (
+			await asUserA.query(api.sections.listByCollection, { collectionId })
+		).find(({ _id }) => _id === movingSectionId)!
+		const cards = await Promise.all(
+			[looseCardId, unsectionedCardId].map(cardId =>
+				asUserA.query(api.cards.get, { cardId }),
+			),
+		)
+
+		await asUserA.mutation(api.collectionItems.moveToCollection, {
+			sectionIds: [movingSectionId],
+			cardIds: [looseCardId, unsectionedCardId],
+			collectionId: destinationId,
+		})
+		await asUserA.mutation(api.collectionItems.moveToPlacements, {
+			sections: [
+				{
+					sectionId: section._id,
+					collectionId: section.collectionId,
+					rank: section.rank ?? null,
+				},
+			],
+			cards: cards.map(card => ({
+				cardId: card._id,
+				collectionId: card.collectionId,
+				sectionId: card.sectionId ?? null,
+				rank: card.rank ?? null,
+			})),
+		})
+
+		await expect(layout(collectionId)).resolves.toEqual(before)
+		await expect(layout(destinationId)).resolves.toEqual({
+			sections: [],
+			cards: [],
+		})
+	})
+
+	it('rejects placing a card in a section of another collection or with a malformed key', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const otherCollectionId = await asUserA.mutation(
+			api.collections.create,
+			{},
+		)
+		const otherSectionId = await asUserA.mutation(api.sections.create, {
+			collectionId: otherCollectionId,
+			afterId: null,
+		})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
+		})
+		const place = (sectionId: Id<'sections'> | null, rank: string | null) =>
+			asUserA.mutation(api.collectionItems.moveToPlacements, {
+				sections: [],
+				cards: [{ cardId, collectionId, sectionId, rank }],
+			})
+
+		await expect(place(otherSectionId, null)).rejects.toThrow(
+			"Section is not in the card's collection",
+		)
+		await expect(place(null, '')).rejects.toThrow()
 	})
 })
