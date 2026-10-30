@@ -48,7 +48,7 @@ describe('ReviewPageLayout', () => {
 		expect(setHideMode).toHaveBeenCalledWith('on')
 		expect(mockToastAdd).toHaveBeenCalledOnce()
 		expect(mockToastAdd).toHaveBeenCalledWith({
-			title: 'Hide mode has been turned on.',
+			title: 'Hide mode on',
 			type: 'info',
 		})
 	})

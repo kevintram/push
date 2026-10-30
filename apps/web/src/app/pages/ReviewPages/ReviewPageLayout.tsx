@@ -45,7 +45,7 @@ export function ReviewPageLayout() {
 			if (hideMode !== 'on') {
 				setHideMode('on')
 				toast.add({
-					title: 'Hide mode has been turned on.',
+					title: 'Hide mode on',
 					type: 'info',
 				})
 			}
