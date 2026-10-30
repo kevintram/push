@@ -1,9 +1,12 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { useQuery } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { collectionQueries } from '~/modules/collections/api/collectionQueries'
-import { useOpenCollectionIds } from '~/modules/collections/hooks/useOpenCollectionIds'
+import {
+	isHiddenByClosedAncestor,
+	useOpenCollectionIds,
+} from '~/modules/collections/hooks/useOpenCollectionIds'
 import { treeifyCollections } from '~/modules/collections/utils/treeifyCollections'
 
 /** A collection, or `null` for the top level. */
@@ -46,21 +49,35 @@ export function useMoveDestination({
 		[collections, excludeCollectionId],
 	)
 
-	const { openCollectionIds, setCollectionOpen, openCollections } =
-		useOpenCollectionIds(() => new Set())
+	const {
+		openCollectionIds,
+		setCollectionOpen,
+		openCollections,
+		collapseAll,
+	} = useOpenCollectionIds(() => new Set())
 
 	const selected =
 		selectedDestination === null
 			? undefined
 			: tree.nodesById.get(selectedDestination)
 
+	const revealSelection = useCallback(() => {
+		if (selected) openCollections(selected.path)
+	}, [selected, openCollections])
+
 	// Opens the initial destination's branch during the render that first has
 	// the list, so the dialog never paints it closed.
 	const [hasRevealedInitial, setHasRevealedInitial] = useState(false)
 	if (collections !== undefined && !hasRevealedInitial) {
 		setHasRevealedInitial(true)
-		if (selected) openCollections(selected.path)
+		revealSelection()
 	}
+
+	const hiddenSelection =
+		selected &&
+		isHiddenByClosedAncestor(selected, tree.nodesById, openCollectionIds)
+			? selected
+			: undefined
 
 	return {
 		collections: {
@@ -68,8 +85,11 @@ export function useMoveDestination({
 			isPending: collectionsQuery.isPending,
 			roots: tree.roots,
 		},
+		hiddenSelection,
 		openCollectionIds,
 		setCollectionOpen,
+		collapseAll,
+		revealSelection,
 		selectedDestination,
 		setSelectedDestination,
 	}

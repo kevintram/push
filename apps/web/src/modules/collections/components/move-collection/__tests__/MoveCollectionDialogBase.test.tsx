@@ -128,6 +128,30 @@ describe('MoveCollectionDialogBase', () => {
 			'aria-pressed',
 			'true',
 		)
+		expect(
+			screen.queryByRole('button', {
+				name: 'Show Spanish in Collections',
+			}),
+		).not.toBeInTheDocument()
+	})
+
+	it('offers to reveal the destination after collapsing all', async () => {
+		renderDialog({
+			initialDestination: 'collection-2' as Id<'collections'>,
+		})
+		const user = userEvent.setup()
+
+		await user.click(screen.getByRole('button', { name: 'Collapse all' }))
+
+		expect(
+			screen.queryByRole('button', { name: 'Spanish' }),
+		).not.toBeInTheDocument()
+
+		await user.click(
+			screen.getByRole('button', { name: 'Show Spanish in Collections' }),
+		)
+
+		expect(screen.getByRole('button', { name: 'Spanish' })).toHaveFocus()
 	})
 
 	it('disables Move when destination has not changed', () => {

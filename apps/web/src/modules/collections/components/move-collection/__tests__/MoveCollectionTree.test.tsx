@@ -28,6 +28,7 @@ type TreeProps = React.ComponentProps<typeof MoveCollectionTree>
 function renderTree(overrides: Partial<TreeProps> = {}) {
 	const props = {
 		collections: [collection('A', [collection('B')]), collection('C')],
+		onCollapseAll: vi.fn(),
 		onCollectionOpenChange: vi.fn(),
 		onSelect: vi.fn(),
 		openCollectionIds: new Set<Id<'collections'>>(),
@@ -57,9 +58,10 @@ describe('MoveCollectionTree', () => {
 		expect(onCollectionOpenChange).toHaveBeenCalledWith('A', true)
 	})
 
-	it('does not offer the top level by default', () => {
+	it('labels the tree without offering the top level by default', () => {
 		renderTree()
 
+		expect(screen.getByText('Collections')).toBeInTheDocument()
 		expect(
 			screen.queryByRole('button', { name: 'Collections' }),
 		).not.toBeInTheDocument()
@@ -85,5 +87,25 @@ describe('MoveCollectionTree', () => {
 		expect(
 			screen.getByRole('button', { name: 'Collections' }),
 		).toHaveAttribute('aria-pressed', 'true')
+	})
+
+	it('disables Collapse all while every branch is closed', () => {
+		renderTree()
+
+		expect(
+			screen.getByRole('button', { name: 'Collapse all' }),
+		).toBeDisabled()
+	})
+
+	it('collapses all open branches', async () => {
+		const { onCollapseAll } = renderTree({
+			openCollectionIds: new Set(['A' as Id<'collections'>]),
+		})
+
+		await userEvent
+			.setup()
+			.click(screen.getByRole('button', { name: 'Collapse all' }))
+
+		expect(onCollapseAll).toHaveBeenCalled()
 	})
 })
