@@ -12,6 +12,11 @@ export type SearchResultItem =
 	| (SearchResultBase & { id: Id<'cards'>; kind: 'card' })
 	| (SearchResultBase & { id: Id<'collections'>; kind: 'collection' })
 
+export type CollectionSearchResultItem = Extract<
+	SearchResultItem,
+	{ kind: 'collection' }
+>
+
 const UNTITLED = 'Untitled'
 
 function buildPathText(
@@ -26,7 +31,7 @@ function buildPathText(
 
 export function buildCollectionResults(
 	collections: ReadonlyArray<CollectionHit>,
-): Array<SearchResultItem> {
+): Array<CollectionSearchResultItem> {
 	return collections.map(collection => {
 		const title = collection.title.trim() || UNTITLED
 		return {
