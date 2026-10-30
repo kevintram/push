@@ -13,7 +13,10 @@ import {
 	filterCardsByType,
 } from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
 import { CardNavigationHotkeys } from '~/modules/reviews/components/CardNavigationHotkeys'
-import type { ReviewComposerDock } from '~/modules/reviews/components/reviewComposerContext'
+import type {
+	ReviewComposerDock,
+	ReviewDraft,
+} from '~/modules/reviews/components/reviewComposerContext'
 import type { Card } from '~/modules/reviews/types/review.types'
 import { baseColors } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
@@ -211,7 +214,20 @@ export function ReviewQueueWorkspace({
 		goPrevious,
 		goNext,
 		selectCard,
+		returnTo,
 	} = useReviewQueueSelection(visibleCards)
+
+	// The draft of a review undone after the queue moved on from its card,
+	// held until the card is back and left again.
+	const [restored, setRestored] = useState<{
+		cardId: Card['_id']
+		draft: ReviewDraft
+	} | null>(null)
+	const showingRestored =
+		restored !== null && restored.cardId === currentCard?._id
+	useEffect(() => {
+		if (showingRestored) return () => setRestored(null)
+	}, [showingRestored])
 
 	const setQueueSidebarPreference = (open: boolean) => {
 		setQueueSidebarOpen(open)
@@ -306,6 +322,18 @@ export function ReviewQueueWorkspace({
 												cardId={currentCard._id}
 												defaultDock={cardDock}
 												onDockChange={setDock}
+												restoredDraft={
+													showingRestored
+														? restored.draft
+														: undefined
+												}
+												onReviewUndone={draft => {
+													setRestored({
+														cardId: currentCard._id,
+														draft,
+													})
+													returnTo(currentCard._id)
+												}}
 												showGoToCard
 											/>
 										</Suspense>

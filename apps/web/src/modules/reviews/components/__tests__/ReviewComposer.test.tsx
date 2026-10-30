@@ -1,10 +1,10 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ConvexError } from 'convex/values'
 import type { ComponentProps } from 'react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest'
 
 import { TooltipProvider } from '~/components/ui'
 import { toast } from '~/components/ui/Toast'
@@ -32,11 +32,12 @@ const cardId = 'card-1' as Id<'cards'>
 
 function renderComposer(
 	props: Partial<ComponentProps<typeof ReviewComposer>> = {},
+	providerProps: Partial<ComponentProps<typeof ReviewComposerProvider>> = {},
 ) {
 	return render(
 		<QueryClientProvider client={createTestQueryClient()}>
 			<TooltipProvider delay={0}>
-				<ReviewComposerProvider cardId={cardId}>
+				<ReviewComposerProvider cardId={cardId} {...providerProps}>
 					<ReviewComposer {...props} />
 				</ReviewComposerProvider>
 			</TooltipProvider>
@@ -130,4 +131,56 @@ describe('ReviewComposer', () => {
 		)
 		expect(description).toHaveValue('Keep this draft')
 	})
+
+	it('brings the draft back when the review is undone', async () => {
+		const user = userEvent.setup()
+		const addToast = vi.spyOn(toast, 'add')
+		renderComposer()
+
+		const description = screen.getByRole('textbox', {
+			name: 'Review description',
+		})
+		fireEvent.change(description, { target: { value: 'Undo me' } })
+		await user.click(screen.getByRole('button', { name: 'Create review' }))
+		await waitFor(() => expect(description).toHaveValue(''))
+		await undoLastToast(addToast)
+
+		await waitFor(() =>
+			expect(
+				screen.getByRole('textbox', { name: 'Review description' }),
+			).toHaveValue('Undo me'),
+		)
+		expect(createReview).toHaveBeenLastCalledWith({ reviewId: 'review-1' })
+	})
+
+	it('hands the draft to the parent when the review is undone after unmounting', async () => {
+		const user = userEvent.setup()
+		const addToast = vi.spyOn(toast, 'add')
+		const onReviewUndone = vi.fn()
+		const { unmount } = renderComposer({}, { onReviewUndone })
+
+		fireEvent.change(
+			screen.getByRole('textbox', { name: 'Review description' }),
+			{ target: { value: 'Undo me' } },
+		)
+		await user.click(screen.getByRole('button', { name: 'Create review' }))
+		await waitFor(() => expect(addToast).toHaveBeenCalled())
+		unmount()
+		await undoLastToast(addToast)
+
+		await waitFor(() =>
+			expect(onReviewUndone).toHaveBeenCalledWith({
+				description: 'Undo me',
+				notes: '',
+				rating: null,
+				date: null,
+			}),
+		)
+	})
 })
+
+/** Clicks Undo on the most recent toast. */
+async function undoLastToast(addToast: MockInstance<typeof toast.add>) {
+	const [{ actionProps }] = addToast.mock.lastCall!
+	await act(async () => actionProps?.onClick?.({} as never))
+}
