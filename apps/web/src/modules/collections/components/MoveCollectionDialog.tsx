@@ -1,6 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
 
-import { useUpdateCollection } from '~/modules/collections/api/collectionQueries'
+import { useMoveCollection } from '~/modules/collections/api/collectionQueries'
 
 import { MoveCollectionDialogBase } from './move-collection'
 
@@ -15,13 +15,14 @@ export function MoveCollectionDialog({
 	parentId,
 	collectionId,
 }: MoveCollectionDialogProps) {
-	const updateCollection = useUpdateCollection()
+	const moveCollection = useMoveCollection()
 
 	const handleMove = (destination: Id<'collections'> | null) => {
-		updateCollection.mutate(
+		moveCollection.mutate(
 			{
 				collectionId,
-				parentId: destination ?? null,
+				parentId: destination,
+				fromParentId: parentId ?? null,
 			},
 			{
 				onSuccess: () => onOpenChange(false),
@@ -34,7 +35,7 @@ export function MoveCollectionDialog({
 			allowRoot
 			excludeCollectionId={collectionId}
 			initialDestination={parentId ?? null}
-			isPending={updateCollection.isPending}
+			isPending={moveCollection.isPending}
 			onMove={handleMove}
 			onOpenChange={onOpenChange}
 			title='Move collection'

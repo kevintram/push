@@ -47,4 +47,15 @@ describe('selectionContents', () => {
 		expect(countItems(one)).toBe('1 card')
 		expect(nameItems(one)).toBe('card')
 	})
+
+	it('names a lone section without its cards, as its own menu does', () => {
+		const lone = selectionContents(
+			grouped,
+			new Set(['A' as Id<'sections'>]),
+			new Set(),
+		)
+
+		expect(countItems(lone)).toBe('1 section, 2 cards')
+		expect(nameItems(lone)).toBe('section')
+	})
 })

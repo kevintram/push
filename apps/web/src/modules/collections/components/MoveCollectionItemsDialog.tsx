@@ -1,4 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
+import type { Card } from '@convex/validators/cards'
+import type { Section } from '@convex/validators/sections'
 
 import { useMoveCollectionItems } from '~/modules/collections/api/collectionItemQueries'
 
@@ -9,29 +11,26 @@ type MoveCollectionItemsDialogProps = {
 	/** The collection the items are in, where the picker starts. */
 	collectionId: Id<'collections'>
 	/** In page order, which is the order they land in. */
-	sectionIds: ReadonlyArray<Id<'sections'>>
+	sections: ReadonlyArray<Section>
 	/** In page order, which is the order they land in. */
-	cardIds: ReadonlyArray<Id<'cards'>>
-	title: string
+	cards: ReadonlyArray<Card>
+	/** What is moving, as in "section" or "1 section and 3 cards". */
+	name: string
 }
 
 /** Moves sections, with their cards, and cards to another collection. */
 export function MoveCollectionItemsDialog({
 	onOpenChange,
 	collectionId,
-	sectionIds,
-	cardIds,
-	title,
+	sections,
+	cards,
+	name,
 }: MoveCollectionItemsDialogProps) {
 	const moveItems = useMoveCollectionItems()
 
 	const handleMove = (destination: Id<'collections'>) => {
 		moveItems.mutate(
-			{
-				sectionIds: [...sectionIds],
-				cardIds: [...cardIds],
-				collectionId: destination,
-			},
+			{ sections, cards, collectionId: destination, name },
 			{ onSuccess: () => onOpenChange(false) },
 		)
 	}
@@ -42,7 +41,7 @@ export function MoveCollectionItemsDialog({
 			isPending={moveItems.isPending}
 			onMove={handleMove}
 			onOpenChange={onOpenChange}
-			title={title}
+			title={`Move ${name}`}
 		/>
 	)
 }

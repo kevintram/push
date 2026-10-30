@@ -4,9 +4,10 @@ import { use, useRef } from 'react'
 
 import { PopoverHoldContext } from '~/components/ui'
 
-import { useUpdateCollection } from '../../api/collectionQueries'
+import { useMoveCollection } from '../../api/collectionQueries'
 import { CollectionDragOverlay } from './CollectionDragOverlay'
 import { CollectionsNavigationContent } from './CollectionsNavigationContent'
+import type { CollectionDragData } from './CollectionTreeItem'
 import { useCollectionTree } from './useCollectionTree'
 
 /**
@@ -22,7 +23,7 @@ export function CollectionsNavigation() {
 		hiddenSelection,
 		revealSelection,
 	} = useCollectionTree()
-	const updateCollection = useUpdateCollection()
+	const moveCollection = useMoveCollection()
 	// Dragging reads as leaving an enclosing hover popover, so the drag holds
 	// it open. Held on drag start rather than in an effect, before the next
 	// pointer move can close it.
@@ -49,17 +50,15 @@ export function CollectionsNavigation() {
 					return
 				}
 
-				if (target.id === 'collections-root') {
-					updateCollection.mutate({
-						collectionId: source.id as Id<'collections'>,
-						parentId: null,
-					})
-				} else {
-					updateCollection.mutate({
-						collectionId: source.id as Id<'collections'>,
-						parentId: target.id as Id<'collections'>,
-					})
-				}
+				const { parentId } = source.data as CollectionDragData
+				moveCollection.mutate({
+					collectionId: source.id as Id<'collections'>,
+					parentId:
+						target.id === 'collections-root'
+							? null
+							: (target.id as Id<'collections'>),
+					fromParentId: parentId ?? null,
+				})
 			}}
 		>
 			<CollectionsNavigationContent

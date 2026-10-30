@@ -4,7 +4,7 @@ import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { useMatchRoute, useNavigate } from '@tanstack/react-router'
 
-import { toastError } from '~/components/ui/Toast'
+import { toastError, toastUndo } from '~/components/ui/Toast'
 
 // `expandPath` decides whether `path` holds ancestor ids or the documents they
 // name. It is a runtime argument, so `path` is typed as the union of both;
@@ -34,12 +34,28 @@ export function useUpdateCollection() {
 	const mutationFn = useConvexMutation(api.collections.update)
 	return useMutation({
 		mutationFn,
-		onError: (error, { parentId }) =>
-			toastError(
-				parentId === undefined
-					? 'Failed to update collection'
-					: 'Failed to move collection',
-				error,
+		onError: error => toastError('Failed to update collection', error),
+	})
+}
+
+type CollectionMove = {
+	collectionId: Id<'collections'>
+	/** The new parent, or `null` for the root. */
+	parentId: Id<'collections'> | null
+	/** The parent it leaves, so the move can be undone. */
+	fromParentId: Id<'collections'> | null
+}
+
+/** Moves a collection under another parent, offering to undo it. */
+export function useMoveCollection() {
+	const update = useConvexMutation(api.collections.update)
+	return useMutation({
+		mutationFn: ({ collectionId, parentId }: CollectionMove) =>
+			update({ collectionId, parentId }),
+		onError: error => toastError('Failed to move collection', error),
+		onSuccess: (_, { collectionId, fromParentId }) =>
+			toastUndo('Moved collection', () =>
+				update({ collectionId, parentId: fromParentId }),
 			),
 	})
 }

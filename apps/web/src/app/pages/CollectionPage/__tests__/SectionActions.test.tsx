@@ -25,10 +25,15 @@ vi.mock('~/modules/collections/api/collectionItemQueries', () => ({
 // The dialog has its own tests; this checks only that the menu opens it.
 vi.mock('~/modules/collections/components/MoveCollectionItemsDialog', () => ({
 	MoveCollectionItemsDialog: ({
-		sectionIds,
+		sections,
 	}: {
-		sectionIds: ReadonlyArray<string>
-	}) => <div role='dialog' aria-label={`Move ${sectionIds.join()}`} />,
+		sections: ReadonlyArray<Section>
+	}) => (
+		<div
+			role='dialog'
+			aria-label={`Move ${sections.map(({ _id }) => _id).join()}`}
+		/>
+	),
 }))
 
 const section = {

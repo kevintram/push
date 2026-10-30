@@ -26,6 +26,7 @@ vi.mock('@tanstack/react-router', () => ({
 
 const updateMutate = vi.fn()
 const deleteMutate = vi.fn()
+const moveMutate = vi.fn()
 
 const collections = [
 	{
@@ -77,6 +78,10 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 	}
 })
 
+vi.mock('~/modules/collections/api/collectionItemQueries', () => ({
+	useMoveCollectionItems: () => ({ mutate: moveMutate, isPending: false }),
+}))
+
 vi.mock('../../api/cardQueries', () => ({
 	useUpdateCards: () => ({ mutate: updateMutate, isPending: false }),
 	useDeleteCards: () => ({ mutate: deleteMutate, isPending: false }),
@@ -106,6 +111,7 @@ describe('CardActions', () => {
 	beforeEach(() => {
 		updateMutate.mockClear()
 		deleteMutate.mockClear()
+		moveMutate.mockClear()
 	})
 
 	it('hides the go-to-card action by default', () => {
@@ -244,10 +250,12 @@ describe('CardActions', () => {
 		expect(moveButton).toBeEnabled()
 		await user.click(moveButton)
 
-		expect(updateMutate).toHaveBeenCalledWith(
+		expect(moveMutate).toHaveBeenCalledWith(
 			{
-				cardIds: [card._id],
+				sections: [],
+				cards: [card],
 				collectionId: collections[1]._id,
+				name: 'card',
 			},
 			expect.anything(),
 		)
@@ -255,7 +263,7 @@ describe('CardActions', () => {
 			screen.getByRole('dialog', { name: 'Move card' }),
 		).toBeInTheDocument()
 
-		const [, options] = updateMutate.mock.calls.at(-1) as [
+		const [, options] = moveMutate.mock.calls.at(-1) as [
 			unknown,
 			{ onSuccess: () => void },
 		]

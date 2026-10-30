@@ -62,6 +62,12 @@ type CollectionTreeItemProps = CollectionWithChildren & {
 	dropDisabled?: boolean
 }
 
+/** What a dragged row carries: its label, and the parent it would leave. */
+export type CollectionDragData = {
+	title: string
+	parentId: Id<'collections'> | undefined
+}
+
 export type CollectionOpenChangeHandler = (
 	collectionId: Id<'collections'>,
 	open: boolean,
@@ -93,7 +99,7 @@ export function CollectionTreeItem({
 	} = useDraggable({
 		id: `${_id}`,
 		sensors: [collectionPointerSensor],
-		data: { title: collectionTitle },
+		data: { title: collectionTitle, parentId } satisfies CollectionDragData,
 	})
 	// Disable this subtree's drop targets when dragging
 	// (otherwise we could drop subtree root onto descendant)

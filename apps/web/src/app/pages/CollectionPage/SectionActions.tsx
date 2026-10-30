@@ -91,9 +91,9 @@ export function SectionActions({ section }: SectionActionsProps) {
 				<MoveCollectionItemsDialog
 					onOpenChange={setIsMoveDialogOpen}
 					collectionId={section.collectionId}
-					sectionIds={[section._id]}
-					cardIds={[]}
-					title='Move section'
+					sections={[section]}
+					cards={[]}
+					name='section'
 				/>
 			) : null}
 
