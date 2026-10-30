@@ -122,12 +122,14 @@ describe('CardList', () => {
 		).toBeInTheDocument()
 	})
 
-	it('shows the last rating and when it was given', () => {
+	it('shows the last rating and when it was given for both layouts', () => {
 		renderList(reviewed)
 
-		expect(
-			screen.getByLabelText('Good, reviewed Aug 1, 2026'),
-		).toHaveTextContent('Aug 1')
+		for (const lastReviewed of screen.getAllByLabelText(
+			'Good, reviewed Aug 1, 2026',
+		)) {
+			expect(lastReviewed).toHaveTextContent('Aug 1')
+		}
 		expect(document.querySelector('svg.lucide-check')).toBeInTheDocument()
 	})
 

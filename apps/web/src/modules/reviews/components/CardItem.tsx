@@ -23,154 +23,52 @@ import { StrengthSignal } from './StrengthSignal'
 // A local string, not a shared constant: StyleX can leave an imported
 // at-rule key unresolved in dev, emitting invalid CSS.
 const wide = '@container (min-width: 560px)'
-// Stacked rows run out of room for the whole metadata line, so the strength
+// Stacked rows run out of room for the whole details line, so the strength
 // drops first.
 const noStrength = '@container (width < 280px)'
 
 const styles = stylex.create({
-	// A table row. Stacked by default, as a wrapping flex row with the title
-	// and actions above the dates and strength. Once the list is wide enough
-	// the row joins the table's columns through subgrid, so the actions column
-	// fits the row with the most toggles. Grid placement on the cells only
-	// applies to the table.
+	// A table row. Once the list is wide enough, the due date, last review, and
+	// strength get their own columns. Stacked, they move to a details line
+	// under the title, so the row keeps only the title and actions columns.
 	row: {
-		alignItems: 'center',
-		columnGap: {
-			default: spacing.none,
-			[wide]: spacing.lg,
-		},
-		display: {
-			default: 'flex',
-			[wide]: 'grid',
-		},
-		flexWrap: 'wrap',
-		gridColumnEnd: {
-			default: null,
-			[wide]: '-1',
-		},
-		gridColumnStart: {
-			default: null,
-			[wide]: '1',
-		},
-		gridTemplateColumns: {
-			default: null,
-			[wide]: 'subgrid',
-		},
-		minBlockSize: {
+		// Acts as a minimum on a table row.
+		blockSize: {
 			default: null,
 			[wide]: '52px',
 		},
+		// Contains the title target's stretched highlight.
 		position: 'relative',
 
-		borderRadius: radii.lg,
-		marginInline: `calc(${layout.rowBleed} * -1)`,
-		paddingBlock: {
-			default: spacing.sm,
-			[wide]: spacing.xs,
-		},
-		paddingInline: layout.rowBleed,
-		backgroundColor: {
-			default: colorsSemantic.surfaceTransparent,
-			':hover': colorsSemantic.surfaceTransparentHover,
-		},
 		cursor: 'pointer',
-
-		// The ring wraps the row when its title target has keyboard focus.
-		outlineColor: {
-			default: colorsSemantic.surfaceTransparent,
-			':has(> [role=cell] > :focus-visible)': colorsSemantic.borderFocus,
-		},
-		outlineOffset: '-2px',
-		outlineStyle: 'solid',
-		outlineWidth: '2px',
-
-		// Stacked, a full-width break between the actions and the metadata,
-		// so the metadata line can run under the actions.
-		'::after': {
-			content: '""',
-			display: {
-				default: null,
-				[wide]: 'none',
-			},
-			flexBasis: '100%',
-			order: 1,
-		},
 	},
-	// Adjacent active rows join into one block, squaring the corners where
-	// they meet. Each row marks itself `data-active` for its neighbors.
-	active: {
-		backgroundColor: {
-			default: colorsSemantic.surfaceTransparentActive,
-			':hover': colorsSemantic.surfaceTransparentActive,
-		},
-		borderEndEndRadius: {
-			default: radii.lg,
-			':has(+ [data-active])': 0,
-		},
-		borderEndStartRadius: {
-			default: radii.lg,
-			':has(+ [data-active])': 0,
-		},
-		borderStartEndRadius: {
-			default: radii.lg,
-			':is([data-active] + *)': 0,
-		},
-		borderStartStartRadius: {
-			default: radii.lg,
-			':is([data-active] + *)': 0,
-		},
-	},
-
-	cell: {
-		padding: 0,
-	},
-	// Above the row's stretched target, so tooltips can show. Clicks on these
-	// cells are forwarded to the target; clicks on the title bubble to it.
+	// Above the title target's stretched highlight, so tooltips can show.
+	// Clicks on these cells are forwarded to the target; clicks on the title
+	// bubble to it.
 	raised: {
 		position: 'relative',
 		zIndex: 1,
 	},
-	// Stacked, metadata cells space themselves with margins, so hidden cells
-	// leave no gap behind.
-	metadata: {
-		gridRowStart: '1',
-		marginBlockStart: {
-			default: spacing['2xs'],
-			[wide]: spacing.none,
-		},
-		marginInlineEnd: {
-			default: spacing.md,
-			[wide]: spacing.none,
-		},
-		order: 2,
 
-		fontSize: fontSizes.sm,
-		fontVariantNumeric: 'tabular-nums',
-	},
-	stackedHidden: {
-		display: {
-			default: 'none',
-			[wide]: 'block',
+	cell: {
+		paddingBlock: {
+			default: spacing.sm,
+			[wide]: spacing.xs,
 		},
+		paddingInline: 0,
 	},
-
+	// Lets the title column take whatever the fixed columns leave, rather than
+	// growing the table to fit a long title.
 	title: {
-		flexBasis: 0,
-		flexGrow: 1,
-		gridColumnStart: '1',
-		gridRowStart: '1',
-
-		alignItems: 'center',
-		display: 'flex',
-		minInlineSize: 0,
+		maxInlineSize: 0,
 	},
 	// Fills the cell so the fade only reaches text long enough to run into it.
 	target: {
 		padding: 0,
 
+		alignItems: 'center',
 		display: 'flex',
-		flexGrow: 1,
-		minInlineSize: 0,
+		inlineSize: '100%',
 
 		textDecoration: 'none',
 		fontFamily: 'inherit',
@@ -185,15 +83,59 @@ const styles = stylex.create({
 		borderWidth: 0,
 		outlineStyle: 'none',
 
-		// stretched link trick
+		// Stretched over the row, so the whole row is the target, and drawn as
+		// its highlight and focus ring. It bleeds past the text like the
+		// section titles.
 		'::after': {
-			inset: 0,
+			insetBlock: 0,
+			insetInline: `calc(${layout.rowBleed} * -1)`,
 			content: '""',
 			position: 'absolute',
+
+			borderRadius: radii.lg,
+			backgroundColor: {
+				default: colorsSemantic.surfaceTransparent,
+				[stylex.when.ancestor(':hover')]:
+					colorsSemantic.surfaceTransparentHover,
+			},
+
+			outlineColor: {
+				default: colorsSemantic.surfaceTransparent,
+				':focus-visible': colorsSemantic.borderFocus,
+			},
+			outlineOffset: '-2px',
+			outlineStyle: 'solid',
+			outlineWidth: '2px',
 		},
 	},
-
-	// Only the table marks a new card by its title. Stacked, the metadata line
+	// Adjacent active rows join into one block, squaring the corners where
+	// they meet. Each row marks itself `data-active` for its neighbors.
+	activeTarget: {
+		'::after': {
+			backgroundColor: {
+				default: colorsSemantic.surfaceTransparentActive,
+				[stylex.when.ancestor(':hover')]:
+					colorsSemantic.surfaceTransparentActive,
+			},
+			borderEndEndRadius: {
+				default: radii.lg,
+				[stylex.when.ancestor(':has(+ [data-active])')]: 0,
+			},
+			borderEndStartRadius: {
+				default: radii.lg,
+				[stylex.when.ancestor(':has(+ [data-active])')]: 0,
+			},
+			borderStartEndRadius: {
+				default: radii.lg,
+				[stylex.when.ancestor(':is([data-active] + *)')]: 0,
+			},
+			borderStartStartRadius: {
+				default: radii.lg,
+				[stylex.when.ancestor(':is([data-active] + *)')]: 0,
+			},
+		},
+	},
+	// Only the table marks a new card by its title. Stacked, the details line
 	// already says "New".
 	newIndicator: {
 		display: {
@@ -202,23 +144,50 @@ const styles = stylex.create({
 		},
 	},
 
-	due: { gridColumnStart: '2' },
-	lastReviewed: { gridColumnStart: '3' },
-	strength: {
+	// The stacked row's due date, last review, and strength, under the title.
+	// It runs out of the title cell and under the actions, which sit on the
+	// title's line.
+	details: {
+		alignItems: 'center',
+		columnGap: spacing.md,
 		display: {
-			default: null,
+			default: 'flex',
+			[wide]: 'none',
+		},
+		// Sized to its items, so they overflow the cell rather than shrink.
+		inlineSize: 'max-content',
+		marginBlockStart: spacing['2xs'],
+
+		fontSize: fontSizes.sm,
+		fontVariantNumeric: 'tabular-nums',
+	},
+	// Overrides `StrengthSignal`'s own display, so it restates it.
+	detailsStrength: {
+		display: {
+			default: 'inline-flex',
 			[noStrength]: 'none',
 		},
-		gridColumnStart: '4',
+	},
+	// A metadata column, shown only in the table. `CardList` sets its width.
+	column: {
+		display: {
+			default: 'none',
+			[wide]: 'table-cell',
+		},
+		paddingInlineStart: spacing.lg,
+		whiteSpace: 'nowrap',
+
+		fontSize: fontSizes.sm,
+		fontVariantNumeric: 'tabular-nums',
 	},
 	actions: {
-		gridColumnStart: '5',
-		gridRowStart: '1',
-		justifySelf: 'end',
-
-		marginInlineStart: {
+		paddingInlineStart: {
 			default: spacing.sm,
-			[wide]: spacing.none,
+			[wide]: spacing.lg,
+		},
+		verticalAlign: {
+			default: 'top',
+			[wide]: 'middle',
 		},
 	},
 	// In the table, the menu trigger shows while the row is hovered, keyboard
@@ -309,23 +278,26 @@ export function CardItem({
 		</>
 	)
 
-	// The table's grid layout can drop its native roles, so name them.
+	const metadataProps = {
+		onClick: activate,
+		onDoubleClick: handleDoubleClick,
+	}
+	const targetStyles = stylex.props(
+		styles.target,
+		active && styles.activeTarget,
+	)
+
 	return (
 		<tr
-			role='row'
 			data-active={active || undefined}
-			{...stylex.props(
-				styles.row,
-				stylex.defaultMarker(),
-				active && styles.active,
-			)}
+			{...stylex.props(styles.row, stylex.defaultMarker())}
 		>
-			<td role='cell' {...stylex.props(styles.cell, styles.title)}>
+			<td {...stylex.props(styles.cell, styles.title)}>
 				{onClick ? (
 					<button
 						type='button'
 						onClick={onClick}
-						{...stylex.props(styles.target)}
+						{...targetStyles}
 						{...buttonProps}
 					>
 						{titleText}
@@ -337,66 +309,65 @@ export function CardItem({
 						data-card-id={_id}
 						onClick={handleLinkClick}
 						onDoubleClick={handleDoubleClick}
-						{...stylex.props(styles.target)}
+						{...targetStyles}
 					>
 						{titleText}
 					</Link>
 				)}
+				{/* Stacked, a new card's line only says it is new. */}
+				<div
+					{...metadataProps}
+					{...stylex.props(styles.details, styles.raised)}
+				>
+					{!isNew && nextDueAt !== null ? (
+						<CardDueDate
+							date={nextDueAt}
+							today={today}
+							variant='details'
+						/>
+					) : null}
+					<CardLastReviewed
+						lastRating={lastRating}
+						lastReviewedAt={lastReviewedAt}
+						today={today}
+						variant='details'
+					/>
+					{stability !== null ? (
+						<StrengthSignal
+							stability={stability}
+							xstyle={styles.detailsStrength}
+						/>
+					) : null}
+				</div>
 			</td>
 
-			{/* Stacked, a new card's line only says it is new. */}
 			<td
-				role='cell'
-				onClick={activate}
-				onDoubleClick={handleDoubleClick}
-				{...stylex.props(
-					styles.cell,
-					styles.raised,
-					styles.metadata,
-					styles.due,
-					(isNew || nextDueAt === null) && styles.stackedHidden,
-				)}
+				{...metadataProps}
+				{...stylex.props(styles.cell, styles.column, styles.raised)}
 			>
-				<CardDueDate date={nextDueAt} today={today} />
+				<CardDueDate date={nextDueAt} today={today} variant='column' />
 			</td>
 
 			<td
-				role='cell'
-				onClick={activate}
-				onDoubleClick={handleDoubleClick}
-				{...stylex.props(
-					styles.cell,
-					styles.raised,
-					styles.metadata,
-					styles.lastReviewed,
-				)}
+				{...metadataProps}
+				{...stylex.props(styles.cell, styles.column, styles.raised)}
 			>
 				<CardLastReviewed
 					lastRating={lastRating}
 					lastReviewedAt={lastReviewedAt}
 					today={today}
+					variant='column'
 				/>
 			</td>
 
 			<td
-				role='cell'
-				onClick={activate}
-				onDoubleClick={handleDoubleClick}
-				{...stylex.props(
-					styles.cell,
-					styles.raised,
-					styles.metadata,
-					styles.strength,
-					stability === null && styles.stackedHidden,
-				)}
+				{...metadataProps}
+				{...stylex.props(styles.cell, styles.column, styles.raised)}
 			>
 				<StrengthSignal stability={stability} />
 			</td>
 
-			<td
-				role='cell'
-				{...stylex.props(styles.cell, styles.raised, styles.actions)}
-			>
+			<td {...stylex.props(styles.cell, styles.actions, styles.raised)}>
 				<CardActions
 					card={card}
 					menuTriggerXstyle={styles.menuTrigger}
