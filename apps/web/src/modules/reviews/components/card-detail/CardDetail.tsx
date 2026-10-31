@@ -218,7 +218,11 @@ export function CardDetail({
 							onNavigate={onNavigate}
 						/>
 					</div>
-					<CardActions card={card} showGoToCard={showGoToCard} />
+					<CardActions
+						card={card}
+						hasHotkeys
+						showGoToCard={showGoToCard}
+					/>
 				</header>
 				<div {...stylex.props(styles.secondaryToolbar)}>
 					<Tabs

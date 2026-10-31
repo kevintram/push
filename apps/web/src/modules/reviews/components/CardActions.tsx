@@ -26,10 +26,19 @@ const styles = stylex.create({
 type CardActionsProps = {
 	card: Card
 	showGoToCard?: boolean
+	/**
+	 * Binds the menu's keys and shows them on its items. Only one card's actions
+	 * may have them at a time, such as the open card's, never a list row's.
+	 */
+	hasHotkeys?: boolean
 }
 
 /** A card's toolbar: a link to its page, its status toggles, and its menu. */
-export function CardActions({ card, showGoToCard = false }: CardActionsProps) {
+export function CardActions({
+	card,
+	showGoToCard = false,
+	hasHotkeys = false,
+}: CardActionsProps) {
 	return (
 		<div {...stylex.props(styles.container)}>
 			{showGoToCard ? (
@@ -63,7 +72,7 @@ export function CardActions({ card, showGoToCard = false }: CardActionsProps) {
 				</Tooltip>
 			) : null}
 			<CardStatusToggles card={card} />
-			<CardMenu card={card} />
+			<CardMenu card={card} hasHotkeys={hasHotkeys} />
 		</div>
 	)
 }
