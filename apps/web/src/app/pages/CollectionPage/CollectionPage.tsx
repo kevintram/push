@@ -4,7 +4,6 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { Ellipsis } from 'lucide-react'
 import { useCallback, useState } from 'react'
-import { toast } from 'sonner'
 
 import {
 	BreadcrumbItem,
@@ -134,29 +133,18 @@ export function CollectionPage() {
 	}, [deleteCollection, collectionId])
 
 	const saveTitle = useCallback(
-		async (title: string) => {
+		(title: string) => {
 			if (title === collection.title) return
 
-			try {
-				await updateCollection.mutateAsync({ collectionId, title })
-			} catch {
-				toast.error('Failed to update collection title')
-			}
+			updateCollection.mutate({ collectionId, title })
 		},
 		[collection, collectionId, updateCollection],
 	)
 	const saveDescription = useCallback(
-		async (description: string) => {
+		(description: string) => {
 			if (description === collection.description) return
 
-			try {
-				await updateCollection.mutateAsync({
-					collectionId,
-					description,
-				})
-			} catch {
-				toast.error('Failed to update collection description')
-			}
+			updateCollection.mutate({ collectionId, description })
 		},
 		[collection, collectionId, updateCollection],
 	)

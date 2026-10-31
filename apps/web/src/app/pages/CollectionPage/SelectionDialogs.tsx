@@ -54,9 +54,10 @@ export function SelectionDialogs({
 			{dialog === 'move' ? (
 				<MoveCollectionItemsDialog
 					collectionId={collectionId}
-					{...items}
+					sections={contents.sections}
+					cards={contents.cards}
 					onOpenChange={closeOnDismiss}
-					title={`Move ${nameItems(contents)}`}
+					name={nameItems(contents)}
 				/>
 			) : null}
 

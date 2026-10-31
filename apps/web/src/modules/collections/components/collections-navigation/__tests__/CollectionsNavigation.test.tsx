@@ -7,14 +7,14 @@ import { CollectionsNavigation } from '../CollectionsNavigation'
 type TestDragEndEvent = {
 	canceled: boolean
 	operation: {
-		source?: { id?: string } | null
+		source?: { id?: string; data?: { parentId?: string } } | null
 		target?: { id?: string } | null
 	}
 }
 
 const mocks = vi.hoisted(() => ({
 	onDragEnd: undefined as ((event: TestDragEndEvent) => void) | undefined,
-	updateCollection: vi.fn(),
+	moveCollection: vi.fn(),
 }))
 
 vi.mock('@dnd-kit/react', () => ({
@@ -41,7 +41,7 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('../../../api/collectionQueries', () => ({
 	collectionQueries: { list: () => ({}) },
-	useUpdateCollection: () => ({ mutate: mocks.updateCollection }),
+	useMoveCollection: () => ({ mutate: mocks.moveCollection }),
 }))
 
 vi.mock('../CollectionsNavigationContent', () => ({
@@ -56,7 +56,7 @@ describe('CollectionsNavigation drag and drop', () => {
 	beforeEach(() => {
 		window.localStorage.clear()
 		mocks.onDragEnd = undefined
-		mocks.updateCollection.mockClear()
+		mocks.moveCollection.mockClear()
 	})
 
 	it('reparents a collection when dropped onto another collection', () => {
@@ -65,14 +65,15 @@ describe('CollectionsNavigation drag and drop', () => {
 		finishDrag({
 			canceled: false,
 			operation: {
-				source: { id: 'source-collection' },
+				source: { id: 'source-collection', data: {} },
 				target: { id: 'parent-collection' },
 			},
 		})
 
-		expect(mocks.updateCollection).toHaveBeenCalledWith({
+		expect(mocks.moveCollection).toHaveBeenCalledWith({
 			collectionId: 'source-collection',
 			parentId: 'parent-collection',
+			fromParentId: null,
 		})
 	})
 
@@ -82,14 +83,18 @@ describe('CollectionsNavigation drag and drop', () => {
 		finishDrag({
 			canceled: false,
 			operation: {
-				source: { id: 'source-collection' },
+				source: {
+					id: 'source-collection',
+					data: { parentId: 'parent-collection' },
+				},
 				target: { id: 'collections-root' },
 			},
 		})
 
-		expect(mocks.updateCollection).toHaveBeenCalledWith({
+		expect(mocks.moveCollection).toHaveBeenCalledWith({
 			collectionId: 'source-collection',
 			parentId: null,
+			fromParentId: 'parent-collection',
 		})
 	})
 
@@ -128,11 +133,11 @@ describe('CollectionsNavigation drag and drop', () => {
 				},
 			},
 		},
-	])('does not update a collection when $name', ({ event }) => {
+	])('does not move a collection when $name', ({ event }) => {
 		render(<CollectionsNavigation />)
 
 		finishDrag(event)
 
-		expect(mocks.updateCollection).not.toHaveBeenCalled()
+		expect(mocks.moveCollection).not.toHaveBeenCalled()
 	})
 })

@@ -2,6 +2,7 @@ import type { Id } from '@convex/_generated/dataModel'
 import type { Section } from '@convex/validators/sections'
 
 import type { Card } from '~/modules/reviews/types/review.types'
+import { pluralize } from '~/utils/pluralize'
 
 import type { GroupedCards } from './groupCardsBySection'
 
@@ -44,8 +45,7 @@ export function selectionContents(
 	return { sections, cards, coveredCards }
 }
 
-const count = (n: number, noun: string) =>
-	n === 0 ? null : `${n} ${noun}${n === 1 ? '' : 's'}`
+const count = (n: number, noun: string) => (n === 0 ? null : pluralize(n, noun))
 
 /**
  * The selection counted by kind. The cards in the selected sections count,
@@ -63,13 +63,13 @@ export function countItems(contents: SelectionContents): string {
 }
 
 /**
- * The selection named for a dialog title: "section" or "card" for one item, or
- * counted, as in "2 sections and 5 cards".
+ * The selection named for a dialog title: "section" or "card" for one item, as
+ * the section's and card's own menus name it, or counted, as in "2 sections
+ * and 5 cards".
  */
 export function nameItems(contents: SelectionContents): string {
-	const { sections, coveredCards } = contents
-	if (sections.length + coveredCards.length === 1) {
-		return sections.length === 1 ? 'section' : 'card'
-	}
+	const { sections, cards } = contents
+	if (sections.length === 1 && cards.length === 0) return 'section'
+	if (sections.length === 0 && cards.length === 1) return 'card'
 	return counts(contents).join(' and ')
 }

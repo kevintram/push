@@ -26,13 +26,11 @@ export function Review({ review }: ReviewProps) {
 	} = useReviewActions(review)
 
 	const descriptionField = useReviewField({
-		errorMessage: 'Failed to update review description',
 		field: 'description',
 		reviewId: review._id,
 		value: review.description,
 	})
 	const notesField = useReviewField({
-		errorMessage: 'Failed to update review notes',
 		field: 'notes',
 		reviewId: review._id,
 		value: review.notes,

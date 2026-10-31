@@ -2,10 +2,11 @@ import type { Card } from '@convex/validators/cards'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DateTime } from 'luxon'
-import type { ComponentProps } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Collection } from '~/modules/collections/types/collection.types'
+import { toastTitleText } from '~/testing/toastTitleText'
 
 import { CardActions } from '../CardActions'
 
@@ -22,10 +23,12 @@ vi.mock('@tanstack/react-router', () => ({
 			{children}
 		</a>
 	),
+	useNavigate: () => vi.fn(),
 }))
 
 const updateMutate = vi.fn()
 const deleteMutate = vi.fn()
+const moveMutate = vi.fn()
 
 const collections = [
 	{
@@ -81,6 +84,10 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 	}
 })
 
+vi.mock('~/modules/collections/api/collectionItemQueries', () => ({
+	useMoveCollectionItems: () => ({ mutate: moveMutate, isPending: false }),
+}))
+
 vi.mock('../../api/cardQueries', () => ({
 	useUpdateCards: () => ({ mutate: updateMutate, isPending: false }),
 	useDeleteCards: () => ({ mutate: deleteMutate, isPending: false }),
@@ -110,6 +117,7 @@ describe('CardActions', () => {
 	beforeEach(() => {
 		updateMutate.mockClear()
 		deleteMutate.mockClear()
+		moveMutate.mockClear()
 	})
 
 	it('hides the go-to-card action by default', () => {
@@ -138,10 +146,10 @@ describe('CardActions', () => {
 				screen.getByRole('menuitem', { name: 'Remove as flashcard' }),
 			)
 
-		expect(updateMutate).toHaveBeenCalledWith(
-			{ cardIds: [card._id], type: 'practice' },
-			expect.anything(),
-		)
+		expect(updateMutate).toHaveBeenCalledWith({
+			cardIds: [card._id],
+			type: 'practice',
+		})
 	})
 
 	it('flags an unflagged card with the current time', async () => {
@@ -153,13 +161,10 @@ describe('CardActions', () => {
 			.setup()
 			.click(screen.getByRole('menuitem', { name: 'Flag' }))
 
-		expect(updateMutate).toHaveBeenCalledWith(
-			{
-				cardIds: [card._id],
-				flaggedAt: expect.any(Number) as number,
-			},
-			expect.anything(),
-		)
+		expect(updateMutate).toHaveBeenCalledWith({
+			cardIds: [card._id],
+			flaggedAt: expect.any(Number) as number,
+		})
 		const [args] = updateMutate.mock.calls[0] as [{ flaggedAt: number }]
 		expect(args.flaggedAt).toBeGreaterThanOrEqual(before)
 	})
@@ -171,10 +176,10 @@ describe('CardActions', () => {
 			.setup()
 			.click(screen.getByRole('button', { name: 'Unflag' }))
 
-		expect(updateMutate).toHaveBeenCalledWith(
-			{ cardIds: [card._id], flaggedAt: null },
-			expect.anything(),
-		)
+		expect(updateMutate).toHaveBeenCalledWith({
+			cardIds: [card._id],
+			flaggedAt: null,
+		})
 	})
 
 	it('retires an active card with the current time', async () => {
@@ -186,15 +191,21 @@ describe('CardActions', () => {
 			.setup()
 			.click(screen.getByRole('menuitem', { name: 'Retire' }))
 
-		expect(updateMutate).toHaveBeenCalledWith(
-			{
-				cardIds: [card._id],
-				retiredAt: expect.any(Number) as number,
+		// Retiring drops the card from the queues, so it offers an undo.
+		expect(updateMutate).toHaveBeenCalledWith({
+			cardIds: [card._id],
+			retiredAt: expect.any(Number) as number,
+			undo: {
+				title: expect.anything() as unknown,
+				description: 'It will no longer come up for review',
+				cards: [card],
 			},
-			expect.anything(),
-		)
-		const [args] = updateMutate.mock.calls[0] as [{ retiredAt: number }]
+		})
+		const [args] = updateMutate.mock.calls[0] as [
+			{ retiredAt: number; undo: { title: ReactNode } },
+		]
 		expect(args.retiredAt).toBeGreaterThanOrEqual(before)
+		expect(toastTitleText(args.undo.title)).toBe('Retired **Question**')
 	})
 
 	it('clears the retirement on a retired card', async () => {
@@ -204,10 +215,10 @@ describe('CardActions', () => {
 			.setup()
 			.click(screen.getByRole('button', { name: 'Unretire' }))
 
-		expect(updateMutate).toHaveBeenCalledWith(
-			{ cardIds: [card._id], retiredAt: null },
-			expect.anything(),
-		)
+		expect(updateMutate).toHaveBeenCalledWith({
+			cardIds: [card._id],
+			retiredAt: null,
+		})
 	})
 
 	it('offers no quick-access unretire button on an active card', () => {
@@ -252,10 +263,12 @@ describe('CardActions', () => {
 		expect(moveButton).toBeEnabled()
 		await user.click(moveButton)
 
-		expect(updateMutate).toHaveBeenCalledWith(
+		expect(moveMutate).toHaveBeenCalledWith(
 			{
-				cardIds: [card._id],
+				sections: [],
+				cards: [card],
 				collectionId: collections[1]._id,
+				name: 'card',
 			},
 			expect.anything(),
 		)
@@ -263,7 +276,7 @@ describe('CardActions', () => {
 			screen.getByRole('dialog', { name: 'Move card' }),
 		).toBeInTheDocument()
 
-		const [, options] = updateMutate.mock.calls.at(-1) as [
+		const [, options] = moveMutate.mock.calls.at(-1) as [
 			unknown,
 			{ onSuccess: () => void },
 		]

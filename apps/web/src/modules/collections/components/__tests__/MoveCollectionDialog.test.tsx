@@ -7,7 +7,7 @@ import type { Collection } from '~/modules/collections/types/collection.types'
 
 import { MoveCollectionDialog } from '../MoveCollectionDialog'
 
-const updateMutate = vi.fn()
+const moveMutate = vi.fn()
 
 const collections: ReadonlyArray<Collection> = [
 	{
@@ -53,7 +53,7 @@ vi.mock('~/modules/collections/api/collectionQueries', () => ({
 			queryFn: () => [],
 		}),
 	},
-	useUpdateCollection: () => ({ mutate: updateMutate, isPending: false }),
+	useMoveCollection: () => ({ mutate: moveMutate, isPending: false }),
 }))
 
 vi.mock('@tanstack/react-query', async importOriginal => {
@@ -70,7 +70,7 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 
 describe('MoveCollectionDialog', () => {
 	beforeEach(() => {
-		updateMutate.mockClear()
+		moveMutate.mockClear()
 	})
 
 	it('reparents to another collection', async () => {
@@ -88,8 +88,12 @@ describe('MoveCollectionDialog', () => {
 		await user.click(screen.getByRole('button', { name: 'Science' }))
 		await user.click(screen.getByRole('button', { name: 'Move' }))
 
-		expect(updateMutate).toHaveBeenCalledWith(
-			{ collectionId: 'collection-2', parentId: 'collection-3' },
+		expect(moveMutate).toHaveBeenCalledWith(
+			{
+				collectionId: 'collection-2',
+				parentId: 'collection-3',
+				fromParentId: 'collection-1',
+			},
 			expect.anything(),
 		)
 	})
@@ -108,8 +112,12 @@ describe('MoveCollectionDialog', () => {
 		await user.click(screen.getByRole('button', { name: 'Collections' }))
 		await user.click(screen.getByRole('button', { name: 'Move' }))
 
-		expect(updateMutate).toHaveBeenCalledWith(
-			{ collectionId: 'collection-2', parentId: null },
+		expect(moveMutate).toHaveBeenCalledWith(
+			{
+				collectionId: 'collection-2',
+				parentId: null,
+				fromParentId: 'collection-1',
+			},
 			expect.anything(),
 		)
 	})
@@ -151,7 +159,7 @@ describe('MoveCollectionDialog', () => {
 
 		expect(onOpenChange).not.toHaveBeenCalled()
 
-		const [, options] = updateMutate.mock.calls.at(-1) as [
+		const [, options] = moveMutate.mock.calls.at(-1) as [
 			unknown,
 			{ onSuccess: () => void },
 		]

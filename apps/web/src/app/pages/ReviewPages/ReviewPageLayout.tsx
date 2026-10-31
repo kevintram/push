@@ -1,8 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
 import { Outlet, useLayoutEffect } from '@tanstack/react-router'
 import { useRef } from 'react'
-import { toast } from 'sonner'
 
+import { toast } from '~/components/ui/Toast'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 
 const styles = stylex.create({
@@ -44,7 +44,11 @@ export function ReviewPageLayout() {
 			hideModeAutomaticallyActivated.current = true
 			if (hideMode !== 'on') {
 				setHideMode('on')
-				toast.info('Hide mode has been turned on.')
+				toast.add({
+					description: 'Answers stay hidden until you reveal them',
+					title: 'Hide mode on',
+					type: 'info',
+				})
 			}
 		}
 	}, [hideMode, setHideMode])

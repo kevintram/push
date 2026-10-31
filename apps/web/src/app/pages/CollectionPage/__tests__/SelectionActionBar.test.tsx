@@ -3,7 +3,10 @@ import type { Card } from '@convex/validators/cards'
 import type { Section } from '@convex/validators/sections'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { toastTitleText } from '~/testing/toastTitleText'
 
 import { SelectionActionBar } from '../SelectionActionBar'
 
@@ -66,11 +69,20 @@ describe('SelectionActionBar', () => {
 			.setup()
 			.click(screen.getByRole('button', { name: 'Flag' }))
 
-		// The already flagged card keeps its flag time.
-		expect(updateMutate).toHaveBeenCalledWith(
-			{ cardIds: [loose._id], flaggedAt: expect.any(Number) as number },
-			expect.anything(),
-		)
+		// The already flagged card keeps its flag time, and so is left out of
+		// the undo too.
+		expect(updateMutate).toHaveBeenCalledWith({
+			cardIds: [loose._id],
+			flaggedAt: expect.any(Number) as number,
+			undo: {
+				title: 'Flagged 1 card',
+				open: {
+					label: 'View all flagged',
+					onClick: expect.any(Function) as () => void,
+				},
+				cards: [loose],
+			},
+		})
 	})
 
 	it("applies card actions to a selected section's cards, and converts the section", async () => {
@@ -96,16 +108,20 @@ describe('SelectionActionBar', () => {
 			screen.getByRole('menuitem', { name: 'Convert to subcollection' }),
 		)
 
-		expect(updateMutate).toHaveBeenCalledWith(
-			{
-				cardIds: [loose._id, inSection._id],
-				retiredAt: expect.any(Number) as number,
+		expect(updateMutate).toHaveBeenCalledWith({
+			cardIds: [loose._id, inSection._id],
+			retiredAt: expect.any(Number) as number,
+			undo: {
+				title: expect.anything() as unknown,
+				description: 'They will no longer come up for review',
+				cards: [loose, inSection],
 			},
-			expect.anything(),
-		)
-		expect(convertMutate).toHaveBeenCalledWith({
-			sectionIds: [section._id],
 		})
+		const [{ undo }] = updateMutate.mock.lastCall as [
+			{ undo: { title: ReactNode } },
+		]
+		expect(toastTitleText(undo.title)).toBe('Retired 2 cards')
+		expect(convertMutate).toHaveBeenCalledWith({ sections: [section] })
 	})
 
 	it('offers no card actions for a section without cards', async () => {

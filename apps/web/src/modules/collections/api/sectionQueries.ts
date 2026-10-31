@@ -1,11 +1,12 @@
 import { api } from '@convex/_generated/api'
 import type { Id } from '@convex/_generated/dataModel'
+import type { Section } from '@convex/validators/sections'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { compareRanked, placeInLine } from '@shared/ordering'
 import { useMutation } from '@tanstack/react-query'
-import { toast } from 'sonner'
+import { useNavigate } from '@tanstack/react-router'
 
-import { getErrorMessage } from '~/utils/error'
+import { toast, toastError, toastName, toastTitle } from '~/components/ui/Toast'
 
 export const sectionQueries = {
 	listByCollection: (collectionId: Id<'collections'>) =>
@@ -16,10 +17,7 @@ export function useCreateSection() {
 	const mutationFn = useConvexMutation(api.sections.create)
 	return useMutation({
 		mutationFn,
-		onError: error =>
-			toast.error('Failed to create section', {
-				description: getErrorMessage(error),
-			}),
+		onError: error => toastError('Failed to create section', error),
 	})
 }
 
@@ -27,10 +25,7 @@ export function useUpdateSection() {
 	const mutationFn = useConvexMutation(api.sections.update)
 	return useMutation({
 		mutationFn,
-		onError: error =>
-			toast.error('Failed to update section', {
-				description: getErrorMessage(error),
-			}),
+		onError: error => toastError('Failed to update section', error),
 	})
 }
 
@@ -69,25 +64,57 @@ export function useMoveSections() {
 	})
 	return useMutation({
 		mutationFn,
-		onError: error =>
-			toast.error('Failed to move section', {
-				description: getErrorMessage(error),
-			}),
+		onError: error => toastError('Failed to move section', error),
 	})
 }
 
+/**
+ * Turns sections into subcollections, confirming it since their cards leave
+ * the page. A single new subcollection gets a button to open it.
+ */
 export function useConvertSectionsToCollections() {
-	const mutationFn = useConvexMutation(api.sections.convertToCollection)
+	const navigate = useNavigate()
+	const convert = useConvexMutation(api.sections.convertToCollection)
 	return useMutation({
-		mutationFn,
-		onError: (error, { sectionIds }) =>
-			toast.error(
-				sectionIds.length > 1
+		mutationFn: ({ sections }: { sections: ReadonlyArray<Section> }) =>
+			convert({ sectionIds: sections.map(section => section._id) }),
+		onError: (error, { sections }) =>
+			toastError(
+				sections.length > 1
 					? 'Failed to convert sections'
 					: 'Failed to convert section',
-				{
-					description: getErrorMessage(error),
-				},
+				error,
 			),
+		onSuccess: (collectionIds, { sections }) => {
+			const [collectionId] = collectionIds
+			const [section] = sections
+			if (collectionId === undefined || section === undefined) return
+			if (collectionIds.length > 1) {
+				toast.add({
+					title: `Converted ${collectionIds.length} sections to subcollections`,
+					type: 'success',
+				})
+				return
+			}
+
+			toast.add({
+				data: {
+					open: {
+						label: 'Open',
+						onClick: () =>
+							void navigate({
+								to: '/collection/$collectionId',
+								params: { collectionId },
+							}),
+					},
+				},
+				title: toastTitle(
+					'Converted ',
+					toastName(section.title, 'Untitled section'),
+					' to a subcollection',
+				),
+				type: 'success',
+			})
+		},
 	})
 }

@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
-import { toast } from 'sonner'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
+import type { DateString } from '~/types/date'
 import { todayIso } from '~/utils/date'
 
 import { useCreateReview } from '../api/reviewQueries'
@@ -11,17 +11,52 @@ import {
 	type ReviewComposerDock,
 	type ReviewComposerProviderProps,
 	type ReviewComposerState,
+	type ReviewDraft,
 } from './reviewComposerContext'
+
+const openReviewComposerDock: ReviewComposerDock = {
+	state: 'open',
+	isExpanded: false,
+}
 
 export function ReviewComposerProvider({
 	cardId,
 	children,
 	defaultDock = closedReviewComposerDock,
 	onDockChange,
+	restoredDraft,
+	onReviewUndone,
 }: ReviewComposerProviderProps) {
-	const [draft, setDraft] = useState(emptyReviewDraft)
-	const [dock, setLocalDock] = useState(defaultDock)
-	const { isPending, mutate } = useCreateReview()
+	const [draft, setDraft] = useState(restoredDraft ?? emptyReviewDraft)
+	const [dock, setLocalDock] = useState(
+		restoredDraft ? openReviewComposerDock : defaultDock,
+	)
+	// An undo can land after this composer is gone, as when the review queue
+	// has moved on from the reviewed card.
+	const isMounted = useRef(false)
+	useEffect(() => {
+		isMounted.current = true
+		return () => {
+			isMounted.current = false
+		}
+	}, [])
+	const { isPending, mutate } = useCreateReview({
+		onUndone: review => {
+			const undone: ReviewDraft = {
+				description: review.description ?? '',
+				notes: review.notes ?? '',
+				rating: review.rating ?? null,
+				// The composer only ever submits a `DateString`.
+				date: (review.date as DateString | undefined) ?? null,
+			}
+			if (isMounted.current) {
+				setDraft(undone)
+				setLocalDock(openReviewComposerDock)
+			} else {
+				onReviewUndone?.(undone)
+			}
+		},
+	})
 	const isDirty =
 		draft.description !== '' ||
 		draft.notes !== '' ||
@@ -72,7 +107,6 @@ export function ReviewComposerProvider({
 						...(draft.date === null ? {} : { date: draft.date }),
 					},
 					{
-						onError: () => toast.error('Failed to create review'),
 						onSuccess: () => {
 							setDraft(emptyReviewDraft)
 							setLocalDock(closedReviewComposerDock)

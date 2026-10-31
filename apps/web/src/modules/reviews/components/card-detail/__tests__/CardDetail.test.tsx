@@ -589,18 +589,6 @@ describe('CardDetail review composer', () => {
 		expect(description()).toHaveValue('')
 	})
 
-	it('retains content after a failed submission', () => {
-		render(detail('reviews'))
-		openDock()
-		fireEvent.change(description(), {
-			target: { value: 'Keep on failure' },
-		})
-		fireEvent.click(submitButton())
-		const callbacks = mutation.mutate.mock.calls[0]?.[1]
-		act(() => callbacks.onError())
-		expect(description()).toHaveValue('Keep on failure')
-	})
-
 	it('submits rating and date, including a rating-only review', () => {
 		render(detail('overview'))
 		openDock()

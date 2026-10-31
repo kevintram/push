@@ -115,6 +115,16 @@ export const cardMove = v.object({
 	afterId: v.union(v.id('cards'), v.null()),
 })
 
+// Where a card sits: its collection, its section (`null` for the unsectioned
+// cards), and its key in that list (`null` for a card not yet ranked). Taken
+// from a card before it moves, so the move can be undone exactly.
+export const cardPlacement = v.object({
+	cardId: v.id('cards'),
+	collectionId: v.id('collections'),
+	sectionId: v.union(v.id('sections'), v.null()),
+	rank: v.union(v.string(), v.null()),
+})
+
 export const cardSearchResult = v.object({
 	_id: v.id('cards'),
 	primaryText: v.string(),
@@ -128,4 +138,5 @@ export type CardCreate = Infer<typeof cardCreate>
 export type CardPatch = Infer<typeof cardPatch>
 export type CardBatchPatch = Infer<typeof cardBatchPatch>
 export type CardMove = Infer<typeof cardMove>
+export type CardPlacement = Infer<typeof cardPlacement>
 export type CardSearchResult = Infer<typeof cardSearchResult>

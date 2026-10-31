@@ -1,3 +1,5 @@
+import { ConvexError } from 'convex/values'
+
 import {
 	backfillRanks,
 	placeInLine,
@@ -21,7 +23,7 @@ export async function requireUserOwns(
 	const section = await ctx.db.get('sections', sectionId)
 
 	if (!section || section.ownerId !== userId) {
-		throw new Error('Section not found')
+		throw new ConvexError('Section not found')
 	}
 
 	return section

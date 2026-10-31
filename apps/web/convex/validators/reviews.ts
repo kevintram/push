@@ -1,6 +1,6 @@
 import { type Infer, v } from 'convex/values'
 
-import { learningState } from './cards'
+import { cardRead, learningState } from './cards'
 import { rating } from './reviewRatings'
 
 export { rating }
@@ -72,6 +72,13 @@ export const reviewPatch = reviewBase
 	})
 	.partial()
 
+// A new review and its card, both as they stand once the review is scheduled.
+export const reviewCreated = v.object({
+	review: reviewRead,
+	card: cardRead,
+})
+
 export type Review = Infer<typeof reviewRead>
 export type ReviewCreate = Infer<typeof reviewCreate>
+export type ReviewCreated = Infer<typeof reviewCreated>
 export type ReviewPatch = Infer<typeof reviewPatch>

@@ -3,7 +3,12 @@ import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { requireIdentity } from './model/auth'
 import * as Reviews from './model/reviews'
-import { reviewCreate, reviewPatch, reviewRead } from './validators/reviews'
+import {
+	reviewCreate,
+	reviewCreated,
+	reviewPatch,
+	reviewRead,
+} from './validators/reviews'
 
 export const listByCard = query({
 	args: {
@@ -31,7 +36,7 @@ export const get = query({
 
 export const create = mutation({
 	args: reviewCreate.fields,
-	returns: v.id('reviews'),
+	returns: reviewCreated,
 	handler: async (ctx, args) => {
 		const { subject: userId } = await requireIdentity(ctx)
 

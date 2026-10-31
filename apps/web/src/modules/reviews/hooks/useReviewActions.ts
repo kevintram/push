@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react'
-import { toast } from 'sonner'
 
 import type { DateString } from '~/types/date'
 import { todayIso } from '~/utils/date'
@@ -43,27 +42,18 @@ export function useReviewActions(review: Review): UseReviewActionsReturn {
 					? todayIso()
 					: undefined
 
-			updateReview.mutate(
-				{
-					...(date === undefined ? {} : { date }),
-					rating,
-					reviewId: review._id,
-				},
-				{
-					onError: () =>
-						toast.error('Failed to update review rating'),
-				},
-			)
+			updateReview.mutate({
+				...(date === undefined ? {} : { date }),
+				rating,
+				reviewId: review._id,
+			})
 		},
 		[review._id, review.rating, updateReview],
 	)
 
 	const setDate = useCallback(
 		(value: DateString | null) => {
-			updateReview.mutate(
-				{ date: value, reviewId: review._id },
-				{ onError: () => toast.error('Failed to update review date') },
-			)
+			updateReview.mutate({ date: value, reviewId: review._id })
 		},
 		[review._id, updateReview],
 	)
@@ -72,7 +62,6 @@ export function useReviewActions(review: Review): UseReviewActionsReturn {
 		deleteReview.mutate(
 			{ reviewId: review._id },
 			{
-				onError: () => toast.error('Failed to delete review'),
 				// Leave the dialog open on failure so the toast has context.
 				onSuccess: () => setIsDeleteDialogOpen(false),
 			},

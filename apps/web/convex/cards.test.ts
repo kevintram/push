@@ -39,41 +39,46 @@ describe('cards', () => {
 
 		await expect(
 			t.query(api.cards.listByCollection, { collectionId }),
-		).rejects.toThrow('Unauthenticated')
-		await expect(t.query(api.cards.listFlagged, {})).rejects.toThrow(
-			'Unauthenticated',
-		)
-		await expect(t.query(api.cards.get, { cardId })).rejects.toThrow(
-			'Unauthenticated',
-		)
+		).rejects.toMatchObject({ data: "You've been signed out" })
+		await expect(t.query(api.cards.listFlagged, {})).rejects.toMatchObject({
+			data: "You've been signed out",
+		})
+		await expect(t.query(api.cards.get, { cardId })).rejects.toMatchObject({
+			data: "You've been signed out",
+		})
 		await expect(
 			t.query(api.cards.search, { query: 'card' }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.cards.create, { collectionId }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.cards.update, {
 				primaryText: 'Updated',
 				cardId,
 			}),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.cards.updateMany, {
 				cardIds: [cardId],
 				flaggedAt: 1,
 			}),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
+		await expect(
+			t.mutation(api.cards.updateEach, {
+				patches: [{ cardId, flaggedAt: 1 }],
+			}),
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.cards.move, {
 				cardIds: [cardId],
 				sectionId: null,
 				afterId: null,
 			}),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.cards.remove, { cardIds: [cardId] }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 	})
 
 	it('creates cards with defaults and supplied fields', async () => {
@@ -160,7 +165,7 @@ describe('cards', () => {
 			asUserA.query(api.cards.listByCollection, {
 				collectionId: foreignCollectionId,
 			}),
-		).rejects.toThrow('Collection not found')
+		).rejects.toMatchObject({ data: 'Collection not found' })
 	})
 
 	it('omits cards on an owned collection that belong to someone else', async () => {
@@ -255,12 +260,12 @@ describe('cards', () => {
 			asUserA.mutation(api.cards.create, {
 				collectionId: missingCollectionId,
 			}),
-		).rejects.toThrow('Collection not found')
+		).rejects.toMatchObject({ data: 'Collection not found' })
 		await expect(
 			asUserA.mutation(api.cards.create, {
 				collectionId: foreignCollectionId,
 			}),
-		).rejects.toThrow('Collection not found')
+		).rejects.toMatchObject({ data: 'Collection not found' })
 	})
 
 	it('hides missing and foreign-owned cards from every card function', async () => {
@@ -286,22 +291,22 @@ describe('cards', () => {
 		for (const cardId of [foreignCardId, missingCardId]) {
 			await expect(
 				asUserA.query(api.cards.get, { cardId }),
-			).rejects.toThrow('Card not found')
+			).rejects.toMatchObject({ data: 'Card not found' })
 			await expect(
 				asUserA.mutation(api.cards.update, {
 					primaryText: 'Updated',
 					cardId,
 				}),
-			).rejects.toThrow('Card not found')
+			).rejects.toMatchObject({ data: 'Card not found' })
 			await expect(
 				asUserA.mutation(api.cards.updateMany, {
 					cardIds: [cardId],
 					flaggedAt: 1,
 				}),
-			).rejects.toThrow('Card not found')
+			).rejects.toMatchObject({ data: 'Card not found' })
 			await expect(
 				asUserA.mutation(api.cards.remove, { cardIds: [cardId] }),
-			).rejects.toThrow('Card not found')
+			).rejects.toMatchObject({ data: 'Card not found' })
 		}
 	})
 
@@ -474,6 +479,31 @@ describe('cards', () => {
 		).resolves.toMatchObject({ collectionId })
 	})
 
+	it('applies a separate patch to each card', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const first = await asUserA.mutation(api.cards.create, { collectionId })
+		const second = await asUserA.mutation(api.cards.create, {
+			collectionId,
+			flaggedAt: 5,
+		})
+
+		await asUserA.mutation(api.cards.updateEach, {
+			patches: [
+				{ cardId: first, flaggedAt: 1 },
+				{ cardId: second, flaggedAt: null, type: 'flashcard' },
+			],
+		})
+
+		await expect(
+			asUserA.query(api.cards.get, { cardId: first }),
+		).resolves.toMatchObject({ flaggedAt: 1 })
+		const updated = await asUserA.query(api.cards.get, { cardId: second })
+		expect(updated.flaggedAt).toBeUndefined()
+		expect(updated.type).toBe('flashcard')
+	})
+
 	it('rejects moving a card to a missing or foreign-owned collection', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
@@ -504,7 +534,7 @@ describe('cards', () => {
 					cardId,
 					collectionId,
 				}),
-			).rejects.toThrow('Collection not found')
+			).rejects.toMatchObject({ data: 'Collection not found' })
 		}
 
 		await expect(
@@ -549,7 +579,7 @@ describe('cards', () => {
 				collectionId,
 				sectionId: foreignSectionId,
 			}),
-		).rejects.toThrow('Section not found')
+		).rejects.toMatchObject({ data: 'Section not found' })
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 			sectionId,
@@ -712,7 +742,9 @@ describe('cards', () => {
 		await asUserA.mutation(api.reviews.create, {
 			cardId: removedCardId,
 		})
-		const keptReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: keptReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			cardId: keptCardId,
 		})
 
@@ -1007,7 +1039,9 @@ describe('cards', () => {
 		await asUserA.mutation(api.reviews.create, {
 			cardId: childCardId,
 		})
-		const keptReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: keptReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			cardId: keptCardId,
 		})
 
@@ -1251,7 +1285,7 @@ describe('cards', () => {
 					sectionId: null,
 					afterId: null,
 				}),
-			).rejects.toThrow('Card not found')
+			).rejects.toMatchObject({ data: 'Card not found' })
 		})
 
 		it('ranks the rest of an unranked list in place when a card moves into it', async () => {

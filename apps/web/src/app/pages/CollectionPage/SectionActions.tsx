@@ -74,7 +74,7 @@ export function SectionActions({ section }: SectionActionsProps) {
 					<DropdownMenuItem
 						disabled={convertSection.isPending}
 						onClick={() =>
-							convertSection.mutate({ sectionIds: [section._id] })
+							convertSection.mutate({ sections: [section] })
 						}
 					>
 						Convert to subcollection
@@ -91,9 +91,9 @@ export function SectionActions({ section }: SectionActionsProps) {
 				<MoveCollectionItemsDialog
 					onOpenChange={setIsMoveDialogOpen}
 					collectionId={section.collectionId}
-					sectionIds={[section._id]}
-					cardIds={[]}
-					title='Move section'
+					sections={[section]}
+					cards={[]}
+					name='section'
 				/>
 			) : null}
 

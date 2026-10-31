@@ -1,9 +1,15 @@
+import { ConvexError } from 'convex/values'
 import { DateTime } from 'luxon'
 
 import { assertIsoDate } from '../../shared/date'
 import { type Doc, type Id } from '../_generated/dataModel'
 import { type MutationCtx, type QueryCtx } from '../_generated/server'
-import type { Review, ReviewCreate, ReviewPatch } from '../validators/reviews'
+import type {
+	Review,
+	ReviewCreate,
+	ReviewCreated,
+	ReviewPatch,
+} from '../validators/reviews'
 import * as Cards from './cards'
 import { updateCardSrs } from './srs/replay'
 
@@ -43,7 +49,7 @@ export async function requireUserOwns(
 	const review = await ctx.db.get('reviews', reviewId)
 
 	if (!review || review.ownerId !== userId) {
-		throw new Error('Review not found')
+		throw new ConvexError('Review not found')
 	}
 
 	return review
@@ -88,7 +94,7 @@ export async function create(
 	ctx: MutationCtx,
 	userId: string,
 	fields: ReviewCreate,
-): Promise<Id<'reviews'>> {
+): Promise<ReviewCreated> {
 	const card = await Cards.requireUserOwns(ctx, userId, fields.cardId)
 
 	// A rating is the completion marker for a review, and every completion must
@@ -114,7 +120,11 @@ export async function create(
 		await updateCardSrs(ctx, card, date)
 	}
 
-	return reviewId
+	// Read back after scheduling, which fills in both.
+	return {
+		review: await get(ctx, userId, reviewId),
+		card: await Cards.get(ctx, userId, card._id),
+	}
 }
 
 export async function update(
@@ -240,6 +250,6 @@ function assertCompletedReviewIsValid(
 	// still rejecting dates that cannot be "today" in any timezone.
 	const latestCompletionDate = DateTime.utc().plus({ days: 1 }).toISODate()
 	if (latestCompletionDate === null || date > latestCompletionDate) {
-		throw new Error("Can't have a completed review in the future")
+		throw new ConvexError("Can't have a completed review in the future")
 	}
 }

@@ -1,4 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
+import type { Card } from '@convex/validators/cards'
+import type { Section } from '@convex/validators/sections'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
@@ -62,6 +64,9 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 	}
 })
 
+const section = { _id: 'section-1' } as Section
+const card = { _id: 'card-1' } as Card
+
 describe('MoveCollectionItemsDialog', () => {
 	it('moves the items to the picked collection and closes on success', async () => {
 		const user = userEvent.setup()
@@ -71,9 +76,9 @@ describe('MoveCollectionItemsDialog', () => {
 			<MoveCollectionItemsDialog
 				onOpenChange={onOpenChange}
 				collectionId={'collection-1' as Id<'collections'>}
-				sectionIds={['section-1' as Id<'sections'>]}
-				cardIds={['card-1' as Id<'cards'>]}
-				title='Move 1 section and 1 card'
+				sections={[section]}
+				cards={[card]}
+				name='1 section and 1 card'
 			/>,
 		)
 
@@ -85,9 +90,10 @@ describe('MoveCollectionItemsDialog', () => {
 			{ onSuccess: () => void },
 		]
 		expect(args).toEqual({
-			sectionIds: ['section-1'],
-			cardIds: ['card-1'],
+			sections: [section],
+			cards: [card],
 			collectionId: 'collection-2',
+			name: '1 section and 1 card',
 		})
 		expect(onOpenChange).not.toHaveBeenCalled()
 

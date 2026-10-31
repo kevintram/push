@@ -162,6 +162,8 @@ export function CardDetail({
 	onNavigate,
 	defaultDock,
 	onDockChange,
+	restoredDraft,
+	onReviewUndone,
 }: CardDetailProps) {
 	const { data: card } = useSuspenseQuery(cardQueries.detail(cardId))
 	const today = useToday()
@@ -204,6 +206,8 @@ export function CardDetail({
 			defaultDock={defaultDock}
 			key={cardId}
 			onDockChange={onDockChange}
+			restoredDraft={restoredDraft}
+			onReviewUndone={onReviewUndone}
 		>
 			<div {...stylex.props(styles.container)}>
 				<header {...stylex.props(styles.toolbar)}>

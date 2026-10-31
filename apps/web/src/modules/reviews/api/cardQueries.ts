@@ -1,12 +1,12 @@
 import { api } from '@convex/_generated/api'
 import type { Id } from '@convex/_generated/dataModel'
+import type { Card, CardBatchPatch } from '@convex/validators/cards'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { placeInLine } from '@shared/ordering'
 import { useMutation } from '@tanstack/react-query'
 import { useMatchRoute, useNavigate } from '@tanstack/react-router'
-import { toast } from 'sonner'
 
-import { getErrorMessage } from '~/utils/error'
+import { toastError, toastUndo, type UndoToast } from '~/components/ui/Toast'
 
 export const cardQueries = {
 	listFlagged: () => convexQuery(api.cards.listFlagged, {}),
@@ -18,18 +18,75 @@ export const cardQueries = {
 
 export function useCreateCard() {
 	const mutationFn = useConvexMutation(api.cards.create)
-	return useMutation({ mutationFn })
+	return useMutation({
+		mutationFn,
+		onError: error => toastError('Failed to create card', error),
+	})
 }
 
 export function useUpdateCard() {
 	const mutationFn = useConvexMutation(api.cards.update)
-	return useMutation({ mutationFn })
+	return useMutation({
+		mutationFn,
+		onError: error => toastError('Failed to update card', error),
+	})
 }
 
-/** Flags, retires, retypes, or moves several cards to another collection at once. */
+type CardsUpdate = CardBatchPatch & {
+	cardIds: Array<Id<'cards'>>
+	/**
+	 * Offers to undo the update in a toast, putting back the patched fields
+	 * of `cards` as they are now.
+	 */
+	undo?: Omit<UndoToast, 'undo'> & { cards: ReadonlyArray<Card> }
+}
+
+/** Flags, retires, or retypes several cards at once. */
 export function useUpdateCards() {
-	const mutationFn = useConvexMutation(api.cards.updateMany)
-	return useMutation({ mutationFn })
+	const updateMany = useConvexMutation(api.cards.updateMany)
+	const updateEach = useConvexMutation(api.cards.updateEach)
+	return useMutation({
+		mutationFn: ({ undo: _undo, ...patch }: CardsUpdate) =>
+			updateMany(patch),
+		onError: (error, patch) =>
+			toastError(plural(patch.cardIds, updateCardsFailure(patch)), error),
+		onSuccess: (_, { undo, ...patch }) => {
+			if (!undo) return
+
+			const { cards, ...toastProps } = undo
+			toastUndo({
+				...toastProps,
+				undo: () =>
+					updateEach({
+						patches: cards.map(card => ({
+							cardId: card._id,
+							...(patch.type !== undefined && {
+								type: card.type,
+							}),
+							// `null` clears a field the card did not have.
+							...(patch.flaggedAt !== undefined && {
+								flaggedAt: card.flaggedAt ?? null,
+							}),
+							...(patch.retiredAt !== undefined && {
+								retiredAt: card.retiredAt ?? null,
+							}),
+						})),
+					}),
+			})
+		},
+	})
+}
+
+function updateCardsFailure(patch: CardBatchPatch) {
+	if (patch.type !== undefined) return 'Failed to update card type'
+	if (patch.flaggedAt !== undefined) return 'Failed to update card flag'
+	if (patch.retiredAt !== undefined) return 'Failed to update card retirement'
+	return 'Failed to update card'
+}
+
+/** `message`, ending in "card", made plural for several cards. */
+function plural(cardIds: ReadonlyArray<unknown>, message: string) {
+	return cardIds.length > 1 ? `${message}s` : message
 }
 
 /**
@@ -84,10 +141,8 @@ export function useMoveCards() {
 	)
 	return useMutation({
 		mutationFn,
-		onError: error =>
-			toast.error('Failed to move card', {
-				description: getErrorMessage(error),
-			}),
+		onError: (error, { cardIds }) =>
+			toastError(plural(cardIds, 'Failed to move card'), error),
 	})
 }
 
@@ -99,6 +154,8 @@ export function useDeleteCards() {
 
 	return useMutation({
 		mutationFn,
+		onError: (error, { cardIds }) =>
+			toastError(plural(cardIds, 'Failed to delete card'), error),
 		onSuccess: removed => {
 			// if a deleted card is currently open, fall back to its collection
 			const open = removed.find(({ _id }) =>

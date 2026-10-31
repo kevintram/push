@@ -21,33 +21,33 @@ describe('collections', () => {
 			}),
 		)
 
-		await expect(t.query(api.collections.list, {})).rejects.toThrow(
-			'Unauthenticated',
-		)
+		await expect(t.query(api.collections.list, {})).rejects.toMatchObject({
+			data: "You've been signed out",
+		})
 		await expect(
 			t.query(api.collections.listChildren, { collectionId }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.query(api.collections.get, { expandPath: false, collectionId }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.query(api.collections.get, { expandPath: true, collectionId }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.query(api.collections.search, { query: 'Collection' }),
-		).rejects.toThrow('Unauthenticated')
-		await expect(t.mutation(api.collections.create, {})).rejects.toThrow(
-			'Unauthenticated',
-		)
+		).rejects.toMatchObject({ data: "You've been signed out" })
+		await expect(
+			t.mutation(api.collections.create, {}),
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.collections.update, {
 				collectionId,
 				title: 'Updated',
 			}),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.collections.remove, { collectionId }),
-		).rejects.toThrow('Unauthenticated')
+		).rejects.toMatchObject({ data: "You've been signed out" })
 	})
 
 	it('stores the ancestor chain on each collection, root-first and excluding self', async () => {
@@ -357,7 +357,7 @@ describe('collections', () => {
 				expandPath: true,
 				collectionId,
 			}),
-		).rejects.toThrow('Collection not found')
+		).rejects.toMatchObject({ data: 'Collection not found' })
 	})
 
 	it('lists only collections owned by the authenticated user', async () => {
@@ -439,7 +439,7 @@ describe('collections', () => {
 			asUserB.query(api.collections.listChildren, {
 				collectionId: rootId,
 			}),
-		).rejects.toThrow('Collection not found')
+		).rejects.toMatchObject({ data: 'Collection not found' })
 		await expect(
 			asUserA.query(api.collections.listChildren, {
 				collectionId: rootId,
@@ -508,12 +508,12 @@ describe('collections', () => {
 			asUserA.mutation(api.collections.create, {
 				parentId: missingParentId,
 			}),
-		).rejects.toThrow('Parent collection not found')
+		).rejects.toMatchObject({ data: 'Parent collection not found' })
 		await expect(
 			asUserA.mutation(api.collections.create, {
 				parentId: foreignParentId,
 			}),
-		).rejects.toThrow('Parent collection not found')
+		).rejects.toMatchObject({ data: 'Parent collection not found' })
 	})
 
 	it('gets owned collections while hiding missing and foreign-owned collections', async () => {
@@ -550,13 +550,13 @@ describe('collections', () => {
 				expandPath: false,
 				collectionId: foreignCollectionId,
 			}),
-		).rejects.toThrow('Collection not found')
+		).rejects.toMatchObject({ data: 'Collection not found' })
 		await expect(
 			asUserA.query(api.collections.get, {
 				expandPath: false,
 				collectionId: missingCollectionId,
 			}),
-		).rejects.toThrow('Collection not found')
+		).rejects.toMatchObject({ data: 'Collection not found' })
 	})
 
 	it('patches supplied fields and can assign or unset a parent', async () => {
@@ -619,24 +619,24 @@ describe('collections', () => {
 				title: 'Updated',
 				collectionId: foreignCollectionId,
 			}),
-		).rejects.toThrow('Collection not found')
+		).rejects.toMatchObject({ data: 'Collection not found' })
 		await expect(
 			asUserA.mutation(api.collections.update, {
 				parentId: foreignCollectionId,
 				collectionId,
 			}),
-		).rejects.toThrow('Parent collection not found')
+		).rejects.toMatchObject({ data: 'Parent collection not found' })
 		await expect(
 			asUserA.mutation(api.collections.update, {
 				parentId: missingParentId,
 				collectionId,
 			}),
-		).rejects.toThrow('Parent collection not found')
+		).rejects.toMatchObject({ data: 'Parent collection not found' })
 		await expect(
 			asUserA.mutation(api.collections.remove, {
 				collectionId: foreignCollectionId,
 			}),
-		).rejects.toThrow('Collection not found')
+		).rejects.toMatchObject({ data: 'Collection not found' })
 	})
 
 	it('rejects self-parenting and longer parent cycles', async () => {
@@ -659,15 +659,17 @@ describe('collections', () => {
 				parentId: rootId,
 				collectionId: rootId,
 			}),
-		).rejects.toThrow('A collection cannot be its own parent')
+		).rejects.toMatchObject({
+			data: 'A collection cannot be its own parent',
+		})
 		await expect(
 			asUserA.mutation(api.collections.update, {
 				parentId: grandchildId,
 				collectionId: rootId,
 			}),
-		).rejects.toThrow(
-			'A collection cannot be nested below one of its descendants',
-		)
+		).rejects.toMatchObject({
+			data: 'A collection cannot be nested below one of its descendants',
+		})
 
 		const root = await asUserA.query(api.collections.get, {
 			expandPath: false,

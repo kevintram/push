@@ -54,7 +54,7 @@ export function useReviewComposerState() {
 		throw new Error('ReviewComposer requires ReviewComposerProvider')
 	return state
 }
-/** Lets a parent carry the dock's state from one card to the next. */
+/** Lets a parent carry the composer's state from one card to the next. */
 export type ReviewComposerDockProps = {
 	/** Where the dock starts. Defaults to closed. */
 	defaultDock?: ReviewComposerDock
@@ -63,6 +63,13 @@ export type ReviewComposerDockProps = {
 	 * without calling this, since that isn't a choice to hide it.
 	 */
 	onDockChange?: (value: ReviewComposerDock) => void
+	/** A draft to start from, open, in place of an empty one. */
+	restoredDraft?: ReviewDraft
+	/**
+	 * Called with the draft of a review undone after this composer unmounted,
+	 * so a parent can bring the card and its draft back.
+	 */
+	onReviewUndone?: (draft: ReviewDraft) => void
 }
 export type ReviewComposerProviderProps = ReviewComposerDockProps & {
 	cardId: Id<'cards'>

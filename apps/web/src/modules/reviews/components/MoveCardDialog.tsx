@@ -1,10 +1,9 @@
 import type { Id } from '@convex/_generated/dataModel'
-import { toast } from 'sonner'
 
+import { useMoveCollectionItems } from '~/modules/collections/api/collectionItemQueries'
 import { MoveCollectionDialogBase } from '~/modules/collections/components/move-collection'
+import { pluralize } from '~/utils/pluralize'
 
-import { useUpdateCards } from '../api/cardQueries'
-import { plural } from '../hooks/useCardActions'
 import type { Card } from '../types/review.types'
 
 type MoveCardDialogProps = {
@@ -14,17 +13,13 @@ type MoveCardDialogProps = {
 }
 
 export function MoveCardDialog({ onOpenChange, cards }: MoveCardDialogProps) {
-	const updateCards = useUpdateCards()
+	const moveItems = useMoveCollectionItems()
+	const name = cards.length === 1 ? 'card' : pluralize(cards.length, 'card')
 
 	const handleMove = (destination: Id<'collections'>) => {
-		updateCards.mutate(
+		moveItems.mutate(
+			{ sections: [], cards, collectionId: destination, name },
 			{
-				cardIds: cards.map(card => card._id),
-				collectionId: destination,
-			},
-			{
-				onError: () =>
-					toast.error(plural(cards, 'Failed to move card')),
 				onSuccess: () => onOpenChange(false),
 			},
 		)
@@ -33,12 +28,10 @@ export function MoveCardDialog({ onOpenChange, cards }: MoveCardDialogProps) {
 	return (
 		<MoveCollectionDialogBase
 			initialDestination={cards[0]!.collectionId}
-			isPending={updateCards.isPending}
+			isPending={moveItems.isPending}
 			onMove={handleMove}
 			onOpenChange={onOpenChange}
-			title={
-				cards.length === 1 ? 'Move card' : `Move ${cards.length} cards`
-			}
+			title={`Move ${name}`}
 		/>
 	)
 }

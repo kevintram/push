@@ -127,4 +127,18 @@ describe('useReviewQueueSelection', () => {
 		expect(result.current.canGoNext).toBe(false)
 		expect(result.current.canGoPrevious).toBe(false)
 	})
+
+	it('returns to a card once it is back in the queue', () => {
+		const { result, rerender } = renderHook(
+			({ cards }) => useReviewQueueSelection(cards),
+			{ initialProps: { cards: [card('b'), card('c')] } },
+		)
+
+		act(() => result.current.returnTo('a' as Card['_id']))
+		expect(result.current.currentCard?._id).toBe('b')
+
+		rerender({ cards: [card('a'), card('b'), card('c')] })
+
+		expect(result.current.currentCard?._id).toBe('a')
+	})
 })

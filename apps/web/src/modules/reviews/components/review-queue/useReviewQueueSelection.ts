@@ -22,6 +22,9 @@ export function useReviewQueueSelection(cards: ReadonlyArray<Card>) {
 		id: cards[0]?._id ?? null,
 		index: 0,
 	}))
+	// A card to select once it is in the queue, which takes a moment after
+	// undoing its review.
+	const [returningId, setReturningId] = useState<Card['_id'] | null>(null)
 	const index = resolveIndex(cards, selection)
 	const currentCard = cards[index] ?? null
 	const resolvedId = currentCard?._id ?? null
@@ -35,6 +38,16 @@ export function useReviewQueueSelection(cards: ReadonlyArray<Card>) {
 			return { id: resolvedId, index }
 		})
 	}, [index, resolvedId])
+
+	useEffect(() => {
+		if (returningId === null) return
+
+		const returnedIndex = cards.findIndex(({ _id }) => _id === returningId)
+		if (returnedIndex === -1) return
+
+		setSelection({ id: returningId, index: returnedIndex })
+		setReturningId(null)
+	}, [cards, returningId])
 
 	const goPrevious = useCallback(() => {
 		const previousIndex = index - 1
@@ -67,5 +80,7 @@ export function useReviewQueueSelection(cards: ReadonlyArray<Card>) {
 		goPrevious,
 		goNext,
 		selectCard,
+		/** Selects `cardId` as soon as it is in the queue. */
+		returnTo: setReturningId,
 	}
 }

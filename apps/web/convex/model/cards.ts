@@ -1,3 +1,5 @@
+import { ConvexError } from 'convex/values'
+
 import { backfillRanks, placeInLine, rankAfter } from '../../shared/ordering'
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
@@ -21,7 +23,7 @@ export async function requireUserOwns(
 	const card = await ctx.db.get('cards', cardId)
 
 	if (!card || card.ownerId !== userId) {
-		throw new Error('Card not found')
+		throw new ConvexError('Card not found')
 	}
 
 	return card
@@ -283,6 +285,17 @@ export async function backfillForCollection(
 		for (const row of backfillRanks(line)) {
 			await ctx.db.patch('cards', row._id, { rank: row.rank })
 		}
+	}
+}
+
+/** Applies each patch to its own card, as when putting back several cards' values. */
+export async function updateEach(
+	ctx: MutationCtx,
+	userId: string,
+	patches: ReadonlyArray<{ cardId: Id<'cards'> } & CardBatchPatch>,
+): Promise<void> {
+	for (const { cardId, ...patch } of patches) {
+		await update(ctx, userId, cardId, patch)
 	}
 }
 

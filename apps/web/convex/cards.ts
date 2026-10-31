@@ -96,6 +96,22 @@ export const updateMany = mutation({
 	},
 })
 
+// Like `updateMany`, but with a patch per card, such as each card's own
+// previous flag time when undoing an unflag.
+export const updateEach = mutation({
+	args: {
+		patches: v.array(
+			v.object({ cardId: v.id('cards'), ...cardBatchPatch.fields }),
+		),
+	},
+	returns: v.null(),
+	handler: async (ctx, args) => {
+		const { subject: userId } = await requireIdentity(ctx)
+
+		await Cards.updateEach(ctx, userId, args.patches)
+	},
+})
+
 export const move = mutation({
 	args: {
 		cardIds: v.array(v.id('cards')),
