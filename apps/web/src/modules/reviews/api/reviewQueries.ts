@@ -3,6 +3,7 @@ import type { Id } from '@convex/_generated/dataModel'
 import type { ReviewCreate } from '@convex/validators/reviews'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { useMutation } from '@tanstack/react-query'
+import { Calendar } from 'lucide-react'
 import { createElement } from 'react'
 
 import {
@@ -47,6 +48,7 @@ export function useCreateReview({ onUndone }: UseCreateReviewOptions = {}) {
 			}
 			if (review.rating !== undefined) {
 				toastUndo({
+					icon: ratings[review.rating].Icon,
 					title: toastTitle(
 						ratings[review.rating].label,
 						' on ',
@@ -60,6 +62,7 @@ export function useCreateReview({ onUndone }: UseCreateReviewOptions = {}) {
 				})
 			} else if (review.date !== undefined) {
 				toastUndo({
+					icon: Calendar,
 					title: 'Review scheduled',
 					// The composer only ever submits a `DateString`.
 					description: `Due ${formatRelativeDate(review.date as DateString)}`,

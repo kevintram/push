@@ -2,12 +2,14 @@ import type { Card } from '@convex/validators/cards'
 import { detectPlatform } from '@tanstack/react-hotkeys'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { Archive } from 'lucide-react'
 import { DateTime } from 'luxon'
 import type { ComponentProps, ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { SelectionActionBar } from '~/app/pages/CollectionPage/SelectionActionBar'
 import type { Collection } from '~/modules/collections/types/collection.types'
+import { cardStatusStyles } from '~/modules/reviews/components/cardStatusStyles'
 import { toastTitleText } from '~/testing/toastTitleText'
 
 import { CardActions } from '../CardActions'
@@ -308,6 +310,8 @@ describe('CardActions', () => {
 			retiredAt: expect.any(Number) as number,
 			undo: {
 				title: expect.anything() as unknown,
+				icon: Archive,
+				iconXstyle: cardStatusStyles.retiredOn,
 				description: 'It will no longer come up for review',
 				cards: [card],
 			},

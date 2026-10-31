@@ -1,6 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ConvexError } from 'convex/values'
+import { Archive } from 'lucide-react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { toast, Toaster, toastUndo } from '..'
@@ -10,6 +11,19 @@ afterEach(() => {
 })
 
 describe('toastUndo', () => {
+	it('renders the action icon alongside Undo', () => {
+		render(<Toaster />)
+		act(() =>
+			toastUndo({ title: 'Retired card', icon: Archive, undo: vi.fn() }),
+		)
+		const heading = screen.getByText('Retired card').parentElement!
+		expect(heading.querySelector('svg.lucide-archive')).toBeInTheDocument()
+		expect(
+			heading.querySelector('svg.lucide-circle-check'),
+		).not.toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument()
+	})
+
 	it('runs the undo once and closes the toast', async () => {
 		const undo = vi.fn().mockResolvedValue(undefined)
 		render(<Toaster />)

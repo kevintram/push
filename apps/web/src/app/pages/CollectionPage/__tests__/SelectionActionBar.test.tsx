@@ -4,9 +4,11 @@ import type { Section } from '@convex/validators/sections'
 import { detectPlatform } from '@tanstack/react-hotkeys'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { Archive, Flag } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { cardStatusStyles } from '~/modules/reviews/components/cardStatusStyles'
 import { toastTitleText } from '~/testing/toastTitleText'
 
 import { SelectionActionBar } from '../SelectionActionBar'
@@ -107,6 +109,8 @@ describe('SelectionActionBar', () => {
 			cardIds: [loose._id],
 			flaggedAt: expect.any(Number) as number,
 			undo: {
+				icon: Flag,
+				iconXstyle: cardStatusStyles.flagOn,
 				title: 'Flagged 1 card',
 				open: {
 					label: 'View all flagged',
@@ -145,6 +149,8 @@ describe('SelectionActionBar', () => {
 			retiredAt: expect.any(Number) as number,
 			undo: {
 				title: expect.anything() as unknown,
+				icon: Archive,
+				iconXstyle: cardStatusStyles.retiredOn,
 				description: 'They will no longer come up for review',
 				cards: [loose, inSection],
 			},

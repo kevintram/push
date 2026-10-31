@@ -1,5 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { Outlet, useLayoutEffect } from '@tanstack/react-router'
+import { Copy } from 'lucide-react'
 import { useRef } from 'react'
 
 import { toast } from '~/components/ui/Toast'
@@ -45,6 +46,7 @@ export function ReviewPageLayout() {
 			if (hideMode !== 'on') {
 				setHideMode('on')
 				toast.add({
+					data: { icon: Copy },
 					description: 'Answers stay hidden until you reveal them',
 					title: 'Hide mode on',
 					type: 'info',
