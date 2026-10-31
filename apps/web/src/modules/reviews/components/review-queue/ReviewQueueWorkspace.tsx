@@ -1,4 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { QueryErrorResetBoundary } from '@tanstack/react-query'
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -170,6 +171,7 @@ export function ReviewQueueWorkspace({
 			readStoredBoolean(QUEUE_SIDEBAR_STORAGE_KEY, true),
 	)
 	const queueSidebarToggleRef = useRef<HTMLButtonElement>(null)
+	const queueSidebarSlotRef = useRef<HTMLDivElement>(null)
 	// Each card starts its composer where the user last left it, so hiding it
 	// once keeps it hidden through the rest of the queue. The expanded dialog
 	// is modal, so a card opens it docked instead; a minimized one still
@@ -256,6 +258,16 @@ export function ReviewQueueWorkspace({
 		queueSidebarToggleRef.current?.focus()
 	}
 
+	// Closing from inside the sidebar goes through `onQueueSidebarClose`, so
+	// focus lands on the toolbar toggle instead of dropping to the page.
+	useHotkey(appHotkeys.toggleQueue, () => {
+		if (queueSidebarSlotRef.current?.contains(document.activeElement)) {
+			onQueueSidebarClose()
+		} else {
+			onQueueSidebarToggle()
+		}
+	})
+
 	return (
 		<section
 			aria-label={`${title} review workspace`}
@@ -341,6 +353,7 @@ export function ReviewQueueWorkspace({
 					</section>
 				</div>
 				<div
+					ref={queueSidebarSlotRef}
 					{...stylex.props(
 						styles.sidebarSlot,
 						queueSidebarOpen

@@ -161,6 +161,7 @@ export function ReviewQueueToolbar({
 					/>
 					<TooltipContent>
 						{queueSidebarOpen ? 'Close queue' : 'Open queue'}
+						<ShortcutKeys hotkey={appHotkeys.toggleQueue} />
 					</TooltipContent>
 				</Tooltip>
 			</div>
