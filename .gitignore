@@ -22,7 +22,6 @@
 node_modules/
 dist/
 dist-ssr/
-.astro/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -36,38 +35,6 @@ coverage/
 .netlify/
 .vite/
 .tanstack/
-
-# Android
-*.iml
-.gradle/
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
-
-# iOS / Xcode
-*.xcodeproj/*
-!*.xcodeproj/project.pbxproj
-!*.xcodeproj/xcshareddata/
-*.xcworkspace/*
-!*.xcworkspace/contents.xcworkspacedata
-!*.xcworkspace/xcshareddata/
-xcuserdata/
-*.moved-aside
-DerivedData/
-*.hmap
-*.ipa
-*.dSYM.zip
-*.dSYM
-Pods/
 
 # claude code
 ./claude/settings.local.json

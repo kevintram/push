@@ -1,15 +1,15 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(pnpm:*)",
-      "Bash(gh pr view:*)",
-      "Bash(gh pr diff:*)",
-      "Bash(git show:*)",
-      "Bash(playwright-cli:*)",
-      "Skill(playwright-cli)"
-    ]
-  },
-  "enabledPlugins": {
-    "playwright-cli@playwright-cli": true
-  }
+	"permissions": {
+		"allow": [
+			"Bash(pnpm:*)",
+			"Bash(gh pr view:*)",
+			"Bash(gh pr diff:*)",
+			"Bash(git show:*)",
+			"Bash(playwright-cli:*)",
+			"Skill(playwright-cli)"
+		]
+	},
+	"enabledPlugins": {
+		"playwright-cli@playwright-cli": true
+	}
 }
