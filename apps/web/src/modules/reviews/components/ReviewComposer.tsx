@@ -116,7 +116,9 @@ export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 	const descriptionRef = useRef<HTMLTextAreaElement>(null)
 	const ratingRef = useRef<HTMLButtonElement>(null)
 	const {
+		clearFocusRequest,
 		draft,
+		focusRequest,
 		isDirty,
 		isPending,
 		setDescription,
@@ -131,6 +133,15 @@ export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 		if (autoFocus === 'description') descriptionRef.current?.focus()
 		else if (autoFocus === 'rating') ratingRef.current?.focus()
 	}, [autoFocus])
+
+	// Runs after `autoFocus`, so a shortcut that opened the composer decides
+	// where focus lands.
+	useEffect(() => {
+		if (!focusRequest) return
+		if (focusRequest === 'description') descriptionRef.current?.focus()
+		else ratingRef.current?.focus()
+		clearFocusRequest()
+	}, [focusRequest, clearFocusRequest])
 
 	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
@@ -154,6 +165,7 @@ export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 				<aside {...stylex.props(styles.rail)}>
 					<RatingPicker
 						disabled={isPending}
+						showShortcuts
 						onSetRating={setRating}
 						rating={draft.rating ?? undefined}
 						ref={ratingRef}

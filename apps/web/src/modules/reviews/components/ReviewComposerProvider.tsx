@@ -9,6 +9,7 @@ import {
 	emptyReviewDraft,
 	ReviewComposerContext,
 	type ReviewComposerDock,
+	type ReviewComposerFocusTarget,
 	type ReviewComposerProviderProps,
 	type ReviewComposerState,
 	type ReviewDraft,
@@ -31,6 +32,8 @@ export function ReviewComposerProvider({
 	const [dock, setLocalDock] = useState(
 		restoredDraft ? openReviewComposerDock : defaultDock,
 	)
+	const [focusRequest, setFocusRequest] =
+		useState<ReviewComposerFocusTarget | null>(null)
 	// An undo can land after this composer is gone, as when the review queue
 	// has moved on from the reviewed card.
 	const isMounted = useRef(false)
@@ -78,6 +81,12 @@ export function ReviewComposerProvider({
 						? closedReviewComposerDock
 						: { ...dock, state: value },
 				),
+			openComposer: target => {
+				moveDock({ ...dock, state: 'open' })
+				setFocusRequest(target)
+			},
+			focusRequest,
+			clearFocusRequest: () => setFocusRequest(null),
 			setExpanded: value =>
 				moveDock({ state: 'open', isExpanded: value }),
 			setDescription: value =>
@@ -115,7 +124,16 @@ export function ReviewComposerProvider({
 				)
 			},
 		}
-	}, [cardId, dock, draft, isDirty, isPending, mutate, onDockChange])
+	}, [
+		cardId,
+		dock,
+		draft,
+		focusRequest,
+		isDirty,
+		isPending,
+		mutate,
+		onDockChange,
+	])
 	return (
 		<ReviewComposerContext.Provider value={state}>
 			{children}

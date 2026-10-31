@@ -34,6 +34,7 @@ import { CardSidebar } from './CardSidebar'
 import { CardTabTrigger } from './CardTabTrigger'
 import { NewReviewButton } from './NewReviewButton'
 import { ReviewComposerDock } from './ReviewComposerDock'
+import { ReviewComposerHotkeys } from './ReviewComposerHotkeys'
 
 export type CardTab = 'overview' | 'reviews'
 
@@ -223,6 +224,7 @@ export function CardDetail({
 				sidebarRef={sidebarSlotRef}
 				sidebarToggleRef={sidebarToggleRef}
 			/>
+			<ReviewComposerHotkeys />
 			<div {...stylex.props(styles.container)}>
 				<header {...stylex.props(styles.toolbar)}>
 					<div {...stylex.props(styles.breadcrumbs)}>

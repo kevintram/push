@@ -10,6 +10,8 @@ import {
 	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
 } from '~/components/ui'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { hotkeyItemProps } from '~/modules/shortcuts/hotkeyItemProps'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, radii } from '~/styles/tokens.stylex'
 
@@ -35,6 +37,11 @@ type RatingPickerProps = {
 	onSetRating: (rating: Rating | null) => void
 	rating: Rating | undefined
 	ref?: React.Ref<HTMLButtonElement>
+	/**
+	 * Shows each rating's `0`–`4` key. Only the review composer handles those
+	 * keys, so other pickers leave this off.
+	 */
+	showShortcuts?: boolean
 	xstyle?: StyleXStyles
 }
 
@@ -43,6 +50,7 @@ export function RatingPicker({
 	onSetRating,
 	rating,
 	ref,
+	showShortcuts = false,
 	xstyle,
 }: RatingPickerProps) {
 	const current = getRating(rating)
@@ -85,21 +93,32 @@ export function RatingPicker({
 						prefix={
 							<Circle aria-hidden='true' size={iconSizes.sm} />
 						}
+						{...(showShortcuts
+							? hotkeyItemProps(appHotkeys.rateUncompleted)
+							: {})}
 					>
 						Uncompleted
 					</DropdownMenuRadioItem>
-					{Object.entries(ratings).map(([value, { label, Icon }]) => (
-						<DropdownMenuRadioItem
-							key={value}
-							closeOnClick
-							value={value}
-							prefix={
-								<Icon aria-hidden='true' size={iconSizes.sm} />
-							}
-						>
-							{label}
-						</DropdownMenuRadioItem>
-					))}
+					{Object.entries(ratings).map(
+						([value, { label, Icon, hotkey }]) => (
+							<DropdownMenuRadioItem
+								key={value}
+								closeOnClick
+								value={value}
+								prefix={
+									<Icon
+										aria-hidden='true'
+										size={iconSizes.sm}
+									/>
+								}
+								{...(showShortcuts
+									? hotkeyItemProps(hotkey)
+									: {})}
+							>
+								{label}
+							</DropdownMenuRadioItem>
+						),
+					)}
 				</DropdownMenuRadioGroup>
 			</DropdownMenuContent>
 		</DropdownMenu>

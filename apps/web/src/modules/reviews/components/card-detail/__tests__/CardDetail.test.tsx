@@ -321,12 +321,13 @@ describe('CardDetail review composer', () => {
 		expect(
 			screen.queryByRole('textbox', { name: 'Review description' }),
 		).not.toBeInTheDocument()
+		// The minimize button is gone, so focus moves to the restoring title.
+		const title = within(
+			screen.getByRole('region', { name: 'New review' }),
+		).getByRole('button', { name: 'New review' })
+		expect(title).toHaveFocus()
 
-		fireEvent.click(
-			within(
-				screen.getByRole('region', { name: 'New review' }),
-			).getByRole('button', { name: 'New review' }),
-		)
+		fireEvent.click(title)
 		expect(description()).toHaveValue('Keep me')
 	})
 

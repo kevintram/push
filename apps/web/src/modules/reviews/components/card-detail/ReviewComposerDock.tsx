@@ -1,7 +1,9 @@
 import * as stylex from '@stylexjs/stylex'
-import { useId, useState } from 'react'
+import { useHotkey } from '@tanstack/react-hotkeys'
+import { useId, useLayoutEffect, useRef, useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
@@ -22,10 +24,7 @@ const styles = stylex.create({
 		padding: spacing.xs,
 		gap: spacing.xs,
 		blockSize: `min(540px, calc(100% - 2 * ${spacing.lg}))`,
-		display: {
-			default: 'none',
-			'@container (min-width: 640px)': 'flex',
-		},
+		display: 'flex',
 		flexDirection: 'column',
 		inlineSize: `min(540px, calc(100% - 2 * ${spacing.lg}))`,
 
@@ -68,6 +67,28 @@ export function ReviewComposerDock() {
 		useReviewComposerState()
 	const [isDiscardOpen, setIsDiscardOpen] = useState(false)
 	const titleId = useId()
+	const windowRef = useRef<HTMLElement>(null)
+	const titleButtonRef = useRef<HTMLButtonElement>(null)
+	const isMinimizing = useRef(false)
+
+	// The focused control unmounts as the window minimizes, so focus moves to
+	// the title button that restores it.
+	const minimize = () => {
+		isMinimizing.current = true
+		setDockState('minimized')
+	}
+
+	useLayoutEffect(() => {
+		if (!isMinimizing.current || dock.state !== 'minimized') return
+		isMinimizing.current = false
+		titleButtonRef.current?.focus()
+	})
+
+	// Escape fires in the composer's text fields too.
+	useHotkey(appHotkeys.minimizeComposer, minimize, {
+		enabled: dock.state === 'open' && !dock.isExpanded,
+		target: windowRef,
+	})
 
 	const close = () => setDockState('closed')
 	const requestClose = () => {
@@ -99,7 +120,7 @@ export function ReviewComposerDock() {
 			<ReviewComposerDialog
 				onCollapse={() => setExpanded(false)}
 				onClose={requestClose}
-				onMinimize={() => setDockState('minimized')}
+				onMinimize={minimize}
 			>
 				{discardDialog}
 			</ReviewComposerDialog>
@@ -111,19 +132,22 @@ export function ReviewComposerDock() {
 	return (
 		<section
 			aria-labelledby={titleId}
+			ref={windowRef}
 			{...stylex.props(styles.window, isMinimized && styles.minimized)}
 		>
 			{isMinimized ? (
 				<ReviewComposerWindowHeader
 					onClose={requestClose}
 					onTitleClick={() => setDockState('open')}
+					titleButtonRef={titleButtonRef}
 					titleId={titleId}
 				/>
 			) : (
 				<>
 					<ReviewComposerWindowHeader
 						onClose={requestClose}
-						onMinimize={() => setDockState('minimized')}
+						onMinimize={minimize}
+						minimizeHotkey={appHotkeys.minimizeComposer}
 						onToggleExpanded={() => setExpanded(true)}
 						titleId={titleId}
 					/>

@@ -1,7 +1,15 @@
 import * as stylex from '@stylexjs/stylex'
+import type { AppHotkey } from '@tanstack/react-hotkeys'
 import { Maximize2, Minimize2, Minus, X } from 'lucide-react'
+import type { Ref } from 'react'
 
-import { Button } from '~/components/ui'
+import {
+	Button,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '~/components/ui'
+import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	fontSizes,
@@ -88,8 +96,11 @@ type ReviewComposerWindowHeaderProps = {
 	isExpanded?: boolean
 	onClose: () => void
 	onMinimize?: () => void
+	/** Shown in the minimize button's tooltip, where a key minimizes too. */
+	minimizeHotkey?: AppHotkey
 	/** Turns the title into a button, e.g. to restore a minimized window. */
 	onTitleClick?: () => void
+	titleButtonRef?: Ref<HTMLButtonElement>
 	onToggleExpanded?: () => void
 }
 
@@ -98,14 +109,31 @@ export function ReviewComposerWindowHeader({
 	isExpanded = false,
 	onClose,
 	onMinimize,
+	minimizeHotkey,
 	onTitleClick,
+	titleButtonRef,
 	onToggleExpanded,
 }: ReviewComposerWindowHeaderProps) {
+	const minimizeButton = onMinimize && (
+		<Button
+			aria-label='Minimize review composer'
+			iconOnly
+			onClick={onMinimize}
+			shape='round'
+			size='small'
+			variant='ghost'
+			xstyle={styles.control}
+		>
+			<Minus aria-hidden='true' size={iconSizes.sm} />
+		</Button>
+	)
+
 	return (
 		<header {...stylex.props(styles.header)}>
 			{onTitleClick ? (
 				<button
 					id={titleId}
+					ref={titleButtonRef}
 					onClick={onTitleClick}
 					type='button'
 					{...stylex.props(styles.title, styles.titleButton)}
@@ -118,18 +146,16 @@ export function ReviewComposerWindowHeader({
 				</h2>
 			)}
 			<div {...stylex.props(styles.actions)}>
-				{onMinimize && (
-					<Button
-						aria-label='Minimize review composer'
-						iconOnly
-						onClick={onMinimize}
-						shape='round'
-						size='small'
-						variant='ghost'
-						xstyle={styles.control}
-					>
-						<Minus aria-hidden='true' size={iconSizes.sm} />
-					</Button>
+				{minimizeButton && minimizeHotkey ? (
+					<Tooltip>
+						<TooltipTrigger render={minimizeButton} />
+						<TooltipContent>
+							Minimize
+							<ShortcutKeys hotkey={minimizeHotkey} />
+						</TooltipContent>
+					</Tooltip>
+				) : (
+					minimizeButton
 				)}
 				{onToggleExpanded && (
 					<Button
