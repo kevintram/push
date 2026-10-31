@@ -344,7 +344,7 @@ export function ReviewDialog({
 						aria-label='Review description'
 						placeholder='Description'
 						value={descriptionField.value}
-						onBlur={descriptionField.flush}
+						onCommit={descriptionField.flush}
 						onChange={descriptionField.onChange}
 						xstyle={styles.description}
 					/>
@@ -352,7 +352,7 @@ export function ReviewDialog({
 						aria-label='Review notes'
 						placeholder='Add notes…'
 						value={notesField.value}
-						onBlur={notesField.flush}
+						onCommit={notesField.flush}
 						onChange={notesField.onChange}
 						xstyle={styles.notes}
 					/>

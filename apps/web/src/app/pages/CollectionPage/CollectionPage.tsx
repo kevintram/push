@@ -221,7 +221,7 @@ export function CollectionPage() {
 							<Textarea
 								placeholder='Title'
 								aria-label='Collection title'
-								onBlur={title.flush}
+								onCommit={title.flush}
 								onChange={title.onChange}
 								value={title.value}
 								xstyle={styles.title}
@@ -229,7 +229,7 @@ export function CollectionPage() {
 							<Textarea
 								placeholder='Add description...'
 								aria-label='Collection description'
-								onBlur={description.flush}
+								onCommit={description.flush}
 								onChange={description.onChange}
 								value={description.value}
 								xstyle={styles.description}

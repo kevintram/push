@@ -36,6 +36,14 @@ export const appHotkeys = defineAppHotkeys({
 		hotkey: 'Mod+/',
 		meta: { name: 'Keyboard shortcuts', group: 'General' },
 	},
+	stopEditing: {
+		hotkey: 'Escape',
+		meta: { name: 'Stop editing a text field', group: 'General' },
+	},
+	resumeEditing: {
+		hotkey: 'Enter',
+		meta: { name: 'Edit the focused text field', group: 'General' },
+	},
 
 	goToDue: { hotkey: ['G', 'D'], meta: { name: 'Due', group: 'Go to' } },
 	goToNew: { hotkey: ['G', 'N'], meta: { name: 'New', group: 'Go to' } },
@@ -58,10 +66,6 @@ export const appHotkeys = defineAppHotkeys({
 	reveal: {
 		hotkey: 'R',
 		meta: { name: 'Reveal answer, then notes', group: 'Card' },
-	},
-	leaveCardField: {
-		hotkey: 'Escape',
-		meta: { name: 'Leave a card field', group: 'Card' },
 	},
 	toggleFlag: {
 		hotkey: 'F',

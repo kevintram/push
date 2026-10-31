@@ -156,6 +156,8 @@ export function SectionTitle({
 				onChange={title.onChange}
 				onFocus={event => event.currentTarget.select()}
 				onKeyDown={handleKeyDown}
+				// Escape ends renaming instead; see handleKeyDown.
+				stopEditingOnEscape={false}
 				value={title.value}
 				xstyle={styles.title}
 			/>

@@ -80,7 +80,6 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 	const [notesRevealed, setNotesRevealed] = useState(false)
 	const today = useToday()
 	const primaryTextRef = useRef<HTMLTextAreaElement>(null)
-	const contentRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
 		setSecondaryRevealed(false)
@@ -103,16 +102,6 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 			else setNotesRevealed(true)
 		},
 		{ enabled: !isSecondaryShown || !isNotesShown },
-	)
-
-	// Escape saves a field, through its blur, and leaves it, so the card's
-	// single-key shortcuts work again.
-	useHotkey(
-		appHotkeys.leaveCardField,
-		event => {
-			if (event.target instanceof HTMLTextAreaElement) event.target.blur()
-		},
-		{ target: contentRef },
 	)
 
 	const primaryText = useCardField({
@@ -139,12 +128,12 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 	return (
 		<div {...stylex.props(styles.layout)}>
 			<div {...stylex.props(styles.main, scrollFade.y)}>
-				<div ref={contentRef} {...stylex.props(styles.content)}>
+				<div {...stylex.props(styles.content)}>
 					<Textarea
 						aria-label='Card primary text'
 						placeholder={primaryTextPlaceholder}
 						ref={primaryTextRef}
-						onBlur={primaryText.flush}
+						onCommit={primaryText.flush}
 						onChange={primaryText.onChange}
 						value={primaryText.value}
 						xstyle={styles.primary}
@@ -157,7 +146,7 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 						<Textarea
 							aria-label='Card secondary text'
 							placeholder={secondaryTextPlaceholder}
-							onBlur={secondaryText.flush}
+							onCommit={secondaryText.flush}
 							onChange={secondaryText.onChange}
 							value={secondaryText.value}
 							xstyle={styles.secondary}
@@ -178,7 +167,7 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 						<Textarea
 							aria-label='Card notes'
 							placeholder='Add notes...'
-							onBlur={notes.flush}
+							onCommit={notes.flush}
 							onChange={notes.onChange}
 							value={notes.value}
 							xstyle={styles.notes}

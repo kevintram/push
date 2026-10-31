@@ -203,9 +203,10 @@ describe('keyboard shortcuts', () => {
 		await user.keyboard('f')
 		expect(mutation).not.toHaveBeenCalled()
 
-		// Escape leaves the field, so the card's keys work again.
+		// Escape stops editing but keeps focus, so the card's keys work again.
 		await user.keyboard('{Escape}')
-		expect(primaryText).not.toHaveFocus()
+		expect(primaryText).toHaveFocus()
+		expect(primaryText).toHaveAttribute('readonly')
 		await user.keyboard('f')
 		expect(lastMutationArgs(mutation)).toEqual({
 			cardIds: [cardId],
