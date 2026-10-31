@@ -88,14 +88,14 @@ describe('DropdownMenu', () => {
 		)
 	})
 
-	it('renders item icon and suffix slots', async () => {
+	it('renders an item icon and trailing content', async () => {
 		const user = userEvent.setup()
 
 		render(
 			<DropdownMenu>
 				<DropdownMenuTrigger>Actions</DropdownMenuTrigger>
 				<DropdownMenuContent>
-					<DropdownMenuItem icon='⌘' suffix='→'>
+					<DropdownMenuItem icon='⌘' trailing='3 new'>
 						Open
 					</DropdownMenuItem>
 				</DropdownMenuContent>
@@ -104,11 +104,8 @@ describe('DropdownMenu', () => {
 
 		await user.click(screen.getByRole('button', { name: 'Actions' }))
 
-		const item = screen.getByRole('menuitem', {
-			name: '⌘ Open →',
-		})
-		expect(item).toHaveTextContent('⌘')
-		expect(item).toHaveTextContent('Open')
-		expect(item).toHaveTextContent('→')
+		expect(
+			screen.getByRole('menuitem', { name: '⌘ Open 3 new' }),
+		).toBeInTheDocument()
 	})
 })

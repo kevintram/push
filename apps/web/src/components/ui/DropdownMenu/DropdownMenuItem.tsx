@@ -4,16 +4,18 @@ import * as stylex from '@stylexjs/stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
+import { DropdownMenuItemTrailing } from './DropdownMenuItemTrailing'
 import { menuVars } from './menu.stylex'
 
 export interface DropdownMenuItemProps extends Omit<
 	React.ComponentProps<typeof Menu.Item>,
-	'className' | 'style' | 'suffix'
+	'className' | 'style'
 > {
 	// Leading glyph. When any item in the menu has one, every item's label
 	// starts past the icon column.
 	icon?: React.ReactNode
-	suffix?: React.ReactNode
+	/** Content in the trailing column, aligned across the menu's rows. */
+	trailing?: React.ReactNode
 }
 
 const styles = stylex.create({
@@ -47,6 +49,7 @@ const styles = stylex.create({
 		gap: spacing.sm,
 		alignItems: 'center',
 		display: 'flex',
+		flexGrow: 1,
 	},
 	content: {
 		alignItems: 'center',
@@ -56,12 +59,6 @@ const styles = stylex.create({
 	disabled: {
 		opacity: 0.5,
 		pointerEvents: 'none',
-	},
-	slot: {
-		alignItems: 'center',
-		display: 'inline-flex',
-		flexShrink: 0,
-		justifyContent: 'center',
 	},
 	icon: {
 		alignItems: 'center',
@@ -76,7 +73,7 @@ export function DropdownMenuItem({
 	disabled,
 	children,
 	icon,
-	suffix,
+	trailing,
 	...props
 }: DropdownMenuItemProps) {
 	return (
@@ -92,7 +89,11 @@ export function DropdownMenuItem({
 			)}
 			<div {...stylex.props(styles.innerContainer)}>
 				<span {...stylex.props(styles.content)}>{children}</span>
-				{suffix && <span {...stylex.props(styles.slot)}>{suffix}</span>}
+				{trailing != null && (
+					<DropdownMenuItemTrailing>
+						{trailing}
+					</DropdownMenuItemTrailing>
+				)}
 			</div>
 		</Menu.Item>
 	)
