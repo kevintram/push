@@ -1,10 +1,12 @@
 import type { Card } from '@convex/validators/cards'
+import { detectPlatform } from '@tanstack/react-hotkeys'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DateTime } from 'luxon'
 import type { ComponentProps, ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { SelectionActionBar } from '~/app/pages/CollectionPage/SelectionActionBar'
 import type { Collection } from '~/modules/collections/types/collection.types'
 import { toastTitleText } from '~/testing/toastTitleText'
 
@@ -86,6 +88,14 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 
 vi.mock('~/modules/collections/api/collectionItemQueries', () => ({
 	useMoveCollectionItems: () => ({ mutate: moveMutate, isPending: false }),
+	useDeleteCollectionItems: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+
+vi.mock('~/modules/collections/api/sectionQueries', () => ({
+	useConvertSectionsToCollections: () => ({
+		mutate: vi.fn(),
+		isPending: false,
+	}),
 }))
 
 vi.mock('../../api/cardQueries', () => ({
@@ -107,6 +117,25 @@ const card: Card = {
 	searchText: 'Question\nAnswer',
 }
 
+const secondCard = { ...card, _id: 'card-2' as Card['_id'] }
+
+function renderWithSelection(menuCard = card) {
+	render(
+		<>
+			<CardActions card={menuCard} />
+			<CardActions card={secondCard} />
+			<SelectionActionBar
+				collectionId={collections[0]._id}
+				contents={{
+					sections: [],
+					cards: [card, secondCard],
+					coveredCards: [card, secondCard],
+				}}
+			/>
+		</>,
+	)
+}
+
 function openMenu() {
 	return userEvent
 		.setup()
@@ -118,6 +147,88 @@ describe('CardActions', () => {
 		updateMutate.mockClear()
 		deleteMutate.mockClear()
 		moveMutate.mockClear()
+	})
+
+	it.each([
+		['f', { flaggedAt: expect.any(Number) }],
+		['e', { retiredAt: expect.any(Number) }],
+		['t', { type: 'practice' }],
+	])(
+		'scopes %s to the open card menu while several cards are selected',
+		async (key, patch) => {
+			const user = userEvent.setup()
+			renderWithSelection()
+			await user.click(
+				screen.getAllByRole('button', { name: 'Card actions' })[0]!,
+			)
+			await user.keyboard('{Home}')
+			await user.keyboard(key)
+
+			expect(updateMutate).toHaveBeenCalledExactlyOnceWith(
+				expect.objectContaining({ cardIds: [card._id], ...patch }),
+			)
+			expect(screen.getByRole('menu')).toBeVisible()
+		},
+	)
+
+	it('temporarily overrides selection shortcuts for an unselected card', async () => {
+		const user = userEvent.setup()
+		const unselected = { ...card, _id: 'card-3' as Card['_id'] }
+		renderWithSelection(unselected)
+		await user.click(
+			screen.getAllByRole('button', { name: 'Card actions' })[0]!,
+		)
+		await user.keyboard('{Home}f{Escape}f')
+		expect(updateMutate.mock.calls.map(([patch]) => patch.cardIds)).toEqual(
+			[[unselected._id], [card._id, secondCard._id]],
+		)
+	})
+
+	it.each(['move', 'delete'] as const)(
+		'opens %s for only the menu card and preserves More after dismissal',
+		async action => {
+			const user = userEvent.setup()
+			renderWithSelection()
+			await user.click(
+				screen.getAllByRole('button', { name: 'Card actions' })[0]!,
+			)
+			await user.keyboard('{Home}')
+			const modifier = detectPlatform() === 'mac' ? 'Meta' : 'Control'
+			await user.keyboard(
+				action === 'move'
+					? 'm'
+					: `{${modifier}>}{Backspace}{/${modifier}}`,
+			)
+			expect(
+				screen.getByRole('dialog', {
+					name: action === 'move' ? 'Move card' : 'Delete card?',
+				}),
+			).toBeVisible()
+			await user.keyboard('fet')
+			expect(updateMutate).not.toHaveBeenCalled()
+			expect(deleteMutate).not.toHaveBeenCalled()
+			await user.click(screen.getByRole('button', { name: 'Cancel' }))
+			expect(screen.getByRole('menu')).toBeVisible()
+		},
+	)
+
+	it('keeps row shortcuts inactive when closed and page shortcuts active', async () => {
+		const user = userEvent.setup()
+		const { rerender } = render(<CardActions card={card} />)
+		await user.keyboard('f')
+		expect(updateMutate).not.toHaveBeenCalled()
+
+		rerender(<CardActions card={card} hasHotkeys />)
+		await user.keyboard('f')
+		expect(updateMutate).toHaveBeenCalledExactlyOnceWith(
+			expect.objectContaining({ cardIds: [card._id] }),
+		)
+		updateMutate.mockClear()
+		await openMenu()
+		await user.keyboard('{Home}f')
+		expect(updateMutate).toHaveBeenCalledExactlyOnceWith(
+			expect.objectContaining({ cardIds: [card._id] }),
+		)
 	})
 
 	it('hides the go-to-card action by default', () => {

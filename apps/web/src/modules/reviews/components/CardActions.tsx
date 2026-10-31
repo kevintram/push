@@ -27,8 +27,8 @@ type CardActionsProps = {
 	card: Card
 	showGoToCard?: boolean
 	/**
-	 * Binds the menu's keys and shows them on its items. Only one card's actions
-	 * may have them at a time, such as the open card's, never a list row's.
+	 * Also binds keys while the menu is closed, for the open card's page.
+	 * List rows bind keys only inside their open menu.
 	 */
 	hasHotkeys?: boolean
 }

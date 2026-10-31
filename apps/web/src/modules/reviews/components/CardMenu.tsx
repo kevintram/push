@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
-import type { AppHotkey } from '@tanstack/react-hotkeys'
+import { HotkeysProvider } from '@tanstack/react-hotkeys'
 import { Archive, Ellipsis, Flag, Zap } from 'lucide-react'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
@@ -25,8 +25,8 @@ import { MoveCardDialog } from './MoveCardDialog'
 type CardMenuProps = {
 	card: Card
 	/**
-	 * Binds the menu's keys and shows them on its items. Only one card's menu
-	 * may have them at a time, such as the open card's, never a list row's.
+	 * Also binds keys while the menu is closed, for the open card's page.
+	 * List rows bind keys only inside their open menu.
 	 */
 	hasHotkeys?: boolean
 	/** Styles for the menu trigger, such as revealing it on hover. */
@@ -39,6 +39,9 @@ export function CardMenu({
 	hasHotkeys = false,
 	triggerXstyle,
 }: CardMenuProps) {
+	const scope = `card-menu-${useId()}`
+	const [isOpen, setIsOpen] = useState(false)
+	const [menuElement, setMenuElement] = useState<HTMLDivElement | null>(null)
 	const [dialog, setDialog] = useState<'move' | 'delete' | null>(null)
 	const { isDeleting, remove, toggleFlag, toggleRetire, toggleType } =
 		useCardActions()
@@ -49,21 +52,26 @@ export function CardMenu({
 	const isFlashcard = card.type === 'flashcard'
 	const isFlagged = card.flaggedAt !== undefined
 	const isRetired = card.retiredAt !== undefined
-	const hotkeyProps = (hotkey: AppHotkey) =>
-		hasHotkeys ? hotkeyItemProps(hotkey) : {}
+	const hotkeys = (
+		<CardActionHotkeys
+			onToggleFlag={() => toggleFlag([card])}
+			onToggleRetire={() => toggleRetire([card])}
+			onToggleType={() => toggleType([card])}
+			onMove={() => setDialog('move')}
+			onDelete={() => setDialog('delete')}
+		/>
+	)
 
 	return (
 		<>
-			{hasHotkeys ? (
-				<CardActionHotkeys
-					onToggleFlag={() => toggleFlag([card])}
-					onToggleRetire={() => toggleRetire([card])}
-					onToggleType={() => toggleType([card])}
-					onMove={() => setDialog('move')}
-					onDelete={() => setDialog('delete')}
-				/>
-			) : null}
-			<DropdownMenu>
+			{hasHotkeys ? hotkeys : null}
+			<DropdownMenu
+				open={isOpen}
+				onOpenChange={open => {
+					// Preserve the menu while its dialog temporarily takes focus.
+					if (dialog === null) setIsOpen(open)
+				}}
+			>
 				<DropdownMenuTrigger
 					render={
 						<Button
@@ -78,8 +86,21 @@ export function CardMenu({
 				>
 					<Ellipsis aria-hidden='true' size={iconSizes.sm} />
 				</DropdownMenuTrigger>
-				<DropdownMenuContent align='end'>
+				<DropdownMenuContent ref={setMenuElement} align='end'>
+					{/* This menu owns the keys until a dialog takes focus. Capture
+					them on the popup before its typeahead handles letter keys. */}
+					<HotkeysProvider
+						scope={scope}
+						exclusive
+						enabled={isOpen && dialog === null}
+						defaultOptions={{
+							hotkey: { target: menuElement, capture: true },
+						}}
+					>
+						{hotkeys}
+					</HotkeysProvider>
 					<DropdownMenuItem
+						closeOnClick={false}
 						icon={
 							<Zap
 								aria-hidden='true'
@@ -90,13 +111,14 @@ export function CardMenu({
 							/>
 						}
 						onClick={() => toggleType([card])}
-						{...hotkeyProps(appHotkeys.toggleCardType)}
+						{...hotkeyItemProps(appHotkeys.toggleCardType)}
 					>
 						{isFlashcard
 							? 'Remove as flashcard'
 							: 'Mark as flashcard'}
 					</DropdownMenuItem>
 					<DropdownMenuItem
+						closeOnClick={false}
 						icon={
 							<Flag
 								aria-hidden='true'
@@ -107,11 +129,12 @@ export function CardMenu({
 							/>
 						}
 						onClick={() => toggleFlag([card])}
-						{...hotkeyProps(appHotkeys.toggleFlag)}
+						{...hotkeyItemProps(appHotkeys.toggleFlag)}
 					>
 						{isFlagged ? 'Unflag' : 'Flag'}
 					</DropdownMenuItem>
 					<DropdownMenuItem
+						closeOnClick={false}
 						icon={
 							<Archive
 								aria-hidden='true'
@@ -122,20 +145,22 @@ export function CardMenu({
 							/>
 						}
 						onClick={() => toggleRetire([card])}
-						{...hotkeyProps(appHotkeys.toggleRetire)}
+						{...hotkeyItemProps(appHotkeys.toggleRetire)}
 					>
 						{isRetired ? 'Unretire' : 'Retire'}
 					</DropdownMenuItem>
 					<DropdownMenuItem
+						closeOnClick={false}
 						onClick={() => setDialog('move')}
-						{...hotkeyProps(appHotkeys.moveCard)}
+						{...hotkeyItemProps(appHotkeys.moveCard)}
 					>
 						Move
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
+						closeOnClick={false}
 						onClick={() => setDialog('delete')}
-						{...hotkeyProps(appHotkeys.deleteCard)}
+						{...hotkeyItemProps(appHotkeys.deleteCard)}
 					>
 						Delete
 					</DropdownMenuItem>
