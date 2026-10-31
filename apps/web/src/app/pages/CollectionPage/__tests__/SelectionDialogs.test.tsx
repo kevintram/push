@@ -21,6 +21,10 @@ const collections = [
 
 vi.mock('~/modules/collections/api/collectionQueries', () => ({
 	collectionQueries: {
+		search: (query: string) => ({
+			queryKey: ['convex', 'collections', 'search', query],
+			queryFn: () => [],
+		}),
 		list: () => ({
 			queryKey: ['convex', 'collections', 'list'],
 			queryFn: () => collections,
@@ -38,8 +42,8 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 		await importOriginal<typeof import('@tanstack/react-query')>()
 	return {
 		...actual,
-		useQuery: () => ({
-			data: [...collections],
+		useQuery: ({ queryFn }: { queryFn: () => unknown }) => ({
+			data: queryFn(),
 			isError: false,
 			isPending: false,
 		}),
