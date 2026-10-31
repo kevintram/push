@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react'
 
 import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { spacing } from '~/styles/tokens.stylex'
+import { radii, spacing } from '~/styles/tokens.stylex'
 
 export interface TextareaProps extends Omit<
 	React.ComponentProps<'textarea'>,
@@ -26,6 +26,8 @@ const styles = stylex.create({
 	textarea: {
 		fieldSizing: 'content',
 		borderColor: colorsSemantic.surfaceTransparent,
+		// Rounds the focus ring, which follows it.
+		borderRadius: radii.xs,
 		paddingBlock: spacing.none,
 		paddingInline: spacing.none,
 		backgroundColor: colorsSemantic.surfaceTransparent,

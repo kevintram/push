@@ -30,7 +30,6 @@ describe('Textarea', () => {
 		const user = userEvent.setup()
 		const onKeyDown = vi.fn()
 		render(
-			// oxlint-disable-next-line jsx-a11y/no-static-element-interactions
 			<div onKeyDown={event => onKeyDown(event.key)}>
 				<Textarea aria-label='Notes' />
 			</div>,

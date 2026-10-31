@@ -26,7 +26,6 @@ import {
 	fontSizes,
 	fontWeights,
 	iconSizes,
-	radii,
 	spacing,
 } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
@@ -174,6 +173,11 @@ const styles = stylex.create({
 	// size to their content and never scroll on their own. Sized by its content
 	// so the compact dialog fits it, it shrinks and scrolls once out of room.
 	editor: {
+		// Room for a focused field's ring, which this scroll area would
+		// otherwise clip: its 2px offset plus its 2px width.
+		margin: '-4px',
+		padding: '4px',
+
 		gap: spacing.sm,
 		display: 'flex',
 		flexBasis: 'auto',
@@ -186,7 +190,6 @@ const styles = stylex.create({
 		overflowY: 'auto',
 	},
 	description: {
-		borderRadius: radii.xs,
 		borderStyle: 'none',
 		flexShrink: 0,
 		fontSize: fontSizes.sm,
@@ -196,7 +199,6 @@ const styles = stylex.create({
 		overflowWrap: 'anywhere',
 	},
 	notes: {
-		borderRadius: radii.xs,
 		borderStyle: 'none',
 		flexGrow: 1,
 		flexShrink: 0,

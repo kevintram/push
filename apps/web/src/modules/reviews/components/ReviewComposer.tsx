@@ -9,7 +9,7 @@ import { ariaKeyShortcuts } from '~/modules/shortcuts/ariaKeyShortcuts'
 import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { scrollFade } from '~/styles/scrollFade'
 import { scrollFadeVars } from '~/styles/scrollFade.stylex'
-import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 import { RatingButtons } from './RatingButtons'
 import { useReviewComposerState } from './reviewComposerContext'
@@ -41,6 +41,11 @@ const styles = stylex.create({
 	// The description and notes scroll together as one document; the textareas
 	// size to their content and never scroll on their own.
 	editor: {
+		// Room for a focused field's ring, which this scroll area would
+		// otherwise clip: its 2px offset plus its 2px width.
+		margin: '-4px',
+		padding: '4px',
+
 		gap: spacing.sm,
 		display: 'flex',
 		flexBasis: 0,
@@ -52,7 +57,6 @@ const styles = stylex.create({
 		overflowY: 'auto',
 	},
 	description: {
-		borderRadius: radii.xs,
 		borderStyle: 'none',
 		flexShrink: 0,
 		fontSize: fontSizes.sm,
@@ -62,7 +66,6 @@ const styles = stylex.create({
 		overflowWrap: 'anywhere',
 	},
 	notes: {
-		borderRadius: radii.xs,
 		borderStyle: 'none',
 		flexGrow: 1,
 		flexShrink: 0,
