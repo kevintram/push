@@ -5,12 +5,23 @@ import { describe, expect, it, vi } from 'vitest'
 import { RatingPicker } from '../RatingPicker'
 
 describe('RatingPicker', () => {
+	it('lists the ratings, then Todo after a separator', async () => {
+		const user = userEvent.setup()
+		render(<RatingPicker onSetRating={vi.fn()} rating={undefined} />)
+
+		await user.click(screen.getByRole('button', { name: 'Todo' }))
+		expect(
+			screen.getAllByRole('menuitemradio').map(item => item.textContent),
+		).toEqual(['Miss1', 'Hard2', 'Good3', 'Easy4', 'Todo0'])
+		expect(screen.getByRole('separator')).toBeInTheDocument()
+	})
+
 	it('closes the menu after picking a rating', async () => {
 		const user = userEvent.setup()
 		const onSetRating = vi.fn()
 		render(<RatingPicker onSetRating={onSetRating} rating={undefined} />)
 
-		await user.click(screen.getByRole('button', { name: 'Uncompleted' }))
+		await user.click(screen.getByRole('button', { name: 'Todo' }))
 		await user.click(screen.getByRole('menuitemradio', { name: 'Good' }))
 
 		expect(onSetRating).toHaveBeenCalledWith('good')
@@ -23,9 +34,7 @@ describe('RatingPicker', () => {
 		render(<RatingPicker onSetRating={onSetRating} rating='good' />)
 
 		await user.click(screen.getByRole('button', { name: 'Good' }))
-		await user.click(
-			screen.getByRole('menuitemradio', { name: 'Uncompleted' }),
-		)
+		await user.click(screen.getByRole('menuitemradio', { name: 'Todo' }))
 
 		expect(onSetRating).toHaveBeenCalledWith(null)
 		expect(screen.queryAllByRole('menuitemradio')).toHaveLength(0)
@@ -54,7 +63,7 @@ describe('RatingPicker', () => {
 		const onSetRating = vi.fn()
 		render(<RatingPicker onSetRating={onSetRating} rating={undefined} />)
 
-		screen.getByRole('button', { name: 'Uncompleted' }).focus()
+		screen.getByRole('button', { name: 'Todo' }).focus()
 		await user.keyboard('3')
 		expect(onSetRating).not.toHaveBeenCalled()
 	})

@@ -1,4 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
+import type { AppHotkey } from '@tanstack/react-hotkeys'
 import { CalendarIcon } from 'lucide-react'
 import { DateTime } from 'luxon'
 import { useState } from 'react'
@@ -15,6 +16,8 @@ import {
 	TooltipTrigger,
 } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
+import { ariaKeyShortcuts } from '~/modules/shortcuts/ariaKeyShortcuts'
+import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
@@ -26,11 +29,6 @@ import {
 } from '~/utils/date'
 
 const styles = stylex.create({
-	trigger: {
-		blockSize: 'auto',
-
-		paddingInline: spacing.xs,
-	},
 	today: { color: colorsSemantic.textToday },
 	overdue: { color: colorsSemantic.textDanger },
 	content: {
@@ -42,6 +40,11 @@ const styles = stylex.create({
 
 interface ReviewDatePickerCommonProps {
 	disabled?: boolean
+	/** The shortcut that opens it, shown on the button and in its tooltip. */
+	hotkey?: AppHotkey
+	/** Controls whether the calendar is open; it manages itself when omitted. */
+	open?: boolean
+	onOpenChange?: (open: boolean) => void
 	size?: ButtonSize
 }
 
@@ -61,8 +64,19 @@ type ReviewDatePickerProps = ReviewDatePickerCommonProps &
 	)
 
 export function ReviewDatePicker(props: ReviewDatePickerProps) {
-	const { disabled = false, size = 'medium' } = props
-	const [isOpen, setIsOpen] = useState(false)
+	const {
+		disabled = false,
+		hotkey,
+		open,
+		onOpenChange,
+		size = 'medium',
+	} = props
+	const [uncontrolledOpen, setUncontrolledOpen] = useState(false)
+	const isOpen = open ?? uncontrolledOpen
+	const setIsOpen = (next: boolean) => {
+		setUncontrolledOpen(next)
+		onOpenChange?.(next)
+	}
 	const today = useToday()
 	const relativeDate = formatRelativeDate(props.date, today)
 	const isCompleted = props.kind === 'completed'
@@ -105,14 +119,17 @@ export function ReviewDatePicker(props: ReviewDatePickerProps) {
 			disabled={disabled}
 			render={
 				<Button
+					aria-keyshortcuts={hotkey && ariaKeyShortcuts(hotkey)}
 					aria-label={`Change review date, ${accessibleTriggerLabel}`}
 					disabled={disabled}
 					size={size}
-					variant='ghost'
-					xstyle={[styles.trigger, dateToneStyle]}
+					shape='round'
+					variant='secondary'
+					xstyle={dateToneStyle}
 				>
 					<CalendarIcon aria-hidden='true' size={iconSizes.sm} />
 					{triggerLabel}
+					{hotkey && <ShortcutKeys aria-hidden hotkey={hotkey} />}
 				</Button>
 			}
 		/>
@@ -127,6 +144,7 @@ export function ReviewDatePicker(props: ReviewDatePickerProps) {
 						(props.kind === 'completed'
 							? 'Add completion date'
 							: 'Add due date')}
+					{hotkey && <ShortcutKeys aria-hidden hotkey={hotkey} />}
 				</TooltipContent>
 			</Tooltip>
 			<PopoverContent align='center'>

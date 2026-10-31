@@ -3,21 +3,15 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 import type { FormEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
 
-import {
-	Button,
-	Textarea,
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from '~/components/ui'
+import { Button, Textarea } from '~/components/ui'
 import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { ariaKeyShortcuts } from '~/modules/shortcuts/ariaKeyShortcuts'
 import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
-import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import { scrollFadeVars } from '~/styles/scrollFade.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
-import { RatingPicker } from './RatingPicker'
+import { RatingButtons } from './RatingButtons'
 import { useReviewComposerState } from './reviewComposerContext'
 import { ReviewDatePicker } from './ReviewDatePicker'
 
@@ -34,19 +28,15 @@ const styles = stylex.create({
 		inlineSize: '100%',
 		minInlineSize: 0,
 	},
+	// Unclipped, so the ratings' focus rings show; the editor below scrolls
+	// on its own.
 	body: {
 		gap: spacing.md,
-		overflow: 'hidden',
 		display: 'flex',
 		flexBasis: 0,
+		flexDirection: 'column',
 		flexGrow: 1,
 		minBlockSize: 0,
-	},
-	rail: {
-		borderRadius: radii.md,
-		alignSelf: 'flex-start',
-		backgroundColor: colorsSemantic.surfaceTransparent,
-		flexShrink: 0,
 	},
 	// The description and notes scroll together as one document; the textareas
 	// size to their content and never scroll on their own.
@@ -105,21 +95,30 @@ const styles = stylex.create({
 type ReviewComposerProps = {
 	/** The control to focus when the composer mounts. */
 	autoFocus?: 'description' | 'rating'
+	/**
+	 * Where the rating and submit keys listen: the window around the
+	 * composer, so they work from anywhere in it. Defaults to the form.
+	 */
+	hotkeyTarget?: HTMLElement | React.RefObject<HTMLElement | null> | null
 }
 
 /**
  * Fills its container. Cancelling belongs to the window around it, such as
  * the docked composer or its dialog.
  */
-export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
+export function ReviewComposer({
+	autoFocus,
+	hotkeyTarget,
+}: ReviewComposerProps) {
 	const formRef = useRef<HTMLFormElement>(null)
+	const keyTarget = hotkeyTarget ?? formRef
 	const descriptionRef = useRef<HTMLTextAreaElement>(null)
-	const ratingRef = useRef<HTMLButtonElement>(null)
-	const [isRatingMenuOpen, setIsRatingMenuOpen] = useState(false)
+	const ratingRef = useRef<HTMLElement>(null)
+	const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
 	const {
-		clearRatingRequest,
+		clearFocusRequest,
 		draft,
-		ratingRequest,
+		focusRequest,
 		isDirty,
 		isPending,
 		setDescription,
@@ -138,11 +137,11 @@ export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 	// Runs after `autoFocus`, so the shortcut that opened the composer decides
 	// where focus lands.
 	useEffect(() => {
-		if (!ratingRequest) return
-		if (ratingRequest === 'menu') setIsRatingMenuOpen(true)
+		if (!focusRequest) return
+		if (focusRequest === 'date') setIsDatePickerOpen(true)
 		else ratingRef.current?.focus()
-		clearRatingRequest()
-	}, [ratingRequest, clearRatingRequest])
+		clearFocusRequest()
+	}, [focusRequest, clearFocusRequest])
 
 	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
@@ -152,7 +151,7 @@ export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 	const submitWithHotkey = () => formRef.current?.requestSubmit()
 	useHotkey(appHotkeys.createReview, submitWithHotkey, {
 		enabled: !isSubmitDisabled,
-		target: formRef,
+		target: keyTarget,
 	})
 
 	return (
@@ -163,16 +162,13 @@ export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 			{...stylex.props(styles.composer)}
 		>
 			<div {...stylex.props(styles.body)}>
-				<aside {...stylex.props(styles.rail)}>
-					<RatingPicker
-						disabled={isPending}
-						open={isRatingMenuOpen}
-						onOpenChange={setIsRatingMenuOpen}
-						onSetRating={setRating}
-						rating={draft.rating ?? undefined}
-						ref={ratingRef}
-					/>
-				</aside>
+				<RatingButtons
+					disabled={isPending}
+					hotkeyTarget={keyTarget}
+					onSetRating={setRating}
+					rating={draft.rating ?? undefined}
+					ref={ratingRef}
+				/>
 				<div {...stylex.props(styles.editor, scrollFade.y)}>
 					<Textarea
 						aria-label='Review description'
@@ -199,28 +195,28 @@ export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 						date={draft.date}
 						disabled={isPending}
 						emptyLabel='Date'
+						hotkey={appHotkeys.openDatePicker}
 						kind={draft.rating === null ? 'scheduled' : 'completed'}
 						onDateChange={setDate}
+						onOpenChange={setIsDatePickerOpen}
+						open={isDatePickerOpen}
 						size='medium'
 					/>
 				</div>
-				<Tooltip>
-					<TooltipTrigger
-						render={
-							<Button
-								shape='round'
-								disabled={isSubmitDisabled}
-								type='submit'
-							>
-								Create review
-							</Button>
-						}
+				<Button
+					aria-keyshortcuts={ariaKeyShortcuts(
+						appHotkeys.createReview,
+					)}
+					shape='round'
+					disabled={isSubmitDisabled}
+					type='submit'
+				>
+					Create review
+					<ShortcutKeys
+						aria-hidden
+						hotkey={appHotkeys.createReview}
 					/>
-					<TooltipContent>
-						Create review
-						<ShortcutKeys hotkey={appHotkeys.createReview} />
-					</TooltipContent>
-				</Tooltip>
+				</Button>
 			</footer>
 		</form>
 	)

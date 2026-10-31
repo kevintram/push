@@ -32,10 +32,10 @@ export const closedReviewComposerDock: ReviewComposerDock = {
 	isExpanded: false,
 }
 /**
- * What a shortcut that opens the composer asks of its rating picker: focus
- * it, or open its menu.
+ * What a shortcut that opens the composer asks of it: focus its ratings, or
+ * open its date picker.
  */
-export type RatingRequest = 'focus' | 'menu'
+export type ComposerFocusRequest = 'rating' | 'date'
 export type ReviewComposerState = {
 	draft: ReviewDraft
 	isPending: boolean
@@ -43,14 +43,14 @@ export type ReviewComposerState = {
 	dock: ReviewComposerDock
 	setDockState: (value: ReviewComposerDockState) => void
 	/**
-	 * Opens the composer, restoring it if minimized, then focuses its rating
-	 * picker or opens its menu.
+	 * Opens the composer, restoring it if minimized, then focuses its ratings
+	 * or opens its date picker.
 	 */
-	openComposer: (request: RatingRequest) => void
-	/** What to do with the rating picker once the composer is showing. */
-	ratingRequest: RatingRequest | null
-	/** Called by the composer once it has handled `ratingRequest`. */
-	clearRatingRequest: () => void
+	openComposer: (request: ComposerFocusRequest) => void
+	/** Where to put focus once the composer is showing. */
+	focusRequest: ComposerFocusRequest | null
+	/** Called by the composer once it has handled `focusRequest`. */
+	clearFocusRequest: () => void
 	setExpanded: (value: boolean) => void
 	setDescription: (value: string) => void
 	setNotes: (value: string) => void

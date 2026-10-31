@@ -120,17 +120,17 @@ describe('keyboard shortcuts', () => {
 		renderRoute(`/cards/${cardId}`)
 		await screen.findByDisplayValue(card.primaryText)
 
-		// A rating key does nothing on the page; it belongs to the rating menu.
+		// A rating key does nothing on the page; it belongs to the ratings.
 		await user.keyboard('3')
 		expect(
 			screen.queryByRole('form', { name: 'Add review' }),
 		).not.toBeInTheDocument()
 
-		// C opens the composer on its rating picker.
+		// C opens the composer on its selected rating.
 		await user.keyboard('c')
 		const composer = screen.getByRole('region', { name: 'New review' })
 		expect(
-			within(composer).getByRole('button', { name: 'Uncompleted' }),
+			within(composer).getByRole('radio', { name: 'Todo' }),
 		).toHaveFocus()
 
 		// Escape minimizes it, leaving focus on the button that restores it.
@@ -144,25 +144,35 @@ describe('keyboard shortcuts', () => {
 
 		await user.keyboard('c')
 		expect(
-			within(composer).getByRole('button', { name: 'Uncompleted' }),
+			within(composer).getByRole('radio', { name: 'Todo' }),
 		).toHaveFocus()
 	})
 
-	it('opens the rating menu with W, opening the composer too', async () => {
+	it('picks a rating with its key once C focuses the ratings', async () => {
 		const user = userEvent.setup()
 		const { router } = renderRoute(`/cards/${cardId}`)
 		await screen.findByDisplayValue(card.primaryText)
 
-		await user.keyboard('w')
-		await screen.findByRole('menu')
-		// 2 also shows the Reviews tab, but the open menu keeps it.
-		await user.keyboard('2')
+		await user.keyboard('c')
 		const composer = screen.getByRole('region', { name: 'New review' })
+		// 2 also shows the Reviews tab, but the composer around focus keeps it.
+		await user.keyboard('2')
 		expect(
-			within(composer).getByRole('button', { name: 'Hard' }),
-		).toBeInTheDocument()
-		expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+			within(composer).getByRole('radio', { name: 'Hard' }),
+		).toBeChecked()
 		expect(router.state.location.pathname).toBe(`/cards/${cardId}`)
+	})
+
+	it('opens the date picker with S, opening the composer too', async () => {
+		const user = userEvent.setup()
+		renderRoute(`/cards/${cardId}`)
+		await screen.findByDisplayValue(card.primaryText)
+
+		await user.keyboard('s')
+		expect(
+			screen.getByRole('region', { name: 'New review' }),
+		).toBeInTheDocument()
+		expect(await screen.findByRole('grid')).toBeInTheDocument()
 	})
 
 	it('keeps page shortcuts from acting behind a modal dialog', async () => {
@@ -300,9 +310,9 @@ describe('keyboard shortcuts', () => {
 			'Go to',
 			'Card',
 			'Review composer',
+			// Its keys register whenever the composer shows its ratings.
+			'Rating',
 			'Review queue',
-			// Its keys register only while the rating menu is open.
-			'Rating menu',
 			'Collection',
 		])
 		expect(within(dialog).getByText('Good')).toBeInTheDocument()

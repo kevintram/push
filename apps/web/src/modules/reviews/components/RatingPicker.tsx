@@ -1,7 +1,5 @@
-import type { StyleXStyles } from '@stylexjs/stylex'
 import * as stylex from '@stylexjs/stylex'
 import { useHotkeys } from '@tanstack/react-hotkeys'
-import { Circle } from 'lucide-react'
 import { useState } from 'react'
 
 import {
@@ -10,23 +8,29 @@ import {
 	DropdownMenuContent,
 	DropdownMenuRadioGroup,
 	DropdownMenuRadioItem,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '~/components/ui'
-import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 import { hotkeyItemProps } from '~/modules/shortcuts/hotkeyItemProps'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, radii } from '~/styles/tokens.stylex'
 
 import type { Rating } from '../types/review.types'
-import { getRating, ratings } from './reviewRatings'
+import {
+	getRating,
+	ratingChoices,
+	ratingFromChoice,
+	TODO_VALUE,
+	todoRating,
+} from './reviewRatings'
 
 const styles = stylex.create({
 	ratingBadge: {
 		borderRadius: radii.full,
 		alignItems: 'center',
-		backgroundColor: colorsSemantic.surfaceInteractivePrimary,
+		backgroundColor: colorsSemantic.surfaceInteractiveInverse,
 		blockSize: iconSizes.sm,
-		color: colorsSemantic.textOnBrand,
+		color: colorsSemantic.textOnInverse,
 		display: 'flex',
 		flexShrink: 0,
 		inlineSize: iconSizes.sm,
@@ -35,38 +39,20 @@ const styles = stylex.create({
 })
 
 type RatingPickerProps = {
-	disabled?: boolean
-	/** Controls whether the menu is open; it manages itself when omitted. */
-	open?: boolean
-	onOpenChange?: (open: boolean) => void
 	onSetRating: (rating: Rating | null) => void
 	rating: Rating | undefined
-	ref?: React.Ref<HTMLButtonElement>
-	xstyle?: StyleXStyles
 }
 
-export function RatingPicker({
-	disabled = false,
-	open,
-	onOpenChange,
-	onSetRating,
-	rating,
-	ref,
-	xstyle,
-}: RatingPickerProps) {
+export function RatingPicker({ onSetRating, rating }: RatingPickerProps) {
 	const current = getRating(rating)
-	const RatingIcon = current?.Icon ?? Circle
-	const [uncontrolledOpen, setUncontrolledOpen] = useState(false)
-	const isOpen = open ?? uncontrolledOpen
-	const setIsOpen = (next: boolean) => {
-		setUncontrolledOpen(next)
-		onOpenChange?.(next)
-	}
+	const RatingIcon = current?.Icon ?? todoRating.Icon
+	const [isOpen, setIsOpen] = useState(false)
 	// State, not a ref, so the keys register once the menu mounts.
 	const [menu, setMenu] = useState<HTMLDivElement | null>(null)
 
-	const pick = (next: Rating | null) => {
-		if (next !== (rating ?? null)) onSetRating(next)
+	const value = rating ?? TODO_VALUE
+	const pick = (next: string) => {
+		if (next !== value) onSetRating(ratingFromChoice(next))
 		setIsOpen(false)
 	}
 
@@ -74,29 +60,23 @@ export function RatingPicker({
 	// keys belong to the open menu, so they register nothing while it's
 	// closed.
 	useHotkeys(
-		[
-			{ hotkey: appHotkeys.rateUncompleted, callback: () => pick(null) },
-			...Object.entries(ratings).map(([value, { hotkey }]) => ({
-				hotkey,
-				callback: () => pick(value as Rating),
-			})),
-		],
+		ratingChoices.map(choice => ({
+			hotkey: choice.hotkey,
+			callback: () => pick(choice.value),
+		})),
 		{ target: menu },
 	)
 
 	return (
 		<DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
 			<DropdownMenuTrigger
-				aria-label={current?.label ?? 'Uncompleted'}
-				ref={ref}
+				aria-label={current?.label ?? todoRating.label}
 				render={
 					<Button
 						iconOnly
 						shape='round'
 						size='micro'
-						disabled={disabled}
 						variant='ghost'
-						xstyle={xstyle}
 					/>
 				}
 			>
@@ -110,39 +90,25 @@ export function RatingPicker({
 			</DropdownMenuTrigger>
 			<DropdownMenuContent ref={setMenu}>
 				<DropdownMenuRadioGroup
-					value={rating ?? ''}
-					onValueChange={value =>
-						onSetRating(value === '' ? null : (value as Rating))
-					}
+					value={value}
+					onValueChange={next => pick(next as string)}
 				>
-					<DropdownMenuRadioItem
-						closeOnClick
-						value=''
-						prefix={
-							<Circle aria-hidden='true' size={iconSizes.sm} />
-						}
-						{...hotkeyItemProps(appHotkeys.rateUncompleted)}
-					>
-						Uncompleted
-					</DropdownMenuRadioItem>
-					{Object.entries(ratings).map(
-						([value, { label, Icon, hotkey }]) => (
-							<DropdownMenuRadioItem
-								key={value}
-								closeOnClick
-								value={value}
-								prefix={
-									<Icon
-										aria-hidden='true'
-										size={iconSizes.sm}
-									/>
-								}
-								{...hotkeyItemProps(hotkey)}
-							>
-								{label}
-							</DropdownMenuRadioItem>
+					{ratingChoices.map(({ value, label, Icon, hotkey }) => [
+						value === TODO_VALUE && (
+							<DropdownMenuSeparator key='separator' />
 						),
-					)}
+						<DropdownMenuRadioItem
+							key={value}
+							closeOnClick
+							value={value}
+							prefix={
+								<Icon aria-hidden='true' size={iconSizes.sm} />
+							}
+							{...hotkeyItemProps(hotkey)}
+						>
+							{label}
+						</DropdownMenuRadioItem>,
+					])}
 				</DropdownMenuRadioGroup>
 			</DropdownMenuContent>
 		</DropdownMenu>

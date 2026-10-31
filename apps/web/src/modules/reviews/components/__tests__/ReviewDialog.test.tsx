@@ -32,8 +32,8 @@ vi.mock('~/modules/reviews/api/cardQueries', () => ({
 	},
 }))
 
-vi.mock('../RatingPicker', () => ({
-	RatingPicker: () => <button type='button'>Rating</button>,
+vi.mock('../RatingButtons', () => ({
+	RatingButtons: () => <button type='button'>Rating</button>,
 }))
 
 vi.mock('../ReviewDatePicker', () => ({

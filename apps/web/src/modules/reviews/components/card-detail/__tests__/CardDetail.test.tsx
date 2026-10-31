@@ -39,8 +39,8 @@ vi.mock('../CardReviewsPanel', () => ({
 			</button>
 		) : null,
 }))
-vi.mock('../../RatingPicker', () => ({
-	RatingPicker: ({
+vi.mock('../../RatingButtons', () => ({
+	RatingButtons: ({
 		rating,
 		onSetRating,
 		ref,

@@ -26,7 +26,7 @@ const styles = stylex.create({
 		blockSize: `min(540px, calc(100% - 2 * ${spacing.lg}))`,
 		display: 'flex',
 		flexDirection: 'column',
-		inlineSize: `min(540px, calc(100% - 2 * ${spacing.lg}))`,
+		inlineSize: `min(600px, calc(100% - 2 * ${spacing.lg}))`,
 
 		borderColor: colorsSemantic.borderSubtle,
 		borderRadius: radii.xl,
@@ -35,6 +35,8 @@ const styles = stylex.create({
 		backgroundColor: colorsSemantic.surfaceRaised,
 		boxShadow: `0 12px 32px ${colorsSemantic.shadowStrong}`,
 		color: colorsSemantic.textPrimary,
+		// Focusable only so a click on its frame keeps focus inside it.
+		outlineStyle: 'none',
 	},
 	minimized: {
 		borderColor: colorsSemantic.borderOnInverse,
@@ -133,6 +135,9 @@ export function ReviewComposerDock() {
 		<section
 			aria-labelledby={titleId}
 			ref={windowRef}
+			// A click on the frame or blank space focuses the window rather
+			// than the page, so the composer's keys still reach it.
+			tabIndex={-1}
 			{...stylex.props(styles.window, isMinimized && styles.minimized)}
 		>
 			{isMinimized ? (
@@ -152,7 +157,10 @@ export function ReviewComposerDock() {
 						titleId={titleId}
 					/>
 					<div {...stylex.props(styles.body)}>
-						<ReviewComposer autoFocus='rating' />
+						<ReviewComposer
+							autoFocus='rating'
+							hotkeyTarget={windowRef}
+						/>
 					</div>
 				</>
 			)}
