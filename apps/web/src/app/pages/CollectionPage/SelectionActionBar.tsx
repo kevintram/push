@@ -114,6 +114,8 @@ export function SelectionActionBar({
 	collectionId,
 	contents,
 }: SelectionActionBarProps) {
+	const [menuElement, setMenuElement] = useState<HTMLDivElement | null>(null)
+	const [isMoreOpen, setIsMoreOpen] = useState(false)
 	const [dialog, setDialog] = useState<SelectionDialog>(null)
 	const { toggleFlag, toggleRetire, toggleType } = useCardActions()
 	const convertSections = useConvertSectionsToCollections()
@@ -129,6 +131,7 @@ export function SelectionActionBar({
 	return (
 		<div {...stylex.props(styles.dock)}>
 			<SelectionActionHotkeys
+				menuElement={menuElement}
 				hasCards={cards.length > 0}
 				onToggleFlag={() => toggleFlag(cards)}
 				onToggleRetire={() => toggleRetire(cards)}
@@ -233,7 +236,14 @@ export function SelectionActionBar({
 						<ShortcutKeys hotkey={appHotkeys.deleteSelection} />
 					</TooltipContent>
 				</Tooltip>
-				<DropdownMenu>
+				<DropdownMenu
+					open={isMoreOpen}
+					onOpenChange={open => {
+						// A selection dialog temporarily takes focus from More.
+						// Keep the menu available when the dialog is dismissed.
+						if (dialog === null) setIsMoreOpen(open)
+					}}
+				>
 					<DropdownMenuTrigger
 						render={
 							<Button
@@ -248,10 +258,15 @@ export function SelectionActionBar({
 					>
 						<Ellipsis aria-hidden='true' size={iconSizes.sm} />
 					</DropdownMenuTrigger>
-					<DropdownMenuContent align='end' side='top'>
+					<DropdownMenuContent
+						ref={setMenuElement}
+						align='end'
+						side='top'
+					>
 						{cards.length > 0 ? (
 							<>
 								<DropdownMenuItem
+									closeOnClick={false}
 									icon={
 										<Archive
 											aria-hidden='true'
@@ -266,6 +281,7 @@ export function SelectionActionBar({
 									{areAllRetired ? 'Unretire' : 'Retire'}
 								</DropdownMenuItem>
 								<DropdownMenuItem
+									closeOnClick={false}
 									icon={
 										<Zap
 											aria-hidden='true'
@@ -285,6 +301,7 @@ export function SelectionActionBar({
 						) : null}
 						{sections.length > 0 ? (
 							<DropdownMenuItem
+								closeOnClick={false}
 								disabled={convertSections.isPending}
 								icon={
 									<FolderTree

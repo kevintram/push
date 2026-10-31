@@ -1,8 +1,9 @@
-import { useHotkeys } from '@tanstack/react-hotkeys'
+import { type UseHotkeyDefinition, useHotkeys } from '@tanstack/react-hotkeys'
 
 import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 
 type SelectionActionHotkeysProps = {
+	menuElement: HTMLDivElement | null
 	/** Whether the selection covers any cards, which flag, retire, and type need. */
 	hasCards: boolean
 	onToggleFlag: () => void
@@ -17,6 +18,7 @@ type SelectionActionHotkeysProps = {
  * use. Move and delete open their dialogs, so neither acts without one.
  */
 export function SelectionActionHotkeys({
+	menuElement,
 	hasCards,
 	onToggleFlag,
 	onToggleRetire,
@@ -26,7 +28,7 @@ export function SelectionActionHotkeys({
 }: SelectionActionHotkeysProps) {
 	const withCards = { enabled: hasCards }
 
-	useHotkeys([
+	const hotkeys: ReadonlyArray<UseHotkeyDefinition> = [
 		{
 			hotkey: appHotkeys.toggleSelectionFlag,
 			callback: onToggleFlag,
@@ -53,7 +55,12 @@ export function SelectionActionHotkeys({
 			// deletes to the start of the line there.
 			options: { ignoreInputs: true },
 		},
-	])
+	]
+
+	useHotkeys(hotkeys)
+	// The menu owns letter keys for typeahead. Handle our commands on its
+	// popup before typeahead, leaving navigation and activation to the menu.
+	useHotkeys(hotkeys, { target: menuElement, capture: true })
 
 	return null
 }
