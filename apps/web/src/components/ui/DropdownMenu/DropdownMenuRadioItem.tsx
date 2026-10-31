@@ -7,7 +7,7 @@ import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 // A mark inside the control rather than a glyph beside text, so it sits
 // outside the iconSizes scale.
-const RADIO_DOT_SIZE = '0.75rem' // 12px
+const RADIO_DOT_SIZE = '0.5rem' // 8px
 
 import { DropdownMenuItemTrailing } from './DropdownMenuItemTrailing'
 
