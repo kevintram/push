@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { Calendar } from 'lucide-react'
+import { Archive, Calendar } from 'lucide-react'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
@@ -20,7 +20,7 @@ const styles = stylex.create({
 
 		color: colorsSemantic.textSecondary,
 	},
-	empty: {
+	muted: {
 		color: colorsSemantic.textTertiary,
 	},
 	today: { color: colorsSemantic.textToday },
@@ -35,12 +35,30 @@ type CardDueDateProps = {
 	 * under a stacked title shows the icon and prefix.
 	 */
 	variant: 'column' | 'details'
+	/** A retired card is never due, so it says so in place of a date. */
+	retired?: boolean
 }
 
 /** When a card is next due, toned when due today or overdue. */
-export function CardDueDate({ date, today, variant }: CardDueDateProps) {
+export function CardDueDate({
+	date,
+	today,
+	variant,
+	retired = false,
+}: CardDueDateProps) {
+	if (retired) {
+		return (
+			<span {...stylex.props(styles.date, styles.muted)}>
+				{variant === 'details' ? (
+					<Archive aria-hidden='true' size={iconSizes.sm} />
+				) : null}
+				Retired
+			</span>
+		)
+	}
+
 	if (date === null) {
-		return <span {...stylex.props(styles.date, styles.empty)}>—</span>
+		return <span {...stylex.props(styles.date, styles.muted)}>—</span>
 	}
 
 	const tone = getDueDateTone(date, false, today)

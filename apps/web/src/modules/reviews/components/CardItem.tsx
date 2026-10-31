@@ -28,6 +28,16 @@ const wide = '@container (min-width: 560px)'
 // drops first.
 const noStrength = '@container (width < 280px)'
 
+// A retired card is out of every review queue, so its row recedes: its text
+// and metadata go tertiary. The status toggles and menu use their own colors,
+// so they keep their contrast and the card can be brought back.
+const retiredTheme = stylex.createTheme(colorsSemantic, {
+	textPrimary: colorsSemantic.textTertiary,
+	textSecondary: colorsSemantic.textTertiary,
+	textToday: colorsSemantic.textTertiary,
+	borderPrimary: colorsSemantic.borderSubtle,
+})
+
 const styles = stylex.create({
 	// A table row. Once the list is wide enough, the due date, last review, and
 	// strength get their own columns. Stacked, they move to a details line
@@ -41,6 +51,9 @@ const styles = stylex.create({
 		// Contains the title target's stretched highlight.
 		position: 'relative',
 
+		// Set here, not inherited, so `retiredTheme` reaches text that takes
+		// the row's color.
+		color: colorsSemantic.textPrimary,
 		cursor: 'pointer',
 	},
 	// Above the title target's stretched highlight, so tooltips can show.
@@ -259,6 +272,7 @@ export function CardItem({
 	const { lastRating, lastReviewedAt, nextDueAt, stability } = srs
 	const title = primaryText.trim() || 'Untitled'
 	const isNew = lastReviewedAt === null
+	const isRetired = card.retiredAt !== undefined
 
 	const open =
 		onClick ??
@@ -305,7 +319,11 @@ export function CardItem({
 	return (
 		<tr
 			data-active={active || undefined}
-			{...stylex.props(styles.row, stylex.defaultMarker())}
+			{...stylex.props(
+				styles.row,
+				isRetired && retiredTheme,
+				stylex.defaultMarker(),
+			)}
 		>
 			<td {...stylex.props(styles.cell, styles.title)}>
 				{onClick ? (
@@ -329,16 +347,17 @@ export function CardItem({
 						{titleText}
 					</Link>
 				)}
-				{/* Stacked, a new card's line only says it is new. */}
+				{/* Stacked, a new card's line says only that it is new, or retired. */}
 				<div
 					{...metadataProps}
 					{...stylex.props(styles.details, styles.raised)}
 				>
-					{!isNew && nextDueAt !== null ? (
+					{isRetired || (!isNew && nextDueAt !== null) ? (
 						<CardDueDate
 							date={nextDueAt}
 							today={today}
 							variant='details'
+							retired={isRetired}
 						/>
 					) : null}
 					<CardLastReviewed
@@ -360,7 +379,12 @@ export function CardItem({
 				{...metadataProps}
 				{...stylex.props(styles.cell, styles.column, styles.raised)}
 			>
-				<CardDueDate date={nextDueAt} today={today} variant='column' />
+				<CardDueDate
+					date={nextDueAt}
+					today={today}
+					variant='column'
+					retired={isRetired}
+				/>
 			</td>
 
 			<td

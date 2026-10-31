@@ -171,6 +171,26 @@ describe('CardList', () => {
 		)
 	})
 
+	it('says a retired card is retired in place of its due date', () => {
+		renderList(reviewed, {
+			card: { ...card, retiredAt: 1_700_000_000_000 },
+		})
+
+		expect(screen.getAllByText('Retired')).toHaveLength(2)
+		expect(screen.queryByText('Tomorrow')).not.toBeInTheDocument()
+		expect(screen.queryByText('Due Tomorrow')).not.toBeInTheDocument()
+		expect(document.querySelector('svg.lucide-archive')).toBeInTheDocument()
+	})
+
+	it('says a new retired card is retired on its details line', () => {
+		renderList(unreviewed, {
+			card: { ...card, retiredAt: 1_700_000_000_000 },
+		})
+
+		expect(screen.getAllByText('Retired')).toHaveLength(2)
+		expect(screen.getByText('New')).toBeInTheDocument()
+	})
+
 	it('selects a card from its title or its metadata', async () => {
 		const user = userEvent.setup()
 		const onClick = vi.fn()
