@@ -14,12 +14,12 @@ import {
 	TooltipTrigger,
 } from '~/components/ui'
 import { useConvertSectionsToCollections } from '~/modules/collections/api/sectionQueries'
+import { cardStatusStyles } from '~/modules/reviews/components/cardStatusStyles'
 import { useCardActions } from '~/modules/reviews/hooks/useCardActions'
 import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 import { ariaKeyShortcuts } from '~/modules/shortcuts/ariaKeyShortcuts'
 import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { hotkeyItemProps } from '~/modules/shortcuts/hotkeyItemProps'
-import { orange } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	fontSizes,
@@ -82,10 +82,6 @@ const styles = stylex.create({
 		fontVariantNumeric: 'tabular-nums',
 		fontWeight: fontWeights.medium,
 		whiteSpace: 'nowrap',
-	},
-	flagOn: {
-		fill: orange.s500,
-		color: orange.s500,
 	},
 	// Ghost buttons recolored for the inverse surface.
 	action: {
@@ -165,7 +161,8 @@ export function SelectionActionBar({
 										aria-hidden='true'
 										size={iconSizes.sm}
 										{...stylex.props(
-											areAllFlagged && styles.flagOn,
+											areAllFlagged &&
+												cardStatusStyles.flagOn,
 										)}
 									/>
 									{areAllFlagged ? 'Unflag' : 'Flag'}
@@ -271,6 +268,10 @@ export function SelectionActionBar({
 										<Archive
 											aria-hidden='true'
 											size={iconSizes.sm}
+											{...stylex.props(
+												areAllRetired &&
+													cardStatusStyles.retiredOn,
+											)}
 										/>
 									}
 									onClick={() => toggleRetire(cards)}
@@ -286,6 +287,10 @@ export function SelectionActionBar({
 										<Zap
 											aria-hidden='true'
 											size={iconSizes.sm}
+											{...stylex.props(
+												areAllFlashcards &&
+													cardStatusStyles.flashcardOn,
+											)}
 										/>
 									}
 									onClick={() => toggleType(cards)}
