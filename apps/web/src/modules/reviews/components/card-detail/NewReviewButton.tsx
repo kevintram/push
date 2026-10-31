@@ -19,20 +19,22 @@ type NewReviewButtonProps = {
 
 export function NewReviewButton({ xstyle }: NewReviewButtonProps) {
 	const { dock, setDockState } = useReviewComposerState()
+	// Steps back while the docked composer is showing, since a click then
+	// minimizes it rather than starting a review.
+	const isOpen = dock.state === 'open'
 
 	return (
 		<Tooltip>
 			<TooltipTrigger
 				render={
 					<Button
+						aria-expanded={isOpen}
 						onClick={() =>
-							setDockState(
-								dock.state === 'open' ? 'minimized' : 'open',
-							)
+							setDockState(isOpen ? 'minimized' : 'open')
 						}
 						shape='round'
 						size='small'
-						variant='primary'
+						variant={isOpen ? 'secondary' : 'primary'}
 						xstyle={xstyle}
 					>
 						<SquarePen aria-hidden='true' size={iconSizes.sm} />

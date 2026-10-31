@@ -374,7 +374,9 @@ describe('CardDetail review composer', () => {
 
 	it('toggles between open and minimized from New review', () => {
 		render(detail('overview'))
+		expect(newReviewToggle()).toHaveAttribute('aria-expanded', 'false')
 		openDock()
+		expect(newReviewToggle()).toHaveAttribute('aria-expanded', 'true')
 		fireEvent.change(description(), { target: { value: 'Keep me' } })
 
 		fireEvent.click(newReviewToggle())
@@ -382,9 +384,11 @@ describe('CardDetail review composer', () => {
 			screen.queryByRole('textbox', { name: 'Review description' }),
 		).not.toBeInTheDocument()
 		expect(queryDock()).toBeInTheDocument()
+		expect(newReviewToggle()).toHaveAttribute('aria-expanded', 'false')
 
 		fireEvent.click(newReviewToggle())
 		expect(description()).toHaveValue('Keep me')
+		expect(newReviewToggle()).toHaveAttribute('aria-expanded', 'true')
 	})
 
 	it('restores a minimized dialog to the dialog', () => {
