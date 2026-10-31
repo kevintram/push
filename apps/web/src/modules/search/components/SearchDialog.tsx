@@ -158,11 +158,7 @@ export function SearchDialog({ tooltipSide = 'bottom' }: SearchDialogProps) {
 
 	const [expandedGroup, setExpandedGroup] = useState<ExpandedGroup>(null)
 
-	useHotkey(SEARCH_HOTKEY, () => setIsOpen(true), {
-		ignoreInputs: false,
-		preventDefault: true,
-		requireReset: true,
-	})
+	useHotkey(SEARCH_HOTKEY, () => setIsOpen(true))
 
 	const handleClear = () => {
 		setExpandedGroup(null)

@@ -1,6 +1,8 @@
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import * as stylex from '@stylexjs/stylex'
+import { HotkeysProvider } from '@tanstack/react-hotkeys'
 import { X } from 'lucide-react'
+import { useId } from 'react'
 
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, radii, spacing } from '~/styles/tokens.stylex'
@@ -105,30 +107,36 @@ export function DialogContent({
 	xstyle,
 	...props
 }: DialogContentProps) {
+	const scope = `dialog-${useId()}`
 	return (
 		<DialogPrimitive.Portal>
-			<DialogOverlay />
-			<DialogPrimitive.Viewport
-				{...stylex.props(styles.viewport, viewportXstyle)}
-			>
-				<DialogPrimitive.Popup
-					{...stylex.props(styles.popup, xstyle)}
-					{...props}
+			{/* The portal renders only while the dialog is open, so an open
+			dialog owns the keyboard: page hotkeys are suspended, and hotkeys
+			registered inside it still fire. */}
+			<HotkeysProvider scope={scope} exclusive>
+				<DialogOverlay />
+				<DialogPrimitive.Viewport
+					{...stylex.props(styles.viewport, viewportXstyle)}
 				>
-					{children}
-					{showCloseButton && (
-						<DialogPrimitive.Close
-							aria-label='Close'
-							{...stylex.props(styles.close)}
-						>
-							<X
-								aria-hidden='true'
-								{...stylex.props(styles.icon)}
-							/>
-						</DialogPrimitive.Close>
-					)}
-				</DialogPrimitive.Popup>
-			</DialogPrimitive.Viewport>
+					<DialogPrimitive.Popup
+						{...stylex.props(styles.popup, xstyle)}
+						{...props}
+					>
+						{children}
+						{showCloseButton && (
+							<DialogPrimitive.Close
+								aria-label='Close'
+								{...stylex.props(styles.close)}
+							>
+								<X
+									aria-hidden='true'
+									{...stylex.props(styles.icon)}
+								/>
+							</DialogPrimitive.Close>
+						)}
+					</DialogPrimitive.Popup>
+				</DialogPrimitive.Viewport>
+			</HotkeysProvider>
 		</DialogPrimitive.Portal>
 	)
 }

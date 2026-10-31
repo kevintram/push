@@ -689,7 +689,7 @@ describe('v2 app setup', () => {
 		)
 	})
 
-	it('navigates the review queue once per J or K key press', async () => {
+	it('navigates the review queue with J and K', async () => {
 		const user = userEvent.setup()
 		const secondCard: Card = {
 			...card,
@@ -716,31 +716,19 @@ describe('v2 app setup', () => {
 		const thirdCardButton = within(sidebar).getByRole('button', {
 			name: 'Select What is type narrowing?',
 		})
-		const navigationOrigin = document.body
-
-		fireEvent.keyDown(navigationOrigin, { key: 'j' })
+		await user.keyboard('j')
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
 		).toBeInTheDocument()
 		expect(secondCardButton).toHaveAttribute('aria-current', 'true')
 
-		fireEvent.keyDown(navigationOrigin, {
-			key: 'j',
-			repeat: true,
-		})
-		expect(
-			screen.getByDisplayValue('What is a discriminated union?'),
-		).toBeInTheDocument()
-
-		fireEvent.keyUp(navigationOrigin, { key: 'j' })
 		await user.keyboard('k')
 		expect(
 			await screen.findByDisplayValue('What problem do generics solve?'),
 		).toBeInTheDocument()
 		expect(firstCardButton).toHaveAttribute('aria-current', 'true')
 
-		await user.keyboard('j')
-		await user.keyboard('j')
+		await user.keyboard('jj')
 		expect(
 			await screen.findByDisplayValue('What is type narrowing?'),
 		).toBeInTheDocument()

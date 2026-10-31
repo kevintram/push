@@ -159,7 +159,11 @@ export function SectionTitle({
 		<button
 			type='button'
 			data-section-id={section._id}
-			onClick={onSelect}
+			// Like a card's link, a keyboard click (Enter or Space) opens the
+			// section for renaming, and a mouse click selects it.
+			onClick={event =>
+				event.detail === 0 ? onRename() : onSelect(event)
+			}
 			onDoubleClick={onRename}
 			{...stylex.props(
 				styles.label,
