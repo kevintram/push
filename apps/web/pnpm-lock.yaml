@@ -27,8 +27,8 @@ importers:
         specifier: ^0.19.0
         version: 0.19.0
       '@tanstack/react-hotkeys':
-        specifier: ^0.17.0
-        version: 0.17.0(react-dom@19.1.4(react@19.1.4))(react@19.1.4)
+        specifier: ^0.20.0
+        version: 0.20.0(react-dom@19.1.4(react@19.1.4))(react@19.1.4)
       '@tanstack/react-query':
         specifier: ^5.101.4
         version: 5.101.4(react@19.1.4)
@@ -1233,8 +1233,8 @@ packages:
     resolution: {integrity: sha512-79pf/RkhteYZTRgcR4F9kbk84P2N8rugQJswxfIqovlbRiT3yI7eBE+5QorIrZaOKktsgzRlXh1l/du/xpl4iA==}
     engines: {node: '>=20.19'}
 
-  '@tanstack/hotkeys@0.18.0':
-    resolution: {integrity: sha512-QQjRgnpz0xrTbhKiuia+ACGzO4PsxEsTVH2ls01fM2LJ8uISrWVq/9ILB3bd4eFdWzj9I6K7qZM6swoDDiKcRQ==}
+  '@tanstack/hotkeys@0.21.0':
+    resolution: {integrity: sha512-RaUpa8bTrI2JggHBqn6RsflrEg6TXmiHhNyWtEEGqhU95llVBtTGnXYWw9WBT//S4W+SUl/FPWsNqL5vRrDM6A==}
     engines: {node: '>=20'}
 
   '@tanstack/query-core@5.101.4':
@@ -1243,12 +1243,12 @@ packages:
   '@tanstack/query-devtools@5.101.4':
     resolution: {integrity: sha512-z5IPHnDX3aUWeTWlRKLyooBQekaCAw4xRpZqPQ390RiWTDBcTynjpPT221BArw0u2+pnQMdGvPQI9YNNubBcmA==}
 
-  '@tanstack/react-hotkeys@0.17.0':
-    resolution: {integrity: sha512-uuWyA+2cNe4hGPFVbsP36pwguuW7eR1PfAaw+ClygOHxo9I2A3vRGGRB1PfxwH/FEtgsJC+hV3AHvgvEeiz0pg==}
+  '@tanstack/react-hotkeys@0.20.0':
+    resolution: {integrity: sha512-KH9LsHH3pnkSe6poC/9KSgk6UltKxiXFuVPVFsfUGgvOC2gCaGQZSrIydhMvGsWrjhT1dL+g+RJgBYuPo3K9qg==}
     engines: {node: '>=20'}
     peerDependencies:
-      react: '>=16.8'
-      react-dom: '>=16.8'
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
 
   '@tanstack/react-query-devtools@5.101.4':
     resolution: {integrity: sha512-VeK2gtmfj7kvRBjtxS7TKxt/6qKhn8VzabY4UiYMr7NV9CddjSRYRgeYyld+NpjAkgMV9dd+2Qdr8ah5I03NeA==}
@@ -1279,12 +1279,6 @@ packages:
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
-
-  '@tanstack/react-store@0.11.2':
-    resolution: {integrity: sha512-oj5O5DmiMWE+ih+SioX2ayC1kbK7d3fpLx0B75fPJr9nY3zU+hoW010yr64qXsY/9fyiLVE2bn5mGNV3owm8RQ==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   '@tanstack/react-store@0.9.3':
     resolution: {integrity: sha512-y2iHd/N9OkoQbFJLUX1T9vbc2O9tjH0pQRgTcx1/Nz4IlwLvkgpuglXUx+mXt0g5ZDFrEeDnONPqkbfxXJKwRg==}
@@ -1334,9 +1328,6 @@ packages:
   '@tanstack/router-utils@1.162.2':
     resolution: {integrity: sha512-hTWqJtqIFFdvuCl8WXNyrodp2L9zo2G37xKRrcVmVRWpAB2h+U1LuRAfS4tsFTiWOIoE/B+WDVFB8JpoEdw6jQ==}
     engines: {node: '>=20.19'}
-
-  '@tanstack/store@0.11.2':
-    resolution: {integrity: sha512-sJ4mjol8uQsHV0gOJzzjwXfh2Fwm+Sz0+8deqiTm4jGbMdjzNSW+xZCFm0kUa870uhd8yi+DpKnZb5Kc4apa0Q==}
 
   '@tanstack/store@0.9.3':
     resolution: {integrity: sha512-8reSzl/qGWGGVKhBoxXPMWzATSbZLZFWhwBAFO9NAyp0TxzfBP0mIrGb8CP8KrQTmvzXlR/vFPPUrHTLBGyFyw==}
@@ -3258,18 +3249,15 @@ snapshots:
 
   '@tanstack/history@1.162.0': {}
 
-  '@tanstack/hotkeys@0.18.0':
-    dependencies:
-      '@tanstack/store': 0.11.2
+  '@tanstack/hotkeys@0.21.0': {}
 
   '@tanstack/query-core@5.101.4': {}
 
   '@tanstack/query-devtools@5.101.4': {}
 
-  '@tanstack/react-hotkeys@0.17.0(react-dom@19.1.4(react@19.1.4))(react@19.1.4)':
+  '@tanstack/react-hotkeys@0.20.0(react-dom@19.1.4(react@19.1.4))(react@19.1.4)':
     dependencies:
-      '@tanstack/hotkeys': 0.18.0
-      '@tanstack/react-store': 0.11.2(react-dom@19.1.4(react@19.1.4))(react@19.1.4)
+      '@tanstack/hotkeys': 0.21.0
       react: 19.1.4
       react-dom: 19.1.4(react@19.1.4)
 
@@ -3303,13 +3291,6 @@ snapshots:
       isbot: 5.1.44
       react: 19.1.4
       react-dom: 19.1.4(react@19.1.4)
-
-  '@tanstack/react-store@0.11.2(react-dom@19.1.4(react@19.1.4))(react@19.1.4)':
-    dependencies:
-      '@tanstack/store': 0.11.2
-      react: 19.1.4
-      react-dom: 19.1.4(react@19.1.4)
-      use-sync-external-store: 1.6.0(react@19.1.4)
 
   '@tanstack/react-store@0.9.3(react-dom@19.1.4(react@19.1.4))(react@19.1.4)':
     dependencies:
@@ -3382,8 +3363,6 @@ snapshots:
       tinyglobby: 0.2.17
     transitivePeerDependencies:
       - supports-color
-
-  '@tanstack/store@0.11.2': {}
 
   '@tanstack/store@0.9.3': {}
 
