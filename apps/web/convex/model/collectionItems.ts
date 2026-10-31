@@ -115,8 +115,8 @@ export async function moveToPlacements(
 }
 
 /**
- * Private helper (not exported) for moving `section` to `collectionId` at `rank`, 
- * carrying every card in the section along, since each card stores its own 
+ * Private helper (not exported) for moving `section` to `collectionId` at `rank`,
+ * carrying every card in the section along, since each card stores its own
  * `collectionId`.
  */
 async function moveSection(
