@@ -2,10 +2,12 @@ import * as stylex from '@stylexjs/stylex'
 import type { ReactNode } from 'react'
 
 // StyleX's dev server only resolves shared constants through the `~` alias.
-import { cardTableMarker } from '~/modules/reviews/components/cardTable.stylex'
+import { tableMarker } from '~/modules/reviews/components/table.stylex'
 import { a11y } from '~/styles/a11y'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+
+import { tableHeaderStyles } from './tableHeaderStyles'
 
 // A local string, not a shared constant: StyleX can leave an imported
 // at-rule key unresolved in dev, emitting invalid CSS.
@@ -91,26 +93,6 @@ const styles = stylex.create({
 	h3: {
 		fontSize: fontSizes.md,
 	},
-	// Shown while the table is hovered, holds keyboard focus, or has a popup
-	// open, such as a header action's menu. Always shown on touch, where there
-	// is no hover to reveal it. The column labels and header actions share it,
-	// so they show together. It applies inside the header cells, so the cells'
-	// rule stays.
-	revealed: {
-		opacity: {
-			default: null,
-			'@media (hover: hover)': {
-				default: '0',
-				[stylex.when.ancestor(':has(:focus-visible)', cardTableMarker)]:
-					1,
-				[stylex.when.ancestor(
-					':has([data-popup-open])',
-					cardTableMarker,
-				)]: 1,
-				[stylex.when.ancestor(':hover', cardTableMarker)]: 1,
-			},
-		},
-	},
 	// Hidden with its column when stacked. Pads the gap before the column, like
 	// `CardItem`'s cells.
 	label: {
@@ -120,9 +102,6 @@ const styles = stylex.create({
 		},
 		paddingInlineStart: spacing.lg,
 		whiteSpace: 'nowrap',
-
-		color: colorsSemantic.textTertiary,
-		fontSize: fontSizes.sm,
 	},
 	// Above a title stretched over the row, so the actions stay clickable.
 	// Icons have no text baseline, so they sit at the bottom of the row.
@@ -165,7 +144,7 @@ export function CardList({
 	]
 
 	return (
-		<div {...stylex.props(styles.container, cardTableMarker)}>
+		<div {...stylex.props(styles.container, tableMarker)}>
 			<table {...stylex.props(styles.table)}>
 				<thead>
 					<tr {...stylex.props(styles.headerRow)}>
@@ -188,9 +167,17 @@ export function CardList({
 						{LABELS.map(label => (
 							<th
 								key={label}
-								{...stylex.props(headerCell, styles.label)}
+								{...stylex.props(
+									headerCell,
+									styles.label,
+									tableHeaderStyles.label,
+								)}
 							>
-								<span {...stylex.props(styles.revealed)}>
+								<span
+									{...stylex.props(
+										tableHeaderStyles.revealed,
+									)}
+								>
 									{label}
 								</span>
 							</th>
@@ -213,7 +200,7 @@ export function CardList({
 								<div
 									{...stylex.props(
 										styles.headerActionsContent,
-										styles.revealed,
+										tableHeaderStyles.revealed,
 									)}
 								>
 									{actions}

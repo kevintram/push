@@ -1,11 +1,13 @@
 import * as stylex from '@stylexjs/stylex'
 
+// StyleX's dev server only resolves shared constants through the `~` alias.
+import { tableMarker } from '~/modules/reviews/components/table.stylex'
 import { a11y } from '~/styles/a11y'
-import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+import { spacing } from '~/styles/tokens.stylex'
 
 import type { Review as ReviewModel } from '../types/review.types'
 import { Review } from './Review'
+import { tableHeaderStyles } from './tableHeaderStyles'
 
 // A local string, not a shared constant: StyleX can leave an imported
 // at-rule key unresolved in dev, emitting invalid CSS.
@@ -75,9 +77,6 @@ const styles = stylex.create({
 		// Acts as a minimum on a table cell.
 		blockSize: '32px',
 
-		color: colorsSemantic.textSecondary,
-		fontSize: fontSizes.xs,
-		fontWeight: fontWeights.medium,
 		textAlign: 'start',
 	},
 	// Matches the gap `ReviewRow` pads before every cell after the rating's.
@@ -107,15 +106,18 @@ type ReviewListProps = {
 
 export function ReviewList({ reviews }: ReviewListProps) {
 	return (
-		<div {...stylex.props(styles.container)}>
+		<div {...stylex.props(styles.container, tableMarker)}>
 			<table {...stylex.props(styles.table)}>
-				<thead {...stylex.props(styles.head)}>
+				<thead
+					{...stylex.props(styles.head, tableHeaderStyles.revealed)}
+				>
 					<tr>
 						{COLUMNS.map((column, index) => (
 							<th
 								key={column.label}
 								{...stylex.props(
 									styles.headerCell,
+									tableHeaderStyles.label,
 									index > 0 && styles.gap,
 									column.xstyle,
 								)}
