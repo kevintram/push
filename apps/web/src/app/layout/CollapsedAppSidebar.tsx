@@ -94,7 +94,7 @@ export function CollapsedAppSidebar({
 			</div>
 
 			<div {...stylex.props(styles.group)}>
-				{REVIEW_LINKS.map(({ icon, label, queueKey, to }) => {
+				{REVIEW_LINKS.map(({ icon, label, queueKey, to, hotkey }) => {
 					const queue = queues[queueKey]
 					const name = queue.countLabel ?? label
 					return (
@@ -115,7 +115,10 @@ export function CollapsedAppSidebar({
 									</SidebarItem>
 								}
 							/>
-							<TooltipContent side='right'>{name}</TooltipContent>
+							<TooltipContent side='right'>
+								{name}
+								<ShortcutKeys hotkey={hotkey} />
+							</TooltipContent>
 						</Tooltip>
 					)
 				})}

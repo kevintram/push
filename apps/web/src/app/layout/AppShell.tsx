@@ -8,6 +8,7 @@ import { ResizeHandle } from '~/components/ResizeHandle'
 import { usePersistedBoolean } from '~/hooks/usePersistedBoolean'
 import { useResizableWidth } from '~/hooks/useResizableWidth'
 import { collectionQueries } from '~/modules/collections/api/collectionQueries'
+import { ReviewNavigationHotkeys } from '~/modules/reviews/components/review-navigation/ReviewNavigationHotkeys'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 import { slate } from '~/styles/colors/colorsPrimitive.stylex'
@@ -165,6 +166,7 @@ export function AppShell({ children }: AppShellProps) {
 				<ResizeHandle {...handleProps} xstyle={styles.resizeHandle} />
 			</nav>
 			<main {...stylex.props(styles.children)}>{children}</main>
+			<ReviewNavigationHotkeys />
 		</div>
 	)
 }
