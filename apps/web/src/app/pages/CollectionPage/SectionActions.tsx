@@ -98,12 +98,17 @@ export function SectionActions({ section }: SectionActionsProps) {
 			) : null}
 
 			<DeleteConfirmationDialog
-				description='This section, its cards, and their review history will be permanently deleted.'
+				description={
+					<>
+						This section and all its cards will be{' '}
+						<strong>permanently</strong> deleted.
+					</>
+				}
 				isPending={deleteSection.isPending}
 				onConfirm={confirmDelete}
 				onOpenChange={setIsDeleteDialogOpen}
 				open={isDeleteDialogOpen}
-				title={`Delete ${section.title ? `"${section.title}"` : 'section'}?`}
+				title={`Delete “${section.title.trim() || 'Untitled section'}”?`}
 			/>
 		</>
 	)

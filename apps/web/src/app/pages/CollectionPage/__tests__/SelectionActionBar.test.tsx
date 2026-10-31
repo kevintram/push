@@ -70,7 +70,10 @@ const card = (id: string, fields: Partial<Card> = {}) =>
 		primaryText: 'A card',
 		...fields,
 	}) as Card
-const section = { _id: 'section-1' as Section['_id'] } as Section
+const section = {
+	_id: 'section-1' as Section['_id'],
+	title: 'A section',
+} as Section
 
 const loose = card('card-1')
 const flagged = card('card-2', { flaggedAt: 1_700_000_000_000 })
@@ -223,7 +226,7 @@ describe('SelectionActionBar', () => {
 			)
 			expect(
 				screen.getByRole('dialog', {
-					name: action === 'move' ? 'Move card' : 'Delete card?',
+					name: action === 'move' ? 'Move card' : 'Delete “A card”?',
 				}),
 			).toBeVisible()
 			expect(deleteItemsMutate).not.toHaveBeenCalled()
@@ -302,7 +305,7 @@ describe('SelectionActionBar', () => {
 			name: 'Delete 1 section and 2 cards?',
 		})
 		expect(dialog).toHaveTextContent(
-			'This section, its cards, the other selected cards, and their review history will be permanently deleted.',
+			'This section, all 2 cards, and their reviews will be permanently deleted.',
 		)
 		expect(deleteItemsMutate).not.toHaveBeenCalled()
 		await user.click(within(dialog).getByRole('button', { name: 'Delete' }))

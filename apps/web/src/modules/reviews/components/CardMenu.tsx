@@ -172,13 +172,18 @@ export function CardMenu({
 			) : null}
 
 			<DeleteConfirmationDialog
-				description='This card and its content will be permanently deleted.'
+				description={
+					<>
+						This card and its reviews will be{' '}
+						<strong>permanently</strong> deleted.
+					</>
+				}
 				isPending={isDeleting}
 				// Leave the dialog open on failure so the toast has context.
 				onConfirm={() => remove([card], () => setDialog(null))}
 				onOpenChange={closeOnDismiss}
 				open={dialog === 'delete'}
-				title='Delete card?'
+				title={`Delete “${card.primaryText.trim() || 'Untitled card'}”?`}
 			/>
 		</>
 	)

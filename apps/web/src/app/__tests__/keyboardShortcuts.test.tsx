@@ -223,7 +223,9 @@ describe('keyboard shortcuts', () => {
 
 		await user.keyboard('{Control>}{Backspace}{/Control}')
 		expect(
-			await screen.findByRole('dialog', { name: 'Delete card?' }),
+			await screen.findByRole('dialog', {
+				name: `Delete “${card.primaryText}”?`,
+			}),
 		).toBeInTheDocument()
 		expect(mutation).toHaveBeenCalledTimes(calls)
 	})
@@ -405,7 +407,9 @@ describe('keyboard shortcuts', () => {
 
 			await user.keyboard('{Control>}{Backspace}{/Control}')
 			expect(
-				await screen.findByRole('dialog', { name: 'Delete card?' }),
+				await screen.findByRole('dialog', {
+					name: `Delete “${card.primaryText}”?`,
+				}),
 			).toBeInTheDocument()
 		})
 	})

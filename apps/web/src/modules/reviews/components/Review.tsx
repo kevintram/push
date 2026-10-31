@@ -66,12 +66,21 @@ export function Review({ review }: ReviewProps) {
 			</Dialog>
 
 			<DeleteConfirmationDialog
-				description='This review will be permanently deleted.'
+				description={
+					<>
+						This review will be <strong>permanently</strong>{' '}
+						deleted.
+					</>
+				}
 				isPending={isDeleting}
 				onConfirm={confirmDelete}
 				onOpenChange={setIsDeleteDialogOpen}
 				open={isDeleteDialogOpen}
-				title='Delete review?'
+				title={
+					review.description.trim()
+						? `Delete “${review.description.trim()}”?`
+						: 'Delete review?'
+				}
 			/>
 		</>
 	)

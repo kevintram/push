@@ -233,12 +233,17 @@ export function CollectionTreeItem({
 			) : null}
 
 			<DeleteConfirmationDialog
-				description='This collection and everything inside it will be permanently deleted.'
+				description={
+					<>
+						This collection and all its cards will be{' '}
+						<strong>permanently</strong> deleted.
+					</>
+				}
 				isPending={deleteCollection.isPending}
 				onConfirm={handleDeleteCollection}
 				onOpenChange={setIsDeleteDialogOpen}
 				open={isDeleteDialogOpen}
-				title='Delete collection?'
+				title={`Delete “${title.trim() || 'Untitled collection'}”?`}
 			/>
 		</TreeItem>
 	)

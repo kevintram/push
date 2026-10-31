@@ -82,7 +82,7 @@ describe('SectionActions', () => {
 		await user.click(screen.getByRole('menuitem', { name: 'Delete' }))
 
 		expect(
-			screen.getByRole('dialog', { name: 'Delete "Cell anatomy"?' }),
+			screen.getByRole('dialog', { name: 'Delete “Cell anatomy”?' }),
 		).toBeInTheDocument()
 		expect(deleteMutate).not.toHaveBeenCalled()
 

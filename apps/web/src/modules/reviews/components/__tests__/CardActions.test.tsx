@@ -203,7 +203,8 @@ describe('CardActions', () => {
 			)
 			expect(
 				screen.getByRole('dialog', {
-					name: action === 'move' ? 'Move card' : 'Delete card?',
+					name:
+						action === 'move' ? 'Move card' : 'Delete “Question”?',
 				}),
 			).toBeVisible()
 			await user.keyboard('fet')
