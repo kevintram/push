@@ -11,6 +11,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '~/components/ui'
+import { toastName } from '~/components/ui/Toast'
 import { useDeleteCollectionItems } from '~/modules/collections/api/collectionItemQueries'
 import { useConvertSectionsToCollections } from '~/modules/collections/api/sectionQueries'
 import { MoveCollectionItemsDialog } from '~/modules/collections/components/MoveCollectionItemsDialog'
@@ -45,7 +46,11 @@ export function SectionActions({ section }: SectionActionsProps) {
 
 	const confirmDelete = () => {
 		deleteSection.mutate(
-			{ sectionIds: [section._id], cardIds: [] },
+			{
+				sectionIds: [section._id],
+				cardIds: [],
+				name: toastName(section.title, 'Untitled section'),
+			},
 			// Leave the dialog open on failure so the toast has context.
 			{ onSuccess: () => setIsDeleteDialogOpen(false) },
 		)

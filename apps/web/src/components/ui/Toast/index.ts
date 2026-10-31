@@ -1,3 +1,4 @@
+export { toastDeleted } from './toastDeleted'
 export { Toaster } from './Toaster'
 export { toastError } from './toastError'
 export { toast } from './toastManager'

@@ -3,11 +3,13 @@ import type { Card } from '@convex/validators/cards'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { ConvexError } from 'convex/values'
+import { Trash2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { toast } from '~/components/ui/Toast'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
+import { toastTitleText } from '~/testing/toastTitleText'
 
 import { useDeleteCards, useUpdateCards } from '../cardQueries'
 
@@ -31,7 +33,8 @@ const cardId = 'card-1' as Id<'cards'>
 const removedCard = {
 	_id: cardId,
 	collectionId,
-} satisfies Pick<Card, '_id' | 'collectionId'>
+	primaryText: 'A card',
+} satisfies Pick<Card, '_id' | 'collectionId' | 'primaryText'>
 
 function wrapper({ children }: { children: ReactNode }) {
 	return (
@@ -44,6 +47,47 @@ function wrapper({ children }: { children: ReactNode }) {
 describe('useDeleteCards', () => {
 	beforeEach(() => {
 		convexMutation.mockResolvedValue([removedCard])
+	})
+
+	it.each([
+		[[removedCard], 'Deleted **A card**'],
+		[[{ ...removedCard, primaryText: ' ' }], 'Deleted **Untitled card**'],
+		[
+			[removedCard, { ...removedCard, _id: 'card-2' as Id<'cards'> }],
+			'Deleted 2 cards',
+		],
+	])('confirms successful deletion with %s', async (removed, title) => {
+		const addToast = vi.spyOn(toast, 'add')
+		convexMutation.mockResolvedValue(removed)
+		const { result } = renderHook(() => useDeleteCards(), { wrapper })
+		await act(async () => {
+			await result.current.mutateAsync({
+				cardIds: removed.map(card => card._id),
+			})
+		})
+		expect(addToast).toHaveBeenCalledTimes(1)
+		const message = addToast.mock.lastCall![0]
+		expect(toastTitleText(message.title)).toBe(title)
+		expect(message.type).toBe('success')
+		expect(message.data).toEqual({ icon: Trash2 })
+		expect(message.actionProps).toBeUndefined()
+	})
+
+	it('only shows the error toast when deletion fails', async () => {
+		const addToast = vi.spyOn(toast, 'add')
+		convexMutation.mockRejectedValue(new Error('Offline'))
+		const { result } = renderHook(() => useDeleteCards(), { wrapper })
+		await act(async () => {
+			await expect(
+				result.current.mutateAsync({ cardIds: [cardId] }),
+			).rejects.toThrow('Offline')
+		})
+		expect(addToast).toHaveBeenCalledExactlyOnceWith(
+			expect.objectContaining({
+				type: 'error',
+				title: 'Failed to delete card',
+			}),
+		)
 	})
 
 	it('falls back to the collection when the open card is deleted', async () => {

@@ -7,6 +7,7 @@ import { Calendar } from 'lucide-react'
 import { createElement } from 'react'
 
 import {
+	toastDeleted,
 	toastError,
 	toastName,
 	toastTitle,
@@ -86,5 +87,11 @@ export function useDeleteReview() {
 	return useMutation({
 		mutationFn,
 		onError: error => toastError('Failed to delete review', error),
+		onSuccess: review =>
+			toastDeleted(
+				review.description.trim()
+					? toastName(review.description)
+					: 'review',
+			),
 	})
 }

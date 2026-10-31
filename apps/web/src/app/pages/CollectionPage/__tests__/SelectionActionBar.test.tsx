@@ -311,7 +311,11 @@ describe('SelectionActionBar', () => {
 		await user.click(within(dialog).getByRole('button', { name: 'Delete' }))
 
 		expect(deleteItemsMutate).toHaveBeenCalledWith(
-			{ sectionIds: [section._id], cardIds: [loose._id] },
+			{
+				sectionIds: [section._id],
+				cardIds: [loose._id],
+				name: '1 section and 2 cards',
+			},
 			expect.anything(),
 		)
 	})

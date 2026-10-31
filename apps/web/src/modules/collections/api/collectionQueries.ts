@@ -5,6 +5,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useMatchRoute, useNavigate } from '@tanstack/react-router'
 
 import {
+	toastDeleted,
 	toastError,
 	toastName,
 	toastTitle,
@@ -110,7 +111,8 @@ export function useDeleteCollection() {
 	return useMutation({
 		mutationFn,
 		onError: error => toastError('Failed to delete collection', error),
-		onSuccess: ({ _id, parentId }) => {
+		onSuccess: ({ _id, parentId, title }) => {
+			toastDeleted(toastName(title, 'Untitled collection'))
 			// if deleted collection is currently open
 			if (
 				matchRoute({

@@ -89,7 +89,7 @@ describe('SectionActions', () => {
 		await user.click(screen.getByRole('button', { name: 'Delete' }))
 
 		expect(deleteMutate).toHaveBeenCalledWith(
-			{ sectionIds: [section._id], cardIds: [] },
+			expect.objectContaining({ sectionIds: [section._id], cardIds: [] }),
 			expect.anything(),
 		)
 	})

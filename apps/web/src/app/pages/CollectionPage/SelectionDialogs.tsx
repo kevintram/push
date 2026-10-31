@@ -1,6 +1,7 @@
 import type { Id } from '@convex/_generated/dataModel'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
+import { toastName } from '~/components/ui/Toast'
 import { useDeleteCollectionItems } from '~/modules/collections/api/collectionItemQueries'
 import { MoveCollectionItemsDialog } from '~/modules/collections/components/MoveCollectionItemsDialog'
 import { pluralize } from '~/utils/pluralize'
@@ -65,6 +66,7 @@ export function SelectionDialogs({
 	const items = {
 		sectionIds: contents.sections.map(section => section._id),
 		cardIds: contents.cards.map(card => card._id),
+		name: singleText ? toastName(singleText) : nameItems(contents),
 	}
 	const close = () => onDialogChange(null)
 	const closeOnDismiss = (open: boolean) => {
