@@ -1,12 +1,20 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useCallback } from 'react'
 
 import { Panel } from '~/components/Panel'
-import { Button } from '~/components/ui'
+import {
+	Button,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from '~/components/ui'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import {
@@ -55,21 +63,35 @@ export function SubcollectionsPanel({
 		)
 	}, [createCollection, navigate, collectionId])
 
+	useHotkey(appHotkeys.createSubcollection, handleCreateSubcollection, {
+		enabled: !createCollection.isPending,
+	})
+
 	return (
 		<Panel
 			title='Subcollections'
 			actions={
-				<Button
-					aria-label='Add subcollection'
-					variant='ghost'
-					size='micro'
-					disabled={createCollection.isPending}
-					onClick={handleCreateSubcollection}
-					shape='round'
-				>
-					<Plus aria-hidden='true' size={iconSizes.sm} />
-					Add
-				</Button>
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button
+								aria-label='Add subcollection'
+								variant='ghost'
+								size='micro'
+								disabled={createCollection.isPending}
+								onClick={handleCreateSubcollection}
+								shape='round'
+							>
+								<Plus aria-hidden='true' size={iconSizes.sm} />
+								Add
+							</Button>
+						}
+					/>
+					<TooltipContent>
+						Add subcollection
+						<ShortcutKeys hotkey={appHotkeys.createSubcollection} />
+					</TooltipContent>
+				</Tooltip>
 			}
 			xstyle={styles.panel}
 		>

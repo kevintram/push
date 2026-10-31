@@ -14,6 +14,7 @@ import { cardQueries } from '../../api/cardQueries'
 import { useHideMode } from '../../hide-mode/useHideMode'
 import { useCardField } from '../../hooks/useCardField'
 import { deriveCardSrsState } from '../../utils/cardSrs'
+import { takePromptFocus } from '../../utils/newCardFocus'
 import { CardMetadata } from '../CardMetadata'
 import { Hideable } from '../Hideable'
 
@@ -78,12 +79,17 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 	const [secondaryRevealed, setSecondaryRevealed] = useState(false)
 	const [notesRevealed, setNotesRevealed] = useState(false)
 	const today = useToday()
+	const primaryTextRef = useRef<HTMLTextAreaElement>(null)
 	const contentRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
 		setSecondaryRevealed(false)
 		setNotesRevealed(false)
 	}, [hideMode, cardId])
+
+	useEffect(() => {
+		if (takePromptFocus(cardId)) primaryTextRef.current?.focus()
+	}, [cardId])
 
 	const isSecondaryShown =
 		card.type === 'practice' || hideMode === 'off' || secondaryRevealed
@@ -137,6 +143,7 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 					<Textarea
 						aria-label='Card primary text'
 						placeholder={primaryTextPlaceholder}
+						ref={primaryTextRef}
 						onBlur={primaryText.flush}
 						onChange={primaryText.onChange}
 						value={primaryText.value}

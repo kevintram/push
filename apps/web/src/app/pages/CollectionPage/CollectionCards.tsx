@@ -15,6 +15,7 @@ import {
 	useCreateCard,
 	useMoveCards,
 } from '~/modules/reviews/api/cardQueries'
+import { focusPromptWhenOpened } from '~/modules/reviews/utils/newCardFocus'
 import { buttonSizes, spacing } from '~/styles/tokens.stylex'
 
 import { CardGroup } from './CardGroup'
@@ -103,11 +104,14 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 			createCard.mutate(
 				{ collectionId, sectionId },
 				{
-					onSuccess: cardId =>
+					onSuccess: cardId => {
+						// A new card is blank, so it opens ready to type.
+						focusPromptWhenOpened(cardId)
 						void navigate({
 							to: '/cards/$cardId',
 							params: { cardId },
-						}),
+						})
+					},
 				},
 			)
 		},
@@ -130,6 +134,20 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 		},
 		[createSection, collectionId, select],
 	)
+
+	// The keys add to the group the selection starts in, like that group's Add
+	// menu: a selected section, or the section that holds a selected card.
+	// With nothing selected they add to the unsectioned cards.
+	const handleCreateFromKey = (kind: 'card' | 'section') => {
+		const anchor = selected?.anchor
+		const sectionId =
+			anchor?.kind === 'section'
+				? anchor.id
+				: cards.find(card => card._id === anchor?.id)?.sectionId
+
+		if (kind === 'card') handleCreateCard(sectionId)
+		else handleCreateSection(sectionId ?? null)
+	}
 
 	// Sections reorder among sections and cards among cards, so a selection
 	// of both has nowhere to move.
@@ -187,6 +205,8 @@ export function CollectionCards({ collectionId }: CollectionCardsProps) {
 				onMove={handleMove}
 				onOpen={handleOpen}
 				onClear={clear}
+				canCreate={!isAdding}
+				onCreate={handleCreateFromKey}
 			/>
 			<CardGroup
 				cards={grouped.unsectioned}
