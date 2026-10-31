@@ -53,9 +53,7 @@ describe('SectionActions', () => {
 			screen.getByRole('menuitem', { name: 'Convert to subcollection' }),
 		)
 
-		expect(convertMutate).toHaveBeenCalledWith({
-			sectionIds: [section._id],
-		})
+		expect(convertMutate).toHaveBeenCalledWith({ sections: [section] })
 	})
 
 	it('opens the move dialog for the section', async () => {

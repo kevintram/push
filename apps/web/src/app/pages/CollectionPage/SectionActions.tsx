@@ -74,7 +74,7 @@ export function SectionActions({ section }: SectionActionsProps) {
 					<DropdownMenuItem
 						disabled={convertSection.isPending}
 						onClick={() =>
-							convertSection.mutate({ sectionIds: [section._id] })
+							convertSection.mutate({ sections: [section] })
 						}
 					>
 						Convert to subcollection

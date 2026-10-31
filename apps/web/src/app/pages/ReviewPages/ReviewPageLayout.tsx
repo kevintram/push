@@ -45,6 +45,7 @@ export function ReviewPageLayout() {
 			if (hideMode !== 'on') {
 				setHideMode('on')
 				toast.add({
+					description: 'Answers stay hidden until you reveal them',
 					title: 'Hide mode on',
 					type: 'info',
 				})

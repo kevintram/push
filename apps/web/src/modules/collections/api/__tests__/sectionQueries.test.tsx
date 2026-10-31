@@ -1,4 +1,4 @@
-import type { Id } from '@convex/_generated/dataModel'
+import type { Section } from '@convex/validators/sections'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { toast } from '~/components/ui/Toast'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
+import { toastTitleText } from '~/testing/toastTitleText'
 
 import { useConvertSectionsToCollections } from '../sectionQueries'
 
@@ -38,7 +39,9 @@ async function convert(sectionIds: Array<string>) {
 
 	await act(async () => {
 		result.current.mutate({
-			sectionIds: sectionIds as Array<Id<'sections'>>,
+			sections: sectionIds.map(
+				id => ({ _id: id, title: 'Cells' }) as unknown as Section,
+			),
 		})
 	})
 	await waitFor(() => expect(addToast).toHaveBeenCalled())
@@ -47,10 +50,12 @@ async function convert(sectionIds: Array<string>) {
 
 describe('useConvertSectionsToCollections', () => {
 	it('offers to open the one new subcollection', async () => {
-		const { actionProps, title } = await convert(['section-1'])
+		const { data, title } = await convert(['section-1'])
 
-		expect(title).toBe('Converted to subcollection')
-		act(() => actionProps?.onClick?.({} as never))
+		expect(toastTitleText(title)).toBe(
+			'Converted **Cells** to a subcollection',
+		)
+		act(() => data?.open?.onClick())
 		expect(navigate).toHaveBeenCalledWith({
 			to: '/collection/$collectionId',
 			params: { collectionId: 'collection-of-section-1' },
@@ -58,9 +63,11 @@ describe('useConvertSectionsToCollections', () => {
 	})
 
 	it('only counts several new subcollections', async () => {
-		const { actionProps, title } = await convert(['section-1', 'section-2'])
+		const { data, title } = await convert(['section-1', 'section-2'])
 
-		expect(title).toBe('Converted 2 sections to subcollections')
-		expect(actionProps).toBeUndefined()
+		expect(toastTitleText(title)).toBe(
+			'Converted 2 sections to subcollections',
+		)
+		expect(data?.open).toBeUndefined()
 	})
 })

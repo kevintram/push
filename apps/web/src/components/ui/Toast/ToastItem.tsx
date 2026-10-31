@@ -21,6 +21,7 @@ import {
 
 import { Button } from '../Button/Button'
 import { ToastClose } from './ToastClose'
+import { toast, type ToastData } from './toastManager'
 
 const spin = stylex.keyframes({
 	to: { transform: 'rotate(360deg)' },
@@ -108,7 +109,7 @@ const styles = stylex.create({
 			width: '100%',
 		},
 	},
-	// Close comes last in the DOM so Tab reaches the action first, and the
+	// Close comes last in the DOM so Tab reaches the actions first, and the
 	// grid puts it back beside the heading.
 	content: {
 		padding: spacing.lg,
@@ -151,6 +152,11 @@ const styles = stylex.create({
 		gridColumnStart: '1',
 		justifyItems: 'start',
 		minWidth: 0,
+	},
+	actions: {
+		gap: spacing.sm,
+		display: 'flex',
+		justifySelf: 'end',
 	},
 	close: {
 		gridColumn: '2',
@@ -205,7 +211,7 @@ export function ToastItem({
 	toastItem,
 }: {
 	index: number
-	toastItem: ToastObject<object>
+	toastItem: ToastObject<ToastData>
 }) {
 	const icon = toastItem.type ? ICONS[toastItem.type] : undefined
 	const hasTitle = Boolean(toastItem.title)
@@ -213,9 +219,9 @@ export function ToastItem({
 	const description = (
 		<ToastPrimitive.Description {...stylex.props(styles.description)} />
 	)
-	const hasBody =
-		(hasTitle && Boolean(toastItem.description)) ||
-		Boolean(toastItem.actionProps?.children)
+	const open = toastItem.data?.open
+	const hasActions = Boolean(open) || Boolean(toastItem.actionProps?.children)
+	const hasBody = (hasTitle && Boolean(toastItem.description)) || hasActions
 
 	return (
 		<ToastPrimitive.Root
@@ -244,9 +250,30 @@ export function ToastItem({
 						)}
 					>
 						{hasTitle && description}
-						<ToastPrimitive.Action
-							render={<Button size='micro' variant='secondary' />}
-						/>
+						{hasActions && (
+							<div {...stylex.props(styles.actions)}>
+								<ToastPrimitive.Action
+									render={
+										<Button
+											size='micro'
+											variant='secondary'
+										/>
+									}
+								/>
+								{open && (
+									<Button
+										onClick={() => {
+											toast.close(toastItem.id)
+											open.onClick()
+										}}
+										size='micro'
+										variant='primary'
+									>
+										{open.label}
+									</Button>
+								)}
+							</div>
+						)}
 					</div>
 				)}
 				<div {...stylex.props(styles.close)}>

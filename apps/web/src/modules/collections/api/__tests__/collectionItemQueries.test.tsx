@@ -8,51 +8,78 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { toast } from '~/components/ui/Toast'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
+import { toastTitleText } from '~/testing/toastTitleText'
 
 import { useMoveCollectionItems } from '../collectionItemQueries'
 
+const navigate = vi.fn()
 const convexMutation = vi.fn()
 
+vi.mock('@tanstack/react-router', () => ({ useNavigate: () => navigate }))
+
 vi.mock('@convex-dev/react-query', () => ({
+	convexQuery: () => ({ queryKey: ['collections'] }),
 	useConvexMutation: () => convexMutation,
 }))
 
 function wrapper({ children }: { children: ReactNode }) {
-	return (
-		<QueryClientProvider client={createTestQueryClient()}>
-			{children}
-		</QueryClientProvider>
+	const client = createTestQueryClient()
+	client.setQueryData(
+		['collections'],
+		[{ _id: destinationId, title: 'French' }],
 	)
+	return <QueryClientProvider client={client}>{children}</QueryClientProvider>
 }
 
 const collectionId = 'collection-1' as Id<'collections'>
+const destinationId = 'collection-2' as Id<'collections'>
 const section = {
 	_id: 'section-1' as Id<'sections'>,
 	collectionId,
 	rank: 'a0',
 } as Section
 // Unranked and unsectioned, which the placement spells as nulls.
-const card = { _id: 'card-1' as Id<'cards'>, collectionId } as Card
+const card = {
+	_id: 'card-1' as Id<'cards'>,
+	collectionId,
+	primaryText: 'Ribosome',
+} as Card
+
+async function move(sections: Array<Section>, cards: Array<Card>) {
+	const addToast = vi.spyOn(toast, 'add')
+	convexMutation.mockResolvedValue(null)
+	const { result } = renderHook(() => useMoveCollectionItems(), { wrapper })
+
+	await act(async () => {
+		result.current.mutate({
+			sections,
+			cards,
+			collectionId: destinationId,
+			name: '1 section and 1 card',
+		})
+	})
+	await waitFor(() => expect(addToast).toHaveBeenCalled())
+	return addToast.mock.lastCall![0]
+}
 
 describe('useMoveCollectionItems', () => {
-	it('offers to put every item back where it was', async () => {
-		const addToast = vi.spyOn(toast, 'add')
-		convexMutation.mockResolvedValue(null)
-		const { result } = renderHook(() => useMoveCollectionItems(), {
-			wrapper,
-		})
+	it('names a lone item, and offers to open where it went', async () => {
+		const { data, title } = await move([], [card])
 
-		await act(async () => {
-			result.current.mutate({
-				sections: [section],
-				cards: [card],
-				collectionId: 'collection-2' as Id<'collections'>,
-				name: '1 section and 1 card',
-			})
+		expect(toastTitleText(title)).toBe('Moved **Ribosome** to **French**')
+		act(() => data?.open?.onClick())
+		expect(navigate).toHaveBeenCalledWith({
+			to: '/collection/$collectionId',
+			params: { collectionId: destinationId },
 		})
-		await waitFor(() => expect(addToast).toHaveBeenCalled())
-		const [{ actionProps, title }] = addToast.mock.lastCall!
-		expect(title).toBe('Moved 1 section and 1 card')
+	})
+
+	it('offers to put every item back where it was', async () => {
+		const { actionProps, title } = await move([section], [card])
+
+		expect(toastTitleText(title)).toBe(
+			'Moved 1 section and 1 card to **French**',
+		)
 		act(() => actionProps?.onClick?.({} as never))
 
 		expect(convexMutation).toHaveBeenLastCalledWith({

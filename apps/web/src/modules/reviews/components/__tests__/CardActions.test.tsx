@@ -2,10 +2,11 @@ import type { Card } from '@convex/validators/cards'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DateTime } from 'luxon'
-import type { ComponentProps } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Collection } from '~/modules/collections/types/collection.types'
+import { toastTitleText } from '~/testing/toastTitleText'
 
 import { CardActions } from '../CardActions'
 
@@ -22,6 +23,7 @@ vi.mock('@tanstack/react-router', () => ({
 			{children}
 		</a>
 	),
+	useNavigate: () => vi.fn(),
 }))
 
 const updateMutate = vi.fn()
@@ -189,10 +191,17 @@ describe('CardActions', () => {
 		expect(updateMutate).toHaveBeenCalledWith({
 			cardIds: [card._id],
 			retiredAt: expect.any(Number) as number,
-			undo: { title: 'Retired card', cards: [card] },
+			undo: {
+				title: expect.anything() as unknown,
+				description: 'It will no longer come up for review',
+				cards: [card],
+			},
 		})
-		const [args] = updateMutate.mock.calls[0] as [{ retiredAt: number }]
+		const [args] = updateMutate.mock.calls[0] as [
+			{ retiredAt: number; undo: { title: ReactNode } },
+		]
 		expect(args.retiredAt).toBeGreaterThanOrEqual(before)
+		expect(toastTitleText(args.undo.title)).toBe('Retired **Question**')
 	})
 
 	it('clears the retirement on a retired card', async () => {

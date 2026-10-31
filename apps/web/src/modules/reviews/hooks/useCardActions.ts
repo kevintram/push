@@ -1,6 +1,8 @@
+import { useNavigate } from '@tanstack/react-router'
 import { DateTime } from 'luxon'
 import { useCallback } from 'react'
 
+import { toastName, toastTitle } from '~/components/ui/Toast'
 import { pluralize } from '~/utils/pluralize'
 
 import { useDeleteCards, useUpdateCards } from '../api/cardQueries'
@@ -32,6 +34,7 @@ type UseCardActionsReturn = {
  * make by mistake. A change to one card shows on that card.
  */
 export function useCardActions(): UseCardActionsReturn {
+	const navigate = useNavigate()
 	const updateCards = useUpdateCards()
 	const deleteCards = useDeleteCards()
 
@@ -68,12 +71,19 @@ export function useCardActions(): UseCardActionsReturn {
 				...(cards.length > 1 && {
 					undo: {
 						title: `${flagging ? 'Flagged' : 'Unflagged'} ${pluralize(changed.length, 'card')}`,
+						...(flagging && {
+							open: {
+								label: 'View all flagged',
+								onClick: () =>
+									void navigate({ to: '/review/flagged' }),
+							},
+						}),
 						cards: changed,
 					},
 				}),
 			})
 		},
-		[updateCards],
+		[navigate, updateCards],
 	)
 
 	const toggleRetire = useCallback(
@@ -84,13 +94,21 @@ export function useCardActions(): UseCardActionsReturn {
 			const changed = retiring ? active : cards
 			// A bulk action counts the cards it changed, even just one.
 			const name =
-				cards.length === 1 ? 'card' : pluralize(changed.length, 'card')
+				cards.length === 1
+					? toastName(cards[0]!.primaryText)
+					: pluralize(changed.length, 'card')
 			updateCards.mutate({
 				cardIds: idsOf(changed),
 				retiredAt: retiring ? DateTime.now().toMillis() : null,
 				...((retiring || cards.length > 1) && {
 					undo: {
-						title: `${retiring ? 'Retired' : 'Unretired'} ${name}`,
+						title: toastTitle(
+							retiring ? 'Retired ' : 'Unretired ',
+							name,
+						),
+						...(retiring && {
+							description: `${changed.length === 1 ? 'It' : 'They'} will no longer come up for review`,
+						}),
 						cards: changed,
 					},
 				}),

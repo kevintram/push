@@ -6,7 +6,7 @@ import { placeInLine } from '@shared/ordering'
 import { useMutation } from '@tanstack/react-query'
 import { useMatchRoute, useNavigate } from '@tanstack/react-router'
 
-import { toastError, toastUndo } from '~/components/ui/Toast'
+import { toastError, toastUndo, type UndoToast } from '~/components/ui/Toast'
 
 export const cardQueries = {
 	listFlagged: () => convexQuery(api.cards.listFlagged, {}),
@@ -35,10 +35,10 @@ export function useUpdateCard() {
 type CardsUpdate = CardBatchPatch & {
 	cardIds: Array<Id<'cards'>>
 	/**
-	 * Offers to undo the update under `title`, putting back the patched
-	 * fields of `cards` as they are now.
+	 * Offers to undo the update in a toast, putting back the patched fields
+	 * of `cards` as they are now.
 	 */
-	undo?: { title: string; cards: ReadonlyArray<Card> }
+	undo?: Omit<UndoToast, 'undo'> & { cards: ReadonlyArray<Card> }
 }
 
 /** Flags, retires, or retypes several cards at once. */
@@ -53,21 +53,26 @@ export function useUpdateCards() {
 		onSuccess: (_, { undo, ...patch }) => {
 			if (!undo) return
 
-			toastUndo(undo.title, () =>
-				updateEach({
-					patches: undo.cards.map(card => ({
-						cardId: card._id,
-						...(patch.type !== undefined && { type: card.type }),
-						// `null` clears a field the card did not have.
-						...(patch.flaggedAt !== undefined && {
-							flaggedAt: card.flaggedAt ?? null,
-						}),
-						...(patch.retiredAt !== undefined && {
-							retiredAt: card.retiredAt ?? null,
-						}),
-					})),
-				}),
-			)
+			const { cards, ...toastProps } = undo
+			toastUndo({
+				...toastProps,
+				undo: () =>
+					updateEach({
+						patches: cards.map(card => ({
+							cardId: card._id,
+							...(patch.type !== undefined && {
+								type: card.type,
+							}),
+							// `null` clears a field the card did not have.
+							...(patch.flaggedAt !== undefined && {
+								flaggedAt: card.flaggedAt ?? null,
+							}),
+							...(patch.retiredAt !== undefined && {
+								retiredAt: card.retiredAt ?? null,
+							}),
+						})),
+					}),
+			})
 		},
 	})
 }

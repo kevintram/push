@@ -216,11 +216,7 @@ export function SelectionActionBar({
 									/>
 								}
 								onClick={() =>
-									convertSections.mutate({
-										sectionIds: sections.map(
-											section => section._id,
-										),
-									})
+									convertSections.mutate({ sections })
 								}
 							>
 								{`Convert to ${subcollections}`}

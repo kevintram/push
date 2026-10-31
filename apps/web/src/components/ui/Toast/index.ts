@@ -1,4 +1,5 @@
 export { Toaster } from './Toaster'
 export { toastError } from './toastError'
 export { toast } from './toastManager'
-export { toastUndo } from './toastUndo'
+export { toastName, toastTitle } from './toastTitle'
+export { toastUndo, type UndoToast } from './toastUndo'

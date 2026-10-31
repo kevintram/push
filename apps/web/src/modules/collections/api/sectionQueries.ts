@@ -1,11 +1,12 @@
 import { api } from '@convex/_generated/api'
 import type { Id } from '@convex/_generated/dataModel'
+import type { Section } from '@convex/validators/sections'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { compareRanked, placeInLine } from '@shared/ordering'
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 
-import { toast, toastError } from '~/components/ui/Toast'
+import { toast, toastError, toastName, toastTitle } from '~/components/ui/Toast'
 
 export const sectionQueries = {
 	listByCollection: (collectionId: Id<'collections'>) =>
@@ -73,19 +74,21 @@ export function useMoveSections() {
  */
 export function useConvertSectionsToCollections() {
 	const navigate = useNavigate()
-	const mutationFn = useConvexMutation(api.sections.convertToCollection)
+	const convert = useConvexMutation(api.sections.convertToCollection)
 	return useMutation({
-		mutationFn,
-		onError: (error, { sectionIds }) =>
+		mutationFn: ({ sections }: { sections: ReadonlyArray<Section> }) =>
+			convert({ sectionIds: sections.map(section => section._id) }),
+		onError: (error, { sections }) =>
 			toastError(
-				sectionIds.length > 1
+				sections.length > 1
 					? 'Failed to convert sections'
 					: 'Failed to convert section',
 				error,
 			),
-		onSuccess: collectionIds => {
+		onSuccess: (collectionIds, { sections }) => {
 			const [collectionId] = collectionIds
-			if (collectionId === undefined) return
+			const [section] = sections
+			if (collectionId === undefined || section === undefined) return
 			if (collectionIds.length > 1) {
 				toast.add({
 					title: `Converted ${collectionIds.length} sections to subcollections`,
@@ -94,18 +97,22 @@ export function useConvertSectionsToCollections() {
 				return
 			}
 
-			const id = toast.add({
-				actionProps: {
-					children: 'Open',
-					onClick: () => {
-						toast.close(id)
-						void navigate({
-							to: '/collection/$collectionId',
-							params: { collectionId },
-						})
+			toast.add({
+				data: {
+					open: {
+						label: 'Open',
+						onClick: () =>
+							void navigate({
+								to: '/collection/$collectionId',
+								params: { collectionId },
+							}),
 					},
 				},
-				title: 'Converted to subcollection',
+				title: toastTitle(
+					'Converted ',
+					toastName(section.title, 'Untitled section'),
+					' to a subcollection',
+				),
 				type: 'success',
 			})
 		},

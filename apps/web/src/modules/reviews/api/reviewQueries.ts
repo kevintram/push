@@ -26,9 +26,12 @@ export function useCreateReview({ onUndone }: UseCreateReviewOptions = {}) {
 		mutationFn,
 		onError: error => toastError('Failed to create review', error),
 		onSuccess: (reviewId, review) =>
-			toastUndo('Review added', async () => {
-				await remove({ reviewId })
-				onUndone?.(review)
+			toastUndo({
+				title: 'Review added',
+				undo: async () => {
+					await remove({ reviewId })
+					onUndone?.(review)
+				},
 			}),
 	})
 }

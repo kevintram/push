@@ -7,6 +7,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { toast } from '~/components/ui/Toast'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
+import { toastTitleText } from '~/testing/toastTitleText'
 
 import { useDeleteCollection, useMoveCollection } from '../collectionQueries'
 
@@ -20,7 +21,7 @@ vi.mock('@tanstack/react-router', () => ({
 }))
 
 vi.mock('@convex-dev/react-query', () => ({
-	convexQuery: vi.fn(),
+	convexQuery: () => ({ queryKey: ['collections'] }),
 	useConvexMutation: () => convexMutation,
 }))
 
@@ -28,11 +29,15 @@ const collectionId = 'collection-1' as Id<'collections'>
 const parentId = 'collection-parent' as Id<'collections'>
 
 function wrapper({ children }: { children: ReactNode }) {
-	return (
-		<QueryClientProvider client={createTestQueryClient()}>
-			{children}
-		</QueryClientProvider>
+	const client = createTestQueryClient()
+	client.setQueryData(
+		['collections'],
+		[
+			{ _id: collectionId, title: 'Spanish' },
+			{ _id: parentId, title: 'Languages' },
+		],
 	)
+	return <QueryClientProvider client={client}>{children}</QueryClientProvider>
 }
 
 async function deleteCollection(removed: Pick<Collection, '_id' | 'parentId'>) {
@@ -80,21 +85,41 @@ describe('useDeleteCollection', () => {
 	})
 })
 
-describe('useMoveCollection', () => {
-	it('offers to move the collection back under the parent it left', async () => {
-		const addToast = vi.spyOn(toast, 'add')
-		convexMutation.mockResolvedValue(null)
-		const { result } = renderHook(() => useMoveCollection(), { wrapper })
+async function moveCollection(
+	parentId: Id<'collections'> | null,
+	fromParentId: Id<'collections'> | null,
+) {
+	const addToast = vi.spyOn(toast, 'add')
+	convexMutation.mockResolvedValue(null)
+	const { result } = renderHook(() => useMoveCollection(), { wrapper })
 
-		await act(async () => {
-			result.current.mutate({
-				collectionId,
-				parentId: null,
-				fromParentId: parentId,
-			})
+	await act(async () => {
+		result.current.mutate({ collectionId, parentId, fromParentId })
+	})
+	await waitFor(() => expect(addToast).toHaveBeenCalled())
+	return addToast.mock.lastCall![0]
+}
+
+describe('useMoveCollection', () => {
+	it('offers to open the new parent', async () => {
+		const { data, title } = await moveCollection(parentId, null)
+
+		expect(toastTitleText(title)).toBe('Moved **Spanish** to **Languages**')
+		act(() => data?.open?.onClick())
+		expect(navigate).toHaveBeenCalledWith({
+			to: '/collection/$collectionId',
+			params: { collectionId: parentId },
 		})
-		await waitFor(() => expect(addToast).toHaveBeenCalled())
-		const [{ actionProps }] = addToast.mock.lastCall!
+	})
+
+	it('offers to move the collection back under the parent it left', async () => {
+		const { actionProps, data, title } = await moveCollection(
+			null,
+			parentId,
+		)
+
+		expect(toastTitleText(title)).toBe('Moved **Spanish** to the top level')
+		expect(data?.open).toBeUndefined()
 		act(() => actionProps?.onClick?.({} as never))
 
 		expect(convexMutation).toHaveBeenLastCalledWith({

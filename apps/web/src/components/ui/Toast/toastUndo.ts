@@ -1,19 +1,29 @@
-import { toastError } from './toastError'
-import { toast } from './toastManager'
+import type { ReactNode } from 'react'
 
-// Longer than the default, so there is time to reach the button.
+import { toastError } from './toastError'
+import { toast, type ToastOpen } from './toastManager'
+
+// Longer than the default, so there is time to reach the buttons.
 const UNDO_TIMEOUT = 8000
 
 // Only the latest action can be undone, since undoing an earlier one could
 // overwrite a later change to the same items.
 let latestUndoId: string | undefined
 
+export type UndoToast = {
+	title: ReactNode
+	description?: ReactNode
+	/** Comes after Undo, and stays on once a newer toast takes Undo away. */
+	open?: ToastOpen
+	undo: () => Promise<unknown>
+}
+
 /**
- * Confirms a finished action with `title` and an Undo button that runs `undo`,
- * taking the button off the previous undo toast, which stays as a record of
- * its action. A failed undo shows its own error toast.
+ * Confirms a finished action with an Undo button that runs `undo`, taking the
+ * button off the previous undo toast, which stays as a record of its action.
+ * A failed undo shows its own error toast.
  */
-export function toastUndo(title: string, undo: () => Promise<unknown>) {
+export function toastUndo({ title, description, open, undo }: UndoToast) {
 	if (latestUndoId !== undefined) {
 		toast.update(latestUndoId, { actionProps: undefined })
 	}
@@ -33,6 +43,8 @@ export function toastUndo(title: string, undo: () => Promise<unknown>) {
 				)
 			},
 		},
+		data: open && { open },
+		description,
 		timeout: UNDO_TIMEOUT,
 		title,
 		type: 'success',
