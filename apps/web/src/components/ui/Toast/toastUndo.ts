@@ -18,10 +18,15 @@ export function toastUndo(title: string, undo: () => Promise<unknown>) {
 		toast.update(latestUndoId, { actionProps: undefined })
 	}
 
+	// The button still takes clicks while the toast animates out, and a second
+	// undo would fail, as when deleting a review twice.
+	let isUndone = false
 	const id = toast.add({
 		actionProps: {
 			children: 'Undo',
 			onClick: () => {
+				if (isUndone) return
+				isUndone = true
 				toast.close(id)
 				undo().catch((error: unknown) =>
 					toastError('Failed to undo', error),
