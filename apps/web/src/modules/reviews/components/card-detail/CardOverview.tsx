@@ -1,10 +1,12 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { Separator, Textarea } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 import { scrollFade } from '~/styles/scrollFade'
 import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
 
@@ -76,11 +78,36 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 	const [secondaryRevealed, setSecondaryRevealed] = useState(false)
 	const [notesRevealed, setNotesRevealed] = useState(false)
 	const today = useToday()
+	const contentRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
 		setSecondaryRevealed(false)
 		setNotesRevealed(false)
 	}, [hideMode, cardId])
+
+	const isSecondaryShown =
+		card.type === 'practice' || hideMode === 'off' || secondaryRevealed
+	const isNotesShown = hideMode === 'off' || notesRevealed
+
+	// One hidden part per press, in reading order.
+	useHotkey(
+		appHotkeys.reveal,
+		() => {
+			if (!isSecondaryShown) setSecondaryRevealed(true)
+			else setNotesRevealed(true)
+		},
+		{ enabled: !isSecondaryShown || !isNotesShown },
+	)
+
+	// Escape saves a field, through its blur, and leaves it, so the card's
+	// single-key shortcuts work again.
+	useHotkey(
+		appHotkeys.leaveCardField,
+		event => {
+			if (event.target instanceof HTMLTextAreaElement) event.target.blur()
+		},
+		{ target: contentRef },
+	)
 
 	const primaryText = useCardField({
 		field: 'primaryText',
@@ -106,7 +133,7 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 	return (
 		<div {...stylex.props(styles.layout)}>
 			<div {...stylex.props(styles.main, scrollFade.y)}>
-				<div {...stylex.props(styles.content)}>
+				<div ref={contentRef} {...stylex.props(styles.content)}>
 					<Textarea
 						aria-label='Card primary text'
 						placeholder={primaryTextPlaceholder}
@@ -116,12 +143,9 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 						xstyle={styles.primary}
 					/>
 					<Hideable
-						revealed={
-							card.type === 'practice' ||
-							hideMode === 'off' ||
-							secondaryRevealed
-						}
+						revealed={isSecondaryShown}
 						onRevealedChange={setSecondaryRevealed}
+						revealHotkey={appHotkeys.reveal}
 					>
 						<Textarea
 							aria-label='Card secondary text'
@@ -139,8 +163,9 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 						<Separator />
 					</div>
 					<Hideable
-						revealed={hideMode === 'off' || notesRevealed}
+						revealed={isNotesShown}
 						onRevealedChange={setNotesRevealed}
+						revealHotkey={appHotkeys.reveal}
 						xstyle={styles.notesContainer}
 					>
 						<Textarea

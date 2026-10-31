@@ -1,9 +1,10 @@
 import * as stylex from '@stylexjs/stylex'
-import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { Copy } from 'lucide-react'
 
 import { SidebarItem } from '~/components/sidebar'
-import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { blue, whiteAlpha } from '~/styles/colors/colorsPrimitive.stylex'
 import {
 	appSidebar,
@@ -12,7 +13,6 @@ import {
 	radii,
 } from '~/styles/tokens.stylex'
 
-import { HIDE_MODE_HOTKEY } from '../hide-mode/hideModeHotkey'
 import { useHideMode } from '../hide-mode/useHideMode'
 
 const DARK = '@media (prefers-color-scheme: dark)'
@@ -85,7 +85,7 @@ export function HideModeButton({
 			/>
 			<TooltipContent side={tooltipSide}>
 				{isOn ? 'Show answers and notes' : 'Hide answers and notes'}
-				<Kbd>{formatForDisplay(HIDE_MODE_HOTKEY)}</Kbd>
+				<ShortcutKeys hotkey={appHotkeys.toggleHideMode} />
 			</TooltipContent>
 		</Tooltip>
 	)

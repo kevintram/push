@@ -1,7 +1,10 @@
 import * as stylex from '@stylexjs/stylex'
+import type { AppHotkey } from '@tanstack/react-hotkeys'
 import { type ReactNode, useCallback, useState } from 'react'
 
 import { Button } from '~/components/ui'
+import { ariaKeyShortcuts } from '~/modules/shortcuts/ariaKeyShortcuts'
+import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { neutral } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { radii } from '~/styles/tokens.stylex'
@@ -13,6 +16,8 @@ type HideableProps = {
 	defaultRevealed?: boolean
 	onRevealedChange?: (revealed: boolean) => void
 	revealed?: boolean
+	/** A key that also reveals, shown beside the Reveal button's label. */
+	revealHotkey?: AppHotkey
 	xstyle?: stylex.StyleXStyles
 }
 
@@ -59,6 +64,7 @@ export function Hideable({
 	defaultRevealed,
 	onRevealedChange,
 	revealed,
+	revealHotkey,
 	xstyle,
 }: HideableProps) {
 	const [uncontrolledRevealed, setUncontrolledRevealed] = useState(
@@ -89,8 +95,16 @@ export function Hideable({
 					onClick={reveal}
 					variant='outline'
 					xstyle={styles.overlay}
+					aria-keyshortcuts={
+						revealHotkey
+							? ariaKeyShortcuts(revealHotkey)
+							: undefined
+					}
 				>
 					Reveal
+					{revealHotkey ? (
+						<ShortcutKeys hotkey={revealHotkey} aria-hidden />
+					) : null}
 				</Button>
 			)}
 		</div>
