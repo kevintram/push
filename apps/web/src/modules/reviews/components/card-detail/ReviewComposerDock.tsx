@@ -22,10 +22,7 @@ const styles = stylex.create({
 		padding: spacing.xs,
 		gap: spacing.xs,
 		blockSize: `min(540px, calc(100% - 2 * ${spacing.lg}))`,
-		display: {
-			default: 'none',
-			'@container (min-width: 640px)': 'flex',
-		},
+		display: 'flex',
 		flexDirection: 'column',
 		inlineSize: `min(540px, calc(100% - 2 * ${spacing.lg}))`,
 
