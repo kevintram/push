@@ -1198,6 +1198,16 @@ describe('v2 app setup', () => {
 				name: 'Type parameters',
 			})
 
+			// A screen reader activates the title with a click that has no
+			// mouse details; it selects, like a mouse click.
+			fireEvent.click(title)
+			expect(
+				screen.getByRole('toolbar', { name: 'Selection actions' }),
+			).toBeInTheDocument()
+			expect(
+				screen.queryByRole('textbox', { name: 'Section title' }),
+			).not.toBeInTheDocument()
+
 			await user.click(title)
 			await user.keyboard('{Control>}{ArrowUp}{/Control}')
 			// The only section is already first.

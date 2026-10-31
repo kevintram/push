@@ -1,10 +1,12 @@
 import type { Section } from '@convex/validators/sections'
 import * as stylex from '@stylexjs/stylex'
-import { type KeyboardEvent, type MouseEvent, useCallback } from 'react'
+import { useHotkey } from '@tanstack/react-hotkeys'
+import { type KeyboardEvent, type MouseEvent, useCallback, useRef } from 'react'
 
 import { Textarea } from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useUpdateSection } from '~/modules/collections/api/sectionQueries'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { layout, radii } from '~/styles/tokens.stylex'
 
@@ -95,8 +97,8 @@ type SectionTitleProps = {
 }
 
 /**
- * A section's title. A click selects the section and a double click renames
- * it in place, saving as the user types.
+ * A section's title. A click selects the section; a double click, or Enter
+ * while it has focus, renames it in place, saving as the user types.
  */
 export function SectionTitle({
 	section,
@@ -107,6 +109,11 @@ export function SectionTitle({
 	onRenameEnd,
 }: SectionTitleProps) {
 	const updateSection = useUpdateSection()
+	const buttonRef = useRef<HTMLButtonElement>(null)
+
+	// Scoped to the button, which otherwise keeps Enter for its click. A
+	// click, including a screen reader's, still selects.
+	useHotkey(appHotkeys.openSelection, onRename, { target: buttonRef })
 
 	const saveTitle = useCallback(
 		(title: string) => {
@@ -159,11 +166,8 @@ export function SectionTitle({
 		<button
 			type='button'
 			data-section-id={section._id}
-			// Like a card's link, a keyboard click (Enter or Space) opens the
-			// section for renaming, and a mouse click selects it.
-			onClick={event =>
-				event.detail === 0 ? onRename() : onSelect(event)
-			}
+			ref={buttonRef}
+			onClick={onSelect}
 			onDoubleClick={onRename}
 			{...stylex.props(
 				styles.label,
