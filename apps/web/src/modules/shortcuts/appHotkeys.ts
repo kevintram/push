@@ -6,6 +6,7 @@ export const HOTKEY_GROUPS = [
 	'Go to',
 	'Card',
 	'Review composer',
+	'Rating menu',
 	'Review queue',
 	'Collection',
 ] as const
@@ -45,14 +46,18 @@ export const appHotkeys = defineAppHotkeys({
 	},
 
 	newReview: { hotkey: 'C', meta: { name: 'New review', group: 'Card' } },
+	openRatingMenu: {
+		hotkey: 'W',
+		meta: { name: 'Change rating', group: 'Card' },
+	},
 	rateUncompleted: {
 		hotkey: '0',
-		meta: { name: 'Rate Uncompleted', group: 'Card' },
+		meta: { name: 'Uncompleted', group: 'Rating menu' },
 	},
-	rateMiss: { hotkey: '1', meta: { name: 'Rate Miss', group: 'Card' } },
-	rateHard: { hotkey: '2', meta: { name: 'Rate Hard', group: 'Card' } },
-	rateGood: { hotkey: '3', meta: { name: 'Rate Good', group: 'Card' } },
-	rateEasy: { hotkey: '4', meta: { name: 'Rate Easy', group: 'Card' } },
+	rateMiss: { hotkey: '1', meta: { name: 'Miss', group: 'Rating menu' } },
+	rateHard: { hotkey: '2', meta: { name: 'Hard', group: 'Rating menu' } },
+	rateGood: { hotkey: '3', meta: { name: 'Good', group: 'Rating menu' } },
+	rateEasy: { hotkey: '4', meta: { name: 'Easy', group: 'Rating menu' } },
 	reveal: {
 		hotkey: 'R',
 		meta: { name: 'Reveal answer, then notes', group: 'Card' },

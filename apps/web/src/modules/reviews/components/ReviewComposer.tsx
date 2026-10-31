@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import type { FormEvent } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import {
 	Button,
@@ -115,10 +115,11 @@ export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 	const formRef = useRef<HTMLFormElement>(null)
 	const descriptionRef = useRef<HTMLTextAreaElement>(null)
 	const ratingRef = useRef<HTMLButtonElement>(null)
+	const [isRatingMenuOpen, setIsRatingMenuOpen] = useState(false)
 	const {
-		clearFocusRequest,
+		clearRatingRequest,
 		draft,
-		focusRequest,
+		ratingRequest,
 		isDirty,
 		isPending,
 		setDescription,
@@ -134,14 +135,14 @@ export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 		else if (autoFocus === 'rating') ratingRef.current?.focus()
 	}, [autoFocus])
 
-	// Runs after `autoFocus`, so a shortcut that opened the composer decides
+	// Runs after `autoFocus`, so the shortcut that opened the composer decides
 	// where focus lands.
 	useEffect(() => {
-		if (!focusRequest) return
-		if (focusRequest === 'description') descriptionRef.current?.focus()
+		if (!ratingRequest) return
+		if (ratingRequest === 'menu') setIsRatingMenuOpen(true)
 		else ratingRef.current?.focus()
-		clearFocusRequest()
-	}, [focusRequest, clearFocusRequest])
+		clearRatingRequest()
+	}, [ratingRequest, clearRatingRequest])
 
 	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
@@ -165,7 +166,8 @@ export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 				<aside {...stylex.props(styles.rail)}>
 					<RatingPicker
 						disabled={isPending}
-						showShortcuts
+						open={isRatingMenuOpen}
+						onOpenChange={setIsRatingMenuOpen}
 						onSetRating={setRating}
 						rating={draft.rating ?? undefined}
 						ref={ratingRef}

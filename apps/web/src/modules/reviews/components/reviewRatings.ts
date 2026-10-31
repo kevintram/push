@@ -6,7 +6,7 @@ import { formatAbsoluteDate } from '~/utils/date'
 
 import type { Rating } from '../types/review.types'
 
-/** Each rating, in order, with the key that rates with it in the composer. */
+/** Each rating, in order, with the key that picks it in the rating menu. */
 export const ratings = {
 	miss: { label: 'Miss', Icon: X, hotkey: appHotkeys.rateMiss },
 	hard: { label: 'Hard', Icon: Construction, hotkey: appHotkeys.rateHard },
