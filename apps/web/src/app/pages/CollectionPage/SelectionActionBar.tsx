@@ -9,9 +9,16 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
 } from '~/components/ui'
 import { useConvertSectionsToCollections } from '~/modules/collections/api/sectionQueries'
 import { useCardActions } from '~/modules/reviews/hooks/useCardActions'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { ariaKeyShortcuts } from '~/modules/shortcuts/ariaKeyShortcuts'
+import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
+import { hotkeyItemProps } from '~/modules/shortcuts/hotkeyItemProps'
 import { orange } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
@@ -22,6 +29,7 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
+import { SelectionActionHotkeys } from './SelectionActionHotkeys'
 import { countItems, type SelectionContents } from './selectionContents'
 import { type SelectionDialog, SelectionDialogs } from './SelectionDialogs'
 
@@ -120,6 +128,14 @@ export function SelectionActionBar({
 
 	return (
 		<div {...stylex.props(styles.dock)}>
+			<SelectionActionHotkeys
+				hasCards={cards.length > 0}
+				onToggleFlag={() => toggleFlag(cards)}
+				onToggleRetire={() => toggleRetire(cards)}
+				onToggleType={() => toggleType(cards)}
+				onMove={() => setDialog('move')}
+				onDelete={() => setDialog('delete')}
+			/>
 			<div
 				role='toolbar'
 				aria-label='Selection actions'
@@ -129,39 +145,94 @@ export function SelectionActionBar({
 					{countItems(contents)}
 				</span>
 				{cards.length > 0 ? (
-					<Button
-						variant='ghost'
-						size='small'
-						shape='round'
-						xstyle={styles.action}
-						onClick={() => toggleFlag(cards)}
-					>
-						<Flag
-							aria-hidden='true'
-							size={iconSizes.sm}
-							{...stylex.props(areAllFlagged && styles.flagOn)}
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<Button
+									variant='ghost'
+									size='small'
+									shape='round'
+									xstyle={styles.action}
+									onClick={() => toggleFlag(cards)}
+									aria-keyshortcuts={ariaKeyShortcuts(
+										appHotkeys.toggleSelectionFlag,
+									)}
+								>
+									<Flag
+										aria-hidden='true'
+										size={iconSizes.sm}
+										{...stylex.props(
+											areAllFlagged && styles.flagOn,
+										)}
+									/>
+									{areAllFlagged ? 'Unflag' : 'Flag'}
+									<ShortcutKeys
+										hotkey={appHotkeys.toggleSelectionFlag}
+										aria-hidden
+									/>
+								</Button>
+							}
 						/>
-						{areAllFlagged ? 'Unflag' : 'Flag'}
-					</Button>
+						<TooltipContent>
+							{areAllFlagged ? 'Unflag' : 'Flag'}
+							<ShortcutKeys
+								hotkey={appHotkeys.toggleSelectionFlag}
+							/>
+						</TooltipContent>
+					</Tooltip>
 				) : null}
-				<Button
-					variant='ghost'
-					size='small'
-					shape='round'
-					xstyle={styles.action}
-					onClick={() => setDialog('move')}
-				>
-					Move
-				</Button>
-				<Button
-					variant='ghost'
-					size='small'
-					shape='round'
-					xstyle={styles.action}
-					onClick={() => setDialog('delete')}
-				>
-					Delete
-				</Button>
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button
+								variant='ghost'
+								size='small'
+								shape='round'
+								xstyle={styles.action}
+								onClick={() => setDialog('move')}
+								aria-keyshortcuts={ariaKeyShortcuts(
+									appHotkeys.moveSelection,
+								)}
+							>
+								Move
+								<ShortcutKeys
+									hotkey={appHotkeys.moveSelection}
+									aria-hidden
+								/>
+							</Button>
+						}
+					/>
+					<TooltipContent>
+						Move
+						<ShortcutKeys hotkey={appHotkeys.moveSelection} />
+					</TooltipContent>
+				</Tooltip>
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button
+								variant='ghost'
+								size='small'
+								shape='round'
+								xstyle={styles.action}
+								onClick={() => setDialog('delete')}
+								aria-keyshortcuts={ariaKeyShortcuts(
+									appHotkeys.deleteSelection,
+								)}
+							>
+								Delete
+								<ShortcutKeys
+									hotkey={appHotkeys.deleteSelection}
+									aria-hidden
+								/>
+							</Button>
+						}
+					/>
+					<TooltipContent>
+						Delete
+						<ShortcutKeys hotkey={appHotkeys.deleteSelection} />
+					</TooltipContent>
+				</Tooltip>
 				<DropdownMenu>
 					<DropdownMenuTrigger
 						render={
@@ -188,6 +259,9 @@ export function SelectionActionBar({
 										/>
 									}
 									onClick={() => toggleRetire(cards)}
+									{...hotkeyItemProps(
+										appHotkeys.toggleSelectionRetire,
+									)}
 								>
 									{areAllRetired ? 'Unretire' : 'Retire'}
 								</DropdownMenuItem>
@@ -199,6 +273,9 @@ export function SelectionActionBar({
 										/>
 									}
 									onClick={() => toggleType(cards)}
+									{...hotkeyItemProps(
+										appHotkeys.toggleSelectionType,
+									)}
 								>
 									{areAllFlashcards
 										? `Remove as ${flashcards}`
