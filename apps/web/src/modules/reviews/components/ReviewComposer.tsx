@@ -1,20 +1,17 @@
 import * as stylex from '@stylexjs/stylex'
-import {
-	formatForDisplay,
-	type Hotkey,
-	useHotkey,
-} from '@tanstack/react-hotkeys'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import type { FormEvent } from 'react'
 import { useEffect, useRef } from 'react'
 
 import {
 	Button,
-	Kbd,
 	Textarea,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
 import { scrollFadeVars } from '~/styles/scrollFade.stylex'
@@ -23,8 +20,6 @@ import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 import { RatingPicker } from './RatingPicker'
 import { useReviewComposerState } from './reviewComposerContext'
 import { ReviewDatePicker } from './ReviewDatePicker'
-
-const CREATE_REVIEW_HOTKEY = 'Mod+Enter' satisfies Hotkey
 
 const styles = stylex.create({
 	composer: {
@@ -143,7 +138,7 @@ export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 	}
 
 	const submitWithHotkey = () => formRef.current?.requestSubmit()
-	useHotkey(CREATE_REVIEW_HOTKEY, submitWithHotkey, {
+	useHotkey(appHotkeys.createReview, submitWithHotkey, {
 		enabled: !isSubmitDisabled,
 		target: formRef,
 	})
@@ -209,7 +204,7 @@ export function ReviewComposer({ autoFocus }: ReviewComposerProps) {
 					/>
 					<TooltipContent>
 						Create review
-						<Kbd>{formatForDisplay(CREATE_REVIEW_HOTKEY)}</Kbd>
+						<ShortcutKeys hotkey={appHotkeys.createReview} />
 					</TooltipContent>
 				</Tooltip>
 			</footer>

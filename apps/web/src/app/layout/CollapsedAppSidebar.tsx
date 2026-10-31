@@ -1,12 +1,10 @@
 import * as stylex from '@stylexjs/stylex'
-import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { Link } from '@tanstack/react-router'
 import { PanelLeft, Settings } from 'lucide-react'
 import type { Ref } from 'react'
 
 import { SidebarItem } from '~/components/sidebar'
 import {
-	Kbd,
 	StatusDot,
 	Tooltip,
 	TooltipContent,
@@ -16,10 +14,11 @@ import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { REVIEW_LINKS } from '~/modules/reviews/reviewLinks'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { layout, spacing } from '~/styles/tokens.stylex'
 
 import { CollectionsRailPopover } from './CollectionsRailPopover'
-import { SIDEBAR_HOTKEY } from './sidebarHotkey'
 
 const styles = stylex.create({
 	// Matches the gap AppShell leaves around the page surface.
@@ -86,7 +85,7 @@ export function CollapsedAppSidebar({
 				/>
 				<TooltipContent side='right'>
 					Expand sidebar
-					<Kbd>{formatForDisplay(SIDEBAR_HOTKEY)}</Kbd>
+					<ShortcutKeys hotkey={appHotkeys.toggleSidebar} />
 				</TooltipContent>
 			</Tooltip>
 			<div {...stylex.props(styles.group)}>

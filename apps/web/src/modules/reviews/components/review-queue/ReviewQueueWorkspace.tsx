@@ -18,16 +18,13 @@ import type {
 	ReviewDraft,
 } from '~/modules/reviews/components/reviewComposerContext'
 import type { Card } from '~/modules/reviews/types/review.types'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 import { baseColors } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { breakpoints, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
-import {
-	REVIEW_QUEUE_NEXT_HOTKEY,
-	REVIEW_QUEUE_PREVIOUS_HOTKEY,
-} from './reviewQueueKeybindings'
 import { ReviewQueueSidebar } from './ReviewQueueSidebar'
 import { ReviewQueueToolbar } from './ReviewQueueToolbar'
 import { useReviewQueueSelection } from './useReviewQueueSelection'
@@ -267,8 +264,8 @@ export function ReviewQueueWorkspace({
 			<CardNavigationHotkeys
 				canGoPrevious={canGoPrevious}
 				canGoNext={canGoNext}
-				previousHotkey={REVIEW_QUEUE_PREVIOUS_HOTKEY}
-				nextHotkey={REVIEW_QUEUE_NEXT_HOTKEY}
+				previousHotkey={appHotkeys.previousCard}
+				nextHotkey={appHotkeys.nextCard}
 				onPrevious={goPrevious}
 				onNext={goNext}
 			/>

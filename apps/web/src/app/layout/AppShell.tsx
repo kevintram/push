@@ -9,6 +9,7 @@ import { usePersistedBoolean } from '~/hooks/usePersistedBoolean'
 import { useResizableWidth } from '~/hooks/useResizableWidth'
 import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 import { slate } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { breakpoints, layout, radii } from '~/styles/tokens.stylex'
@@ -16,7 +17,6 @@ import { breakpoints, layout, radii } from '~/styles/tokens.stylex'
 import { CollapsedAppSidebar } from './CollapsedAppSidebar'
 import { ExpandedAppSidebar } from './ExpandedAppSidebar'
 import { hideModeSidebarTheme } from './hideModeSidebarTheme'
-import { SIDEBAR_HOTKEY } from './sidebarHotkey'
 
 const SIDEBAR_STORAGE_KEY = 'appSidebarExpanded'
 const SIDEBAR_ID = 'app-sidebar'
@@ -113,7 +113,7 @@ export function AppShell({ children }: AppShellProps) {
 
 	// The hotkey leaves focus where it is, unless focus is on the toggle that
 	// is about to unmount.
-	useHotkey(SIDEBAR_HOTKEY, () => {
+	useHotkey(appHotkeys.toggleSidebar, () => {
 		const { activeElement } = document
 		const isToggleFocused =
 			activeElement !== null &&

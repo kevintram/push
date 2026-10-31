@@ -1,14 +1,16 @@
-import { type Hotkey, useHotkeys } from '@tanstack/react-hotkeys'
+import { type AppHotkey, useHotkeys } from '@tanstack/react-hotkeys'
+
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 
 import type { MoveDirection } from './collectionOrder'
 
 const MOVES = [
-	{ hotkey: 'Mod+ArrowUp', direction: 'up' },
-	{ hotkey: 'Mod+ArrowDown', direction: 'down' },
-	{ hotkey: 'Mod+Alt+ArrowUp', direction: 'top' },
-	{ hotkey: 'Mod+Alt+ArrowDown', direction: 'bottom' },
+	{ hotkey: appHotkeys.moveSelectionUp, direction: 'up' },
+	{ hotkey: appHotkeys.moveSelectionDown, direction: 'down' },
+	{ hotkey: appHotkeys.moveSelectionToTop, direction: 'top' },
+	{ hotkey: appHotkeys.moveSelectionToBottom, direction: 'bottom' },
 ] as const satisfies ReadonlyArray<{
-	hotkey: Hotkey
+	hotkey: AppHotkey
 	direction: MoveDirection
 }>
 
@@ -47,29 +49,37 @@ export function CollectionHotkeys({
 	useHotkeys(
 		[
 			{
-				hotkey: 'ArrowUp',
+				hotkey: appHotkeys.selectPrevious,
 				callback: () => onSelectAdjacent(-1, false),
 			},
 			{
-				hotkey: 'ArrowDown',
+				hotkey: appHotkeys.selectNext,
 				callback: () => onSelectAdjacent(1, false),
 			},
 			{
-				hotkey: 'Shift+ArrowUp',
+				hotkey: appHotkeys.extendSelectionUp,
 				callback: () => onSelectAdjacent(-1, true),
 			},
 			{
-				hotkey: 'Shift+ArrowDown',
+				hotkey: appHotkeys.extendSelectionDown,
 				callback: () => onSelectAdjacent(1, true),
 			},
-			{ hotkey: 'Mod+A', callback: onSelectAll },
+			{ hotkey: appHotkeys.selectAll, callback: onSelectAll },
 			...MOVES.map(({ hotkey, direction }) => ({
 				hotkey,
 				callback: () => onMove(direction),
 				options: withSelection,
 			})),
-			{ hotkey: 'Enter', callback: onOpen, options: withSelection },
-			{ hotkey: 'Escape', callback: onClear, options: withSelection },
+			{
+				hotkey: appHotkeys.openSelection,
+				callback: onOpen,
+				options: withSelection,
+			},
+			{
+				hotkey: appHotkeys.clearSelection,
+				callback: onClear,
+				options: withSelection,
+			},
 		],
 		{
 			// On an empty page the arrows have nothing to select, so they keep

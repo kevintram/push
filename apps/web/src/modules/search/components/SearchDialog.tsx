@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { formatForDisplay, useHotkey } from '@tanstack/react-hotkeys'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { Search, X } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 
@@ -13,11 +13,12 @@ import {
 	DialogDescription,
 	DialogTitle,
 	DialogTrigger,
-	Kbd,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { a11y } from '~/styles/a11y'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { scrollFade } from '~/styles/scrollFade'
@@ -29,7 +30,6 @@ import {
 } from '~/styles/tokens.stylex'
 
 import { useSearchResults } from '../hooks/useSearchResults'
-import { SEARCH_HOTKEY } from '../searchHotkey'
 import {
 	buildCardResults,
 	buildCollectionResults,
@@ -158,7 +158,7 @@ export function SearchDialog({ tooltipSide = 'bottom' }: SearchDialogProps) {
 
 	const [expandedGroup, setExpandedGroup] = useState<ExpandedGroup>(null)
 
-	useHotkey(SEARCH_HOTKEY, () => setIsOpen(true))
+	useHotkey(appHotkeys.openSearch, () => setIsOpen(true))
 
 	const handleClear = () => {
 		setExpandedGroup(null)
@@ -213,7 +213,7 @@ export function SearchDialog({ tooltipSide = 'bottom' }: SearchDialogProps) {
 				/>
 				<TooltipContent side={tooltipSide}>
 					Search
-					<Kbd>{formatForDisplay(SEARCH_HOTKEY)}</Kbd>
+					<ShortcutKeys hotkey={appHotkeys.openSearch} />
 				</TooltipContent>
 			</Tooltip>
 			<DialogContent

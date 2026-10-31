@@ -1,14 +1,14 @@
-import type { Hotkey } from '@tanstack/react-hotkeys'
+import type { AppHotkey } from '@tanstack/react-hotkeys'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { RefObject } from 'react'
 
 type CardNavigationHotkeysProps = {
 	canGoNext: boolean
 	canGoPrevious: boolean
-	nextHotkey: Hotkey
+	nextHotkey: AppHotkey
 	onNext: () => void
 	onPrevious: () => void
-	previousHotkey: Hotkey
+	previousHotkey: AppHotkey
 	target?: RefObject<HTMLElement | null>
 }
 
