@@ -1,6 +1,7 @@
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 import { readStoredValue, writeStoredValue } from '~/utils/storage'
 
 import {
@@ -8,7 +9,6 @@ import {
 	HideModeContext,
 	type HideModeStore,
 } from './HideModeContext'
-import { HIDE_MODE_HOTKEY } from './hideModeHotkey'
 
 const STORAGE_KEY = 'hideMode'
 const HIDE_MODES = ['on', 'off'] as const satisfies ReadonlyArray<HideMode>
@@ -35,9 +35,7 @@ export function HideModeProvider({ children }: HideModeProviderProps) {
 		})
 	}, [])
 
-	useHotkey(HIDE_MODE_HOTKEY, () => {
-		toggleHide()
-	})
+	useHotkey(appHotkeys.toggleHideMode, toggleHide)
 
 	const storeValue = useMemo<HideModeStore>(
 		() => ({

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { toastError } from './toastError'
-import { toast, type ToastOpen } from './toastManager'
+import { toast, type ToastData, type ToastOpen } from './toastManager'
 
 // Longer than the default, so there is time to reach the buttons.
 const UNDO_TIMEOUT = 8000
@@ -11,6 +11,8 @@ const UNDO_TIMEOUT = 8000
 let latestUndoId: string | undefined
 
 export type UndoToast = {
+	icon?: ToastData['icon']
+	iconXstyle?: ToastData['iconXstyle']
 	title: ReactNode
 	description?: ReactNode
 	/** Comes after Undo, and stays on once a newer toast takes Undo away. */
@@ -23,7 +25,14 @@ export type UndoToast = {
  * button off the previous undo toast, which stays as a record of its action.
  * A failed undo shows its own error toast.
  */
-export function toastUndo({ title, description, open, undo }: UndoToast) {
+export function toastUndo({
+	title,
+	description,
+	icon,
+	iconXstyle,
+	open,
+	undo,
+}: UndoToast) {
 	if (latestUndoId !== undefined) {
 		toast.update(latestUndoId, { actionProps: undefined })
 	}
@@ -43,7 +52,7 @@ export function toastUndo({ title, description, open, undo }: UndoToast) {
 				)
 			},
 		},
-		data: open && { open },
+		data: { icon, iconXstyle, open },
 		description,
 		timeout: UNDO_TIMEOUT,
 		title,

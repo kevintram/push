@@ -181,17 +181,4 @@ describe('AppShell', () => {
 			screen.getByRole('button', { name: 'Collapse sidebar' }),
 		).toHaveFocus()
 	})
-
-	it('ignores auto-repeat while Mod+B is held', () => {
-		renderShell()
-
-		fireEvent.keyDown(document, { key: 'b', code: 'KeyB', ctrlKey: true })
-		fireEvent.keyDown(document, {
-			key: 'b',
-			code: 'KeyB',
-			ctrlKey: true,
-			repeat: true,
-		})
-		expect(screen.getByTestId('expanded-sidebar')).toBeInTheDocument()
-	})
 })

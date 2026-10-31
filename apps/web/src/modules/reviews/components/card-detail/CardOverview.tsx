@@ -1,10 +1,12 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { Separator, Textarea } from '~/components/ui'
 import { useToday } from '~/hooks/useToday'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 import { scrollFade } from '~/styles/scrollFade'
 import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
 
@@ -12,6 +14,7 @@ import { cardQueries } from '../../api/cardQueries'
 import { useHideMode } from '../../hide-mode/useHideMode'
 import { useCardField } from '../../hooks/useCardField'
 import { deriveCardSrsState } from '../../utils/cardSrs'
+import { takePromptFocus } from '../../utils/newCardFocus'
 import { CardMetadata } from '../CardMetadata'
 import { Hideable } from '../Hideable'
 
@@ -76,11 +79,30 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 	const [secondaryRevealed, setSecondaryRevealed] = useState(false)
 	const [notesRevealed, setNotesRevealed] = useState(false)
 	const today = useToday()
+	const primaryTextRef = useRef<HTMLTextAreaElement>(null)
 
 	useEffect(() => {
 		setSecondaryRevealed(false)
 		setNotesRevealed(false)
 	}, [hideMode, cardId])
+
+	useEffect(() => {
+		if (takePromptFocus(cardId)) primaryTextRef.current?.focus()
+	}, [cardId])
+
+	const isSecondaryShown =
+		card.type === 'practice' || hideMode === 'off' || secondaryRevealed
+	const isNotesShown = hideMode === 'off' || notesRevealed
+
+	// One hidden part per press, in reading order.
+	useHotkey(
+		appHotkeys.reveal,
+		() => {
+			if (!isSecondaryShown) setSecondaryRevealed(true)
+			else setNotesRevealed(true)
+		},
+		{ enabled: !isSecondaryShown || !isNotesShown },
+	)
 
 	const primaryText = useCardField({
 		field: 'primaryText',
@@ -110,23 +132,21 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 					<Textarea
 						aria-label='Card primary text'
 						placeholder={primaryTextPlaceholder}
-						onBlur={primaryText.flush}
+						ref={primaryTextRef}
+						onCommit={primaryText.flush}
 						onChange={primaryText.onChange}
 						value={primaryText.value}
 						xstyle={styles.primary}
 					/>
 					<Hideable
-						revealed={
-							card.type === 'practice' ||
-							hideMode === 'off' ||
-							secondaryRevealed
-						}
+						revealed={isSecondaryShown}
 						onRevealedChange={setSecondaryRevealed}
+						revealHotkey={appHotkeys.reveal}
 					>
 						<Textarea
 							aria-label='Card secondary text'
 							placeholder={secondaryTextPlaceholder}
-							onBlur={secondaryText.flush}
+							onCommit={secondaryText.flush}
 							onChange={secondaryText.onChange}
 							value={secondaryText.value}
 							xstyle={styles.secondary}
@@ -139,14 +159,15 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 						<Separator />
 					</div>
 					<Hideable
-						revealed={hideMode === 'off' || notesRevealed}
+						revealed={isNotesShown}
 						onRevealedChange={setNotesRevealed}
+						revealHotkey={appHotkeys.reveal}
 						xstyle={styles.notesContainer}
 					>
 						<Textarea
 							aria-label='Card notes'
 							placeholder='Add notes...'
-							onBlur={notes.flush}
+							onCommit={notes.flush}
 							onChange={notes.onChange}
 							value={notes.value}
 							xstyle={styles.notes}

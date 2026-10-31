@@ -6,7 +6,14 @@ import { placeInLine } from '@shared/ordering'
 import { useMutation } from '@tanstack/react-query'
 import { useMatchRoute, useNavigate } from '@tanstack/react-router'
 
-import { toastError, toastUndo, type UndoToast } from '~/components/ui/Toast'
+import {
+	toastDeleted,
+	toastError,
+	toastName,
+	toastUndo,
+	type UndoToast,
+} from '~/components/ui/Toast'
+import { pluralize } from '~/utils/pluralize'
 
 export const cardQueries = {
 	listFlagged: () => convexQuery(api.cards.listFlagged, {}),
@@ -157,6 +164,14 @@ export function useDeleteCards() {
 		onError: (error, { cardIds }) =>
 			toastError(plural(cardIds, 'Failed to delete card'), error),
 		onSuccess: removed => {
+			const [card] = removed
+			if (card) {
+				toastDeleted(
+					removed.length === 1
+						? toastName(card.primaryText, 'Untitled card')
+						: pluralize(removed.length, 'card'),
+				)
+			}
 			// if a deleted card is currently open, fall back to its collection
 			const open = removed.find(({ _id }) =>
 				matchRoute({

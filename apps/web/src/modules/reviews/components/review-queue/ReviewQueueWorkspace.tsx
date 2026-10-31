@@ -1,4 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { QueryErrorResetBoundary } from '@tanstack/react-query'
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -18,16 +19,13 @@ import type {
 	ReviewDraft,
 } from '~/modules/reviews/components/reviewComposerContext'
 import type { Card } from '~/modules/reviews/types/review.types'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 import { baseColors } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { breakpoints, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 import { readStoredBoolean, writeStoredBoolean } from '~/utils/storage'
 
-import {
-	REVIEW_QUEUE_NEXT_HOTKEY,
-	REVIEW_QUEUE_PREVIOUS_HOTKEY,
-} from './reviewQueueKeybindings'
 import { ReviewQueueSidebar } from './ReviewQueueSidebar'
 import { ReviewQueueToolbar } from './ReviewQueueToolbar'
 import { useReviewQueueSelection } from './useReviewQueueSelection'
@@ -173,6 +171,7 @@ export function ReviewQueueWorkspace({
 			readStoredBoolean(QUEUE_SIDEBAR_STORAGE_KEY, true),
 	)
 	const queueSidebarToggleRef = useRef<HTMLButtonElement>(null)
+	const queueSidebarSlotRef = useRef<HTMLDivElement>(null)
 	// Each card starts its composer where the user last left it, so hiding it
 	// once keeps it hidden through the rest of the queue. The expanded dialog
 	// is modal, so a card opens it docked instead; a minimized one still
@@ -259,6 +258,16 @@ export function ReviewQueueWorkspace({
 		queueSidebarToggleRef.current?.focus()
 	}
 
+	// Closing from inside the sidebar goes through `onQueueSidebarClose`, so
+	// focus lands on the toolbar toggle instead of dropping to the page.
+	useHotkey(appHotkeys.toggleQueue, () => {
+		if (queueSidebarSlotRef.current?.contains(document.activeElement)) {
+			onQueueSidebarClose()
+		} else {
+			onQueueSidebarToggle()
+		}
+	})
+
 	return (
 		<section
 			aria-label={`${title} review workspace`}
@@ -267,8 +276,8 @@ export function ReviewQueueWorkspace({
 			<CardNavigationHotkeys
 				canGoPrevious={canGoPrevious}
 				canGoNext={canGoNext}
-				previousHotkey={REVIEW_QUEUE_PREVIOUS_HOTKEY}
-				nextHotkey={REVIEW_QUEUE_NEXT_HOTKEY}
+				previousHotkey={appHotkeys.previousCard}
+				nextHotkey={appHotkeys.nextCard}
 				onPrevious={goPrevious}
 				onNext={goNext}
 			/>
@@ -344,6 +353,7 @@ export function ReviewQueueWorkspace({
 					</section>
 				</div>
 				<div
+					ref={queueSidebarSlotRef}
 					{...stylex.props(
 						styles.sidebarSlot,
 						queueSidebarOpen

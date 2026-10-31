@@ -1,14 +1,14 @@
 import * as stylex from '@stylexjs/stylex'
-import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { ChevronDown, ChevronUp, Menu } from 'lucide-react'
 
 import {
 	Button,
-	Kbd,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	buttonSizes,
@@ -17,11 +17,6 @@ import {
 	iconSizes,
 	spacing,
 } from '~/styles/tokens.stylex'
-
-import {
-	REVIEW_QUEUE_NEXT_HOTKEY,
-	REVIEW_QUEUE_PREVIOUS_HOTKEY,
-} from './reviewQueueKeybindings'
 
 type ReviewQueueToolbarProps = {
 	title: string
@@ -117,7 +112,7 @@ export function ReviewQueueToolbar({
 					/>
 					<TooltipContent>
 						Next
-						<Kbd>{formatForDisplay(REVIEW_QUEUE_NEXT_HOTKEY)}</Kbd>
+						<ShortcutKeys hotkey={appHotkeys.nextCard} />
 					</TooltipContent>
 				</Tooltip>
 				<Tooltip>
@@ -138,9 +133,7 @@ export function ReviewQueueToolbar({
 					/>
 					<TooltipContent>
 						Previous
-						<Kbd>
-							{formatForDisplay(REVIEW_QUEUE_PREVIOUS_HOTKEY)}
-						</Kbd>
+						<ShortcutKeys hotkey={appHotkeys.previousCard} />
 					</TooltipContent>
 				</Tooltip>
 				<Tooltip>
@@ -168,6 +161,7 @@ export function ReviewQueueToolbar({
 					/>
 					<TooltipContent>
 						{queueSidebarOpen ? 'Close queue' : 'Open queue'}
+						<ShortcutKeys hotkey={appHotkeys.toggleQueue} />
 					</TooltipContent>
 				</Tooltip>
 			</div>

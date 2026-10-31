@@ -23,7 +23,6 @@ export {
 	type DropdownMenuRadioItemProps,
 } from './DropdownMenuRadioItem'
 export { DropdownMenuSeparator } from './DropdownMenuSeparator'
-export { DropdownMenuShortcut } from './DropdownMenuShortcut'
 export {
 	DropdownMenuSubTrigger,
 	type DropdownMenuSubTriggerProps,

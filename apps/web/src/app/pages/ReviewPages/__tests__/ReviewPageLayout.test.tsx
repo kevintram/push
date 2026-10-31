@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { Copy } from 'lucide-react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ReviewPageLayout } from '../ReviewPageLayout'
@@ -48,6 +49,7 @@ describe('ReviewPageLayout', () => {
 		expect(setHideMode).toHaveBeenCalledWith('on')
 		expect(mockToastAdd).toHaveBeenCalledOnce()
 		expect(mockToastAdd).toHaveBeenCalledWith({
+			data: { icon: Copy },
 			description: 'Answers stay hidden until you reveal them',
 			title: 'Hide mode on',
 			type: 'info',

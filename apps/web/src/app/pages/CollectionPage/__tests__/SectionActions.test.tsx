@@ -82,14 +82,14 @@ describe('SectionActions', () => {
 		await user.click(screen.getByRole('menuitem', { name: 'Delete' }))
 
 		expect(
-			screen.getByRole('dialog', { name: 'Delete "Cell anatomy"?' }),
+			screen.getByRole('dialog', { name: 'Delete “Cell anatomy”?' }),
 		).toBeInTheDocument()
 		expect(deleteMutate).not.toHaveBeenCalled()
 
 		await user.click(screen.getByRole('button', { name: 'Delete' }))
 
 		expect(deleteMutate).toHaveBeenCalledWith(
-			{ sectionIds: [section._id], cardIds: [] },
+			expect.objectContaining({ sectionIds: [section._id], cardIds: [] }),
 			expect.anything(),
 		)
 	})

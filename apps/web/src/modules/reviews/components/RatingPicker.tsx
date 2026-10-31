@@ -1,6 +1,6 @@
-import type { StyleXStyles } from '@stylexjs/stylex'
 import * as stylex from '@stylexjs/stylex'
-import { Circle } from 'lucide-react'
+import { useHotkeys } from '@tanstack/react-hotkeys'
+import { useState } from 'react'
 
 import {
 	Button,
@@ -8,21 +8,29 @@ import {
 	DropdownMenuContent,
 	DropdownMenuRadioGroup,
 	DropdownMenuRadioItem,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '~/components/ui'
+import { hotkeyItemProps } from '~/modules/shortcuts/hotkeyItemProps'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, radii } from '~/styles/tokens.stylex'
 
 import type { Rating } from '../types/review.types'
-import { getRating, ratings } from './reviewRatings'
+import {
+	getRating,
+	ratingChoices,
+	ratingFromChoice,
+	TODO_VALUE,
+	todoRating,
+} from './reviewRatings'
 
 const styles = stylex.create({
 	ratingBadge: {
 		borderRadius: radii.full,
 		alignItems: 'center',
-		backgroundColor: colorsSemantic.surfaceInteractivePrimary,
+		backgroundColor: colorsSemantic.surfaceInteractiveInverse,
 		blockSize: iconSizes.sm,
-		color: colorsSemantic.textOnBrand,
+		color: colorsSemantic.textOnInverse,
 		display: 'flex',
 		flexShrink: 0,
 		inlineSize: iconSizes.sm,
@@ -31,36 +39,44 @@ const styles = stylex.create({
 })
 
 type RatingPickerProps = {
-	disabled?: boolean
 	onSetRating: (rating: Rating | null) => void
 	rating: Rating | undefined
-	ref?: React.Ref<HTMLButtonElement>
-	xstyle?: StyleXStyles
 }
 
-export function RatingPicker({
-	disabled = false,
-	onSetRating,
-	rating,
-	ref,
-	xstyle,
-}: RatingPickerProps) {
+export function RatingPicker({ onSetRating, rating }: RatingPickerProps) {
 	const current = getRating(rating)
-	const RatingIcon = current?.Icon ?? Circle
+	const RatingIcon = current?.Icon ?? todoRating.Icon
+	const [isOpen, setIsOpen] = useState(false)
+	// State, not a ref, so the keys register once the menu mounts.
+	const [menu, setMenu] = useState<HTMLDivElement | null>(null)
+
+	const value = rating ?? TODO_VALUE
+	const pick = (next: string) => {
+		if (next !== value) onSetRating(ratingFromChoice(next))
+		setIsOpen(false)
+	}
+
+	// While the menu is open, each rating's key picks it, like a click. The
+	// keys belong to the open menu, so they register nothing while it's
+	// closed.
+	useHotkeys(
+		ratingChoices.map(choice => ({
+			hotkey: choice.hotkey,
+			callback: () => pick(choice.value),
+		})),
+		{ target: menu },
+	)
 
 	return (
-		<DropdownMenu>
+		<DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
 			<DropdownMenuTrigger
-				aria-label={current?.label ?? 'Uncompleted'}
-				ref={ref}
+				aria-label={current?.label ?? todoRating.label}
 				render={
 					<Button
 						iconOnly
 						shape='round'
 						size='micro'
-						disabled={disabled}
 						variant='ghost'
-						xstyle={xstyle}
 					/>
 				}
 			>
@@ -72,23 +88,15 @@ export function RatingPicker({
 					</span>
 				)}
 			</DropdownMenuTrigger>
-			<DropdownMenuContent>
+			<DropdownMenuContent ref={setMenu}>
 				<DropdownMenuRadioGroup
-					value={rating ?? ''}
-					onValueChange={value =>
-						onSetRating(value === '' ? null : (value as Rating))
-					}
+					value={value}
+					onValueChange={next => pick(next as string)}
 				>
-					<DropdownMenuRadioItem
-						closeOnClick
-						value=''
-						prefix={
-							<Circle aria-hidden='true' size={iconSizes.sm} />
-						}
-					>
-						Uncompleted
-					</DropdownMenuRadioItem>
-					{Object.entries(ratings).map(([value, { label, Icon }]) => (
+					{ratingChoices.map(({ value, label, Icon, hotkey }) => [
+						value === TODO_VALUE && (
+							<DropdownMenuSeparator key='separator' />
+						),
 						<DropdownMenuRadioItem
 							key={value}
 							closeOnClick
@@ -96,10 +104,11 @@ export function RatingPicker({
 							prefix={
 								<Icon aria-hidden='true' size={iconSizes.sm} />
 							}
+							{...hotkeyItemProps(hotkey)}
 						>
 							{label}
-						</DropdownMenuRadioItem>
-					))}
+						</DropdownMenuRadioItem>,
+					])}
 				</DropdownMenuRadioGroup>
 			</DropdownMenuContent>
 		</DropdownMenu>

@@ -1,27 +1,49 @@
 import type { Id } from '@convex/_generated/dataModel'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
+import { toastName } from '~/components/ui/Toast'
 import { useDeleteCollectionItems } from '~/modules/collections/api/collectionItemQueries'
 import { MoveCollectionItemsDialog } from '~/modules/collections/components/MoveCollectionItemsDialog'
+import { pluralize } from '~/utils/pluralize'
 
 import { nameItems, type SelectionContents } from './selectionContents'
 
 export type SelectionDialog = 'move' | 'delete' | null
 
-/** What deleting `contents` takes with it, in a sentence. */
-function describeDeletion({ sections, cards }: SelectionContents): string {
+/** What deleting `contents` takes with it, including cards inside sections. */
+function describeDeletion({
+	sections,
+	cards,
+	coveredCards,
+}: SelectionContents): string {
 	if (sections.length === 0) {
-		return cards.length === 1
-			? 'This card and its content will be permanently deleted.'
-			: 'These cards and their content will be permanently deleted.'
+		return coveredCards.length === 1
+			? 'This card and its reviews'
+			: `All ${coveredCards.length} cards and their reviews`
 	}
-
-	const deleted =
+	if (sections.length === 1 && cards.length === 0) {
+		return 'This section and all its cards'
+	}
+	if (coveredCards.length === 0) {
+		return `These ${sections.length} sections and all their cards`
+	}
+	const sectionName =
 		sections.length === 1
-			? 'This section, its cards,'
-			: 'These sections, their cards,'
-	const others = cards.length > 0 ? ' the other selected cards,' : ''
-	return `${deleted}${others} and their review history will be permanently deleted.`
+			? 'This section'
+			: `These ${sections.length} sections`
+	return `${sectionName}, all ${pluralize(coveredCards.length, 'card')}, and their reviews`
+}
+
+/** Full text for a single target; bulk selections use counts instead. */
+function singleItemText(contents: SelectionContents): string | undefined {
+	const { sections, cards } = contents
+	if (sections.length === 1 && cards.length === 0) {
+		return sections[0]!.title.trim() || 'Untitled section'
+	}
+	if (sections.length === 0 && cards.length === 1) {
+		return cards[0]!.primaryText.trim() || 'Untitled card'
+	}
+	return undefined
 }
 
 type SelectionDialogsProps = {
@@ -40,9 +62,11 @@ export function SelectionDialogs({
 	onDialogChange,
 }: SelectionDialogsProps) {
 	const deleteItems = useDeleteCollectionItems()
+	const singleText = singleItemText(contents)
 	const items = {
 		sectionIds: contents.sections.map(section => section._id),
 		cardIds: contents.cards.map(card => card._id),
+		name: singleText ? toastName(singleText) : nameItems(contents),
 	}
 	const close = () => onDialogChange(null)
 	const closeOnDismiss = (open: boolean) => {
@@ -62,7 +86,12 @@ export function SelectionDialogs({
 			) : null}
 
 			<DeleteConfirmationDialog
-				description={describeDeletion(contents)}
+				description={
+					<>
+						{describeDeletion(contents)} will be{' '}
+						<strong>permanently</strong> deleted.
+					</>
+				}
 				isPending={deleteItems.isPending}
 				onConfirm={() =>
 					// Leave the dialog open on failure so the toast has context.
@@ -70,7 +99,11 @@ export function SelectionDialogs({
 				}
 				onOpenChange={closeOnDismiss}
 				open={dialog === 'delete'}
-				title={`Delete ${nameItems(contents)}?`}
+				title={
+					singleText
+						? `Delete “${singleText}”?`
+						: `Delete ${nameItems(contents)}?`
+				}
 			/>
 		</>
 	)

@@ -8,7 +8,10 @@ import { ResizeHandle } from '~/components/ResizeHandle'
 import { usePersistedBoolean } from '~/hooks/usePersistedBoolean'
 import { useResizableWidth } from '~/hooks/useResizableWidth'
 import { collectionQueries } from '~/modules/collections/api/collectionQueries'
+import { ReviewNavigationHotkeys } from '~/modules/reviews/components/review-navigation/ReviewNavigationHotkeys'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { ShortcutReferenceDialog } from '~/modules/shortcuts/components/ShortcutReferenceDialog'
 import { slate } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { breakpoints, layout, radii } from '~/styles/tokens.stylex'
@@ -16,7 +19,6 @@ import { breakpoints, layout, radii } from '~/styles/tokens.stylex'
 import { CollapsedAppSidebar } from './CollapsedAppSidebar'
 import { ExpandedAppSidebar } from './ExpandedAppSidebar'
 import { hideModeSidebarTheme } from './hideModeSidebarTheme'
-import { SIDEBAR_HOTKEY } from './sidebarHotkey'
 
 const SIDEBAR_STORAGE_KEY = 'appSidebarExpanded'
 const SIDEBAR_ID = 'app-sidebar'
@@ -112,28 +114,19 @@ export function AppShell({ children }: AppShellProps) {
 	}, [isSidebarExpanded, setSidebarExpanded])
 
 	// The hotkey leaves focus where it is, unless focus is on the toggle that
-	// is about to unmount. Skip auto-repeat instead of using `requireReset`:
-	// macOS sends no keyup for B while Cmd is held, so a reset would swallow
-	// the next press until Cmd is released.
-	useHotkey(
-		SIDEBAR_HOTKEY,
-		event => {
-			if (event.repeat) {
-				return
-			}
-			const { activeElement } = document
-			const isToggleFocused =
-				activeElement !== null &&
-				(activeElement === collapsedToggleRef.current ||
-					activeElement === expandedToggleRef.current)
-			if (isToggleFocused) {
-				toggleSidebar()
-			} else {
-				setSidebarExpanded(!isSidebarExpanded)
-			}
-		},
-		{ preventDefault: true },
-	)
+	// is about to unmount.
+	useHotkey(appHotkeys.toggleSidebar, () => {
+		const { activeElement } = document
+		const isToggleFocused =
+			activeElement !== null &&
+			(activeElement === collapsedToggleRef.current ||
+				activeElement === expandedToggleRef.current)
+		if (isToggleFocused) {
+			toggleSidebar()
+		} else {
+			setSidebarExpanded(!isSidebarExpanded)
+		}
+	})
 
 	useLayoutEffect(() => {
 		if (pendingFocusTarget.current === 'expanded') {
@@ -174,6 +167,8 @@ export function AppShell({ children }: AppShellProps) {
 				<ResizeHandle {...handleProps} xstyle={styles.resizeHandle} />
 			</nav>
 			<main {...stylex.props(styles.children)}>{children}</main>
+			<ReviewNavigationHotkeys />
+			<ShortcutReferenceDialog />
 		</div>
 	)
 }

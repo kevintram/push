@@ -5,8 +5,10 @@ import type { Section } from '@convex/validators/sections'
 import { useConvexMutation } from '@convex-dev/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
+import type { ReactNode } from 'react'
 
 import {
+	toastDeleted,
 	toastError,
 	toastName,
 	toastTitle,
@@ -94,11 +96,20 @@ function movedName(
 		: toastName(cards[0]!.primaryText)
 }
 
+type CollectionItemsDelete = {
+	sectionIds: Array<Id<'sections'>>
+	cardIds: Array<Id<'cards'>>
+	/** Captured before deletion: a lone item's bold name, or bulk counts. */
+	name: ReactNode
+}
+
 /** Deletes sections, with their cards, and cards. */
 export function useDeleteCollectionItems() {
-	const mutationFn = useConvexMutation(api.collectionItems.remove)
+	const remove = useConvexMutation(api.collectionItems.remove)
 	return useMutation({
-		mutationFn,
+		mutationFn: ({ name: _name, ...items }: CollectionItemsDelete) =>
+			remove(items),
 		onError: error => toastError('Failed to delete', error),
+		onSuccess: (_, { name }) => toastDeleted(name),
 	})
 }

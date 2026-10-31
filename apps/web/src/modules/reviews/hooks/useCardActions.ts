@@ -1,4 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
+import { Archive, Flag, Zap } from 'lucide-react'
 import { DateTime } from 'luxon'
 import { useCallback } from 'react'
 
@@ -6,6 +7,7 @@ import { toastName, toastTitle } from '~/components/ui/Toast'
 import { pluralize } from '~/utils/pluralize'
 
 import { useDeleteCards, useUpdateCards } from '../api/cardQueries'
+import { cardStatusStyles } from '../components/cardStatusStyles'
 import type { Card } from '../types/review.types'
 
 const idsOf = (cards: ReadonlyArray<Card>) => cards.map(card => card._id)
@@ -48,6 +50,11 @@ export function useCardActions(): UseCardActionsReturn {
 				type,
 				...(cards.length > 1 && {
 					undo: {
+						icon: Zap,
+						iconXstyle:
+							type === 'flashcard'
+								? cardStatusStyles.flashcardOn
+								: undefined,
 						title: `Made ${pluralize(cards.length, 'card')} ${type === 'flashcard' ? 'flashcards' : 'practice cards'}`,
 						cards,
 					},
@@ -70,6 +77,10 @@ export function useCardActions(): UseCardActionsReturn {
 				flaggedAt: flagging ? DateTime.now().toMillis() : null,
 				...(cards.length > 1 && {
 					undo: {
+						icon: Flag,
+						iconXstyle: flagging
+							? cardStatusStyles.flagOn
+							: undefined,
 						title: `${flagging ? 'Flagged' : 'Unflagged'} ${pluralize(changed.length, 'card')}`,
 						...(flagging && {
 							open: {
@@ -102,6 +113,10 @@ export function useCardActions(): UseCardActionsReturn {
 				retiredAt: retiring ? DateTime.now().toMillis() : null,
 				...((retiring || cards.length > 1) && {
 					undo: {
+						icon: Archive,
+						iconXstyle: retiring
+							? cardStatusStyles.retiredOn
+							: undefined,
 						title: toastTitle(
 							retiring ? 'Retired ' : 'Unretired ',
 							name,

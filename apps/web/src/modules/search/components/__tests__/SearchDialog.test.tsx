@@ -1,7 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
 import type { CardSearchResult } from '@convex/validators/cards'
 import type { CollectionSearchResult } from '@convex/validators/collections'
-import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { QueryClientProvider } from '@tanstack/react-query'
 import {
 	fireEvent,
@@ -21,7 +20,6 @@ import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { createTestConvexClient } from '~/testing/createTestConvexClient'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
 
-import { SEARCH_HOTKEY } from '../../searchHotkey'
 import { SearchDialog } from '../SearchDialog'
 
 vi.mock('@tanstack/react-router', async importOriginal => {
@@ -353,8 +351,6 @@ describe('SearchDialog', () => {
 
 		const tooltip = await screen.findByRole('tooltip')
 		expect(tooltip).toHaveTextContent('Search')
-		expect(tooltip.querySelector('kbd')).toHaveTextContent(
-			formatForDisplay(SEARCH_HOTKEY),
-		)
+		expect(tooltip.querySelector('kbd')).toHaveTextContent('Ctrl+K')
 	})
 })

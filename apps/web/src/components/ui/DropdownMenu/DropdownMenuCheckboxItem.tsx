@@ -5,6 +5,8 @@ import { Check } from 'lucide-react'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
+import { DropdownMenuItemTrailing } from './DropdownMenuItemTrailing'
+
 const styles = stylex.create({
 	item: {
 		paddingBlock: '6px',
@@ -35,6 +37,7 @@ const styles = stylex.create({
 		gap: spacing.sm,
 		alignItems: 'center',
 		display: 'flex',
+		flexGrow: 1,
 	},
 	content: {
 		alignItems: 'center',
@@ -62,17 +65,18 @@ const styles = stylex.create({
 
 export interface DropdownMenuCheckboxItemProps extends Omit<
 	React.ComponentProps<typeof Menu.CheckboxItem>,
-	'className' | 'style' | 'prefix' | 'suffix'
+	'className' | 'style' | 'prefix'
 > {
 	prefix?: React.ReactNode
-	suffix?: React.ReactNode
+	/** Content in the trailing column, aligned across the menu's rows. */
+	trailing?: React.ReactNode
 }
 
 export function DropdownMenuCheckboxItem({
 	children,
 	disabled,
 	prefix,
-	suffix,
+	trailing,
 	...props
 }: DropdownMenuCheckboxItemProps) {
 	return (
@@ -87,7 +91,11 @@ export function DropdownMenuCheckboxItem({
 			<div {...stylex.props(styles.innerContainer)}>
 				{prefix && <span {...stylex.props(styles.slot)}>{prefix}</span>}
 				<span {...stylex.props(styles.content)}>{children}</span>
-				{suffix && <span {...stylex.props(styles.slot)}>{suffix}</span>}
+				{trailing != null && (
+					<DropdownMenuItemTrailing>
+						{trailing}
+					</DropdownMenuItemTrailing>
+				)}
 			</div>
 		</Menu.CheckboxItem>
 	)

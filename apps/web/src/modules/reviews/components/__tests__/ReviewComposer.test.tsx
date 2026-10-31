@@ -32,8 +32,8 @@ vi.mock('@convex-dev/react-query', () => ({
 	useConvexMutation: () => createReview,
 }))
 
-vi.mock('../RatingPicker', () => ({
-	RatingPicker: () => <button type='button'>Rating</button>,
+vi.mock('../RatingButtons', () => ({
+	RatingButtons: () => <button type='button'>Rating</button>,
 }))
 
 vi.mock('../ReviewDatePicker', () => ({
@@ -94,19 +94,12 @@ describe('ReviewComposer', () => {
 		expect(createReview).not.toHaveBeenCalled()
 	})
 
-	it('displays the shortcut in the Create button tooltip', async () => {
-		const user = userEvent.setup()
+	it('shows its shortcut inside the Create button', () => {
 		renderComposer()
 
-		fireEvent.change(
-			screen.getByRole('textbox', { name: 'Review description' }),
-			{ target: { value: 'A review' } },
-		)
-		await user.hover(screen.getByRole('button', { name: 'Create review' }))
-
-		const tooltip = await screen.findByRole('tooltip')
-		expect(tooltip).toHaveTextContent('Create review')
-		expect(tooltip.querySelector('kbd')).toHaveTextContent('↵')
+		const create = screen.getByRole('button', { name: 'Create review' })
+		expect(create.querySelector('kbd')).toHaveTextContent('↵')
+		expect(create).toHaveAttribute('aria-keyshortcuts')
 	})
 
 	it('clears the draft after a successful create', async () => {

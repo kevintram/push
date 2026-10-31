@@ -1,4 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
+import type { ReactNode } from 'react'
 
 import {
 	Button,
@@ -9,16 +10,27 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '~/components/ui'
+import { spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	header: {
+		gap: spacing.lg,
 		flexDirection: 'column',
+	},
+	title: {
+		overflowWrap: 'anywhere',
+	},
+	description: {
+		gap: '20px',
+		display: 'flex',
+		flexDirection: 'column',
+		lineHeight: '20px',
 	},
 })
 
 type DeleteConfirmationDialogProps = {
 	confirmLabel?: string
-	description: string
+	description: ReactNode
 	isPending: boolean
 	onConfirm: () => void
 	onOpenChange: (open: boolean) => void
@@ -39,8 +51,16 @@ export function DeleteConfirmationDialog({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent showCloseButton={false}>
 				<DialogHeader xstyle={styles.header}>
-					<DialogTitle>{title}</DialogTitle>
-					<DialogDescription>{description}</DialogDescription>
+					<DialogTitle xstyle={styles.title}>{title}</DialogTitle>
+					<DialogDescription
+						render={<div />}
+						xstyle={styles.description}
+					>
+						<p>{description}</p>
+						<p>
+							<strong>You can't undo this action.</strong>
+						</p>
+					</DialogDescription>
 				</DialogHeader>
 				<DialogFooter>
 					<Button

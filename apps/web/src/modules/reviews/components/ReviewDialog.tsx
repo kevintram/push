@@ -26,14 +26,13 @@ import {
 	fontSizes,
 	fontWeights,
 	iconSizes,
-	radii,
 	spacing,
 } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 
 import type { useReviewField } from '../hooks/useReviewField'
 import type { Rating, Review } from '../types/review.types'
-import { RatingPicker } from './RatingPicker'
+import { RatingButtons } from './RatingButtons'
 import { ReviewDatePicker } from './ReviewDatePicker'
 import { ReviewDialogBreadcrumbs } from './ReviewDialogBreadcrumbs'
 import { ReviewStrength } from './ReviewStrength'
@@ -150,14 +149,16 @@ const styles = stylex.create({
 			[breakpoints.tablet]: 'inline-flex',
 		},
 	},
+	// Unclipped, so the ratings' focus rings show; the editor below scrolls
+	// on its own.
 	body: {
 		gap: spacing.md,
-		overflow: 'hidden',
 		display: 'flex',
 		flexBasis: {
 			default: 0,
 			[breakpoints.tablet]: 'auto',
 		},
+		flexDirection: 'column',
 		flexGrow: {
 			default: 1,
 			[breakpoints.tablet]: 0,
@@ -168,27 +169,27 @@ const styles = stylex.create({
 		flexBasis: 0,
 		flexGrow: 1,
 	},
-	rail: {
-		borderRadius: radii.md,
-		alignSelf: 'flex-start',
-		backgroundColor: colorsSemantic.surfaceTransparent,
-		flexShrink: 0,
-	},
 	// The description and notes scroll together as one document; the textareas
-	// size to their content and never scroll on their own.
+	// size to their content and never scroll on their own. Sized by its content
+	// so the compact dialog fits it, it shrinks and scrolls once out of room.
 	editor: {
+		// Room for a focused field's ring, which this scroll area would
+		// otherwise clip: its 2px offset plus its 2px width.
+		margin: '-4px',
+		padding: '4px',
+
 		gap: spacing.sm,
 		display: 'flex',
-		flexBasis: 0,
+		flexBasis: 'auto',
 		flexDirection: 'column',
 		flexGrow: 1,
+		minBlockSize: 0,
 		scrollPaddingBlockEnd: scrollFadeVars.size,
 		scrollPaddingBlockStart: scrollFadeVars.size,
 		overflowX: 'hidden',
 		overflowY: 'auto',
 	},
 	description: {
-		borderRadius: radii.xs,
 		borderStyle: 'none',
 		flexShrink: 0,
 		fontSize: fontSizes.sm,
@@ -198,7 +199,6 @@ const styles = stylex.create({
 		overflowWrap: 'anywhere',
 	},
 	notes: {
-		borderRadius: radii.xs,
 		borderStyle: 'none',
 		flexGrow: 1,
 		flexShrink: 0,
@@ -257,6 +257,8 @@ export function ReviewDialog({
 	review,
 }: ReviewDialogProps) {
 	const [isExpanded, setIsExpanded] = useState(false)
+	// State, not a ref, so the rating keys register once the popup mounts.
+	const [popup, setPopup] = useState<HTMLDivElement | null>(null)
 
 	useEffect(() => {
 		if (!isOpen) setIsExpanded(false)
@@ -276,6 +278,7 @@ export function ReviewDialog({
 
 	return (
 		<DialogContent
+			ref={setPopup}
 			showCloseButton={false}
 			viewportXstyle={[
 				styles.viewport,
@@ -333,18 +336,17 @@ export function ReviewDialog({
 					isExpanded && styles.expandedBody,
 				)}
 			>
-				<aside {...stylex.props(styles.rail)}>
-					<RatingPicker
-						onSetRating={onSetRating}
-						rating={review.rating}
-					/>
-				</aside>
+				<RatingButtons
+					hotkeyTarget={popup}
+					onSetRating={onSetRating}
+					rating={review.rating}
+				/>
 				<div {...stylex.props(styles.editor, scrollFade.y)}>
 					<Textarea
 						aria-label='Review description'
 						placeholder='Description'
 						value={descriptionField.value}
-						onBlur={descriptionField.flush}
+						onCommit={descriptionField.flush}
 						onChange={descriptionField.onChange}
 						xstyle={styles.description}
 					/>
@@ -352,7 +354,7 @@ export function ReviewDialog({
 						aria-label='Review notes'
 						placeholder='Add notes…'
 						value={notesField.value}
-						onBlur={notesField.flush}
+						onCommit={notesField.flush}
 						onChange={notesField.onChange}
 						xstyle={styles.notes}
 					/>

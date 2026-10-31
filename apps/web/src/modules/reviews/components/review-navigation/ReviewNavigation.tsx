@@ -8,9 +8,11 @@ import {
 	SidebarCollapsibleTrigger,
 	SidebarItem,
 } from '~/components/sidebar'
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { usePersistedBoolean } from '~/hooks/usePersistedBoolean'
 import { useReviewQueueCounts } from '~/modules/reviews/hooks/useReviewQueueCounts'
 import { REVIEW_LINKS } from '~/modules/reviews/reviewLinks'
+import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 
 import { QueueCount } from './QueueCount'
 
@@ -43,16 +45,27 @@ export function ReviewNavigation() {
 				render={<nav aria-label='Review sections' />}
 				xstyle={styles.items}
 			>
-				{REVIEW_LINKS.map(({ icon, label, queueKey, to }) => (
-					<SidebarItem
-						key={to}
-						aria-label={queues[queueKey].countLabel}
-						icon={icon}
-						render={<Link to={to} />}
-					>
-						{label}
-						<QueueCount count={queues[queueKey].count} />
-					</SidebarItem>
+				{REVIEW_LINKS.map(({ icon, label, queueKey, to, hotkey }) => (
+					<Tooltip key={to}>
+						<TooltipTrigger
+							render={
+								<SidebarItem
+									aria-label={queues[queueKey].countLabel}
+									icon={icon}
+									render={<Link to={to} />}
+								>
+									{label}
+									<QueueCount
+										count={queues[queueKey].count}
+									/>
+								</SidebarItem>
+							}
+						/>
+						<TooltipContent side='right'>
+							{label}
+							<ShortcutKeys hotkey={hotkey} />
+						</TooltipContent>
+					</Tooltip>
 				))}
 			</SidebarCollapsibleContent>
 		</SidebarCollapsibleItem>

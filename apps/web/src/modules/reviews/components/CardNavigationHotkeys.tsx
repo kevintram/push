@@ -1,23 +1,21 @@
-import type { Hotkey } from '@tanstack/react-hotkeys'
+import type { AppHotkey } from '@tanstack/react-hotkeys'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { RefObject } from 'react'
-
-import { isInsideOverlay } from '~/utils/keyboard'
 
 type CardNavigationHotkeysProps = {
 	canGoNext: boolean
 	canGoPrevious: boolean
-	nextHotkey: Hotkey
+	nextHotkey: AppHotkey
 	onNext: () => void
 	onPrevious: () => void
-	previousHotkey: Hotkey
+	previousHotkey: AppHotkey
 	target?: RefObject<HTMLElement | null>
 }
 
 /**
  * Registers navigation only while its card surface is mounted. Navigation keys
- * keep their intrinsic behavior in editable fields and in any overlay open
- * above the card.
+ * keep their intrinsic behavior in editable fields, and do nothing behind a
+ * modal dialog.
  */
 export function CardNavigationHotkeys({
 	canGoNext,
@@ -32,27 +30,16 @@ export function CardNavigationHotkeys({
 		[
 			{
 				hotkey: previousHotkey,
-				// Dialogs, popovers, and menus sit above the card, so moving the
-				// card behind them would strand or discard what they're showing.
-				callback: event => {
-					if (!isInsideOverlay(event)) onPrevious()
-				},
+				callback: onPrevious,
 				options: { enabled: canGoPrevious },
 			},
 			{
 				hotkey: nextHotkey,
-				callback: event => {
-					if (!isInsideOverlay(event)) onNext()
-				},
+				callback: onNext,
 				options: { enabled: canGoNext },
 			},
 		],
-		{
-			preventDefault: false,
-			requireReset: true,
-			stopPropagation: false,
-			...(target === undefined ? {} : { target }),
-		},
+		{ target },
 	)
 
 	return null

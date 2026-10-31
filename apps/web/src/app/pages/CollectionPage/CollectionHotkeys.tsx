@@ -1,32 +1,18 @@
-import { type Hotkey, useHotkeys } from '@tanstack/react-hotkeys'
+import { type AppHotkey, useHotkeys } from '@tanstack/react-hotkeys'
 
-import { isInsideOverlay } from '~/utils/keyboard'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 
 import type { MoveDirection } from './collectionOrder'
-import { SELECTABLE_SELECTOR } from './useCollectionSelection'
 
 const MOVES = [
-	{ hotkey: 'Mod+ArrowUp', direction: 'up' },
-	{ hotkey: 'Mod+ArrowDown', direction: 'down' },
-	{ hotkey: 'Mod+Alt+ArrowUp', direction: 'top' },
-	{ hotkey: 'Mod+Alt+ArrowDown', direction: 'bottom' },
+	{ hotkey: appHotkeys.moveSelectionUp, direction: 'up' },
+	{ hotkey: appHotkeys.moveSelectionDown, direction: 'down' },
+	{ hotkey: appHotkeys.moveSelectionToTop, direction: 'top' },
+	{ hotkey: appHotkeys.moveSelectionToBottom, direction: 'bottom' },
 ] as const satisfies ReadonlyArray<{
-	hotkey: Hotkey
+	hotkey: AppHotkey
 	direction: MoveDirection
 }>
-
-/**
- * Whether a key reached the page or a selectable item, not another control
- * such as a text field.
- */
-function isOnSelectable(event: KeyboardEvent) {
-	const { target } = event
-	return (
-		!(target instanceof Element) ||
-		target === document.body ||
-		target.closest(SELECTABLE_SELECTOR) !== null
-	)
-}
 
 type CollectionHotkeysProps = {
 	hasSelection: boolean
@@ -42,12 +28,17 @@ type CollectionHotkeysProps = {
 	/** Opens the selected card, or renames the selected section. */
 	onOpen: () => void
 	onClear: () => void
+	/** Whether a card or section can be created now, not while one is. */
+	canCreate: boolean
+	/** Adds a card, or with `section` a section, to the selection's group. */
+	onCreate: (kind: 'card' | 'section') => void
 }
 
 /**
- * Keyboard control of the collection page's selection. The arrows and Mod+A
- * also start a selection; the other keys act only on one. Keys typed into a
- * field, or pressed inside a dialog or menu, keep their own meaning.
+ * Keyboard control of the collection page's selection, and the keys that add
+ * to the page. The arrows and Mod+A also start a selection; the move, open,
+ * and clear keys act only on one. Keys typed into a field keep their own
+ * meaning, as do a menu's own navigation keys.
  */
 export function CollectionHotkeys({
 	hasSelection,
@@ -57,69 +48,70 @@ export function CollectionHotkeys({
 	onMove,
 	onOpen,
 	onClear,
+	canCreate,
+	onCreate,
 }: CollectionHotkeysProps) {
-	// Each handler claims its key itself, so a key it ignores keeps its
-	// browser behavior, like arrow navigation in a menu.
-	const claim =
-		(
-			run: () => void,
-			when: (event: KeyboardEvent) => boolean = () => true,
-		) =>
-		(event: KeyboardEvent) => {
-			if (isInsideOverlay(event) || !when(event)) return
-			event.preventDefault()
-			run()
-		}
-
-	const withSelection = { enabled: hasSelection }
+	// On an empty page the arrows have nothing to select, so they keep their
+	// browser behavior.
+	const withItems = { enabled: hasItems }
+	const withSelection = { enabled: hasItems && hasSelection }
 
 	useHotkeys(
 		[
 			{
-				hotkey: 'ArrowUp',
-				callback: claim(() => onSelectAdjacent(-1, false)),
+				hotkey: appHotkeys.selectPrevious,
+				callback: () => onSelectAdjacent(-1, false),
+				options: withItems,
 			},
 			{
-				hotkey: 'ArrowDown',
-				callback: claim(() => onSelectAdjacent(1, false)),
+				hotkey: appHotkeys.selectNext,
+				callback: () => onSelectAdjacent(1, false),
+				options: withItems,
 			},
 			{
-				hotkey: 'Shift+ArrowUp',
-				callback: claim(() => onSelectAdjacent(-1, true)),
+				hotkey: appHotkeys.extendSelectionUp,
+				callback: () => onSelectAdjacent(-1, true),
+				options: withItems,
 			},
 			{
-				hotkey: 'Shift+ArrowDown',
-				callback: claim(() => onSelectAdjacent(1, true)),
+				hotkey: appHotkeys.extendSelectionDown,
+				callback: () => onSelectAdjacent(1, true),
+				options: withItems,
 			},
-			{ hotkey: 'Mod+A', callback: claim(onSelectAll) },
+			{
+				hotkey: appHotkeys.selectAll,
+				callback: onSelectAll,
+				options: withItems,
+			},
 			...MOVES.map(({ hotkey, direction }) => ({
 				hotkey,
-				callback: claim(() => onMove(direction)),
+				callback: () => onMove(direction),
 				options: withSelection,
 			})),
-			// Selectable items are buttons and links, which `ignoreInputs`
-			// leaves Enter to, so this hotkey filters with `isOnSelectable`
-			// instead: Enter on another focused control, like an "Add" button,
-			// keeps activating that control.
 			{
-				hotkey: 'Enter',
-				callback: claim(onOpen, isOnSelectable),
-				options: { ...withSelection, ignoreInputs: false },
-			},
-			{
-				hotkey: 'Escape',
-				callback: claim(onClear),
+				hotkey: appHotkeys.openSelection,
+				callback: onOpen,
 				options: withSelection,
 			},
+			{
+				hotkey: appHotkeys.clearSelection,
+				callback: onClear,
+				options: withSelection,
+			},
+			{
+				hotkey: appHotkeys.createCard,
+				callback: () => onCreate('card'),
+				options: { enabled: canCreate },
+			},
+			{
+				hotkey: appHotkeys.createSection,
+				callback: () => onCreate('section'),
+				options: { enabled: canCreate },
+			},
 		],
-		{
-			// On an empty page the arrows have nothing to select, so they keep
-			// their browser behavior.
-			enabled: hasItems,
-			ignoreInputs: true,
-			preventDefault: false,
-			stopPropagation: false,
-		},
+		// `Mod+A`, `Mod+Arrow`, and `Escape` fire in text fields by default,
+		// where they select text, move the caret, and cancel a rename.
+		{ ignoreInputs: true },
 	)
 
 	return null

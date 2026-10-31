@@ -1,6 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 export interface KbdProps extends Omit<
@@ -11,14 +10,16 @@ export interface KbdProps extends Omit<
 }
 
 const styles = stylex.create({
+	// Tinted from the surrounding text color, so a key reads the same on any
+	// surface: a tooltip, a highlighted menu row, or an inverse toolbar.
 	root: {
 		paddingInline: spacing.xs,
 
 		borderRadius: radii.xs,
 		alignItems: 'center',
-		backgroundColor: colorsSemantic.surfaceRaised,
+		backgroundColor: 'color-mix(in srgb, currentColor 12%, transparent)',
 		blockSize: '20px',
-		color: colorsSemantic.textSecondary,
+		color: 'color-mix(in srgb, currentColor 75%, transparent)',
 		columnGap: spacing.xs,
 		display: 'inline-flex',
 		fontFamily: 'inherit',

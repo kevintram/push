@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { type ReactNode, useId } from 'react'
+import { type ReactNode, useId, useState } from 'react'
 
 import { Dialog, DialogContent } from '~/components/ui'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
@@ -44,6 +44,8 @@ export function ReviewComposerDialog({
 	children,
 }: ReviewComposerDialogProps) {
 	const titleId = useId()
+	// State, not a ref, so the composer's keys register once the popup mounts.
+	const [popup, setPopup] = useState<HTMLDivElement | null>(null)
 
 	return (
 		<Dialog
@@ -54,6 +56,7 @@ export function ReviewComposerDialog({
 		>
 			<DialogContent
 				aria-labelledby={titleId}
+				ref={setPopup}
 				showCloseButton={false}
 				xstyle={styles.popup}
 			>
@@ -65,7 +68,10 @@ export function ReviewComposerDialog({
 					titleId={titleId}
 				/>
 				<div {...stylex.props(styles.body)}>
-					<ReviewComposer autoFocus='description' />
+					<ReviewComposer
+						autoFocus='description'
+						hotkeyTarget={popup}
+					/>
 				</div>
 				{children}
 			</DialogContent>

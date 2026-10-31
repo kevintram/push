@@ -184,6 +184,7 @@ const styles = stylex.create({
 		height: iconSizes.sm,
 		width: iconSizes.sm,
 	},
+	action: { color: colorsSemantic.textSecondary },
 	error: { color: colorsSemantic.textDanger },
 	info: { color: colorsSemantic.textToday },
 	loading: {
@@ -213,7 +214,11 @@ export function ToastItem({
 	index: number
 	toastItem: ToastObject<ToastData>
 }) {
-	const icon = toastItem.type ? ICONS[toastItem.type] : undefined
+	const statusIcon = toastItem.type ? ICONS[toastItem.type] : undefined
+	const actionIcon = toastItem.data?.icon
+	const icon = actionIcon
+		? { Icon: actionIcon, xstyle: styles.action }
+		: statusIcon
 	const hasTitle = Boolean(toastItem.title)
 	// A lone description takes the title's place beside the icon.
 	const description = (
@@ -233,7 +238,11 @@ export function ToastItem({
 					{icon && (
 						<icon.Icon
 							aria-hidden='true'
-							{...stylex.props(styles.icon, icon.xstyle)}
+							{...stylex.props(
+								styles.icon,
+								icon.xstyle,
+								actionIcon && toastItem.data?.iconXstyle,
+							)}
 						/>
 					)}
 					{hasTitle ? (

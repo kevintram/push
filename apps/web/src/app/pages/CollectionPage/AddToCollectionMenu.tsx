@@ -8,6 +8,8 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '~/components/ui'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { hotkeyItemProps } from '~/modules/shortcuts/hotkeyItemProps'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
@@ -82,8 +84,16 @@ export function AddToCollectionMenu({
 				</span>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align='start'>
-				<DropdownMenuItem onClick={onAddCard}>Card</DropdownMenuItem>
-				<DropdownMenuItem onClick={onAddSection}>
+				<DropdownMenuItem
+					onClick={onAddCard}
+					{...hotkeyItemProps(appHotkeys.createCard)}
+				>
+					Card
+				</DropdownMenuItem>
+				<DropdownMenuItem
+					onClick={onAddSection}
+					{...hotkeyItemProps(appHotkeys.createSection)}
+				>
 					Section
 				</DropdownMenuItem>
 			</DropdownMenuContent>

@@ -41,7 +41,7 @@ function wrapper({ children }: { children: ReactNode }) {
 }
 
 async function deleteCollection(removed: Pick<Collection, '_id' | 'parentId'>) {
-	convexMutation.mockResolvedValue(removed)
+	convexMutation.mockResolvedValue({ ...removed, title: 'Spanish' })
 	const { result } = renderHook(() => useDeleteCollection(), { wrapper })
 
 	await act(async () => {
@@ -54,10 +54,14 @@ async function deleteCollection(removed: Pick<Collection, '_id' | 'parentId'>) {
 
 describe('useDeleteCollection', () => {
 	it('falls back to the parent when the open collection is deleted', async () => {
+		const addToast = vi.spyOn(toast, 'add')
 		matchRoute.mockReturnValue({ collectionId })
 
 		await deleteCollection({ _id: collectionId, parentId })
 
+		expect(toastTitleText(addToast.mock.lastCall![0].title)).toBe(
+			'Deleted **Spanish**',
+		)
 		expect(matchRoute).toHaveBeenCalledWith({
 			to: '/collection/$collectionId',
 			params: { collectionId },

@@ -1,10 +1,13 @@
 import * as stylex from '@stylexjs/stylex'
-import { useId, useState } from 'react'
+import { useHotkey } from '@tanstack/react-hotkeys'
+import { useId, useLayoutEffect, useRef, useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
+import { wrapTab } from '../../utils/wrapTab'
 import { ReviewComposer } from '../ReviewComposer'
 import { useReviewComposerState } from '../reviewComposerContext'
 import { ReviewComposerDialog } from '../ReviewComposerDialog'
@@ -24,7 +27,7 @@ const styles = stylex.create({
 		blockSize: `min(540px, calc(100% - 2 * ${spacing.lg}))`,
 		display: 'flex',
 		flexDirection: 'column',
-		inlineSize: `min(540px, calc(100% - 2 * ${spacing.lg}))`,
+		inlineSize: `min(600px, calc(100% - 2 * ${spacing.lg}))`,
 
 		borderColor: colorsSemantic.borderSubtle,
 		borderRadius: radii.xl,
@@ -33,6 +36,8 @@ const styles = stylex.create({
 		backgroundColor: colorsSemantic.surfaceRaised,
 		boxShadow: `0 12px 32px ${colorsSemantic.shadowStrong}`,
 		color: colorsSemantic.textPrimary,
+		// Focusable only so a click on its frame keeps focus inside it.
+		outlineStyle: 'none',
 	},
 	minimized: {
 		borderColor: colorsSemantic.borderOnInverse,
@@ -65,6 +70,28 @@ export function ReviewComposerDock() {
 		useReviewComposerState()
 	const [isDiscardOpen, setIsDiscardOpen] = useState(false)
 	const titleId = useId()
+	const windowRef = useRef<HTMLElement>(null)
+	const titleButtonRef = useRef<HTMLButtonElement>(null)
+	const isMinimizing = useRef(false)
+
+	// The focused control unmounts as the window minimizes, so focus moves to
+	// the title button that restores it.
+	const minimize = () => {
+		isMinimizing.current = true
+		setDockState('minimized')
+	}
+
+	useLayoutEffect(() => {
+		if (!isMinimizing.current || dock.state !== 'minimized') return
+		isMinimizing.current = false
+		titleButtonRef.current?.focus()
+	})
+
+	// Escape fires in the composer's text fields too.
+	useHotkey(appHotkeys.minimizeComposer, minimize, {
+		enabled: dock.state === 'open' && !dock.isExpanded,
+		target: windowRef,
+	})
 
 	const close = () => setDockState('closed')
 	const requestClose = () => {
@@ -96,7 +123,7 @@ export function ReviewComposerDock() {
 			<ReviewComposerDialog
 				onCollapse={() => setExpanded(false)}
 				onClose={requestClose}
-				onMinimize={() => setDockState('minimized')}
+				onMinimize={minimize}
 			>
 				{discardDialog}
 			</ReviewComposerDialog>
@@ -108,24 +135,36 @@ export function ReviewComposerDock() {
 	return (
 		<section
 			aria-labelledby={titleId}
+			// Like Gmail's composer, Tab cycles in the open window rather than
+			// wandering into the card behind it.
+			onKeyDown={isMinimized ? undefined : wrapTab}
+			ref={windowRef}
+			// A click on the frame or blank space focuses the window rather
+			// than the page, so the composer's keys still reach it.
+			tabIndex={-1}
 			{...stylex.props(styles.window, isMinimized && styles.minimized)}
 		>
 			{isMinimized ? (
 				<ReviewComposerWindowHeader
 					onClose={requestClose}
 					onTitleClick={() => setDockState('open')}
+					titleButtonRef={titleButtonRef}
 					titleId={titleId}
 				/>
 			) : (
 				<>
 					<ReviewComposerWindowHeader
 						onClose={requestClose}
-						onMinimize={() => setDockState('minimized')}
+						onMinimize={minimize}
+						minimizeHotkey={appHotkeys.minimizeComposer}
 						onToggleExpanded={() => setExpanded(true)}
 						titleId={titleId}
 					/>
 					<div {...stylex.props(styles.body)}>
-						<ReviewComposer autoFocus='rating' />
+						<ReviewComposer
+							autoFocus='rating'
+							hotkeyTarget={windowRef}
+						/>
 					</div>
 				</>
 			)}

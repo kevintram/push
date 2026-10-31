@@ -1,6 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
 import type { Section } from '@convex/validators/sections'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -50,10 +50,85 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 	}
 })
 
-const card = (id: string) => ({ _id: id as Id<'cards'> }) as Card
-const section = { _id: 'A' as Id<'sections'> } as Section
+const card = (id: string) =>
+	({ _id: id as Id<'cards'>, primaryText: `Card ${id}` }) as Card
+const section = { _id: 'A' as Id<'sections'>, title: 'A section' } as Section
 
 describe('SelectionDialogs', () => {
+	it.each([
+		{
+			cards: [
+				{
+					...card('a'),
+					primaryText:
+						'A full card prompt that stays visible in the confirmation',
+				},
+			],
+			sections: [],
+			title: 'Delete “A full card prompt that stays visible in the confirmation”?',
+		},
+		{
+			cards: [{ ...card('a'), primaryText: '  ' }],
+			sections: [],
+			title: 'Delete “Untitled card”?',
+		},
+		{ cards: [], sections: [section], title: 'Delete “A section”?' },
+		{
+			cards: [],
+			sections: [{ ...section, title: '  ' }],
+			title: 'Delete “Untitled section”?',
+		},
+		{
+			cards: [card('a'), card('b')],
+			sections: [],
+			title: 'Delete 2 cards?',
+		},
+	])('names the delete dialog $title', ({ cards, sections, title }) => {
+		render(
+			<SelectionDialogs
+				collectionId={collections[0]!._id}
+				contents={{ cards, sections, coveredCards: cards }}
+				dialog='delete'
+				onDialogChange={vi.fn()}
+			/>,
+		)
+		expect(screen.getByRole('dialog', { name: title })).toBeInTheDocument()
+	})
+
+	it('counts cards inside selected sections once without showing their names', () => {
+		const child = card('child')
+		const loose = card('loose')
+		const contents = selectionContents(
+			{ unsectioned: [loose], sections: [{ section, cards: [child] }] },
+			new Set([section._id]),
+			new Set([child._id, loose._id]),
+		)
+		render(
+			<SelectionDialogs
+				collectionId={collections[0]!._id}
+				contents={contents}
+				dialog='delete'
+				onDialogChange={vi.fn()}
+			/>,
+		)
+		const dialog = screen.getByRole('dialog', {
+			name: 'Delete 1 section and 2 cards?',
+		})
+		expect(dialog).toHaveTextContent(
+			'This section, all 2 cards, and their reviews will be permanently deleted.',
+		)
+		expect(within(dialog).getByText('permanently').tagName).toBe('STRONG')
+		const warning = within(dialog).getByText("You can't undo this action.")
+		expect(warning.tagName).toBe('STRONG')
+		expect(warning.parentElement?.tagName).toBe('P')
+		expect(warning.parentElement?.previousElementSibling).toHaveTextContent(
+			'permanently deleted.',
+		)
+		expect(dialog).not.toHaveTextContent(section.title)
+		expect(dialog).not.toHaveTextContent(child.primaryText)
+		expect(dialog).not.toHaveTextContent(loose.primaryText)
+	})
+
 	it("names a move by the selection, counting a selected section's cards", async () => {
 		const user = userEvent.setup()
 		// u1 | A: a1 a2, with A and u1 selected.

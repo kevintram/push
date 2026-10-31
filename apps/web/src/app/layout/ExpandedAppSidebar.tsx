@@ -1,20 +1,19 @@
 import * as stylex from '@stylexjs/stylex'
-import { formatForDisplay } from '@tanstack/react-hotkeys'
 import { Link } from '@tanstack/react-router'
 import { PanelLeft, Settings } from 'lucide-react'
 import type { Ref } from 'react'
 
 import { SidebarItem } from '~/components/sidebar'
-import { Kbd, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui'
 import { CollectionsNavigation } from '~/modules/collections/components/collections-navigation/CollectionsNavigation'
 import { collectionsNavigationVars } from '~/modules/collections/components/collections-navigation/collectionsNavigation.stylex'
 import { HideModeButton } from '~/modules/reviews/components/HideModeButton'
 import { ReviewNavigation } from '~/modules/reviews/components/review-navigation/ReviewNavigation'
 import { SearchDialog } from '~/modules/search/components/SearchDialog'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { fontSizes, fontWeights, layout, spacing } from '~/styles/tokens.stylex'
-
-import { SIDEBAR_HOTKEY } from './sidebarHotkey'
 
 const styles = stylex.create({
 	// Matches the gap AppShell leaves around the page surface.
@@ -94,7 +93,7 @@ export function ExpandedAppSidebar({
 					/>
 					<TooltipContent side='bottom'>
 						Collapse sidebar
-						<Kbd>{formatForDisplay(SIDEBAR_HOTKEY)}</Kbd>
+						<ShortcutKeys hotkey={appHotkeys.toggleSidebar} />
 					</TooltipContent>
 				</Tooltip>
 				<Link to='/review' {...stylex.props(styles.brand)}>

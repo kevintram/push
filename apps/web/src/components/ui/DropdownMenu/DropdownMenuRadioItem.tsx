@@ -7,7 +7,9 @@ import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 // A mark inside the control rather than a glyph beside text, so it sits
 // outside the iconSizes scale.
-const RADIO_DOT_SIZE = '0.75rem' // 12px
+const RADIO_DOT_SIZE = '0.5rem' // 8px
+
+import { DropdownMenuItemTrailing } from './DropdownMenuItemTrailing'
 
 const styles = stylex.create({
 	item: {
@@ -39,6 +41,7 @@ const styles = stylex.create({
 		gap: spacing.sm,
 		alignItems: 'center',
 		display: 'flex',
+		flexGrow: 1,
 	},
 	content: {
 		alignItems: 'center',
@@ -66,17 +69,18 @@ const styles = stylex.create({
 
 export interface DropdownMenuRadioItemProps extends Omit<
 	React.ComponentProps<typeof Menu.RadioItem>,
-	'className' | 'style' | 'prefix' | 'suffix'
+	'className' | 'style' | 'prefix'
 > {
 	prefix?: React.ReactNode
-	suffix?: React.ReactNode
+	/** Content in the trailing column, aligned across the menu's rows. */
+	trailing?: React.ReactNode
 }
 
 export function DropdownMenuRadioItem({
 	children,
 	disabled,
 	prefix,
-	suffix,
+	trailing,
 	...props
 }: DropdownMenuRadioItemProps) {
 	return (
@@ -91,7 +95,11 @@ export function DropdownMenuRadioItem({
 			<div {...stylex.props(styles.innerContainer)}>
 				{prefix && <span {...stylex.props(styles.slot)}>{prefix}</span>}
 				<span {...stylex.props(styles.content)}>{children}</span>
-				{suffix && <span {...stylex.props(styles.slot)}>{suffix}</span>}
+				{trailing != null && (
+					<DropdownMenuItemTrailing>
+						{trailing}
+					</DropdownMenuItemTrailing>
+				)}
 			</div>
 		</Menu.RadioItem>
 	)

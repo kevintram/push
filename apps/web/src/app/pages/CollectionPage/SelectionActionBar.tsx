@@ -9,10 +9,17 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
 } from '~/components/ui'
 import { useConvertSectionsToCollections } from '~/modules/collections/api/sectionQueries'
+import { cardStatusStyles } from '~/modules/reviews/components/cardStatusStyles'
 import { useCardActions } from '~/modules/reviews/hooks/useCardActions'
-import { orange } from '~/styles/colors/colorsPrimitive.stylex'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { ariaKeyShortcuts } from '~/modules/shortcuts/ariaKeyShortcuts'
+import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
+import { hotkeyItemProps } from '~/modules/shortcuts/hotkeyItemProps'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import {
 	fontSizes,
@@ -22,6 +29,7 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
+import { SelectionActionHotkeys } from './SelectionActionHotkeys'
 import { countItems, type SelectionContents } from './selectionContents'
 import { type SelectionDialog, SelectionDialogs } from './SelectionDialogs'
 
@@ -75,10 +83,6 @@ const styles = stylex.create({
 		fontWeight: fontWeights.medium,
 		whiteSpace: 'nowrap',
 	},
-	flagOn: {
-		fill: orange.s500,
-		color: orange.s500,
-	},
 	// Ghost buttons recolored for the inverse surface.
 	action: {
 		backgroundColor: {
@@ -106,6 +110,8 @@ export function SelectionActionBar({
 	collectionId,
 	contents,
 }: SelectionActionBarProps) {
+	const [menuElement, setMenuElement] = useState<HTMLDivElement | null>(null)
+	const [isMoreOpen, setIsMoreOpen] = useState(false)
 	const [dialog, setDialog] = useState<SelectionDialog>(null)
 	const { toggleFlag, toggleRetire, toggleType } = useCardActions()
 	const convertSections = useConvertSectionsToCollections()
@@ -120,6 +126,15 @@ export function SelectionActionBar({
 
 	return (
 		<div {...stylex.props(styles.dock)}>
+			<SelectionActionHotkeys
+				menuElement={menuElement}
+				hasCards={cards.length > 0}
+				onToggleFlag={() => toggleFlag(cards)}
+				onToggleRetire={() => toggleRetire(cards)}
+				onToggleType={() => toggleType(cards)}
+				onMove={() => setDialog('move')}
+				onDelete={() => setDialog('delete')}
+			/>
 			<div
 				role='toolbar'
 				aria-label='Selection actions'
@@ -129,40 +144,103 @@ export function SelectionActionBar({
 					{countItems(contents)}
 				</span>
 				{cards.length > 0 ? (
-					<Button
-						variant='ghost'
-						size='small'
-						shape='round'
-						xstyle={styles.action}
-						onClick={() => toggleFlag(cards)}
-					>
-						<Flag
-							aria-hidden='true'
-							size={iconSizes.sm}
-							{...stylex.props(areAllFlagged && styles.flagOn)}
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<Button
+									variant='ghost'
+									size='small'
+									shape='round'
+									xstyle={styles.action}
+									onClick={() => toggleFlag(cards)}
+									aria-keyshortcuts={ariaKeyShortcuts(
+										appHotkeys.toggleSelectionFlag,
+									)}
+								>
+									<Flag
+										aria-hidden='true'
+										size={iconSizes.sm}
+										{...stylex.props(
+											areAllFlagged &&
+												cardStatusStyles.flagOn,
+										)}
+									/>
+									{areAllFlagged ? 'Unflag' : 'Flag'}
+									<ShortcutKeys
+										hotkey={appHotkeys.toggleSelectionFlag}
+										aria-hidden
+									/>
+								</Button>
+							}
 						/>
-						{areAllFlagged ? 'Unflag' : 'Flag'}
-					</Button>
+						<TooltipContent>
+							{areAllFlagged ? 'Unflag' : 'Flag'}
+							<ShortcutKeys
+								hotkey={appHotkeys.toggleSelectionFlag}
+							/>
+						</TooltipContent>
+					</Tooltip>
 				) : null}
-				<Button
-					variant='ghost'
-					size='small'
-					shape='round'
-					xstyle={styles.action}
-					onClick={() => setDialog('move')}
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button
+								variant='ghost'
+								size='small'
+								shape='round'
+								xstyle={styles.action}
+								onClick={() => setDialog('move')}
+								aria-keyshortcuts={ariaKeyShortcuts(
+									appHotkeys.moveSelection,
+								)}
+							>
+								Move
+								<ShortcutKeys
+									hotkey={appHotkeys.moveSelection}
+									aria-hidden
+								/>
+							</Button>
+						}
+					/>
+					<TooltipContent>
+						Move
+						<ShortcutKeys hotkey={appHotkeys.moveSelection} />
+					</TooltipContent>
+				</Tooltip>
+				<Tooltip>
+					<TooltipTrigger
+						render={
+							<Button
+								variant='ghost'
+								size='small'
+								shape='round'
+								xstyle={styles.action}
+								onClick={() => setDialog('delete')}
+								aria-keyshortcuts={ariaKeyShortcuts(
+									appHotkeys.deleteSelection,
+								)}
+							>
+								Delete
+								<ShortcutKeys
+									hotkey={appHotkeys.deleteSelection}
+									aria-hidden
+								/>
+							</Button>
+						}
+					/>
+					<TooltipContent>
+						Delete
+						<ShortcutKeys hotkey={appHotkeys.deleteSelection} />
+					</TooltipContent>
+				</Tooltip>
+				<DropdownMenu
+					open={isMoreOpen}
+					onOpenChange={open => {
+						// A selection dialog temporarily takes focus from More.
+						// Keep the menu available when the dialog is dismissed.
+						if (dialog === null) setIsMoreOpen(open)
+					}}
 				>
-					Move
-				</Button>
-				<Button
-					variant='ghost'
-					size='small'
-					shape='round'
-					xstyle={styles.action}
-					onClick={() => setDialog('delete')}
-				>
-					Delete
-				</Button>
-				<DropdownMenu>
 					<DropdownMenuTrigger
 						render={
 							<Button
@@ -177,28 +255,48 @@ export function SelectionActionBar({
 					>
 						<Ellipsis aria-hidden='true' size={iconSizes.sm} />
 					</DropdownMenuTrigger>
-					<DropdownMenuContent align='end' side='top'>
+					<DropdownMenuContent
+						ref={setMenuElement}
+						align='end'
+						side='top'
+					>
 						{cards.length > 0 ? (
 							<>
 								<DropdownMenuItem
+									closeOnClick={false}
 									icon={
 										<Archive
 											aria-hidden='true'
 											size={iconSizes.sm}
+											{...stylex.props(
+												areAllRetired &&
+													cardStatusStyles.retiredOn,
+											)}
 										/>
 									}
 									onClick={() => toggleRetire(cards)}
+									{...hotkeyItemProps(
+										appHotkeys.toggleSelectionRetire,
+									)}
 								>
 									{areAllRetired ? 'Unretire' : 'Retire'}
 								</DropdownMenuItem>
 								<DropdownMenuItem
+									closeOnClick={false}
 									icon={
 										<Zap
 											aria-hidden='true'
 											size={iconSizes.sm}
+											{...stylex.props(
+												areAllFlashcards &&
+													cardStatusStyles.flashcardOn,
+											)}
 										/>
 									}
 									onClick={() => toggleType(cards)}
+									{...hotkeyItemProps(
+										appHotkeys.toggleSelectionType,
+									)}
 								>
 									{areAllFlashcards
 										? `Remove as ${flashcards}`
@@ -208,6 +306,7 @@ export function SelectionActionBar({
 						) : null}
 						{sections.length > 0 ? (
 							<DropdownMenuItem
+								closeOnClick={false}
 								disabled={convertSections.isPending}
 								icon={
 									<FolderTree
