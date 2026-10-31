@@ -1,5 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { TooltipProvider } from '~/components/ui'
@@ -329,6 +330,46 @@ describe('CardDetail review composer', () => {
 
 		fireEvent.click(title)
 		expect(description()).toHaveValue('Keep me')
+	})
+
+	it('cycles Tab within the open dock', async () => {
+		const user = userEvent.setup()
+		render(detail('overview'))
+		const dock = openDock()
+		const minimizeButton = within(dock).getByRole('button', {
+			name: 'Minimize review composer',
+		})
+		// Create review is disabled without a draft, so Date is the last stop.
+		const dateButton = within(dock).getByRole('button', { name: /^Date / })
+
+		dateButton.focus()
+		await user.tab()
+		expect(minimizeButton).toHaveFocus()
+		await user.tab({ shift: true })
+		expect(dateButton).toHaveFocus()
+
+		// A click on the window's frame focuses the window itself.
+		dock.focus()
+		await user.tab({ shift: true })
+		expect(dateButton).toHaveFocus()
+	})
+
+	it('lets Tab leave the minimized dock', async () => {
+		const user = userEvent.setup()
+		render(detail('overview'))
+		openDock()
+		fireEvent.click(
+			screen.getByRole('button', { name: 'Minimize review composer' }),
+		)
+		const dock = screen.getByRole('region', { name: 'New review' })
+		within(dock)
+			.getByRole('button', { name: 'Close review composer' })
+			.focus()
+
+		await user.tab()
+		expect(dock).not.toContainElement(
+			document.activeElement as HTMLElement | null,
+		)
 	})
 
 	it('toggles between open and minimized from New review', () => {

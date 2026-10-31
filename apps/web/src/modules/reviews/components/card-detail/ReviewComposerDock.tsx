@@ -7,6 +7,7 @@ import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { radii, spacing } from '~/styles/tokens.stylex'
 
+import { wrapTab } from '../../utils/wrapTab'
 import { ReviewComposer } from '../ReviewComposer'
 import { useReviewComposerState } from '../reviewComposerContext'
 import { ReviewComposerDialog } from '../ReviewComposerDialog'
@@ -134,6 +135,9 @@ export function ReviewComposerDock() {
 	return (
 		<section
 			aria-labelledby={titleId}
+			// Like Gmail's composer, Tab cycles in the open window rather than
+			// wandering into the card behind it.
+			onKeyDown={isMinimized ? undefined : wrapTab}
 			ref={windowRef}
 			// A click on the frame or blank space focuses the window rather
 			// than the page, so the composer's keys still reach it.
