@@ -11,6 +11,7 @@ import { collectionQueries } from '~/modules/collections/api/collectionQueries'
 import { ReviewNavigationHotkeys } from '~/modules/reviews/components/review-navigation/ReviewNavigationHotkeys'
 import { useHideMode } from '~/modules/reviews/hide-mode/useHideMode'
 import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { ShortcutReferenceDialog } from '~/modules/shortcuts/components/ShortcutReferenceDialog'
 import { slate } from '~/styles/colors/colorsPrimitive.stylex'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { breakpoints, layout, radii } from '~/styles/tokens.stylex'
@@ -167,6 +168,7 @@ export function AppShell({ children }: AppShellProps) {
 			</nav>
 			<main {...stylex.props(styles.children)}>{children}</main>
 			<ReviewNavigationHotkeys />
+			<ShortcutReferenceDialog />
 		</div>
 	)
 }
