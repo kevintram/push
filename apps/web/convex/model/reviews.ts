@@ -4,7 +4,12 @@ import { DateTime } from 'luxon'
 import { assertIsoDate } from '../../shared/date'
 import { type Doc, type Id } from '../_generated/dataModel'
 import { type MutationCtx, type QueryCtx } from '../_generated/server'
-import type { Review, ReviewCreate, ReviewPatch } from '../validators/reviews'
+import type {
+	Review,
+	ReviewCreate,
+	ReviewCreated,
+	ReviewPatch,
+} from '../validators/reviews'
 import * as Cards from './cards'
 import { updateCardSrs } from './srs/replay'
 
@@ -89,7 +94,7 @@ export async function create(
 	ctx: MutationCtx,
 	userId: string,
 	fields: ReviewCreate,
-): Promise<Id<'reviews'>> {
+): Promise<ReviewCreated> {
 	const card = await Cards.requireUserOwns(ctx, userId, fields.cardId)
 
 	// A rating is the completion marker for a review, and every completion must
@@ -115,7 +120,11 @@ export async function create(
 		await updateCardSrs(ctx, card, date)
 	}
 
-	return reviewId
+	// Read back after scheduling, which fills in both.
+	return {
+		review: await get(ctx, userId, reviewId),
+		card: await Cards.get(ctx, userId, card._id),
+	}
 }
 
 export async function update(

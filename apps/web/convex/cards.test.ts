@@ -742,7 +742,9 @@ describe('cards', () => {
 		await asUserA.mutation(api.reviews.create, {
 			cardId: removedCardId,
 		})
-		const keptReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: keptReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			cardId: keptCardId,
 		})
 
@@ -1037,7 +1039,9 @@ describe('cards', () => {
 		await asUserA.mutation(api.reviews.create, {
 			cardId: childCardId,
 		})
-		const keptReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: keptReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			cardId: keptCardId,
 		})
 

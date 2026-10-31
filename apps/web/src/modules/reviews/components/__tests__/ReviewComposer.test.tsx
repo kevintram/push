@@ -9,11 +9,23 @@ import { beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest'
 import { TooltipProvider } from '~/components/ui'
 import { toast } from '~/components/ui/Toast'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
+import { toastTitleText } from '~/testing/toastTitleText'
 
 import { ReviewComposer } from '../ReviewComposer'
 import { ReviewComposerProvider } from '../ReviewComposerProvider'
 
 const { createReview } = vi.hoisted(() => ({ createReview: vi.fn() }))
+
+// How the server answers a rated review, which the toast describes.
+const created = {
+	review: {
+		_id: 'review-1',
+		rating: 'good',
+		stabilityBefore: 3,
+		stabilityAfter: 9,
+	},
+	card: { primaryText: 'Gracias', dueDate: '2026-11-08' },
+}
 
 vi.mock('@convex-dev/react-query', () => ({
 	convexQuery: vi.fn(),
@@ -48,7 +60,7 @@ function renderComposer(
 describe('ReviewComposer', () => {
 	beforeEach(() => {
 		createReview.mockReset()
-		createReview.mockResolvedValue('review-1')
+		createReview.mockResolvedValue(created)
 	})
 
 	it.each(['Review description', 'Review notes'])(
@@ -108,6 +120,41 @@ describe('ReviewComposer', () => {
 		await user.click(screen.getByRole('button', { name: 'Create review' }))
 
 		await waitFor(() => expect(description).toHaveValue(''))
+	})
+
+	it('names the rating and card in the toast', async () => {
+		const user = userEvent.setup()
+		const addToast = vi.spyOn(toast, 'add')
+		renderComposer()
+
+		fireEvent.change(
+			screen.getByRole('textbox', { name: 'Review description' }),
+			{ target: { value: 'A review' } },
+		)
+		await user.click(screen.getByRole('button', { name: 'Create review' }))
+
+		await waitFor(() => expect(addToast).toHaveBeenCalled())
+		const [{ title }] = addToast.mock.lastCall!
+		expect(toastTitleText(title)).toBe('Good on **Gracias**')
+	})
+
+	it('skips the toast for a review with neither a rating nor a date', async () => {
+		const user = userEvent.setup()
+		const addToast = vi.spyOn(toast, 'add')
+		createReview.mockResolvedValue({
+			review: { _id: 'review-1' },
+			card: { primaryText: 'Gracias' },
+		})
+		renderComposer()
+
+		const description = screen.getByRole('textbox', {
+			name: 'Review description',
+		})
+		fireEvent.change(description, { target: { value: 'A note' } })
+		await user.click(screen.getByRole('button', { name: 'Create review' }))
+
+		await waitFor(() => expect(description).toHaveValue(''))
+		expect(addToast).not.toHaveBeenCalled()
 	})
 
 	it('preserves the draft when creation fails', async () => {

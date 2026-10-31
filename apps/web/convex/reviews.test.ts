@@ -154,6 +154,25 @@ describe('reviews', () => {
 		}
 	})
 
+	it('returns a completed review and its card as scheduled', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await asUserA.mutation(api.cards.create, {
+			collectionId,
+		})
+
+		const { review, card } = await asUserA.mutation(api.reviews.create, {
+			date: '2024-01-01',
+			rating: 'good',
+			cardId,
+		})
+
+		expect(review.stabilityAfter).toBeDefined()
+		expect(card.stability).toBe(review.stabilityAfter)
+		expect(card.dueDate).toBe(review.dueDateAfter)
+	})
+
 	it('patches supplied fields and can clear a rating or date', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
@@ -161,7 +180,9 @@ describe('reviews', () => {
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 		})
-		const reviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: reviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2024-01-01',
 			description: 'Original',
 			rating: 'hard',
@@ -200,7 +221,9 @@ describe('reviews', () => {
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 		})
-		const reviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: reviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			cardId,
 		})
 
@@ -243,7 +266,9 @@ describe('reviews', () => {
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 		})
-		const reviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: reviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2026-08-01',
 			cardId,
 		})
@@ -293,7 +318,9 @@ describe('reviews', () => {
 			}),
 		).rejects.toThrow('requires an explicit date')
 
-		const reviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: reviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			cardId,
 		})
 		await expect(
@@ -327,7 +354,9 @@ describe('reviews', () => {
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 		})
-		const reviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: reviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2026-08-09',
 			rating: 'good',
 			cardId,
@@ -369,7 +398,9 @@ describe('reviews', () => {
 			}),
 		).rejects.toThrow('Invalid date-only value')
 
-		const reviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: reviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2026-08-01',
 			rating: 'good',
 			cardId,
@@ -409,7 +440,9 @@ describe('reviews', () => {
 		const tomorrow = DateTime.utc().plus({ days: 1 }).toISODate()!
 		const dayAfterTomorrow = DateTime.utc().plus({ days: 2 }).toISODate()!
 
-		const completedReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: completedReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: tomorrow,
 			rating: 'good',
 			cardId,
@@ -489,7 +522,9 @@ describe('reviews', () => {
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 		})
-		const reviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: reviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			cardId,
 		})
 
@@ -525,7 +560,9 @@ describe('reviews', () => {
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 		})
-		const reviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: reviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			cardId,
 		})
 		const missingReviewId = await t.run(async ctx => {
@@ -556,11 +593,15 @@ describe('reviews', () => {
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 		})
-		const removedId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: removedId },
+		} = await asUserA.mutation(api.reviews.create, {
 			description: 'Removed',
 			cardId,
 		})
-		const siblingId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: siblingId },
+		} = await asUserA.mutation(api.reviews.create, {
 			description: 'Kept',
 			cardId,
 		})
@@ -584,7 +625,9 @@ describe('reviews', () => {
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 		})
-		const reviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: reviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			cardId,
 		})
 		const missingReviewId = await t.run(async ctx => {
@@ -615,7 +658,9 @@ describe('reviews', () => {
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 		})
-		const reviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: reviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			cardId,
 		})
 
@@ -654,12 +699,16 @@ describe('reviews', () => {
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 		})
-		const firstReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: firstReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
 			rating: 'good',
 			cardId,
 		})
-		const secondReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: secondReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-10',
 			rating: 'good',
 			cardId,
@@ -700,12 +749,16 @@ describe('reviews', () => {
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 		})
-		const firstReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: firstReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
 			rating: 'good',
 			cardId,
 		})
-		const secondReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: secondReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-10',
 			rating: 'hard',
 			cardId,
@@ -802,12 +855,16 @@ describe('reviews', () => {
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 		})
-		const firstReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: firstReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
 			rating: 'good',
 			cardId,
 		})
-		const secondReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: secondReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-10',
 			rating: 'hard',
 			cardId,
@@ -863,7 +920,9 @@ describe('reviews', () => {
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 		})
-		const reviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: reviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
 			rating: 'good',
 			cardId,
@@ -887,12 +946,16 @@ describe('reviews', () => {
 		const cardId = await asUserA.mutation(api.cards.create, {
 			collectionId,
 		})
-		const firstReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: firstReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
 			rating: 'good',
 			cardId,
 		})
-		const lastReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: lastReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-10',
 			rating: 'easy',
 			cardId,
@@ -917,7 +980,9 @@ describe('reviews', () => {
 			rating: 'miss',
 			cardId,
 		})
-		const lastReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: lastReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
 			rating: 'good',
 			cardId,
@@ -936,7 +1001,9 @@ describe('reviews', () => {
 			collectionId,
 		})
 
-		const scheduledReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: scheduledReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			date: '2026-01-01',
 			cardId,
 		})

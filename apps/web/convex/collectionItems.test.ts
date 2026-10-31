@@ -71,7 +71,9 @@ describe('collectionItems', () => {
 		await asUserA.mutation(api.reviews.create, {
 			cardId: inRemovedSectionId,
 		})
-		const keptReviewId = await asUserA.mutation(api.reviews.create, {
+		const {
+			review: { _id: keptReviewId },
+		} = await asUserA.mutation(api.reviews.create, {
 			cardId: keptCardId,
 		})
 
