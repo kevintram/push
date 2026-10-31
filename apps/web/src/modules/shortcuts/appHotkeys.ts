@@ -84,11 +84,11 @@ export const appHotkeys = defineAppHotkeys({
 		meta: { name: 'Delete', group: 'Card' },
 	},
 	showOverview: {
-		hotkey: 'Alt+1',
+		hotkey: '1',
 		meta: { name: 'Show Overview', group: 'Card' },
 	},
 	showReviews: {
-		hotkey: 'Alt+2',
+		hotkey: '2',
 		meta: { name: 'Show Reviews', group: 'Card' },
 	},
 	toggleDetails: {

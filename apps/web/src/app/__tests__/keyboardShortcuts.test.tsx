@@ -150,17 +150,19 @@ describe('keyboard shortcuts', () => {
 
 	it('opens the rating menu with W, opening the composer too', async () => {
 		const user = userEvent.setup()
-		renderRoute(`/cards/${cardId}`)
+		const { router } = renderRoute(`/cards/${cardId}`)
 		await screen.findByDisplayValue(card.primaryText)
 
 		await user.keyboard('w')
 		await screen.findByRole('menu')
+		// 2 also shows the Reviews tab, but the open menu keeps it.
 		await user.keyboard('2')
 		const composer = screen.getByRole('region', { name: 'New review' })
 		expect(
 			within(composer).getByRole('button', { name: 'Hard' }),
 		).toBeInTheDocument()
 		expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+		expect(router.state.location.pathname).toBe(`/cards/${cardId}`)
 	})
 
 	it('keeps page shortcuts from acting behind a modal dialog', async () => {
@@ -226,18 +228,18 @@ describe('keyboard shortcuts', () => {
 		expect(mutation).toHaveBeenCalledTimes(calls)
 	})
 
-	it('switches card tabs with Alt+1 and Alt+2, and toggles details with D', async () => {
+	it('switches card tabs with 1 and 2, and toggles details with D', async () => {
 		const user = userEvent.setup()
 		const { router } = renderRoute(`/cards/${cardId}`)
 		await screen.findByDisplayValue(card.primaryText)
 
-		await user.keyboard('{Alt>}2{/Alt}')
+		await user.keyboard('2')
 		await waitFor(() =>
 			expect(router.state.location.pathname).toBe(
 				`/cards/${cardId}/reviews`,
 			),
 		)
-		await user.keyboard('{Alt>}1{/Alt}')
+		await user.keyboard('1')
 		await waitFor(() =>
 			expect(router.state.location.pathname).toBe(`/cards/${cardId}`),
 		)
