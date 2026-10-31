@@ -9,7 +9,6 @@ import {
 	Button,
 	Tabs,
 	TabsList,
-	TabsTrigger,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
@@ -19,6 +18,8 @@ import { useResizableWidth } from '~/hooks/useResizableWidth'
 import { useToday } from '~/hooks/useToday'
 import { cardQueries } from '~/modules/reviews/api/cardQueries'
 import { deriveCardSrsState } from '~/modules/reviews/utils/cardSrs'
+import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
+import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes, layout, spacing } from '~/styles/tokens.stylex'
 
@@ -26,9 +27,11 @@ import { CardActions } from '../CardActions'
 import type { ReviewComposerDockProps } from '../reviewComposerContext'
 import { ReviewComposerProvider } from '../ReviewComposerProvider'
 import { CardBreadcrumbs } from './CardBreadcrumbs'
+import { CardDetailHotkeys } from './CardDetailHotkeys'
 import { CardOverview } from './CardOverview'
 import { CardReviews } from './CardReviews'
 import { CardSidebar } from './CardSidebar'
+import { CardTabTrigger } from './CardTabTrigger'
 import { NewReviewButton } from './NewReviewButton'
 import { ReviewComposerDock } from './ReviewComposerDock'
 
@@ -173,7 +176,10 @@ export function CardDetail({
 		true,
 	)
 	const sidebarId = useId()
+	const overviewTabRef = useRef<HTMLElement>(null)
 	const reviewsTabRef = useRef<HTMLElement>(null)
+	const sidebarSlotRef = useRef<HTMLDivElement>(null)
+	const sidebarToggleRef = useRef<HTMLButtonElement>(null)
 
 	const { width: sidebarWidth, handleProps } = useResizableWidth({
 		storageKey: 'cardSidebarWidth',
@@ -209,6 +215,14 @@ export function CardDetail({
 			restoredDraft={restoredDraft}
 			onReviewUndone={onReviewUndone}
 		>
+			<CardDetailHotkeys
+				activeTab={activeTab}
+				tabRefs={{ overview: overviewTabRef, reviews: reviewsTabRef }}
+				isSidebarOpen={sidebarOpen}
+				onToggleSidebar={toggleSidebar}
+				sidebarRef={sidebarSlotRef}
+				sidebarToggleRef={sidebarToggleRef}
+			/>
 			<div {...stylex.props(styles.container)}>
 				<header {...stylex.props(styles.toolbar)}>
 					<div {...stylex.props(styles.breadcrumbs)}>
@@ -241,21 +255,20 @@ export function CardDetail({
 							aria-label='Card sections'
 							xstyle={styles.tabs}
 						>
-							<TabsTrigger
+							<CardTabTrigger
+								ref={overviewTabRef}
 								value='overview'
-								nativeButton={tabLinks ? false : undefined}
-								render={tabLinks?.overview}
-							>
-								Overview
-							</TabsTrigger>
-							<TabsTrigger
+								label='Overview'
+								hotkey={appHotkeys.showOverview}
+								link={tabLinks?.overview}
+							/>
+							<CardTabTrigger
 								ref={reviewsTabRef}
 								value='reviews'
-								nativeButton={tabLinks ? false : undefined}
-								render={tabLinks?.reviews}
-							>
-								Reviews
-							</TabsTrigger>
+								label='Reviews'
+								hotkey={appHotkeys.showReviews}
+								link={tabLinks?.reviews}
+							/>
 						</TabsList>
 					</Tabs>
 					<div {...stylex.props(styles.secondaryToolbarActions)}>
@@ -271,6 +284,7 @@ export function CardDetail({
 										}
 										aria-expanded={sidebarOpen}
 										aria-controls={sidebarId}
+										ref={sidebarToggleRef}
 										iconOnly
 										shape='round'
 										variant='secondary'
@@ -288,6 +302,9 @@ export function CardDetail({
 							/>
 							<TooltipContent>
 								{sidebarOpen ? 'Hide details' : 'Show details'}
+								<ShortcutKeys
+									hotkey={appHotkeys.toggleDetails}
+								/>
 							</TooltipContent>
 						</Tooltip>
 					</div>
@@ -299,6 +316,7 @@ export function CardDetail({
 						<CardReviews cardId={cardId} />
 					)}
 					<div
+						ref={sidebarSlotRef}
 						{...stylex.props(
 							styles.sidebarSlot,
 							sidebarOpen
