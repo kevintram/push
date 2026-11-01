@@ -116,7 +116,7 @@ export function ReviewComposer({
 	const formRef = useRef<HTMLFormElement>(null)
 	const keyTarget = hotkeyTarget ?? formRef
 	const descriptionRef = useRef<HTMLTextAreaElement>(null)
-	const ratingRef = useRef<HTMLElement>(null)
+	const ratingRef = useRef<Pick<HTMLElement, 'focus'>>(null)
 	const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
 	const {
 		clearFocusRequest,
