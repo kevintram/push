@@ -65,7 +65,9 @@ describe('keyboard shortcuts', () => {
 		const user = userEvent.setup()
 		const mutation = spyOnMutations()
 		const { router } = renderRoute('/review/new', { newCards: [card] })
-		await screen.findByDisplayValue(card.primaryText)
+		// The file's first render pays the route's cold start, which can pass
+		// the default 1s on CI.
+		await screen.findByDisplayValue(card.primaryText, {}, { timeout: 5000 })
 
 		// F alone flags the open card, but as the end of `G F` it only navigates.
 		await user.keyboard('gf')
