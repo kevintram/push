@@ -44,6 +44,56 @@ describe('RatingButtons', () => {
 		expect(onSetRating).toHaveBeenLastCalledWith(null)
 	})
 
+	it('steps to the next choice from the badge, wrapping from Todo to Miss', async () => {
+		const user = userEvent.setup()
+		const onSetRating = vi.fn()
+		const { rerender } = render(
+			<RatingButtons
+				hotkeyTarget={null}
+				onSetRating={onSetRating}
+				rating='easy'
+			/>,
+		)
+		const stepper = screen.getByRole('button', {
+			hidden: true,
+			name: 'Next rating',
+		})
+
+		await user.click(stepper)
+		expect(onSetRating).toHaveBeenLastCalledWith(null)
+
+		rerender(
+			<RatingButtons
+				hotkeyTarget={null}
+				onSetRating={onSetRating}
+				rating={undefined}
+			/>,
+		)
+		await user.click(stepper)
+		expect(onSetRating).toHaveBeenLastCalledWith('miss')
+	})
+
+	it('leaves the badge out of the tab order, and inert while disabled', async () => {
+		const user = userEvent.setup()
+		const onSetRating = vi.fn()
+		render(
+			<RatingButtons
+				disabled
+				hotkeyTarget={null}
+				onSetRating={onSetRating}
+				rating='good'
+			/>,
+		)
+
+		const stepper = screen.getByRole('button', {
+			hidden: true,
+			name: 'Next rating',
+		})
+		expect(stepper).toHaveAttribute('tabindex', '-1')
+		await user.click(stepper)
+		expect(onSetRating).not.toHaveBeenCalled()
+	})
+
 	it('picks a rating from the menu the tray collapses into', async () => {
 		const user = userEvent.setup()
 		const onSetRating = vi.fn()
