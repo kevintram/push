@@ -70,6 +70,35 @@ const styles = stylex.create({
 		inlineSize: TRAY_BLOCK_SIZE,
 		justifyContent: 'center',
 	},
+	// Fills the well like a segment fills the tray, and steps to the next
+	// choice on click.
+	stepper: {
+		padding: 0,
+
+		borderRadius: radii.full,
+		borderStyle: 'none',
+
+		alignItems: 'center',
+		blockSize: '32px',
+		display: 'flex',
+		inlineSize: '32px',
+		justifyContent: 'center',
+
+		backgroundColor: {
+			default: colorsSemantic.surfaceTransparent,
+			':hover:not(:disabled)': colorsSemantic.surfaceTransparentHover,
+		},
+		color: 'inherit',
+		cursor: {
+			default: 'pointer',
+			':disabled': 'not-allowed',
+		},
+		transitionDuration: {
+			default: '125ms',
+			'@media (prefers-reduced-motion: reduce)': '1ms',
+		},
+		transitionProperty: 'background-color',
+	},
 	badge: {
 		borderRadius: radii.full,
 		alignItems: 'center',
@@ -257,7 +286,8 @@ type RatingButtonsProps = {
 
 /**
  * The current rating as a badge in its own well, then every choice as a
- * segment of one tray, divided like tabs, with Todo last. Narrow, the
+ * segment of one tray, divided like tabs, with Todo last. Clicking the badge
+ * steps to the next choice, wrapping from Todo to Miss. Narrow, the
  * segments drop their keys, then their icons, and below that the whole tray
  * collapses into a menu. While focus is in `hotkeyTarget`, each choice's key
  * picks it.
@@ -275,6 +305,12 @@ export function RatingButtons({
 
 	const pick = (next: string) => {
 		if (next !== value) onSetRating(ratingFromChoice(next))
+	}
+
+	const step = () => {
+		const index = ratingChoices.findIndex(choice => choice.value === value)
+		const next = ratingChoices[(index + 1) % ratingChoices.length]
+		if (next) pick(next.value)
 	}
 
 	const checkedRef = useRef<HTMLElement>(null)
@@ -311,9 +347,21 @@ export function RatingButtons({
 			{...stylex.props(styles.root, disabled && styles.disabled, xstyle)}
 		>
 			<div {...stylex.props(styles.expanded)}>
-				{/* Repeats the checked segment at a glance; the group announces it. */}
+				{/* Repeats the checked segment, which the group announces. Its
+				button is a pointer shortcut: out of the tab order, and it
+				leaves focus where it was. */}
 				<div aria-hidden='true' {...stylex.props(styles.well)}>
-					{badge}
+					<button
+						aria-label='Next rating'
+						disabled={disabled}
+						onClick={step}
+						onMouseDown={event => event.preventDefault()}
+						tabIndex={-1}
+						type='button'
+						{...stylex.props(styles.stepper)}
+					>
+						{badge}
+					</button>
 				</div>
 				<RadioGroup
 					aria-label='Rating'
