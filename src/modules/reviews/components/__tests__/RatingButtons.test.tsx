@@ -44,6 +44,23 @@ describe('RatingButtons', () => {
 		expect(onSetRating).toHaveBeenLastCalledWith(null)
 	})
 
+	it('picks a rating from the menu the tray collapses into', async () => {
+		const user = userEvent.setup()
+		const onSetRating = vi.fn()
+		render(
+			<RatingButtons
+				hotkeyTarget={null}
+				onSetRating={onSetRating}
+				rating='good'
+			/>,
+		)
+
+		await user.click(screen.getByRole('button', { name: 'Good' }))
+		await user.click(screen.getByRole('menuitemradio', { name: 'Hard' }))
+		expect(onSetRating).toHaveBeenLastCalledWith('hard')
+		expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+	})
+
 	it('picks a rating with its key anywhere in its hotkey target, except while typing', async () => {
 		const user = userEvent.setup()
 		const onSetRating = vi.fn()
