@@ -17,10 +17,9 @@ export function App() {
 				<TooltipProvider>
 					<HideModeProvider>
 						<AuthedRouterProvider />
-						{/* Inside HideModeProvider so toasts can follow hide mode. */}
-						<Toaster />
 					</HideModeProvider>
 				</TooltipProvider>
+				<Toaster />
 				{showDevtools && <ReactQueryDevtools />}
 			</QueryClientProvider>
 		</AuthProvider>
