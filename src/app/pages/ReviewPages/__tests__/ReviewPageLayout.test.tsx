@@ -4,8 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ReviewPageLayout } from '../ReviewPageLayout'
 
-const { mockToastAdd, mockUseHideMode } = vi.hoisted(() => ({
-	mockToastAdd: vi.fn(),
+const { mockToastAdd, mockToastClose, mockUseHideMode } = vi.hoisted(() => ({
+	mockToastAdd: vi.fn(() => 'toast-id'),
+	mockToastClose: vi.fn(),
 	mockUseHideMode: vi.fn(),
 }))
 
@@ -19,12 +20,13 @@ vi.mock('~/modules/reviews/hide-mode/useHideMode', () => ({
 }))
 
 vi.mock('~/components/ui/Toast', () => ({
-	toast: { add: mockToastAdd },
+	toast: { add: mockToastAdd, close: mockToastClose },
 }))
 
 describe('ReviewPageLayout', () => {
 	beforeEach(() => {
-		mockToastAdd.mockReset()
+		mockToastAdd.mockClear()
+		mockToastClose.mockReset()
 		mockUseHideMode.mockReset()
 	})
 
@@ -49,11 +51,32 @@ describe('ReviewPageLayout', () => {
 		expect(setHideMode).toHaveBeenCalledWith('on')
 		expect(mockToastAdd).toHaveBeenCalledOnce()
 		expect(mockToastAdd).toHaveBeenCalledWith({
+			actionProps: {
+				children: 'Turn off',
+				onClick: expect.any(Function),
+			},
 			data: { icon: Copy },
 			description: 'Answers stay hidden until you reveal them',
 			title: 'Hide mode on',
 			type: 'info',
 		})
+	})
+
+	it('turns hide mode back off from the toast', () => {
+		const setHideMode = vi.fn()
+		mockUseHideMode.mockReturnValue({ hideMode: 'off', setHideMode })
+
+		render(<ReviewPageLayout />)
+		setHideMode.mockClear()
+
+		const [options] = mockToastAdd.mock.calls[0] as unknown as [
+			{ actionProps: { onClick: () => void } },
+		]
+		options.actionProps.onClick()
+
+		expect(mockToastClose).toHaveBeenCalledWith('toast-id')
+		expect(setHideMode).toHaveBeenCalledOnce()
+		expect(setHideMode).toHaveBeenCalledWith('off')
 	})
 
 	it('leaves hide mode alone when it is already on', () => {

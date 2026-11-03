@@ -45,7 +45,14 @@ export function ReviewPageLayout() {
 			hideModeAutomaticallyActivated.current = true
 			if (hideMode !== 'on') {
 				setHideMode('on')
-				toast.add({
+				const id = toast.add({
+					actionProps: {
+						children: 'Turn off',
+						onClick: () => {
+							toast.close(id)
+							setHideMode('off')
+						},
+					},
 					data: { icon: Copy },
 					description: 'Answers stay hidden until you reveal them',
 					title: 'Hide mode on',
