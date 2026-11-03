@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react'
 import { Copy } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ReviewPageLayout } from '../ReviewPageLayout'
 
-const { mockToastAdd, mockToastClose, mockUseHideMode } = vi.hoisted(() => ({
-	mockToastAdd: vi.fn(() => 'toast-id'),
-	mockToastClose: vi.fn(),
+const { mockToastAdd, mockUseHideMode } = vi.hoisted(() => ({
+	mockToastAdd: vi.fn(),
 	mockUseHideMode: vi.fn(),
 }))
 
@@ -20,13 +20,12 @@ vi.mock('~/modules/reviews/hide-mode/useHideMode', () => ({
 }))
 
 vi.mock('~/components/ui/Toast', () => ({
-	toast: { add: mockToastAdd, close: mockToastClose },
+	toast: { add: mockToastAdd },
 }))
 
 describe('ReviewPageLayout', () => {
 	beforeEach(() => {
-		mockToastAdd.mockClear()
-		mockToastClose.mockReset()
+		mockToastAdd.mockReset()
 		mockUseHideMode.mockReset()
 	})
 
@@ -43,41 +42,73 @@ describe('ReviewPageLayout', () => {
 
 	it('turns on hide mode and announces the change when entering review', () => {
 		const setHideMode = vi.fn()
-		mockUseHideMode.mockReturnValue({ hideMode: 'off', setHideMode })
+		const toggleHideMode = vi.fn()
+		mockUseHideMode.mockReturnValue({
+			hideMode: 'off',
+			setHideMode,
+			toggleHideMode,
+		})
 
 		render(<ReviewPageLayout />)
 
 		expect(setHideMode).toHaveBeenCalledOnce()
 		expect(setHideMode).toHaveBeenCalledWith('on')
 		expect(mockToastAdd).toHaveBeenCalledOnce()
-		expect(mockToastAdd).toHaveBeenCalledWith({
-			actionProps: {
-				children: 'Turn off',
-				onClick: expect.any(Function),
-			},
-			data: { icon: Copy },
-			description: 'Answers stay hidden until you reveal them',
-			title: 'Hide mode on',
-			type: 'info',
-		})
+		expect(mockToastAdd).toHaveBeenCalledWith(
+			expect.objectContaining({
+				actionProps: expect.objectContaining({
+					'aria-keyshortcuts': 'Shift+R',
+					onClick: toggleHideMode,
+				}),
+				data: { icon: Copy },
+				type: 'info',
+			}),
+		)
 	})
 
-	it('turns hide mode back off from the toast', () => {
-		const setHideMode = vi.fn()
-		mockUseHideMode.mockReturnValue({ hideMode: 'off', setHideMode })
+	it.each([
+		[
+			'on',
+			'Hide mode on',
+			'Answers stay hidden until you reveal them',
+			'Turn off',
+		],
+		['off', 'Hide mode off', 'Answers and notes are showing', 'Turn on'],
+	] as const)(
+		'words the toast for hide mode %s',
+		(hideMode, title, description, action) => {
+			mockUseHideMode.mockReturnValue({
+				hideMode: 'off',
+				setHideMode: vi.fn(),
+				toggleHideMode: vi.fn(),
+			})
+			render(<ReviewPageLayout />)
+			const [options] = mockToastAdd.mock.calls[0] as unknown as [
+				{
+					actionProps: { children: ReactNode }
+					description: ReactNode
+					title: ReactNode
+				},
+			]
 
-		render(<ReviewPageLayout />)
-		setHideMode.mockClear()
+			// The toast renders after the mode has changed.
+			mockUseHideMode.mockReturnValue({ hideMode })
+			render(
+				<>
+					<p>{options.title}</p>
+					<p>{options.description}</p>
+					<button type='button'>
+						{options.actionProps.children}
+					</button>
+				</>,
+			)
 
-		const [options] = mockToastAdd.mock.calls[0] as unknown as [
-			{ actionProps: { onClick: () => void } },
-		]
-		options.actionProps.onClick()
-
-		expect(mockToastClose).toHaveBeenCalledWith('toast-id')
-		expect(setHideMode).toHaveBeenCalledOnce()
-		expect(setHideMode).toHaveBeenCalledWith('off')
-	})
+			expect(screen.getByText(title)).toBeInTheDocument()
+			expect(screen.getByText(description)).toBeInTheDocument()
+			expect(screen.getByRole('button')).toHaveTextContent(action)
+			expect(screen.getByRole('button')).toHaveTextContent('R')
+		},
+	)
 
 	it('leaves hide mode alone when it is already on', () => {
 		const setHideMode = vi.fn()
