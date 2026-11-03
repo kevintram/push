@@ -186,7 +186,7 @@ export function ReviewComposer({
 						aria-label='Review notes'
 						disabled={isPending}
 						onChange={event => setNotes(event.target.value)}
-						placeholder='Add notes…'
+						placeholder='Notes'
 						value={draft.notes}
 						xstyle={styles.notes}
 					/>
