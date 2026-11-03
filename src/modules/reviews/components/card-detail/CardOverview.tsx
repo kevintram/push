@@ -166,7 +166,7 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 					>
 						<Textarea
 							aria-label='Card notes'
-							placeholder='Add notes...'
+							placeholder='Notes'
 							onCommit={notes.flush}
 							onChange={notes.onChange}
 							value={notes.value}

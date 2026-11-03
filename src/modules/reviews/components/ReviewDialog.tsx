@@ -352,7 +352,7 @@ export function ReviewDialog({
 					/>
 					<Textarea
 						aria-label='Review notes'
-						placeholder='Add notes…'
+						placeholder='Notes'
 						value={notesField.value}
 						onCommit={notesField.flush}
 						onChange={notesField.onChange}
