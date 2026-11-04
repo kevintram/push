@@ -18,10 +18,10 @@ import {
 import { useAutoSave } from '~/hooks/useAutoSave'
 import {
 	collectionQueries,
-	useDeleteCollection,
 	useUpdateCollection,
 } from '~/modules/collections/api/collectionQueries'
 import { CollectionPathBreadcrumbs } from '~/modules/collections/components/CollectionPathBreadcrumbs'
+import { DeleteCollectionDialog } from '~/modules/collections/components/DeleteCollectionDialog'
 import { MoveCollectionDialog } from '~/modules/collections/components/MoveCollectionDialog'
 import { SubcollectionsPanel } from '~/modules/collections/components/subcollections/SubcollectionsPanel'
 import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcrumbLabel'
@@ -125,12 +125,8 @@ export function CollectionPage() {
 	)
 
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
-	const deleteCollection = useDeleteCollection()
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const updateCollection = useUpdateCollection()
-
-	const handleDeleteCollection = useCallback(() => {
-		deleteCollection.mutate({ collectionId })
-	}, [deleteCollection, collectionId])
 
 	const saveTitle = useCallback(
 		(title: string) => {
@@ -196,8 +192,7 @@ export function CollectionPage() {
 								Move
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								disabled={deleteCollection.isPending}
-								onClick={handleDeleteCollection}
+								onClick={() => setIsDeleteDialogOpen(true)}
 							>
 								Delete
 							</DropdownMenuItem>
@@ -213,6 +208,13 @@ export function CollectionPage() {
 					collectionId={collection._id}
 				/>
 			) : null}
+
+			<DeleteCollectionDialog
+				collectionId={collectionId}
+				onOpenChange={setIsDeleteDialogOpen}
+				open={isDeleteDialogOpen}
+				title={title.value}
+			/>
 
 			<div {...stylex.props(styles.body)}>
 				<div {...stylex.props(styles.scrollArea, scrollFade.y)}>
