@@ -36,7 +36,7 @@ describe('ReviewStrength', () => {
 		const user = userEvent.setup()
 		renderStrength(review())
 
-		expect(screen.getByText('(+8d)')).toBeInTheDocument()
+		expect(screen.getByText('+8d')).toBeInTheDocument()
 		await user.hover(screen.getByText('4mo'))
 
 		expect(await screen.findByRole('tooltip')).toHaveTextContent(
@@ -47,7 +47,7 @@ describe('ReviewStrength', () => {
 	it('shows a lost strength with a minus sign', () => {
 		renderStrength(review({ stabilityAfter: 240, stabilityBefore: 248 }))
 
-		expect(screen.getByText('(−8d)')).toBeInTheDocument()
+		expect(screen.getByText('−8d')).toBeInTheDocument()
 	})
 
 	it('marks the first review of a card as new', () => {
@@ -56,7 +56,7 @@ describe('ReviewStrength', () => {
 		)
 
 		expect(screen.getByText('4d')).toBeInTheDocument()
-		expect(screen.getByText('(new)')).toBeInTheDocument()
+		expect(screen.getByText('new')).toBeInTheDocument()
 	})
 
 	it('shows a dash without a strength', () => {
