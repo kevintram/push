@@ -1,31 +1,22 @@
 import { Toast as ToastPrimitive } from '@base-ui/react/toast'
 import * as stylex from '@stylexjs/stylex'
 
-import { breakpoints, spacing } from '~/styles/tokens.stylex'
+import { spacing } from '~/styles/tokens.stylex'
 
 import { ToastList } from './ToastList'
 import { toast } from './toastManager'
 
 const styles = stylex.create({
+	// Top center: the page toolbars keep their middle empty, while the
+	// bottom corners hold the selection bar and the review composer.
 	viewport: {
-		marginInline: {
-			default: 'auto',
-			[breakpoints.tablet]: 0,
-		},
-		insetInlineEnd: spacing.lg,
-		insetInlineStart: {
-			default: spacing.lg,
-			[breakpoints.tablet]: 'auto',
-		},
+		insetInline: spacing.lg,
+		marginInline: 'auto',
 
 		position: 'fixed',
-		bottom: spacing.lg,
+		top: spacing.lg,
 
 		maxWidth: '24rem',
-		width: {
-			default: 'auto',
-			[breakpoints.tablet]: '100%',
-		},
 
 		outline: 'none',
 		pointerEvents: 'none',
