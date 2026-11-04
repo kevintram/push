@@ -5,6 +5,7 @@ import { useParams } from '@tanstack/react-router'
 import { Ellipsis } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
+import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	BreadcrumbItem,
 	BreadcrumbPage,
@@ -125,11 +126,15 @@ export function CollectionPage() {
 	)
 
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const deleteCollection = useDeleteCollection()
 	const updateCollection = useUpdateCollection()
 
 	const handleDeleteCollection = useCallback(() => {
-		deleteCollection.mutate({ collectionId })
+		deleteCollection.mutate(
+			{ collectionId },
+			{ onSuccess: () => setIsDeleteDialogOpen(false) },
+		)
 	}, [deleteCollection, collectionId])
 
 	const saveTitle = useCallback(
@@ -196,8 +201,7 @@ export function CollectionPage() {
 								Move
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								disabled={deleteCollection.isPending}
-								onClick={handleDeleteCollection}
+								onClick={() => setIsDeleteDialogOpen(true)}
 							>
 								Delete
 							</DropdownMenuItem>
@@ -213,6 +217,20 @@ export function CollectionPage() {
 					collectionId={collection._id}
 				/>
 			) : null}
+
+			<DeleteConfirmationDialog
+				description={
+					<>
+						This collection and all its cards will be{' '}
+						<strong>permanently</strong> deleted.
+					</>
+				}
+				isPending={deleteCollection.isPending}
+				onConfirm={handleDeleteCollection}
+				onOpenChange={setIsDeleteDialogOpen}
+				open={isDeleteDialogOpen}
+				title={`Delete “${title.value.trim() || 'Untitled collection'}”?`}
+			/>
 
 			<div {...stylex.props(styles.body)}>
 				<div {...stylex.props(styles.scrollArea, scrollFade.y)}>
