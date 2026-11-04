@@ -2,12 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 import { ArrowUpRight } from 'lucide-react'
 
-import {
-	Button,
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from '~/components/ui'
+import { Button } from '~/components/ui'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import type { Card } from '../types/review.types'
@@ -42,34 +37,23 @@ export function CardActions({
 	return (
 		<div {...stylex.props(styles.container)}>
 			{showGoToCard ? (
-				<Tooltip>
-					<TooltipTrigger
-						render={
-							<Button
-								aria-label='Go to card'
-								iconOnly
-								shape='round'
-								variant='ghost'
-								size='small'
-								nativeButton={false}
-								render={
-									<Link
-										to='/cards/$cardId'
-										params={{ cardId: card._id }}
-										// Base UI marks non-native buttons as `button`.
-										role='link'
-									/>
-								}
-							>
-								<ArrowUpRight
-									aria-hidden='true'
-									size={iconSizes.sm}
-								/>
-							</Button>
-						}
-					/>
-					<TooltipContent>Go to card</TooltipContent>
-				</Tooltip>
+				<Button
+					shape='round'
+					variant='secondary'
+					size='small'
+					nativeButton={false}
+					render={
+						<Link
+							to='/cards/$cardId'
+							params={{ cardId: card._id }}
+							// Base UI marks non-native buttons as `button`.
+							role='link'
+						/>
+					}
+				>
+					Go to card
+					<ArrowUpRight aria-hidden='true' size={iconSizes.sm} />
+				</Button>
 			) : null}
 			<CardStatusToggles card={card} />
 			<CardMenu card={card} hasHotkeys={hasHotkeys} />
