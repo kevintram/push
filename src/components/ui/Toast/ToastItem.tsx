@@ -33,7 +33,7 @@ const styles = stylex.create({
 		'--toast-height-current':
 			'var(--toast-frontmost-height, var(--toast-height))',
 		'--toast-offset-current':
-			'calc((var(--toast-offset-y) * -1) + (var(--toast-index) * var(--toast-gap) * -1) + var(--toast-swipe-movement-y))',
+			'calc(var(--toast-offset-y) + (var(--toast-index) * var(--toast-gap)) + var(--toast-swipe-movement-y))',
 		'--toast-peek': spacing.md,
 		'--toast-scale': 'calc(max(0, 1 - (var(--toast-index) * 0.1)))',
 		'--toast-shrink': 'calc(1 - var(--toast-scale))',
@@ -51,7 +51,7 @@ const styles = stylex.create({
 
 		insetInlineEnd: 0,
 		position: 'absolute',
-		bottom: 0,
+		top: 0,
 
 		// Base UI measures by setting `height: auto` and reading it back. The
 		// global `allow-keywords` would animate that read from the stacked height.
@@ -76,9 +76,9 @@ const styles = stylex.create({
 		pointerEvents: 'auto',
 		transform: {
 			default:
-				'translateX(var(--toast-swipe-movement-x)) translateY(calc(var(--toast-swipe-movement-y) - (var(--toast-index) * var(--toast-peek)) - (var(--toast-shrink) * var(--toast-height-current)))) scale(var(--toast-scale))',
+				'translateX(var(--toast-swipe-movement-x)) translateY(calc(var(--toast-swipe-movement-y) + (var(--toast-index) * var(--toast-peek)) + (var(--toast-shrink) * var(--toast-height-current)))) scale(var(--toast-scale))',
 			':is([data-ending-style]:not([data-limited]):not([data-swipe-direction]))':
-				'translateY(150%)',
+				'translateY(-150%)',
 			':is([data-ending-style][data-swipe-direction="down"])':
 				'translateY(calc(var(--toast-swipe-movement-y) + 150%))',
 			':is([data-ending-style][data-swipe-direction="left"])':
@@ -89,7 +89,7 @@ const styles = stylex.create({
 				'translateY(calc(var(--toast-swipe-movement-y) - 150%))',
 			':is([data-expanded])':
 				'translateX(var(--toast-swipe-movement-x)) translateY(var(--toast-offset-current))',
-			':is([data-starting-style])': 'translateY(150%)',
+			':is([data-starting-style])': 'translateY(-150%)',
 		},
 		transitionDuration: {
 			default: '500ms, 500ms, 150ms',
@@ -230,6 +230,7 @@ export function ToastItem({
 
 	return (
 		<ToastPrimitive.Root
+			swipeDirection='up'
 			toast={toastItem}
 			{...stylex.props(styles.root, styles.stackOrder(index))}
 		>
