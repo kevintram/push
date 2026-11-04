@@ -21,7 +21,6 @@ const styles = stylex.create({
 		overflowWrap: 'anywhere',
 	},
 	description: {
-		gap: '20px',
 		display: 'flex',
 		flexDirection: 'column',
 		lineHeight: '20px',
