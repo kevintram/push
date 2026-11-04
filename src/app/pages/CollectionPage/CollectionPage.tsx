@@ -5,7 +5,6 @@ import { useParams } from '@tanstack/react-router'
 import { Ellipsis } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
-import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	BreadcrumbItem,
 	BreadcrumbPage,
@@ -19,10 +18,10 @@ import {
 import { useAutoSave } from '~/hooks/useAutoSave'
 import {
 	collectionQueries,
-	useDeleteCollection,
 	useUpdateCollection,
 } from '~/modules/collections/api/collectionQueries'
 import { CollectionPathBreadcrumbs } from '~/modules/collections/components/CollectionPathBreadcrumbs'
+import { DeleteCollectionDialog } from '~/modules/collections/components/DeleteCollectionDialog'
 import { MoveCollectionDialog } from '~/modules/collections/components/MoveCollectionDialog'
 import { SubcollectionsPanel } from '~/modules/collections/components/subcollections/SubcollectionsPanel'
 import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcrumbLabel'
@@ -127,15 +126,7 @@ export function CollectionPage() {
 
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-	const deleteCollection = useDeleteCollection()
 	const updateCollection = useUpdateCollection()
-
-	const handleDeleteCollection = useCallback(() => {
-		deleteCollection.mutate(
-			{ collectionId },
-			{ onSuccess: () => setIsDeleteDialogOpen(false) },
-		)
-	}, [deleteCollection, collectionId])
 
 	const saveTitle = useCallback(
 		(title: string) => {
@@ -218,18 +209,11 @@ export function CollectionPage() {
 				/>
 			) : null}
 
-			<DeleteConfirmationDialog
-				description={
-					<>
-						This collection and all its cards will be{' '}
-						<strong>permanently</strong> deleted.
-					</>
-				}
-				isPending={deleteCollection.isPending}
-				onConfirm={handleDeleteCollection}
+			<DeleteCollectionDialog
+				collectionId={collectionId}
 				onOpenChange={setIsDeleteDialogOpen}
 				open={isDeleteDialogOpen}
-				title={`Delete “${title.value.trim() || 'Untitled collection'}”?`}
+				title={title.value}
 			/>
 
 			<div {...stylex.props(styles.body)}>

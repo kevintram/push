@@ -3,7 +3,6 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { Folder } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
-import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	Button,
 	ContextMenu,
@@ -19,11 +18,9 @@ import { textFade } from '~/styles/textFade'
 import { textFadeVars } from '~/styles/textFade.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
-import {
-	useCreateCollection,
-	useDeleteCollection,
-} from '../../api/collectionQueries'
+import { useCreateCollection } from '../../api/collectionQueries'
 import type { Collection } from '../../types/collection.types'
+import { DeleteCollectionDialog } from '../DeleteCollectionDialog'
 import { MoveCollectionDialog } from '../MoveCollectionDialog'
 
 const styles = stylex.create({
@@ -51,7 +48,6 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const createCollection = useCreateCollection()
-	const deleteCollection = useDeleteCollection()
 	const navigate = useNavigate()
 
 	const handleCreateSubcollection = useCallback(() => {
@@ -66,13 +62,6 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 			},
 		)
 	}, [createCollection, navigate, _id])
-
-	const handleDeleteCollection = useCallback(() => {
-		deleteCollection.mutate(
-			{ collectionId: _id },
-			{ onSuccess: () => setIsDeleteDialogOpen(false) },
-		)
-	}, [deleteCollection, _id])
 
 	return (
 		<>
@@ -137,18 +126,11 @@ export function SubcollectionItem({ collection }: SubcollectionItemProps) {
 				/>
 			) : null}
 
-			<DeleteConfirmationDialog
-				description={
-					<>
-						This collection and all its cards will be{' '}
-						<strong>permanently</strong> deleted.
-					</>
-				}
-				isPending={deleteCollection.isPending}
-				onConfirm={handleDeleteCollection}
+			<DeleteCollectionDialog
+				collectionId={_id}
 				onOpenChange={setIsDeleteDialogOpen}
 				open={isDeleteDialogOpen}
-				title={`Delete “${title.trim() || 'Untitled collection'}”?`}
+				title={title}
 			/>
 		</>
 	)

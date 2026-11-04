@@ -5,7 +5,6 @@ import * as stylex from '@stylexjs/stylex'
 import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router'
 import { type MouseEvent, useCallback, useState } from 'react'
 
-import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	TreeItem,
 	TreeItemChildren,
@@ -16,11 +15,9 @@ import {
 } from '~/components/ui'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 
-import {
-	useCreateCollection,
-	useDeleteCollection,
-} from '../../api/collectionQueries'
+import { useCreateCollection } from '../../api/collectionQueries'
 import { type CollectionWithChildren } from '../../types/collection.types'
+import { DeleteCollectionDialog } from '../DeleteCollectionDialog'
 import { MoveCollectionDialog } from '../MoveCollectionDialog'
 import { CollectionContextMenu } from './CollectionContextMenu'
 
@@ -89,7 +86,6 @@ export function CollectionTreeItem({
 	const navigate = useNavigate()
 	const matchRoute = useMatchRoute()
 	const createCollection = useCreateCollection()
-	const deleteCollection = useDeleteCollection()
 	const hasChildren = childCollections.length > 0
 
 	const {
@@ -168,13 +164,6 @@ export function CollectionTreeItem({
 		[isActive, hasChildren, onCollectionOpenChange, openCollectionIds, _id],
 	)
 
-	const handleDeleteCollection = useCallback(() => {
-		deleteCollection.mutate(
-			{ collectionId: _id },
-			{ onSuccess: () => setIsDeleteDialogOpen(false) },
-		)
-	}, [_id, deleteCollection])
-
 	return (
 		<TreeItem
 			collapsible={hasChildren}
@@ -232,18 +221,11 @@ export function CollectionTreeItem({
 				/>
 			) : null}
 
-			<DeleteConfirmationDialog
-				description={
-					<>
-						This collection and all its cards will be{' '}
-						<strong>permanently</strong> deleted.
-					</>
-				}
-				isPending={deleteCollection.isPending}
-				onConfirm={handleDeleteCollection}
+			<DeleteCollectionDialog
+				collectionId={_id}
 				onOpenChange={setIsDeleteDialogOpen}
 				open={isDeleteDialogOpen}
-				title={`Delete “${title.trim() || 'Untitled collection'}”?`}
+				title={title}
 			/>
 		</TreeItem>
 	)
