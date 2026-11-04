@@ -29,7 +29,7 @@ describe('CardPropertiesPanel', () => {
 		).toBeInTheDocument()
 		expect(screen.getByText('in 2d')).toBeInTheDocument()
 		expect(screen.getByText('10d')).toBeInTheDocument()
-		expect(screen.queryByText('(new)')).not.toBeInTheDocument()
+		expect(screen.queryByText('new')).not.toBeInTheDocument()
 		// The row label names the value, so no hidden label repeats it.
 		expect(screen.getAllByText(/Strength/)).toHaveLength(1)
 		expect(screen.queryByText('Recall')).not.toBeInTheDocument()

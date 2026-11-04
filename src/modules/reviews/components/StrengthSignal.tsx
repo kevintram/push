@@ -127,7 +127,7 @@ export function StrengthSignal({
 									changeXstyle,
 								)}
 							>
-								({formatStrengthDelta(delta)})
+								{formatStrengthDelta(delta)}
 							</span>
 						)}
 					</span>
