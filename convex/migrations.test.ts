@@ -1,5 +1,5 @@
 import { convexTest } from 'convex-test'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { compareRanked, type Ranked } from '../shared/ordering'
 import { internal } from './_generated/api'
@@ -75,6 +75,115 @@ describe('migrations.backfillRanks', () => {
 					cards.filter(card => card.sectionId === ids.sections[0]),
 				).map(card => card._id),
 			).toEqual(ids.first)
+		})
+	})
+})
+
+describe('migrations.replayAllCardSrs', () => {
+	afterEach(() => {
+		vi.useRealTimers()
+		vi.restoreAllMocks()
+	})
+
+	// Due dates are ts-fsrs at 90% retention; at 85% they would be
+	// 2024-01-05 and 2024-01-25.
+	it('reschedules every card under the current retention, across pages', async () => {
+		vi.useFakeTimers()
+		vi.spyOn(console, 'log').mockImplementation(() => {})
+		const consoleError = vi
+			.spyOn(console, 'error')
+			.mockImplementation(() => {})
+		const t = convexTest(schema, modules)
+		const ids = await t.run(async ctx => {
+			const collectionId = await ctx.db.insert('collections', {
+				title: 'Collection',
+				description: '',
+				ownerId,
+				path: [],
+				searchText: 'Collection',
+			})
+			// Derived fields left over from an older retention target.
+			const insertCard = (primaryText: string) =>
+				ctx.db.insert('cards', {
+					collectionId,
+					ownerId,
+					type: 'practice',
+					primaryText,
+					secondaryText: '',
+					notes: '',
+					state: 'REVIEW',
+					step: undefined,
+					dueDate: '2030-01-01',
+					searchText: primaryText,
+				})
+			const insertReview = (
+				cardId: Id<'cards'>,
+				date: string,
+				rating?: 'good' | 'hard',
+			) =>
+				ctx.db.insert('reviews', {
+					ownerId,
+					cardId,
+					...(rating && { rating, dueDateAfter: '2030-01-01' }),
+					date,
+					description: '',
+					notes: '',
+				})
+
+			// More than one page of reviewed cards.
+			const reviewed: Array<Id<'cards'>> = []
+			for (let index = 0; index < 12; index++) {
+				const cardId = await insertCard(`reviewed ${index}`)
+				await insertReview(cardId, '2024-01-01', 'good')
+				await insertReview(cardId, '2024-01-05', 'hard')
+				// A scheduled review that has not been completed yet.
+				await insertReview(cardId, '2024-02-01')
+				reviewed.push(cardId)
+			}
+			const broken = await insertCard('broken')
+			await insertReview(broken, 'not-a-date', 'good')
+			return {
+				reviewed,
+				broken,
+				unreviewed: await insertCard('unreviewed'),
+			}
+		})
+
+		await t.mutation(internal.migrations.replayAllCardSrs, {})
+		await t.finishAllScheduledFunctions(vi.runAllTimers)
+
+		await t.run(async ctx => {
+			for (const cardId of ids.reviewed) {
+				const card = await ctx.db.get('cards', cardId)
+				expect(card).toMatchObject({
+					dueDate: '2024-01-16',
+					state: 'REVIEW',
+					lastReview: { date: '2024-01-05', rating: 'hard' },
+				})
+				const reviews = await ctx.db
+					.query('reviews')
+					.withIndex('by_cardId_date', q => q.eq('cardId', cardId))
+					.collect()
+				expect(reviews.map(review => review.dueDateAfter)).toEqual([
+					'2024-01-03',
+					'2024-01-16',
+					undefined,
+				])
+			}
+
+			// A card that cannot replay is logged and left untouched.
+			expect(await ctx.db.get('cards', ids.broken)).toMatchObject({
+				dueDate: '2030-01-01',
+			})
+			expect(consoleError).toHaveBeenCalledWith(
+				expect.stringContaining(ids.broken),
+				expect.any(Error),
+			)
+
+			// A card without completed reviews is unscheduled.
+			const unreviewed = await ctx.db.get('cards', ids.unreviewed)
+			expect(unreviewed?.state).toBe('LEARNING')
+			expect(unreviewed?.dueDate).toBeUndefined()
 		})
 	})
 })
