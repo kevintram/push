@@ -42,7 +42,7 @@ export interface ReplayResult {
 	cardState: CardSrsState
 }
 
-const REQUEST_RETENTION = 0.85
+const REQUEST_RETENTION = 0.9
 const fsrsScheduler = fsrs.fsrs({
 	request_retention: REQUEST_RETENTION,
 	// The app stores completion and due dates as calendar dates, without an

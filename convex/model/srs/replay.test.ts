@@ -219,23 +219,23 @@ describe('SRS replay', () => {
 			})),
 		).toEqual([
 			{
-				dueDateAfter: '2026-05-25',
+				dueDateAfter: '2026-05-23',
 				stateAfter: 'REVIEW',
 				stepAfter: undefined,
 			},
 			{
-				dueDateAfter: '2026-06-18',
+				dueDateAfter: '2026-06-07',
 				stateAfter: 'REVIEW',
 				stepAfter: undefined,
 			},
 			{
-				dueDateAfter: '2026-08-26',
+				dueDateAfter: '2026-07-24',
 				stateAfter: 'REVIEW',
 				stepAfter: undefined,
 			},
 		])
 		expect(result.cardState).toMatchObject({
-			dueDate: '2026-08-26',
+			dueDate: '2026-07-24',
 			state: 'REVIEW',
 			step: undefined,
 		})
@@ -252,12 +252,12 @@ describe('SRS replay', () => {
 		const lapse = result.reviewPatches.at(-1)!.patch
 
 		expect(lapse).toMatchObject({
-			dueDateAfter: '2024-01-26',
+			dueDateAfter: '2024-01-24',
 			stateAfter: 'REVIEW',
 			stepAfter: undefined,
 		})
 		expect(result.cardState).toMatchObject({
-			dueDate: '2024-01-26',
+			dueDate: '2024-01-24',
 			state: 'REVIEW',
 			step: undefined,
 		})
