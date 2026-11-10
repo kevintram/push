@@ -675,7 +675,7 @@ describe('reviews', () => {
 
 		expect(review).toMatchObject({
 			difficultyAfter: expect.any(Number),
-			dueDateAfter: '2026-01-14',
+			dueDateAfter: '2026-01-12',
 			dueDateBefore: '2026-01-10',
 			stateAfter: 'REVIEW',
 			stateBefore: 'LEARNING',

@@ -4,6 +4,51 @@ import { internal } from './_generated/api'
 import { internalMutation } from './_generated/server'
 import * as Cards from './model/cards'
 import * as Sections from './model/sections'
+import { updateCardSrs } from './model/srs/replay'
+
+/**
+ * Replays every card's full review history under the current scheduler
+ * parameters, rewriting each review's derived SRS fields and the card's due
+ * date. Run on the dev deployment after changing `REQUEST_RETENTION`:
+ *
+ *   npx convex run migrations:replayAllCardSrs
+ *
+ * Each page logs its cursor; pass it back to resume a run that stopped.
+ */
+export const replayAllCardSrs = internalMutation({
+	args: {
+		cursor: v.optional(v.string()),
+	},
+	returns: v.null(),
+	handler: async (ctx, args) => {
+		const page = await ctx.db
+			.query('cards')
+			.paginate({ cursor: args.cursor ?? null, numItems: 10 })
+
+		for (const card of page.page) {
+			try {
+				// The empty string sorts before every isoDate, so this replays
+				// the whole history from an empty card.
+				await updateCardSrs(ctx, card, '')
+			} catch (error) {
+				// Replay throws before writing, so a bad card is left as it was.
+				console.error(
+					`replayAllCardSrs skipped card ${card._id}`,
+					error,
+				)
+			}
+		}
+
+		console.log(`replayAllCardSrs next cursor: ${page.continueCursor}`)
+		if (!page.isDone) {
+			await ctx.scheduler.runAfter(
+				0,
+				internal.migrations.replayAllCardSrs,
+				{ cursor: page.continueCursor },
+			)
+		}
+	},
+})
 
 /**
  * Ranks every section and card created before ordering existed, keeping each

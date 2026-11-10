@@ -27,7 +27,7 @@
 				"difficultyAfter": 5.112170705601056,
 				"stateAfter": "REVIEW",
 				"stepAfter": null,
-				"dueDateAfter": "2024-01-03"
+				"dueDateAfter": "2024-01-02"
 			}
 		],
 		"cardState": {
@@ -46,7 +46,7 @@
 				"difficultyAfter": 2.118103970459016,
 				"stateAfter": "REVIEW",
 				"stepAfter": null,
-				"dueDateAfter": "2024-01-05"
+				"dueDateAfter": "2024-01-03"
 			}
 		],
 		"cardState": {
@@ -65,7 +65,7 @@
 				"difficultyAfter": 1.0,
 				"stateAfter": "REVIEW",
 				"stepAfter": null,
-				"dueDateAfter": "2024-01-17"
+				"dueDateAfter": "2024-01-09"
 			}
 		],
 		"cardState": {
@@ -88,21 +88,21 @@
 				"difficultyAfter": 2.118103970459016,
 				"stateAfter": "REVIEW",
 				"stepAfter": null,
-				"dueDateAfter": "2024-01-05"
+				"dueDateAfter": "2024-01-03"
 			},
 			{
 				"stabilityAfter": 7.31530074407728,
 				"difficultyAfter": 2.111214235785395,
 				"stateAfter": "REVIEW",
 				"stepAfter": null,
-				"dueDateAfter": "2024-01-16"
+				"dueDateAfter": "2024-01-09"
 			},
 			{
 				"stabilityAfter": 23.18895613421823,
 				"difficultyAfter": 2.1043313908464483,
 				"stateAfter": "REVIEW",
 				"stepAfter": null,
-				"dueDateAfter": "2024-02-19"
+				"dueDateAfter": "2024-01-29"
 			}
 		],
 		"cardState": {
@@ -127,35 +127,35 @@
 				"difficultyAfter": 1.0,
 				"stateAfter": "REVIEW",
 				"stepAfter": null,
-				"dueDateAfter": "2024-01-17"
+				"dueDateAfter": "2024-01-09"
 			},
 			{
 				"stabilityAfter": 44.09694244251397,
 				"difficultyAfter": 1.0,
 				"stateAfter": "REVIEW",
 				"stepAfter": null,
-				"dueDateAfter": "2024-04-04"
+				"dueDateAfter": "2024-02-24"
 			},
 			{
 				"stabilityAfter": 2.6860876943188265,
 				"difficultyAfter": 7.0269895692968385,
 				"stateAfter": "REVIEW",
 				"stepAfter": null,
-				"dueDateAfter": "2024-01-26"
+				"dueDateAfter": "2024-01-24"
 			},
 			{
 				"stabilityAfter": 4.922361739979824,
 				"difficultyAfter": 7.0151909490243805,
 				"stateAfter": "REVIEW",
 				"stepAfter": null,
-				"dueDateAfter": "2024-01-31"
+				"dueDateAfter": "2024-01-27"
 			},
 			{
 				"stabilityAfter": 39.01763388388797,
 				"difficultyAfter": 6.003035225586943,
 				"stateAfter": "REVIEW",
 				"stepAfter": null,
-				"dueDateAfter": "2024-04-24"
+				"dueDateAfter": "2024-03-20"
 			}
 		],
 		"cardState": {
