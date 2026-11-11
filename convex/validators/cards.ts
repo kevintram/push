@@ -19,9 +19,8 @@ export const cardBase = v.object({
 	// until `migrations.backfillRanks` ranks them.
 	rank: v.optional(v.string()),
 	ownerId: v.string(),
-	type: v.union(v.literal('practice'), v.literal('flashcard')),
-	primaryText: v.string(),
-	secondaryText: v.string(),
+	prompt: v.string(),
+	answer: v.string(),
 	notes: v.string(),
 	flaggedAt: v.optional(v.number()), // epoch ms; absent when unflagged
 	retiredAt: v.optional(v.number()), // epoch ms; absent when active
@@ -38,9 +37,22 @@ export const cardBase = v.object({
 			id: v.id('reviews'),
 		}),
 	),
-	// Derived from `primaryText`, `secondaryText`, and `notes`. Server-owned:
+	// Derived from `prompt`, `answer`, and `notes`. Server-owned:
 	// never settable by a client, always recomputed alongside its sources.
 	searchText: v.string(),
+})
+
+// What the `cards` table stores while `migrations.flashcardsOnly` runs: a card
+// written before every card became a flashcard has `type`, `primaryText`, and
+// `secondaryText` instead of `prompt` and `answer`. `Cards.toCard` reads either
+// shape as a `Card`.
+// TODO(1): once the migration has run on every deployment, store `cardBase`.
+export const cardDocument = cardBase.omit('prompt', 'answer').extend({
+	prompt: v.optional(v.string()),
+	answer: v.optional(v.string()),
+	type: v.optional(v.union(v.literal('practice'), v.literal('flashcard'))),
+	primaryText: v.optional(v.string()),
+	secondaryText: v.optional(v.string()),
 })
 
 export const cardRead = cardBase.extend({
@@ -100,7 +112,6 @@ export const cardPatch = cardBase
 // The part of `cardPatch` that applies to many cards at once: the toggles and
 // moving to another collection, but not each card's own text.
 export const cardBatchPatch = cardPatch.pick(
-	'type',
 	'flaggedAt',
 	'retiredAt',
 	'collectionId',
@@ -127,8 +138,8 @@ export const cardPlacement = v.object({
 
 export const cardSearchResult = v.object({
 	_id: v.id('cards'),
-	primaryText: v.string(),
-	secondaryText: v.string(),
+	prompt: v.string(),
+	answer: v.string(),
 	notes: v.string(),
 	pathTitles: v.array(v.string()), // the titles of the card's collection path
 })

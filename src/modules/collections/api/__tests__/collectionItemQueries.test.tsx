@@ -45,7 +45,7 @@ const section = {
 const card = {
 	_id: 'card-1' as Id<'cards'>,
 	collectionId,
-	primaryText: 'Ribosome',
+	prompt: 'Ribosome',
 } as Card
 
 async function move(sections: Array<Section>, cards: Array<Card>) {

@@ -32,18 +32,17 @@ async function seedCard(
 	t: Harness,
 	collectionId: Id<'collections'>,
 	ownerId: string,
-	fields: { dueDate?: string; primaryText: string; retiredAt?: number },
+	fields: { dueDate?: string; prompt: string; retiredAt?: number },
 ): Promise<Id<'cards'>> {
 	return await t.run(
 		async ctx =>
 			await ctx.db.insert('cards', {
 				notes: '',
 				ownerId,
-				secondaryText: '',
-				searchText: fields.primaryText,
+				answer: '',
+				searchText: fields.prompt,
 				state: 'LEARNING',
 				collectionId,
-				type: 'flashcard',
 				...fields,
 			}),
 	)
@@ -78,7 +77,7 @@ async function listEntries(
 	})
 }
 
-/** The entries as `date` / `primaryText` pairs, for order-sensitive asserts. */
+/** The entries as `date` / `prompt` pairs, for order-sensitive asserts. */
 async function list(
 	t: Harness,
 	userId: string,
@@ -87,7 +86,7 @@ async function list(
 ): Promise<Array<string>> {
 	const entries = await listEntries(t, userId, dueDate, srsScheduled)
 
-	return entries.map(entry => `${entry.date} ${entry.card.primaryText}`)
+	return entries.map(entry => `${entry.date} ${entry.card.prompt}`)
 }
 
 describe('due.list', () => {
@@ -104,17 +103,17 @@ describe('due.list', () => {
 		const collectionId = await seedCollection(t, userAIdentity.subject)
 		await seedCard(t, collectionId, userAIdentity.subject, {
 			dueDate: '2026-08-10',
-			primaryText: 'Due today',
+			prompt: 'Due today',
 		})
 		const scheduledCardId = await seedCard(
 			t,
 			collectionId,
 			userAIdentity.subject,
-			{ primaryText: 'Scheduled today' },
+			{ prompt: 'Scheduled today' },
 		)
 		await seedCard(t, collectionId, userAIdentity.subject, {
 			dueDate: '2026-08-11',
-			primaryText: 'Due tomorrow',
+			prompt: 'Due tomorrow',
 		})
 		await seedReview(t, scheduledCardId, userAIdentity.subject, {
 			date: '2026-08-10',
@@ -133,13 +132,13 @@ describe('due.list', () => {
 		const collectionId = await seedCollection(t, userAIdentity.subject)
 		await seedCard(t, collectionId, userAIdentity.subject, {
 			dueDate: '2026-08-08',
-			primaryText: 'Overdue card',
+			prompt: 'Overdue card',
 		})
 		const overdueCardId = await seedCard(
 			t,
 			collectionId,
 			userAIdentity.subject,
-			{ primaryText: 'Overdue review' },
+			{ prompt: 'Overdue review' },
 		)
 		await seedReview(t, overdueCardId, userAIdentity.subject, {
 			date: '2026-08-08',
@@ -156,7 +155,7 @@ describe('due.list', () => {
 		// No `dueDate`, so the card is only reachable through its reviews — the
 		// path where an async dedupe check would push it twice.
 		const cardId = await seedCard(t, collectionId, userAIdentity.subject, {
-			primaryText: 'Busy card',
+			prompt: 'Busy card',
 		})
 		await seedReview(t, cardId, userAIdentity.subject, {
 			date: '2026-08-10',
@@ -175,14 +174,14 @@ describe('due.list', () => {
 		const collectionId = await seedCollection(t, userAIdentity.subject)
 		await seedCard(t, collectionId, userAIdentity.subject, {
 			dueDate: '2026-08-10',
-			primaryText: 'Due today',
+			prompt: 'Due today',
 		})
 		const ratedCardId = await seedCard(
 			t,
 			collectionId,
 			userAIdentity.subject,
 			{
-				primaryText: 'Already reviewed',
+				prompt: 'Already reviewed',
 			},
 		)
 		await seedReview(t, ratedCardId, userAIdentity.subject, {
@@ -200,7 +199,7 @@ describe('due.list', () => {
 		const collectionId = await seedCollection(t, userBIdentity.subject)
 		const cardId = await seedCard(t, collectionId, userBIdentity.subject, {
 			dueDate: '2026-08-10',
-			primaryText: "User B's card",
+			prompt: "User B's card",
 		})
 		await seedReview(t, cardId, userBIdentity.subject, {
 			date: '2026-08-10',
@@ -247,7 +246,7 @@ describe('due.list', () => {
 				userAIdentity.subject,
 				{
 					dueDate: '2026-08-10',
-					primaryText: 'Due today',
+					prompt: 'Due today',
 				},
 			)
 			await seedReview(t, cardId, userAIdentity.subject, {
@@ -272,7 +271,7 @@ describe('due.list', () => {
 			const collectionId = await seedCollection(t, userAIdentity.subject)
 			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-10',
-				primaryText: 'Due today',
+				prompt: 'Due today',
 			})
 
 			const [entry] = await listEntries(
@@ -295,7 +294,7 @@ describe('due.list', () => {
 				userAIdentity.subject,
 				{
 					dueDate: '2026-09-01',
-					primaryText: 'Hand-scheduled',
+					prompt: 'Hand-scheduled',
 				},
 			)
 			await seedReview(t, cardId, userAIdentity.subject, {
@@ -321,7 +320,7 @@ describe('due.list', () => {
 				userAIdentity.subject,
 				{
 					dueDate: '2026-08-10',
-					primaryText: 'Due today',
+					prompt: 'Due today',
 				},
 			)
 			await seedReview(t, cardId, userAIdentity.subject, {
@@ -348,7 +347,7 @@ describe('due.list', () => {
 			for (const dueDate of ['2026-08-09', '2026-08-10', '2026-08-12']) {
 				await seedCard(t, collectionId, userAIdentity.subject, {
 					dueDate,
-					primaryText: `Due ${dueDate}`,
+					prompt: `Due ${dueDate}`,
 				})
 			}
 
@@ -365,7 +364,7 @@ describe('due.list', () => {
 			const collectionId = await seedCollection(t, userAIdentity.subject)
 			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-10',
-				primaryText: 'Due today',
+				prompt: 'Due today',
 			})
 
 			await expect(
@@ -383,7 +382,7 @@ describe('due.list', () => {
 			for (const dueDate of ['2026-08-09', '2026-08-10', '2026-08-12']) {
 				await seedCard(t, collectionId, userAIdentity.subject, {
 					dueDate,
-					primaryText: `Due ${dueDate}`,
+					prompt: `Due ${dueDate}`,
 				})
 			}
 
@@ -402,7 +401,7 @@ describe('due.list', () => {
 			for (const dueDate of ['2026-08-09', '2026-08-10', '2026-08-12']) {
 				await seedCard(t, collectionId, userAIdentity.subject, {
 					dueDate,
-					primaryText: `Due ${dueDate}`,
+					prompt: `Due ${dueDate}`,
 				})
 			}
 
@@ -416,16 +415,16 @@ describe('due.list', () => {
 			const collectionId = await seedCollection(t, userAIdentity.subject)
 			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-10',
-				primaryText: 'Dated card',
+				prompt: 'Dated card',
 			})
 			await seedCard(t, collectionId, userAIdentity.subject, {
-				primaryText: 'Undated card',
+				prompt: 'Undated card',
 			})
 			const scheduledCardId = await seedCard(
 				t,
 				collectionId,
 				userAIdentity.subject,
-				{ primaryText: 'Dated review' },
+				{ prompt: 'Dated review' },
 			)
 			await seedReview(t, scheduledCardId, userAIdentity.subject, {
 				date: '2026-08-11',
@@ -447,7 +446,7 @@ describe('due.list', () => {
 				userAIdentity.subject,
 				{
 					dueDate: '2026-08-10',
-					primaryText: 'Recurring',
+					prompt: 'Recurring',
 				},
 			)
 			await seedReview(t, cardId, userAIdentity.subject, {
@@ -478,15 +477,15 @@ describe('due.list', () => {
 			// Seeded out of date order to prove the sort does the work.
 			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-12',
-				primaryText: 'Later',
+				prompt: 'Later',
 			})
 			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-10',
-				primaryText: 'First',
+				prompt: 'First',
 			})
 			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-10',
-				primaryText: 'Second',
+				prompt: 'Second',
 			})
 
 			await expect(
@@ -510,7 +509,7 @@ describe('due.list', () => {
 				t,
 				collectionId,
 				userAIdentity.subject,
-				{ primaryText: 'Never reviewed' },
+				{ prompt: 'Never reviewed' },
 			)
 
 			const entries = await listEntries(t, userAIdentity.subject, null)
@@ -530,7 +529,7 @@ describe('due.list', () => {
 				t,
 				collectionId,
 				userAIdentity.subject,
-				{ dueDate: '2026-08-10', primaryText: 'Undated review' },
+				{ dueDate: '2026-08-10', prompt: 'Undated review' },
 			)
 			await seedReview(t, cardId, userAIdentity.subject, {})
 
@@ -548,13 +547,13 @@ describe('due.list', () => {
 			const collectionId = await seedCollection(t, userAIdentity.subject)
 			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-10',
-				primaryText: 'Dated card',
+				prompt: 'Dated card',
 			})
 			const undatedId = await seedCard(
 				t,
 				collectionId,
 				userAIdentity.subject,
-				{ primaryText: 'Undated card' },
+				{ prompt: 'Undated card' },
 			)
 
 			const entries = await listEntries(t, userAIdentity.subject, null)
@@ -579,14 +578,14 @@ describe('due.list', () => {
 				t,
 				collectionId,
 				userAIdentity.subject,
-				{ dueDate: '2026-08-10', primaryText: 'Dated' },
+				{ dueDate: '2026-08-10', prompt: 'Dated' },
 			)
 			await seedReview(t, datedId, userAIdentity.subject, {})
 			const undatedId = await seedCard(
 				t,
 				collectionId,
 				userAIdentity.subject,
-				{ primaryText: 'Undated' },
+				{ prompt: 'Undated' },
 			)
 
 			const entries = await listEntries(t, userAIdentity.subject, null)
@@ -606,11 +605,11 @@ describe('due.list', () => {
 			const collectionId = await seedCollection(t, userAIdentity.subject)
 			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-10',
-				primaryText: 'Retired dated',
+				prompt: 'Retired dated',
 				retiredAt: 1_700_000_000_000,
 			})
 			await seedCard(t, collectionId, userAIdentity.subject, {
-				primaryText: 'Retired undated',
+				prompt: 'Retired undated',
 				retiredAt: 1_700_000_000_000,
 			})
 
@@ -639,7 +638,7 @@ describe('due.list', () => {
 				collectionId,
 				userAIdentity.subject,
 				{
-					primaryText: 'Retired but scheduled',
+					prompt: 'Retired but scheduled',
 					retiredAt: 1_700_000_000_000,
 				},
 			)
@@ -648,7 +647,7 @@ describe('due.list', () => {
 			})
 			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-10',
-				primaryText: 'Active',
+				prompt: 'Active',
 			})
 
 			await expect(
@@ -665,7 +664,7 @@ describe('due.list', () => {
 				userAIdentity.subject,
 				{
 					dueDate: '2026-08-10',
-					primaryText: 'Retired',
+					prompt: 'Retired',
 					retiredAt: 1_700_000_000_000,
 				},
 			)
@@ -686,13 +685,13 @@ describe('due.list', () => {
 			const collectionId = await seedCollection(t, userAIdentity.subject)
 			await seedCard(t, collectionId, userAIdentity.subject, {
 				dueDate: '2026-08-10',
-				primaryText: 'SRS due',
+				prompt: 'SRS due',
 			})
 			const handScheduledId = await seedCard(
 				t,
 				collectionId,
 				userAIdentity.subject,
-				{ dueDate: '2026-09-01', primaryText: 'Hand-scheduled' },
+				{ dueDate: '2026-09-01', prompt: 'Hand-scheduled' },
 			)
 			await seedReview(t, handScheduledId, userAIdentity.subject, {
 				date: '2026-08-10',
@@ -736,7 +735,7 @@ describe('due.list', () => {
 				t,
 				collectionId,
 				userAIdentity.subject,
-				{ dueDate: '2026-08-10', primaryText: 'SRS due' },
+				{ dueDate: '2026-08-10', prompt: 'SRS due' },
 			)
 			await seedReview(t, cardId, userAIdentity.subject, {
 				date: '2026-08-10',
@@ -760,14 +759,14 @@ describe('due.list', () => {
 				t,
 				collectionId,
 				userAIdentity.subject,
-				{ primaryText: 'New card' },
+				{ prompt: 'New card' },
 			)
 			// In SRS already; only its undated review reaches this bucket.
 			const datedId = await seedCard(
 				t,
 				collectionId,
 				userAIdentity.subject,
-				{ dueDate: '2026-08-10', primaryText: 'Undated review only' },
+				{ dueDate: '2026-08-10', prompt: 'Undated review only' },
 			)
 			await seedReview(t, datedId, userAIdentity.subject, {})
 

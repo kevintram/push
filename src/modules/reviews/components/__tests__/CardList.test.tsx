@@ -37,9 +37,8 @@ vi.mock('../CardStatusToggles', () => ({
 
 const card = {
 	_id: 'card-1',
-	primaryText: 'What problem do generics solve?',
-	secondaryText: 'Reusable, type-safe code',
-	type: 'practice',
+	prompt: 'What problem do generics solve?',
+	answer: 'Reusable, type-safe code',
 } as unknown as Card
 
 const reviewed: CardSrsState = {
@@ -99,7 +98,7 @@ describe('CardList', () => {
 		).toBeInTheDocument()
 	})
 
-	it('links a card to its page and leaves out the practice answer', () => {
+	it('links a card to its page and leaves out the answer', () => {
 		renderList(reviewed)
 
 		expect(

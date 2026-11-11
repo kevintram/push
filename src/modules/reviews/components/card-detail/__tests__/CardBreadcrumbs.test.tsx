@@ -56,7 +56,7 @@ describe('CardBreadcrumbs', () => {
 
 		render(
 			<CardBreadcrumbs
-				primaryText='A card'
+				prompt='A card'
 				collectionId={collectionId}
 				onNavigate={onNavigate}
 			/>,

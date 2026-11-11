@@ -54,7 +54,7 @@ const styles = stylex.create({
 		fontSize: fontSizes.xl,
 		fontWeight: fontWeights.bold,
 	},
-	secondary: { fontSize: fontSizes.md },
+	answer: { fontSize: fontSizes.md },
 	separatorGroup: {
 		gap: spacing.sm,
 		display: 'flex',
@@ -76,43 +76,42 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 	// redundant Convex subscriptions.
 	const { data: card } = useSuspenseQuery(cardQueries.detail(cardId))
 	const { hideMode } = useHideMode()
-	const [secondaryRevealed, setSecondaryRevealed] = useState(false)
+	const [answerRevealed, setAnswerRevealed] = useState(false)
 	const [notesRevealed, setNotesRevealed] = useState(false)
 	const today = useToday()
-	const primaryTextRef = useRef<HTMLTextAreaElement>(null)
+	const promptRef = useRef<HTMLTextAreaElement>(null)
 
 	useEffect(() => {
-		setSecondaryRevealed(false)
+		setAnswerRevealed(false)
 		setNotesRevealed(false)
 	}, [hideMode, cardId])
 
 	useEffect(() => {
-		if (takePromptFocus(cardId)) primaryTextRef.current?.focus()
+		if (takePromptFocus(cardId)) promptRef.current?.focus()
 	}, [cardId])
 
-	const isSecondaryShown =
-		card.type === 'practice' || hideMode === 'off' || secondaryRevealed
+	const isAnswerShown = hideMode === 'off' || answerRevealed
 	const isNotesShown = hideMode === 'off' || notesRevealed
 
 	// One hidden part per press, in reading order.
 	useHotkey(
 		appHotkeys.reveal,
 		() => {
-			if (!isSecondaryShown) setSecondaryRevealed(true)
+			if (!isAnswerShown) setAnswerRevealed(true)
 			else setNotesRevealed(true)
 		},
-		{ enabled: !isSecondaryShown || !isNotesShown },
+		{ enabled: !isAnswerShown || !isNotesShown },
 	)
 
-	const primaryText = useCardField({
-		field: 'primaryText',
+	const prompt = useCardField({
+		field: 'prompt',
 		cardId,
-		value: card.primaryText,
+		value: card.prompt,
 	})
-	const secondaryText = useCardField({
-		field: 'secondaryText',
+	const answer = useCardField({
+		field: 'answer',
 		cardId,
-		value: card.secondaryText,
+		value: card.answer,
 	})
 	const notes = useCardField({
 		field: 'notes',
@@ -121,35 +120,31 @@ export function CardOverview({ cardId }: CardOverviewProps) {
 	})
 	const srsState = deriveCardSrsState(card, today)
 
-	const primaryTextPlaceholder = card.type === 'practice' ? 'Title' : 'Prompt'
-	const secondaryTextPlaceholder =
-		card.type === 'practice' ? 'Add description...' : 'Answer'
-
 	return (
 		<div {...stylex.props(styles.layout)}>
 			<div {...stylex.props(styles.main, scrollFade.y)}>
 				<div {...stylex.props(styles.content)}>
 					<Textarea
-						aria-label='Card primary text'
-						placeholder={primaryTextPlaceholder}
-						ref={primaryTextRef}
-						onCommit={primaryText.flush}
-						onChange={primaryText.onChange}
-						value={primaryText.value}
+						aria-label='Card prompt'
+						placeholder='Prompt'
+						ref={promptRef}
+						onCommit={prompt.flush}
+						onChange={prompt.onChange}
+						value={prompt.value}
 						xstyle={styles.primary}
 					/>
 					<Hideable
-						revealed={isSecondaryShown}
-						onRevealedChange={setSecondaryRevealed}
+						revealed={isAnswerShown}
+						onRevealedChange={setAnswerRevealed}
 						revealHotkey={appHotkeys.reveal}
 					>
 						<Textarea
-							aria-label='Card secondary text'
-							placeholder={secondaryTextPlaceholder}
-							onCommit={secondaryText.flush}
-							onChange={secondaryText.onChange}
-							value={secondaryText.value}
-							xstyle={styles.secondary}
+							aria-label='Card answer'
+							placeholder='Answer'
+							onCommit={answer.flush}
+							onChange={answer.onChange}
+							value={answer.value}
+							xstyle={styles.answer}
 						/>
 					</Hideable>
 					<div {...stylex.props(styles.separatorGroup)}>

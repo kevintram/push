@@ -61,7 +61,7 @@ export function ReviewDialogBreadcrumbs({
 							/>
 						}
 					>
-						{formatBreadcrumbLabel(card?.primaryText ?? 'Card')}
+						{formatBreadcrumbLabel(card?.prompt ?? 'Card')}
 					</BreadcrumbLink>
 				</BreadcrumbItem>
 				<BreadcrumbSeparator />

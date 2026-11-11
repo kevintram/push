@@ -66,8 +66,7 @@ const collectionId = 'collection-1' as Id<'collections'>
 const card = (id: string, fields: Partial<Card> = {}) =>
 	({
 		_id: id as Card['_id'],
-		type: 'practice',
-		primaryText: 'A card',
+		prompt: 'A card',
 		...fields,
 	}) as Card
 const section = {
@@ -169,7 +168,6 @@ describe('SelectionActionBar', () => {
 	it.each([
 		['f', { flaggedAt: expect.any(Number) }],
 		['e', { retiredAt: expect.any(Number) }],
-		['t', { type: 'flashcard' }],
 	])(
 		'runs %s from the More menu once and leaves it open',
 		async (key, patch) => {
@@ -230,7 +228,7 @@ describe('SelectionActionBar', () => {
 				}),
 			).toBeVisible()
 			expect(deleteItemsMutate).not.toHaveBeenCalled()
-			await user.keyboard('fet')
+			await user.keyboard('fe')
 			expect(updateMutate).not.toHaveBeenCalled()
 			await user.click(screen.getByRole('button', { name: 'Cancel' }))
 			expect(screen.getByRole('menu')).toBeVisible()
@@ -243,9 +241,9 @@ describe('SelectionActionBar', () => {
 			<SelectionActionBar
 				collectionId={collectionId}
 				contents={{
-					sections: [],
-					cards: [loose],
-					coveredCards: [loose],
+					sections: [section],
+					cards: [],
+					coveredCards: [inSection],
 				}}
 			/>,
 		)
@@ -253,12 +251,11 @@ describe('SelectionActionBar', () => {
 		await user.keyboard('{Home}')
 		await user.keyboard('{ArrowDown}')
 		expect(
-			screen.getByRole('menuitem', { name: 'Mark as flashcard' }),
+			screen.getByRole('menuitem', { name: 'Convert to subcollection' }),
 		).toHaveFocus()
 		await user.keyboard('{Enter}')
-		expect(updateMutate).toHaveBeenCalledExactlyOnceWith({
-			cardIds: [loose._id],
-			type: 'flashcard',
+		expect(convertMutate).toHaveBeenCalledExactlyOnceWith({
+			sections: [section],
 		})
 		expect(screen.getByRole('menu')).toBeVisible()
 		await user.keyboard('{Escape}')
@@ -282,7 +279,7 @@ describe('SelectionActionBar', () => {
 			screen.getAllByRole('menuitem').map(item => item.textContent),
 		).toEqual(['Convert to subcollection'])
 		await user.keyboard('{Home}')
-		await user.keyboard('fet')
+		await user.keyboard('fe')
 		expect(updateMutate).not.toHaveBeenCalled()
 		expect(screen.getByRole('menu')).toBeVisible()
 	})

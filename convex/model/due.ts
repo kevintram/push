@@ -2,6 +2,7 @@ import { assertIsoDate } from '../../shared/date'
 import { type Id } from '../_generated/dataModel'
 import { type QueryCtx } from '../_generated/server'
 import { type DueEntry, type DueFilters } from '../validators/due'
+import { toCard } from './cards'
 import { toReview } from './reviews'
 
 export type { DueDateRange, DueEntry, DueFilters } from '../validators/due'
@@ -131,11 +132,12 @@ export async function list(
 		})
 
 	// The queries are independent, so issue them concurrently.
-	const [dueCards, dueReviewRows] = await Promise.all([
+	const [dueCardRows, dueReviewRows] = await Promise.all([
 		// TODO(2): stop using unbounded `collect()`?
 		dueCardsQuery?.collect() ?? [],
 		dueReviewsQuery.collect(),
 	])
+	const dueCards = dueCardRows.map(toCard)
 	const dueReviews = dueReviewRows.map(toReview)
 
 	const cardsById = new Map(dueCards.map(card => [card._id, card]))
@@ -166,7 +168,7 @@ export async function list(
 		// here. Leaving them out of the map drops their reviews below.
 		if (card.retiredAt !== undefined) return
 
-		cardsById.set(card._id, card)
+		cardsById.set(card._id, toCard(card))
 	})
 
 	// Add SRS-due cards first so reviews on the same day can merge into them.

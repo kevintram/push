@@ -12,7 +12,7 @@ const cardActionsRender = vi.hoisted(() => vi.fn())
 
 vi.mock('@tanstack/react-query', () => ({
 	useSuspenseQuery: ({ queryKey }: { queryKey: Array<string> }) => ({
-		data: queryKey[0] === 'card' ? { primaryText: 'Card' } : [],
+		data: queryKey[0] === 'card' ? { prompt: 'Card' } : [],
 	}),
 }))
 vi.mock('../../../api/cardQueries', () => ({

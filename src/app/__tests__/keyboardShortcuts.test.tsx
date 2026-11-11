@@ -37,7 +37,7 @@ vi.mock('convex/react', async importOriginal => ({
 const secondCard: Card = {
 	...card,
 	_id: 'card-2' as Id<'cards'>,
-	primaryText: 'What is a discriminated union?',
+	prompt: 'What is a discriminated union?',
 }
 
 function spyOnMutations(result: unknown = null) {
@@ -67,7 +67,7 @@ describe('keyboard shortcuts', () => {
 		const { router } = renderRoute('/review/new', { newCards: [card] })
 		// The file's first render pays the route's cold start, which can pass
 		// the default 1s on CI.
-		await screen.findByDisplayValue(card.primaryText, {}, { timeout: 5000 })
+		await screen.findByDisplayValue(card.prompt, {}, { timeout: 5000 })
 
 		// F alone flags the open card, but as the end of `G F` it only navigates.
 		await user.keyboard('gf')
@@ -85,7 +85,7 @@ describe('keyboard shortcuts', () => {
 	it('toggles hide mode with Shift+R and reveals the answer, then the notes, with R', async () => {
 		const user = userEvent.setup()
 		renderRoute(`/cards/${cardId}`)
-		await screen.findByDisplayValue(card.primaryText)
+		await screen.findByDisplayValue(card.prompt)
 		const hideModeButton = screen.getAllByRole('button', {
 			name: 'Hide mode',
 		})[0]
@@ -105,7 +105,7 @@ describe('keyboard shortcuts', () => {
 			1,
 		)
 		expect(
-			screen.getByRole('textbox', { name: 'Card secondary text' }),
+			screen.getByRole('textbox', { name: 'Card answer' }),
 		).toBeInTheDocument()
 
 		await user.keyboard('r')
@@ -120,7 +120,7 @@ describe('keyboard shortcuts', () => {
 	it('opens the composer with C, minimizes it with Escape, and restores it with C', async () => {
 		const user = userEvent.setup()
 		renderRoute(`/cards/${cardId}`)
-		await screen.findByDisplayValue(card.primaryText)
+		await screen.findByDisplayValue(card.prompt)
 
 		// A rating key does nothing on the page; it belongs to the ratings.
 		await user.keyboard('3')
@@ -153,7 +153,7 @@ describe('keyboard shortcuts', () => {
 	it('picks a rating with its key once C focuses the ratings', async () => {
 		const user = userEvent.setup()
 		const { router } = renderRoute(`/cards/${cardId}`)
-		await screen.findByDisplayValue(card.primaryText)
+		await screen.findByDisplayValue(card.prompt)
 
 		await user.keyboard('c')
 		const composer = screen.getByRole('region', { name: 'New review' })
@@ -168,7 +168,7 @@ describe('keyboard shortcuts', () => {
 	it('opens the date picker with S, opening the composer too', async () => {
 		const user = userEvent.setup()
 		renderRoute(`/cards/${cardId}`)
-		await screen.findByDisplayValue(card.primaryText)
+		await screen.findByDisplayValue(card.prompt)
 
 		await user.keyboard('s')
 		expect(
@@ -181,7 +181,7 @@ describe('keyboard shortcuts', () => {
 		const user = userEvent.setup()
 		const mutation = spyOnMutations()
 		renderRoute(`/cards/${cardId}`)
-		await screen.findByDisplayValue(card.primaryText)
+		await screen.findByDisplayValue(card.prompt)
 
 		await user.keyboard('m')
 		const dialog = await screen.findByRole('dialog', { name: 'Move card' })
@@ -197,28 +197,28 @@ describe('keyboard shortcuts', () => {
 		const user = userEvent.setup()
 		const mutation = spyOnMutations()
 		renderRoute(`/cards/${cardId}`)
-		const primaryText = await screen.findByRole('textbox', {
-			name: 'Card primary text',
+		const prompt = await screen.findByRole('textbox', {
+			name: 'Card prompt',
 		})
 
-		await user.click(primaryText)
+		await user.click(prompt)
 		await user.keyboard('f')
 		expect(mutation).not.toHaveBeenCalled()
 
 		// Escape stops editing but keeps focus, so the card's keys work again.
 		await user.keyboard('{Escape}')
-		expect(primaryText).toHaveFocus()
-		expect(primaryText).toHaveAttribute('readonly')
+		expect(prompt).toHaveFocus()
+		expect(prompt).toHaveAttribute('readonly')
 		await user.keyboard('f')
 		expect(lastMutationArgs(mutation)).toEqual({
 			cardIds: [cardId],
 			flaggedAt: expect.any(Number),
 		})
 
-		await user.keyboard('t')
+		await user.keyboard('e')
 		expect(lastMutationArgs(mutation)).toEqual({
 			cardIds: [cardId],
-			type: 'practice',
+			retiredAt: expect.any(Number),
 		})
 
 		// Move and delete only open their dialogs.
@@ -237,7 +237,7 @@ describe('keyboard shortcuts', () => {
 		await user.keyboard('{Control>}{Backspace}{/Control}')
 		expect(
 			await screen.findByRole('dialog', {
-				name: `Delete “${card.primaryText}”?`,
+				name: `Delete “${card.prompt}”?`,
 			}),
 		).toBeInTheDocument()
 		expect(mutation).toHaveBeenCalledTimes(calls)
@@ -246,7 +246,7 @@ describe('keyboard shortcuts', () => {
 	it('switches card tabs with 1 and 2, and toggles details with D', async () => {
 		const user = userEvent.setup()
 		const { router } = renderRoute(`/cards/${cardId}`)
-		await screen.findByDisplayValue(card.primaryText)
+		await screen.findByDisplayValue(card.prompt)
 
 		await user.keyboard('2')
 		await waitFor(() =>
@@ -294,7 +294,7 @@ describe('keyboard shortcuts', () => {
 
 	it('lists every shortcut with Mod+/, the current page’s groups first', async () => {
 		renderRoute('/review/new', { newCards: [card] })
-		await screen.findByDisplayValue(card.primaryText)
+		await screen.findByDisplayValue(card.prompt)
 
 		fireEvent.keyDown(document.body, {
 			key: '/',
@@ -349,7 +349,7 @@ describe('keyboard shortcuts', () => {
 			const user = userEvent.setup()
 			// The new card resolves to one the cache already holds.
 			const { mutation, router } = renderCollection(cardId)
-			await screen.findByRole('link', { name: card.primaryText })
+			await screen.findByRole('link', { name: card.prompt })
 
 			await user.keyboard('c')
 			expect(lastMutationArgs(mutation)).toEqual({ collectionId })
@@ -358,7 +358,7 @@ describe('keyboard shortcuts', () => {
 			)
 			expect(
 				await screen.findByRole('textbox', {
-					name: 'Card primary text',
+					name: 'Card prompt',
 				}),
 			).toHaveFocus()
 		})
@@ -368,7 +368,7 @@ describe('keyboard shortcuts', () => {
 			const { mutation } = renderCollection(cardId)
 			await user.click(
 				await screen.findByRole('link', {
-					name: sectionCard.primaryText,
+					name: sectionCard.prompt,
 				}),
 			)
 
@@ -379,7 +379,7 @@ describe('keyboard shortcuts', () => {
 			})
 
 			await user.click(
-				screen.getByRole('link', { name: sectionCard.primaryText }),
+				screen.getByRole('link', { name: sectionCard.prompt }),
 			)
 			await user.keyboard('c')
 			expect(lastMutationArgs(mutation)).toEqual({
@@ -391,7 +391,7 @@ describe('keyboard shortcuts', () => {
 		it('creates a subcollection with Alt+C', async () => {
 			const user = userEvent.setup()
 			const { mutation } = renderCollection(collectionId)
-			await screen.findByRole('link', { name: card.primaryText })
+			await screen.findByRole('link', { name: card.prompt })
 
 			await user.keyboard('{Alt>}c{/Alt}')
 			expect(lastMutationArgs(mutation)).toEqual({
@@ -403,7 +403,7 @@ describe('keyboard shortcuts', () => {
 			const user = userEvent.setup()
 			const { mutation } = renderCollection()
 			await user.click(
-				await screen.findByRole('link', { name: card.primaryText }),
+				await screen.findByRole('link', { name: card.prompt }),
 			)
 
 			await user.keyboard('f')
@@ -421,7 +421,7 @@ describe('keyboard shortcuts', () => {
 			await user.keyboard('{Control>}{Backspace}{/Control}')
 			expect(
 				await screen.findByRole('dialog', {
-					name: `Delete “${card.primaryText}”?`,
+					name: `Delete “${card.prompt}”?`,
 				}),
 			).toBeInTheDocument()
 		})

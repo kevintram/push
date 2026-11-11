@@ -268,9 +268,9 @@ export function CardItem({
 	buttonProps,
 }: CardItemProps) {
 	const navigate = useNavigate()
-	const { _id, primaryText } = card
+	const { _id, prompt } = card
 	const { lastRating, lastReviewedAt, nextDueAt, stability } = srs
-	const title = primaryText.trim() || 'Untitled'
+	const title = prompt.trim() || 'Untitled'
 	const isNew = lastReviewedAt === null
 	const isRetired = card.retiredAt !== undefined
 

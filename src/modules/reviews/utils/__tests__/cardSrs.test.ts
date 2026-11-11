@@ -18,12 +18,11 @@ function card(overrides: Partial<Card> = {}): Card {
 		lastReview: undefined,
 		notes: '',
 		ownerId: 'user-id',
-		primaryText: '',
+		prompt: '',
 		searchText: '',
-		secondaryText: '',
+		answer: '',
 		state: 'LEARNING',
 		collectionId: 'collection-id' as Card['collectionId'],
-		type: 'flashcard',
 		...overrides,
 	}
 }

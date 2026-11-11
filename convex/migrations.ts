@@ -80,3 +80,53 @@ export const backfillRanks = internalMutation({
 		}
 	},
 })
+
+/**
+ * Rewrites every card stored before every card became a flashcard: drops
+ * `type` and renames `primaryText` and `secondaryText` to `prompt` and
+ * `answer`, a page of cards per transaction. Run once per deployment, then
+ * the schema can store `cardBase`:
+ *
+ *   npx convex run migrations:flashcardsOnly
+ *   npx convex run --prod migrations:flashcardsOnly
+ */
+export const flashcardsOnly = internalMutation({
+	args: {
+		cursor: v.optional(v.string()),
+	},
+	returns: v.null(),
+	handler: async (ctx, args) => {
+		const page = await ctx.db
+			.query('cards')
+			.paginate({ cursor: args.cursor ?? null, numItems: 100 })
+
+		for (const doc of page.page) {
+			if (
+				doc.type === undefined &&
+				doc.primaryText === undefined &&
+				doc.secondaryText === undefined
+			) {
+				continue
+			}
+			const { prompt, answer } = Cards.toCard(doc)
+			// Clearing in Convex means patching an explicit `undefined`.
+			await ctx.db.patch('cards', doc._id, {
+				prompt,
+				answer,
+				type: undefined,
+				primaryText: undefined,
+				secondaryText: undefined,
+			})
+		}
+
+		if (!page.isDone) {
+			await ctx.scheduler.runAfter(
+				0,
+				internal.migrations.flashcardsOnly,
+				{
+					cursor: page.continueCursor,
+				},
+			)
+		}
+	},
+})
