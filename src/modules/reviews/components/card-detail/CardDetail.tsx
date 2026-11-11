@@ -229,7 +229,7 @@ export function CardDetail({
 				<header {...stylex.props(styles.toolbar)}>
 					<div {...stylex.props(styles.breadcrumbs)}>
 						<CardBreadcrumbs
-							primaryText={card.primaryText}
+							prompt={card.prompt}
 							collectionId={card.collectionId}
 							onNavigate={onNavigate}
 						/>

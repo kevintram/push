@@ -53,7 +53,7 @@ export function useCreateReview({ onUndone }: UseCreateReviewOptions = {}) {
 					title: toastTitle(
 						ratings[review.rating].label,
 						' on ',
-						toastName(card.primaryText),
+						toastName(card.prompt),
 					),
 					description: createElement(ReviewToastDescription, {
 						review,

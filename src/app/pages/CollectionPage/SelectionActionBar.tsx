@@ -1,6 +1,6 @@
 import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
-import { Archive, Ellipsis, Flag, FolderTree, Zap } from 'lucide-react'
+import { Archive, Ellipsis, Flag, FolderTree } from 'lucide-react'
 import { useState } from 'react'
 
 import {
@@ -113,14 +113,12 @@ export function SelectionActionBar({
 	const [menuElement, setMenuElement] = useState<HTMLDivElement | null>(null)
 	const [isMoreOpen, setIsMoreOpen] = useState(false)
 	const [dialog, setDialog] = useState<SelectionDialog>(null)
-	const { toggleFlag, toggleRetire, toggleType } = useCardActions()
+	const { toggleFlag, toggleRetire } = useCardActions()
 	const convertSections = useConvertSectionsToCollections()
 
 	const { sections, coveredCards: cards } = contents
 	const areAllFlagged = cards.every(card => card.flaggedAt !== undefined)
 	const areAllRetired = cards.every(card => card.retiredAt !== undefined)
-	const areAllFlashcards = cards.every(card => card.type === 'flashcard')
-	const flashcards = cards.length > 1 ? 'flashcards' : 'flashcard'
 	const subcollections =
 		sections.length > 1 ? 'subcollections' : 'subcollection'
 
@@ -131,7 +129,6 @@ export function SelectionActionBar({
 				hasCards={cards.length > 0}
 				onToggleFlag={() => toggleFlag(cards)}
 				onToggleRetire={() => toggleRetire(cards)}
-				onToggleType={() => toggleType(cards)}
 				onMove={() => setDialog('move')}
 				onDelete={() => setDialog('delete')}
 			/>
@@ -280,27 +277,6 @@ export function SelectionActionBar({
 									)}
 								>
 									{areAllRetired ? 'Unretire' : 'Retire'}
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									closeOnClick={false}
-									icon={
-										<Zap
-											aria-hidden='true'
-											size={iconSizes.sm}
-											{...stylex.props(
-												areAllFlashcards &&
-													cardStatusStyles.flashcardOn,
-											)}
-										/>
-									}
-									onClick={() => toggleType(cards)}
-									{...hotkeyItemProps(
-										appHotkeys.toggleSelectionType,
-									)}
-								>
-									{areAllFlashcards
-										? `Remove as ${flashcards}`
-										: `Mark as ${flashcards}`}
 								</DropdownMenuItem>
 							</>
 						) : null}

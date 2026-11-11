@@ -8,13 +8,13 @@ import { CollectionPathBreadcrumbs } from '~/modules/collections/components/Coll
 import { formatBreadcrumbLabel } from '~/modules/collections/utils/formatBreadcrumbLabel'
 
 type CardBreadcrumbsProps = {
-	primaryText: string
+	prompt: string
 	collectionId: Id<'collections'>
 	onNavigate?: () => void
 }
 
 export function CardBreadcrumbs({
-	primaryText,
+	prompt,
 	collectionId,
 	onNavigate,
 }: CardBreadcrumbsProps) {
@@ -30,9 +30,7 @@ export function CardBreadcrumbs({
 			onNavigate={onNavigate}
 		>
 			<BreadcrumbItem>
-				<BreadcrumbPage>
-					{formatBreadcrumbLabel(primaryText)}
-				</BreadcrumbPage>
+				<BreadcrumbPage>{formatBreadcrumbLabel(prompt)}</BreadcrumbPage>
 			</BreadcrumbItem>
 		</CollectionPathBreadcrumbs>
 	)

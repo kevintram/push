@@ -9,10 +9,6 @@ import { ResizeHandle } from '~/components/ResizeHandle'
 import { useResizableWidth } from '~/hooks/useResizableWidth'
 import { CardDetailErrorFallback } from '~/modules/reviews/components/card-detail/CardDetailErrorFallback'
 import { CardDetailView } from '~/modules/reviews/components/card-detail/CardDetailView'
-import {
-	type CardTypeFilter,
-	filterCardsByType,
-} from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
 import { CardNavigationHotkeys } from '~/modules/reviews/components/CardNavigationHotkeys'
 import type {
 	ReviewComposerDock,
@@ -162,7 +158,6 @@ export function ReviewQueueWorkspace({
 	title,
 	today,
 }: ReviewQueueWorkspaceProps) {
-	const [filter, setFilter] = useState<CardTypeFilter>('all')
 	// The preference describes the tablet-and-up layout. Small viewports always
 	// start closed and never overwrite it.
 	const [queueSidebarOpen, setQueueSidebarOpen] = useState(
@@ -205,7 +200,6 @@ export function ReviewQueueWorkspace({
 		}
 	}, [])
 
-	const visibleCards = filterCardsByType(cards, filter)
 	const {
 		currentCard,
 		canGoPrevious,
@@ -214,7 +208,7 @@ export function ReviewQueueWorkspace({
 		goNext,
 		selectCard,
 		returnTo,
-	} = useReviewQueueSelection(visibleCards)
+	} = useReviewQueueSelection(cards)
 
 	// The draft of a review undone after the queue moved on from its card,
 	// held until the card is back and left again.
@@ -363,12 +357,10 @@ export function ReviewQueueWorkspace({
 				>
 					{queueSidebarOpen && (
 						<ReviewQueueSidebar
-							cards={visibleCards}
+							cards={cards}
 							today={today}
 							currentCardId={currentCard?._id ?? null}
 							onCardClick={selectCard}
-							filter={filter}
-							onFilterChange={setFilter}
 							onClose={onQueueSidebarClose}
 						/>
 					)}

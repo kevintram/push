@@ -8,8 +8,6 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from '~/components/ui'
-import type { CardTypeFilter } from '~/modules/reviews/components/card-type-filter/cardTypeFilter'
-import { CardTypeFilterBadges } from '~/modules/reviews/components/card-type-filter/CardTypeFilterBadges'
 import { CardItem } from '~/modules/reviews/components/CardItem'
 import { CardList } from '~/modules/reviews/components/CardList'
 import type { Card } from '~/modules/reviews/types/review.types'
@@ -33,9 +31,7 @@ type ReviewQueueSidebarProps = {
 	cards: ReadonlyArray<Card>
 	currentCardId: Card['_id'] | null
 	today: DateString
-	filter: CardTypeFilter
 	onCardClick: (cardId: Card['_id']) => void
-	onFilterChange: (filter: CardTypeFilter) => void
 	onClose: () => void
 }
 
@@ -102,9 +98,7 @@ export function ReviewQueueSidebar({
 	cards,
 	currentCardId,
 	today,
-	filter,
 	onCardClick,
-	onFilterChange,
 	onClose,
 }: ReviewQueueSidebarProps) {
 	const headingId = useId()
@@ -139,10 +133,6 @@ export function ReviewQueueSidebar({
 						<TooltipContent>Close queue</TooltipContent>
 					</Tooltip>
 				</div>
-				<CardTypeFilterBadges
-					value={filter}
-					onValueChange={onFilterChange}
-				/>
 			</div>
 			<div {...stylex.props(styles.list, scrollFade.y)}>
 				{cards.length === 0 ? (
@@ -158,7 +148,7 @@ export function ReviewQueueSidebar({
 							active={card._id === currentCardId}
 							onClick={() => onCardClick(card._id)}
 							buttonProps={{
-								'aria-label': `Select ${card.primaryText.trim() || 'Untitled'}`,
+								'aria-label': `Select ${card.prompt.trim() || 'Untitled'}`,
 								'aria-current':
 									card._id === currentCardId
 										? 'true'

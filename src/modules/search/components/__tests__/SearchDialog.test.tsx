@@ -57,8 +57,8 @@ const cards: Array<CardSearchResult> = Array.from(
 		_id: `card-${index}` as Id<'cards'>,
 		notes: '',
 		pathTitles: ['Collection 0'],
-		primaryText: `Card ${index}`,
-		secondaryText: `Answer ${index}`,
+		prompt: `Card ${index}`,
+		answer: `Answer ${index}`,
 	}),
 )
 

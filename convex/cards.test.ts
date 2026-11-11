@@ -26,9 +26,8 @@ describe('cards', () => {
 			const cardId = await ctx.db.insert('cards', {
 				collectionId,
 				ownerId: userAIdentity.subject,
-				type: 'flashcard',
-				primaryText: '',
-				secondaryText: '',
+				prompt: '',
+				answer: '',
 				notes: '',
 				state: 'LEARNING',
 				searchText: '',
@@ -54,7 +53,7 @@ describe('cards', () => {
 		).rejects.toMatchObject({ data: "You've been signed out" })
 		await expect(
 			t.mutation(api.cards.update, {
-				primaryText: 'Updated',
+				prompt: 'Updated',
 				cardId,
 			}),
 		).rejects.toMatchObject({ data: "You've been signed out" })
@@ -92,10 +91,9 @@ describe('cards', () => {
 		const filledCardId = await asUserA.mutation(api.cards.create, {
 			flaggedAt: 1_700_000_000_000,
 			notes: 'Notes',
-			primaryText: 'Primary',
-			secondaryText: 'Secondary',
+			prompt: 'Primary',
+			answer: 'Secondary',
 			collectionId,
-			type: 'flashcard',
 		})
 
 		await expect(
@@ -105,11 +103,10 @@ describe('cards', () => {
 		).resolves.toMatchObject({
 			notes: '',
 			ownerId: userAIdentity.subject,
-			primaryText: '',
-			secondaryText: '',
+			prompt: '',
+			answer: '',
 			state: 'LEARNING',
 			collectionId,
-			type: 'practice',
 		})
 		expect(
 			(
@@ -123,9 +120,8 @@ describe('cards', () => {
 		).resolves.toMatchObject({
 			flaggedAt: 1_700_000_000_000,
 			notes: 'Notes',
-			primaryText: 'Primary',
-			secondaryText: 'Secondary',
-			type: 'flashcard',
+			prompt: 'Primary',
+			answer: 'Secondary',
 		})
 	})
 
@@ -144,15 +140,15 @@ describe('cards', () => {
 		)
 
 		await asUserA.mutation(api.cards.create, {
-			primaryText: 'First',
+			prompt: 'First',
 			collectionId,
 		})
 		await asUserA.mutation(api.cards.create, {
-			primaryText: 'Second',
+			prompt: 'Second',
 			collectionId,
 		})
 		await asUserA.mutation(api.cards.create, {
-			primaryText: 'Elsewhere',
+			prompt: 'Elsewhere',
 			collectionId: otherCollectionId,
 		})
 
@@ -160,7 +156,7 @@ describe('cards', () => {
 			collectionId,
 		})
 
-		expect(cards.map(card => card.primaryText)).toEqual(['First', 'Second'])
+		expect(cards.map(card => card.prompt)).toEqual(['First', 'Second'])
 		await expect(
 			asUserA.query(api.cards.listByCollection, {
 				collectionId: foreignCollectionId,
@@ -183,9 +179,8 @@ describe('cards', () => {
 			await ctx.db.insert('cards', {
 				collectionId,
 				ownerId: userBIdentity.subject,
-				type: 'flashcard',
-				primaryText: 'Not user A’s',
-				secondaryText: '',
+				prompt: 'Not user A’s',
+				answer: '',
 				notes: '',
 				state: 'LEARNING',
 				searchText: 'Not user A’s',
@@ -212,28 +207,25 @@ describe('cards', () => {
 
 		const oldestId = await asUserA.mutation(api.cards.create, {
 			flaggedAt: 1_700_000_000_000,
-			primaryText: 'Oldest',
+			prompt: 'Oldest',
 			collectionId,
 		})
 		const newestId = await asUserA.mutation(api.cards.create, {
 			flaggedAt: 1_800_000_000_000,
-			primaryText: 'Newest',
+			prompt: 'Newest',
 			collectionId,
 		})
 		await asUserA.mutation(api.cards.create, { collectionId })
 		await asUserB.mutation(api.cards.create, {
 			flaggedAt: 1_900_000_000_000,
-			primaryText: 'Foreign',
+			prompt: 'Foreign',
 			collectionId: foreignCollectionId,
 		})
 
 		const flagged = await asUserA.query(api.cards.listFlagged, {})
 
 		expect(flagged.map(card => card._id)).toEqual([newestId, oldestId])
-		expect(flagged.map(card => card.primaryText)).toEqual([
-			'Newest',
-			'Oldest',
-		])
+		expect(flagged.map(card => card.prompt)).toEqual(['Newest', 'Oldest'])
 		await expect(asUserC.query(api.cards.listFlagged, {})).resolves.toEqual(
 			[],
 		)
@@ -294,7 +286,7 @@ describe('cards', () => {
 			).rejects.toMatchObject({ data: 'Card not found' })
 			await expect(
 				asUserA.mutation(api.cards.update, {
-					primaryText: 'Updated',
+					prompt: 'Updated',
 					cardId,
 				}),
 			).rejects.toMatchObject({ data: 'Card not found' })
@@ -315,25 +307,23 @@ describe('cards', () => {
 		const asUserA = t.withIdentity(userAIdentity)
 		const collectionId = await asUserA.mutation(api.collections.create, {})
 		const cardId = await asUserA.mutation(api.cards.create, {
-			primaryText: 'Original primary',
-			secondaryText: 'Original secondary',
+			prompt: 'Original primary',
+			answer: 'Original secondary',
 			collectionId,
 		})
 
 		await asUserA.mutation(api.cards.update, {
 			flaggedAt: 1_700_000_000_000,
-			primaryText: 'Updated primary',
+			prompt: 'Updated primary',
 			cardId,
-			type: 'practice',
 		})
 
 		await expect(
 			asUserA.query(api.cards.get, { cardId }),
 		).resolves.toMatchObject({
 			flaggedAt: 1_700_000_000_000,
-			primaryText: 'Updated primary',
-			secondaryText: 'Original secondary',
-			type: 'practice',
+			prompt: 'Updated primary',
+			answer: 'Original secondary',
 		})
 
 		await asUserA.mutation(api.cards.update, {
@@ -352,7 +342,7 @@ describe('cards', () => {
 		const asUserA = t.withIdentity(userAIdentity)
 		const collectionId = await asUserA.mutation(api.collections.create, {})
 		const cardId = await asUserA.mutation(api.cards.create, {
-			primaryText: 'Original primary',
+			prompt: 'Original primary',
 			collectionId,
 		})
 
@@ -371,13 +361,13 @@ describe('cards', () => {
 		// Omitted leaves the existing value alone.
 		await asUserA.mutation(api.cards.update, {
 			cardId,
-			primaryText: 'Updated primary',
+			prompt: 'Updated primary',
 		})
 
 		await expect(
 			asUserA.query(api.cards.get, { cardId }),
 		).resolves.toMatchObject({
-			primaryText: 'Updated primary',
+			prompt: 'Updated primary',
 			retiredAt: 1_700_000_000_000,
 		})
 
@@ -479,6 +469,43 @@ describe('cards', () => {
 		).resolves.toMatchObject({ collectionId })
 	})
 
+	it('reads and rewrites a card stored before every card was a flashcard', async () => {
+		const t = convexTest(schema, modules)
+		const asUserA = t.withIdentity(userAIdentity)
+		const collectionId = await asUserA.mutation(api.collections.create, {})
+		const cardId = await t.run(ctx =>
+			ctx.db.insert('cards', {
+				collectionId,
+				ownerId: userAIdentity.subject,
+				type: 'practice',
+				primaryText: 'Legacy prompt',
+				secondaryText: 'Legacy answer',
+				notes: '',
+				state: 'LEARNING',
+				searchText: 'Legacy prompt\nLegacy answer',
+			}),
+		)
+
+		const card = await asUserA.query(api.cards.get, { cardId })
+		expect(card).toMatchObject({
+			prompt: 'Legacy prompt',
+			answer: 'Legacy answer',
+		})
+		expect(card).not.toHaveProperty('type')
+
+		await asUserA.mutation(api.cards.update, { cardId, notes: 'Notes' })
+
+		const stored = await t.run(ctx => ctx.db.get('cards', cardId))
+		expect(stored).toMatchObject({
+			prompt: 'Legacy prompt',
+			answer: 'Legacy answer',
+			notes: 'Notes',
+		})
+		expect(stored).not.toHaveProperty('type')
+		expect(stored).not.toHaveProperty('primaryText')
+		expect(stored).not.toHaveProperty('secondaryText')
+	})
+
 	it('applies a separate patch to each card', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)
@@ -492,7 +519,7 @@ describe('cards', () => {
 		await asUserA.mutation(api.cards.updateEach, {
 			patches: [
 				{ cardId: first, flaggedAt: 1 },
-				{ cardId: second, flaggedAt: null, type: 'flashcard' },
+				{ cardId: second, flaggedAt: null, retiredAt: 7 },
 			],
 		})
 
@@ -501,7 +528,7 @@ describe('cards', () => {
 		).resolves.toMatchObject({ flaggedAt: 1 })
 		const updated = await asUserA.query(api.cards.get, { cardId: second })
 		expect(updated.flaggedAt).toBeUndefined()
-		expect(updated.type).toBe('flashcard')
+		expect(updated.retiredAt).toBe(7)
 	})
 
 	it('rejects moving a card to a missing or foreign-owned collection', async () => {
@@ -699,15 +726,15 @@ describe('cards', () => {
 		const asUserA = t.withIdentity(userAIdentity)
 		const collectionId = await asUserA.mutation(api.collections.create, {})
 		const cardId = await asUserA.mutation(api.cards.create, {
-			primaryText: 'Removed',
+			prompt: 'Removed',
 			collectionId,
 		})
 		const otherCardId = await asUserA.mutation(api.cards.create, {
-			primaryText: 'Also removed',
+			prompt: 'Also removed',
 			collectionId,
 		})
 		const siblingId = await asUserA.mutation(api.cards.create, {
-			primaryText: 'Kept',
+			prompt: 'Kept',
 			collectionId,
 		})
 
@@ -768,12 +795,12 @@ describe('cards', () => {
 			{},
 		)
 		const primaryMatchId = await asUserA.mutation(api.cards.create, {
-			primaryText: 'Mitochondria produce energy',
+			prompt: 'Mitochondria produce energy',
 			collectionId,
 		})
 		const secondaryMatchId = await asUserA.mutation(api.cards.create, {
-			primaryText: 'Organelle answer',
-			secondaryText: 'Chloroplast',
+			prompt: 'Organelle answer',
+			answer: 'Chloroplast',
 			collectionId,
 		})
 		const notesMatchId = await asUserA.mutation(api.cards.create, {
@@ -781,7 +808,7 @@ describe('cards', () => {
 			collectionId,
 		})
 		await asUserB.mutation(api.cards.create, {
-			primaryText: 'Mitochondria private card',
+			prompt: 'Mitochondria private card',
 			collectionId: foreignCollectionId,
 		})
 
@@ -804,12 +831,12 @@ describe('cards', () => {
 		const asUserA = t.withIdentity(userAIdentity)
 		const collectionId = await asUserA.mutation(api.collections.create, {})
 		const cardId = await asUserA.mutation(api.cards.create, {
-			primaryText: 'Oldterm',
+			prompt: 'Oldterm',
 			collectionId,
 		})
 
 		await asUserA.mutation(api.cards.update, {
-			primaryText: 'Newterm',
+			prompt: 'Newterm',
 			cardId,
 		})
 
@@ -828,7 +855,7 @@ describe('cards', () => {
 			title: 'Root collection',
 		})
 		await asUserA.mutation(api.cards.create, {
-			primaryText: 'Findme',
+			prompt: 'Findme',
 			collectionId: rootId,
 		})
 
@@ -852,7 +879,7 @@ describe('cards', () => {
 			title: 'Derivatives',
 		})
 		await asUserA.mutation(api.cards.create, {
-			primaryText: 'Findme',
+			prompt: 'Findme',
 			collectionId,
 		})
 
@@ -870,11 +897,11 @@ describe('cards', () => {
 			title: 'Shared collection',
 		})
 		await asUserA.mutation(api.cards.create, {
-			primaryText: 'Shared match one',
+			prompt: 'Shared match one',
 			collectionId,
 		})
 		await asUserA.mutation(api.cards.create, {
-			primaryText: 'Shared match two',
+			prompt: 'Shared match two',
 			collectionId,
 		})
 
@@ -908,7 +935,7 @@ describe('cards', () => {
 			},
 		)
 		const cardId = await asUserA.mutation(api.cards.create, {
-			primaryText: 'Findme',
+			prompt: 'Findme',
 			collectionId: originCollectionId,
 		})
 
@@ -936,7 +963,7 @@ describe('cards', () => {
 			title: 'Old collection name',
 		})
 		await asUserA.mutation(api.cards.create, {
-			primaryText: 'Findme',
+			prompt: 'Findme',
 			collectionId,
 		})
 
@@ -968,12 +995,11 @@ describe('cards', () => {
 			await ctx.db.insert('cards', {
 				notes: '',
 				ownerId: userAIdentity.subject,
-				primaryText: 'Findme orphan',
-				secondaryText: '',
+				prompt: 'Findme orphan',
+				answer: '',
 				searchText: 'Findme orphan',
 				state: 'LEARNING',
 				collectionId: foreignCollectionId,
-				type: 'flashcard',
 			})
 		})
 
@@ -996,7 +1022,7 @@ describe('cards', () => {
 			title: 'Owned collection',
 		})
 		await asUserA.mutation(api.cards.create, {
-			primaryText: 'Findme card',
+			prompt: 'Findme card',
 			collectionId,
 		})
 
@@ -1011,7 +1037,7 @@ describe('cards', () => {
 		await expect(
 			asUserA.query(api.cards.search, { query: 'Findme' }),
 		).resolves.toMatchObject([
-			{ pathTitles: ['Owned collection'], primaryText: 'Findme card' },
+			{ pathTitles: ['Owned collection'], prompt: 'Findme card' },
 		])
 	})
 
@@ -1297,17 +1323,16 @@ describe('cards', () => {
 			)
 			const [a, b, c] = await t.run(async ctx => {
 				const ids: Array<Id<'cards'>> = []
-				for (const primaryText of ['a', 'b', 'c']) {
+				for (const prompt of ['a', 'b', 'c']) {
 					ids.push(
 						await ctx.db.insert('cards', {
 							collectionId,
 							ownerId: userAIdentity.subject,
-							type: 'practice',
-							primaryText,
-							secondaryText: '',
+							prompt,
+							answer: '',
 							notes: '',
 							state: 'LEARNING',
-							searchText: primaryText,
+							searchText: prompt,
 						}),
 					)
 				}

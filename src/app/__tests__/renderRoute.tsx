@@ -45,9 +45,8 @@ export const card: Card = {
 	_creationTime: 0,
 	collectionId,
 	ownerId: 'user-1',
-	type: 'flashcard',
-	primaryText: 'What problem do generics solve?',
-	secondaryText: 'They preserve type safety across reusable code.',
+	prompt: 'What problem do generics solve?',
+	answer: 'They preserve type safety across reusable code.',
 	notes: '',
 	state: 'LEARNING',
 	lastReview: undefined,
@@ -81,7 +80,6 @@ export function renderRoute(
 		missingCard = false,
 		missingCollection = false,
 		newCards = [],
-		cardType = 'flashcard',
 		collections = [],
 		collectionCards = [],
 		sections = [],
@@ -93,7 +91,6 @@ export function renderRoute(
 		missingCard?: boolean
 		missingCollection?: boolean
 		newCards?: Array<Card>
-		cardType?: Card['type']
 		collections?: Array<Doc<'collections'>>
 		collectionCards?: Array<Card>
 		sections?: Array<Doc<'sections'>>
@@ -185,10 +182,7 @@ export function renderRoute(
 		)
 	}
 	if (!missingCard) {
-		queryClient.setQueryData(cardQueries.detail(cardId).queryKey, {
-			...card,
-			type: cardType,
-		})
+		queryClient.setQueryData(cardQueries.detail(cardId).queryKey, card)
 	}
 	queryClient.setQueryData(reviewQueries.listByCard(cardId).queryKey, [
 		review,

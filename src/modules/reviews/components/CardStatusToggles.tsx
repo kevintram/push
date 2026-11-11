@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { Archive, Flag, Zap } from 'lucide-react'
+import { Archive, Flag } from 'lucide-react'
 
 import {
 	Button,
@@ -29,40 +29,14 @@ type CardStatusTogglesProps = {
 
 /** A button for each of a card's active statuses, which turns it off. */
 export function CardStatusToggles({ card, xstyle }: CardStatusTogglesProps) {
-	const { toggleFlag, toggleRetire, toggleType } = useCardActions()
+	const { toggleFlag, toggleRetire } = useCardActions()
 
-	const isFlashcard = card.type === 'flashcard'
 	const isFlagged = card.flaggedAt !== undefined
 	const isRetired = card.retiredAt !== undefined
-	if (!isFlashcard && !isFlagged && !isRetired) return null
+	if (!isFlagged && !isRetired) return null
 
 	return (
 		<div {...stylex.props(styles.container, xstyle)}>
-			{isFlashcard ? (
-				<Tooltip>
-					<TooltipTrigger
-						render={
-							<Button
-								aria-label='Remove as flashcard'
-								iconOnly
-								shape='round'
-								variant='ghost'
-								size='small'
-								onClick={() => toggleType([card])}
-							>
-								<Zap
-									aria-hidden='true'
-									size={iconSizes.sm}
-									{...stylex.props(
-										cardStatusStyles.flashcardOn,
-									)}
-								/>
-							</Button>
-						}
-					/>
-					<TooltipContent>Remove as flashcard</TooltipContent>
-				</Tooltip>
-			) : null}
 			{isFlagged ? (
 				<Tooltip>
 					<TooltipTrigger

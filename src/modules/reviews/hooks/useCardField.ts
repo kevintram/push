@@ -6,7 +6,7 @@ import { useAutoSave } from '~/hooks/useAutoSave'
 import { useUpdateCard } from '../api/cardQueries'
 
 /** The card fields that are edited as free text. */
-type EditableCardField = 'notes' | 'primaryText' | 'secondaryText'
+type EditableCardField = 'notes' | 'prompt' | 'answer'
 
 type UseCardFieldOptions = {
 	field: EditableCardField

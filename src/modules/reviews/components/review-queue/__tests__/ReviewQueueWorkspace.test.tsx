@@ -46,8 +46,8 @@ vi.mock('~/modules/reviews/utils/cardSrs', () => ({
 
 const STORAGE_KEY = 'reviewQueueSidebarOpen'
 const queueCards = [
-	{ _id: 'card-1', primaryText: 'First', type: 'flashcard' },
-	{ _id: 'card-2', primaryText: 'Second', type: 'flashcard' },
+	{ _id: 'card-1', prompt: 'First' },
+	{ _id: 'card-2', prompt: 'Second' },
 ] as unknown as ReadonlyArray<Card>
 
 function startingDock() {
