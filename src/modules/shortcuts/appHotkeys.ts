@@ -76,10 +76,6 @@ export const appHotkeys = defineAppHotkeys({
 		hotkey: 'E',
 		meta: { name: 'Retire or unretire', group: 'Card' },
 	},
-	toggleCardType: {
-		hotkey: 'T',
-		meta: { name: 'Mark or remove as flashcard', group: 'Card' },
-	},
 	deleteCard: {
 		hotkey: 'Mod+Backspace',
 		meta: { name: 'Delete', group: 'Card' },
@@ -186,13 +182,6 @@ export const appHotkeys = defineAppHotkeys({
 	toggleSelectionRetire: {
 		hotkey: 'E',
 		meta: { name: 'Retire or unretire selection', group: 'Collection' },
-	},
-	toggleSelectionType: {
-		hotkey: 'T',
-		meta: {
-			name: 'Mark or remove selection as flashcards',
-			group: 'Collection',
-		},
 	},
 	deleteSelection: {
 		hotkey: 'Mod+Backspace',

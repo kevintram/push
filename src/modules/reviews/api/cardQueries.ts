@@ -67,9 +67,6 @@ export function useUpdateCards() {
 					updateEach({
 						patches: cards.map(card => ({
 							cardId: card._id,
-							...(patch.type !== undefined && {
-								type: card.type,
-							}),
 							// `null` clears a field the card did not have.
 							...(patch.flaggedAt !== undefined && {
 								flaggedAt: card.flaggedAt ?? null,
@@ -85,7 +82,6 @@ export function useUpdateCards() {
 }
 
 function updateCardsFailure(patch: CardBatchPatch) {
-	if (patch.type !== undefined) return 'Failed to update card type'
 	if (patch.flaggedAt !== undefined) return 'Failed to update card flag'
 	if (patch.retiredAt !== undefined) return 'Failed to update card retirement'
 	return 'Failed to update card'
@@ -168,7 +164,7 @@ export function useDeleteCards() {
 			if (card) {
 				toastDeleted(
 					removed.length === 1
-						? toastName(card.primaryText, 'Untitled card')
+						? toastName(card.prompt, 'Untitled card')
 						: pluralize(removed.length, 'card'),
 				)
 			}

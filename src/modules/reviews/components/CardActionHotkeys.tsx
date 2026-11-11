@@ -5,7 +5,6 @@ import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 type CardActionHotkeysProps = {
 	onToggleFlag: () => void
 	onToggleRetire: () => void
-	onToggleType: () => void
 	onMove: () => void
 	onDelete: () => void
 }
@@ -17,7 +16,6 @@ type CardActionHotkeysProps = {
 export function CardActionHotkeys({
 	onToggleFlag,
 	onToggleRetire,
-	onToggleType,
 	onMove,
 	onDelete,
 }: CardActionHotkeysProps) {
@@ -29,10 +27,6 @@ export function CardActionHotkeys({
 		{
 			hotkey: appHotkeys.toggleRetire,
 			callback: onToggleRetire,
-		},
-		{
-			hotkey: appHotkeys.toggleCardType,
-			callback: onToggleType,
 		},
 		{ hotkey: appHotkeys.moveCard, callback: onMove },
 		{

@@ -88,7 +88,7 @@ function toReplayReview(review: Doc<'reviews'>): Review {
  */
 export async function updateCardSrs(
 	ctx: MutationCtx,
-	card: Card,
+	card: Pick<Card, '_id'>,
 	startingFrom: string, // an isoDate
 ): Promise<void> {
 	// Only the suffix at or after the changed date needs to be replayed. The
