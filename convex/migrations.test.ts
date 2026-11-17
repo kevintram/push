@@ -117,12 +117,13 @@ describe('migrations.replayAllCardSrs', () => {
 			const insertReview = (
 				cardId: Id<'cards'>,
 				date: string,
-				rating?: 'good' | 'hard',
+				rating: 'good' | 'hard',
 			) =>
 				ctx.db.insert('reviews', {
 					ownerId,
 					cardId,
-					...(rating && { rating, dueDateAfter: '2030-01-01' }),
+					rating,
+					dueDateAfter: '2030-01-01',
 					date,
 					description: '',
 					notes: '',
@@ -134,8 +135,6 @@ describe('migrations.replayAllCardSrs', () => {
 				const cardId = await insertCard(`reviewed ${index}`)
 				await insertReview(cardId, '2024-01-01', 'good')
 				await insertReview(cardId, '2024-01-05', 'hard')
-				// A scheduled review that has not been completed yet.
-				await insertReview(cardId, '2024-02-01')
 				reviewed.push(cardId)
 			}
 			const broken = await insertCard('broken')
@@ -165,7 +164,6 @@ describe('migrations.replayAllCardSrs', () => {
 				expect(reviews.map(review => review.dueDateAfter)).toEqual([
 					'2024-01-03',
 					'2024-01-16',
-					undefined,
 				])
 			}
 
@@ -182,58 +180,6 @@ describe('migrations.replayAllCardSrs', () => {
 			const unreviewed = await ctx.db.get('cards', ids.unreviewed)
 			expect(unreviewed?.state).toBe('LEARNING')
 			expect(unreviewed?.dueDate).toBeUndefined()
-		})
-	})
-})
-
-describe('migrations.deleteIncompleteReviews', () => {
-	afterEach(() => {
-		vi.useRealTimers()
-		vi.restoreAllMocks()
-	})
-
-	it('deletes the reviews missing a rating or a date', async () => {
-		vi.useFakeTimers()
-		vi.spyOn(console, 'log').mockImplementation(() => {})
-		const t = convexTest(schema, modules)
-		const kept = await t.run(async ctx => {
-			const collectionId = await ctx.db.insert('collections', {
-				title: 'Collection',
-				description: '',
-				ownerId,
-				path: [],
-				searchText: 'Collection',
-			})
-			const cardId = await ctx.db.insert('cards', {
-				collectionId,
-				ownerId,
-				prompt: 'Card',
-				answer: '',
-				notes: '',
-				state: 'LEARNING',
-				searchText: 'Card',
-			})
-			const insertReview = (fields: { rating?: 'good'; date?: string }) =>
-				ctx.db.insert('reviews', {
-					ownerId,
-					cardId,
-					description: '',
-					notes: '',
-					...fields,
-				})
-
-			await insertReview({})
-			await insertReview({ date: '2026-08-10' })
-			await insertReview({ rating: 'good' })
-			return await insertReview({ rating: 'good', date: '2026-08-09' })
-		})
-
-		await t.mutation(internal.migrations.deleteIncompleteReviews, {})
-		await t.finishAllScheduledFunctions(vi.runAllTimers)
-
-		await t.run(async ctx => {
-			const reviews = await ctx.db.query('reviews').collect()
-			expect(reviews.map(review => review._id)).toEqual([kept])
 		})
 	})
 })

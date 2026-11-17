@@ -72,7 +72,7 @@ export function CardPropertiesPanel({
 	stability,
 	today,
 }: CardPropertiesPanelProps) {
-	const dueTone = getDueDateTone(nextDueAt, false, today)
+	const dueTone = getDueDateTone(nextDueAt, today)
 	const lastReviewed =
 		lastReviewedAt === null
 			? null

@@ -83,16 +83,11 @@ describe('date', () => {
 	})
 
 	it.each([
-		['2026-07-19', false, 'overdue'],
-		['2026-07-19', true, 'default'],
-		['2026-07-20', false, 'today'],
-		['2026-07-20', true, 'today'],
-		['2026-07-21', false, 'default'],
-		[null, false, 'default'],
-	] as const)(
-		'uses the %s due date tone when completion is %s',
-		(value, isCompleted, expected) => {
-			expect(getDueDateTone(value, isCompleted, today)).toBe(expected)
-		},
-	)
+		['2026-07-19', 'overdue'],
+		['2026-07-20', 'today'],
+		['2026-07-21', 'default'],
+		[null, 'default'],
+	] as const)('gives the %s due date the %s tone', (value, expected) => {
+		expect(getDueDateTone(value, today)).toBe(expected)
+	})
 })

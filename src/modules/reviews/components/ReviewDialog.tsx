@@ -363,7 +363,7 @@ export function ReviewDialog({
 			<footer {...stylex.props(styles.footer)}>
 				<div {...stylex.props(styles.footerMetadata)}>
 					<ReviewDatePicker
-						date={(review.date ?? null) as DateString | null}
+						date={review.date as DateString}
 						onDateChange={onSetDate}
 						size='medium'
 					/>

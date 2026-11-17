@@ -28,6 +28,7 @@ describe('reviews', () => {
 		const { firstReviewId, latestReviewId } = await t.run(async ctx => {
 			const firstReviewId = await ctx.db.insert('reviews', {
 				cardId,
+				date: '2026-01-01',
 				ownerId: userAIdentity.subject,
 				rating: 'hard',
 				description: 'First',
@@ -35,6 +36,7 @@ describe('reviews', () => {
 			})
 			await ctx.db.insert('reviews', {
 				cardId,
+				date: '2026-01-01',
 				ownerId: userBIdentity.subject,
 				rating: 'easy',
 				description: 'Foreign',
@@ -42,6 +44,7 @@ describe('reviews', () => {
 			})
 			await ctx.db.insert('reviews', {
 				cardId: otherCardId,
+				date: '2026-01-01',
 				ownerId: userAIdentity.subject,
 				rating: 'miss',
 				description: 'Other card',
@@ -49,6 +52,7 @@ describe('reviews', () => {
 			})
 			const latestReviewId = await ctx.db.insert('reviews', {
 				cardId,
+				date: '2026-01-01',
 				ownerId: userAIdentity.subject,
 				rating: 'good',
 				description: 'Latest',
@@ -115,6 +119,7 @@ describe('reviews', () => {
 			async ctx => {
 				const ownedReviewId = await ctx.db.insert('reviews', {
 					cardId,
+					date: '2026-01-01',
 					ownerId: userAIdentity.subject,
 					rating: 'good',
 					description: 'Owned',
@@ -122,6 +127,7 @@ describe('reviews', () => {
 				})
 				const foreignReviewId = await ctx.db.insert('reviews', {
 					cardId: foreignCardId,
+					date: '2026-01-01',
 					ownerId: userBIdentity.subject,
 					rating: 'easy',
 					description: 'Foreign',
@@ -129,6 +135,7 @@ describe('reviews', () => {
 				})
 				const missingReviewId = await ctx.db.insert('reviews', {
 					cardId,
+					date: '2026-01-01',
 					ownerId: userAIdentity.subject,
 					rating: 'miss',
 					description: 'Missing',
@@ -249,38 +256,6 @@ describe('reviews', () => {
 		await expect(
 			asUserA.query(api.reviews.get, { reviewId }),
 		).resolves.toMatchObject({ date: '2026-08-08', rating: 'hard' })
-	})
-
-	// TODO(1): drop with the guard in `Reviews.update` once
-	// `migrations.deleteIncompleteReviews` has run.
-	it('refuses to complete a legacy unrated review', async () => {
-		const t = convexTest(schema, modules)
-		const asUserA = t.withIdentity(userAIdentity)
-		const collectionId = await asUserA.mutation(api.collections.create, {})
-		const cardId = await asUserA.mutation(api.cards.create, {
-			collectionId,
-		})
-		const reviewId = await t.run(async ctx =>
-			ctx.db.insert('reviews', {
-				date: '2026-08-01',
-				description: '',
-				notes: '',
-				ownerId: userAIdentity.subject,
-				cardId,
-			}),
-		)
-
-		await expect(
-			asUserA.mutation(api.reviews.update, { rating: 'good', reviewId }),
-		).rejects.toMatchObject({ data: 'Review is not completed' })
-
-		await asUserA.mutation(api.reviews.update, {
-			notes: 'still editable',
-			reviewId,
-		})
-		const review = await asUserA.query(api.reviews.get, { reviewId })
-		expect(review).toMatchObject({ notes: 'still editable' })
-		expect(review.rating).toBeUndefined()
 	})
 
 	it('rejects malformed dates without changing persisted or derived state', async () => {
@@ -438,6 +413,8 @@ describe('reviews', () => {
 			const id = await ctx.db.insert('reviews', {
 				description: '',
 				notes: '',
+				rating: 'good',
+				date: '2026-01-01',
 				ownerId: userAIdentity.subject,
 				cardId,
 			})
@@ -509,6 +486,8 @@ describe('reviews', () => {
 			const id = await ctx.db.insert('reviews', {
 				description: '',
 				notes: '',
+				rating: 'good',
+				date: '2026-01-01',
 				ownerId: userAIdentity.subject,
 				cardId,
 			})

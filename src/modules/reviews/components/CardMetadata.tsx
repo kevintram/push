@@ -93,7 +93,7 @@ export function CardMetadata({
 		)
 	}
 
-	const dueTone = getDueDateTone(nextDueAt, false, today)
+	const dueTone = getDueDateTone(nextDueAt, today)
 	const {
 		Icon: RatingIcon,
 		ariaLabel: lastReviewedLabel,

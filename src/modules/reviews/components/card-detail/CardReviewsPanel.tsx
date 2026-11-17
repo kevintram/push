@@ -57,11 +57,8 @@ type CardReviewsPanelProps = {
 
 export function CardReviewsPanel({ cardId, onSeeAll }: CardReviewsPanelProps) {
 	const { data: reviews } = useSuspenseQuery(reviewQueries.listByCard(cardId))
-	// The query sorts undated reviews first, so skip them to show the most
-	// recent dated ones.
-	const recentReviews = reviews
-		.filter(review => review.date !== undefined)
-		.slice(0, REVIEW_LIMIT)
+	// The query sorts newest first.
+	const recentReviews = reviews.slice(0, REVIEW_LIMIT)
 	const hasMore = reviews.length > recentReviews.length
 
 	// The review queue shows a card without routing, so it passes `onSeeAll`

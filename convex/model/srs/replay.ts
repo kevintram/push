@@ -102,29 +102,17 @@ export async function updateCardSrs(
 			)
 			.order('asc')
 			.collect()
-	)
-		.filter(review => review.rating !== undefined)
-		.map(toReplayReview)
+	).map(toReplayReview)
 
-	// Convex sorts `undefined` before strings. The empty-string lower bound
-	// excludes undated reviews while preserving every valid date-only value.
-	// Scheduled-but-unrated reviews still land in this range, so walk backwards
-	// to the nearest rated one rather than taking the first row.
-	let previousReview: Review | undefined
-	for await (const candidate of ctx.db
+	const previousRow = await ctx.db
 		.query('reviews')
 		.withIndex('by_cardId_date', query =>
-			query
-				.eq('cardId', card._id)
-				.gte('date', '')
-				.lt('date', startingFrom),
+			query.eq('cardId', card._id).lt('date', startingFrom),
 		)
-		.order('desc')) {
-		if (candidate.rating !== undefined) {
-			previousReview = toReplayReview(candidate)
-			break
-		}
-	}
+		.order('desc')
+		.first()
+	const previousReview =
+		previousRow === null ? undefined : toReplayReview(previousRow)
 
 	const { reviewPatches, cardState } = replay({ previousReview, reviews })
 	const lastCompletedReview = reviews.at(-1) ?? previousReview
@@ -149,14 +137,8 @@ export async function updateCardSrs(
 				? undefined
 				: {
 						id: lastCompletedReview._id,
-						date: assertNonNull(
-							lastCompletedReview.date,
-							'Completed review is missing date',
-						),
-						rating: assertNonNull(
-							lastCompletedReview.rating,
-							'Completed review is missing rating',
-						),
+						date: lastCompletedReview.date,
+						rating: lastCompletedReview.rating,
 					},
 	})
 }
@@ -176,13 +158,7 @@ export function replay({
 	reviews: ReadonlyArray<Review>
 }): ReplayResult {
 	const reviewPatches: ReplayResult['reviewPatches'] = []
-	const completedReviews = reviews.map(review => {
-		if (review.date === undefined) throw new Error('Review is missing date')
-		if (review.rating === undefined)
-			throw new Error('Review is missing rating')
-		return { review, date: review.date, rating: review.rating }
-	})
-	const firstReviewToReplay = completedReviews[0]
+	const firstReviewToReplay = reviews[0]
 	// A partially populated seed is not safe to resume from, so fall back to a
 	// full replay.
 	let card =
@@ -214,13 +190,11 @@ export function replay({
 						previousReview.dueDateAfter,
 						'Review is missing dueDateAfter',
 					),
-					lastReviewDate: assertNonNull(
-						previousReview.date,
-						'Review is missing date',
-					),
+					lastReviewDate: previousReview.date,
 				})
 
-	for (const { review, date, rating } of completedReviews) {
+	for (const review of reviews) {
+		const { date, rating } = review
 		const beforeState = fsrsCardToCardSrsState(card)
 		const { card: nextCard } = fsrsScheduler.next(
 			card,

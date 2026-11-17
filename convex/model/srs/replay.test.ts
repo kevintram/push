@@ -56,6 +56,8 @@ function makeReview(overrides: Partial<Review> = {}): Review {
 		_creationTime: 0,
 		ownerId: 'user-id',
 		cardId: 'card-id' as Id<'cards'>,
+		rating: 'good',
+		date: '2024-01-01',
 		description: '',
 		notes: '',
 		...overrides,
