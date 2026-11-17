@@ -93,7 +93,7 @@ function movedName(
 	const [section] = sections
 	return section
 		? toastName(section.title, 'Untitled section')
-		: toastName(cards[0]!.primaryText)
+		: toastName(cards[0]!.prompt)
 }
 
 type CollectionItemsDelete = {

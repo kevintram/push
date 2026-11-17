@@ -134,120 +134,21 @@ describe('v2 app setup', () => {
 		).toBeInTheDocument()
 	})
 
-	it('filters the review queue sidebar by card type', async () => {
-		const user = userEvent.setup()
-		const practiceCard: Card = {
-			...card,
-			_id: 'practice-card' as Id<'cards'>,
-			primaryText: 'Practice prompt',
-			type: 'practice',
-		}
-		const flashcard: Card = {
-			...card,
-			_id: 'flashcard-card' as Id<'cards'>,
-			primaryText: 'Flashcard prompt',
-		}
-		renderRoute('/review/new', { newCards: [flashcard, practiceCard] })
-
-		const sidebar = await screen.findByRole('complementary', {
-			name: 'Queue',
-		})
-		expect(
-			within(sidebar).getByRole('button', {
-				name: 'Select Flashcard prompt',
-			}),
-		).toBeInTheDocument()
-		expect(
-			within(sidebar).getByRole('button', {
-				name: 'Select Practice prompt',
-			}),
-		).toBeInTheDocument()
-		const heading = screen.getByRole('heading', { level: 1, name: 'New' })
-		expect(heading).toHaveTextContent('2')
-
-		await user.click(
-			within(sidebar).getByRole('radio', { name: 'Flashcards' }),
-		)
-
-		expect(
-			within(sidebar).getByRole('button', {
-				name: 'Select Flashcard prompt',
-			}),
-		).toBeInTheDocument()
-		expect(
-			within(sidebar).queryByRole('button', {
-				name: 'Select Practice prompt',
-			}),
-		).not.toBeInTheDocument()
-		// The toolbar count is the queue total, not the filtered count.
-		expect(heading).toHaveTextContent('2')
-	})
-
-	it('filters the flagged review queue by card type', async () => {
-		const user = userEvent.setup()
-		const practiceCard: Card = {
-			...card,
-			_id: 'practice-card' as Id<'cards'>,
-			flaggedAt: 1,
-			primaryText: 'Practice prompt',
-			type: 'practice',
-		}
-		const flashcard: Card = {
-			...card,
-			_id: 'flashcard-card' as Id<'cards'>,
-			flaggedAt: 2,
-			primaryText: 'Flashcard prompt',
-		}
-		renderRoute('/review/flagged', {
-			flaggedCards: [flashcard, practiceCard],
-		})
-
-		const sidebar = await screen.findByRole('complementary', {
-			name: 'Queue',
-		})
-		expect(
-			within(sidebar).getByRole('button', {
-				name: 'Select Flashcard prompt',
-			}),
-		).toBeInTheDocument()
-		expect(
-			within(sidebar).getByRole('button', {
-				name: 'Select Practice prompt',
-			}),
-		).toBeInTheDocument()
-
-		await user.click(
-			within(sidebar).getByRole('radio', { name: 'Not flashcards' }),
-		)
-
-		expect(
-			within(sidebar).getByRole('button', {
-				name: 'Select Practice prompt',
-			}),
-		).toBeInTheDocument()
-		expect(
-			within(sidebar).queryByRole('button', {
-				name: 'Select Flashcard prompt',
-			}),
-		).not.toBeInTheDocument()
-	})
-
 	it('renders flagged cards in the review workspace', async () => {
-		const practiceCard: Card = {
+		const secondCard: Card = {
 			...card,
-			_id: 'practice-card' as Id<'cards'>,
+			_id: 'second-card' as Id<'cards'>,
 			flaggedAt: 1,
-			primaryText: 'Practice prompt',
-			type: 'practice',
+			prompt: 'Second prompt',
 		}
-		const flashcard: Card = {
+		const firstCard: Card = {
 			...card,
-			_id: 'flashcard-card' as Id<'cards'>,
+			_id: 'first-card' as Id<'cards'>,
 			flaggedAt: 2,
-			primaryText: 'Flashcard prompt',
+			prompt: 'First prompt',
 		}
 		renderRoute('/review/flagged', {
-			flaggedCards: [flashcard, practiceCard],
+			flaggedCards: [firstCard, secondCard],
 		})
 
 		expect(
@@ -256,10 +157,10 @@ describe('v2 app setup', () => {
 			}),
 		).toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Select Flashcard prompt' }),
+			screen.getByRole('button', { name: 'Select First prompt' }),
 		).toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Select Practice prompt' }),
+			screen.getByRole('button', { name: 'Select Second prompt' }),
 		).toBeInTheDocument()
 	})
 
@@ -307,7 +208,7 @@ describe('v2 app setup', () => {
 			screen.getByRole('button', { name: 'Previous card' }),
 		).toBeDisabled()
 		expect(screen.getByRole('button', { name: 'Next card' })).toBeDisabled()
-		expect(screen.getByLabelText('Card primary text')).not.toHaveAttribute(
+		expect(screen.getByLabelText('Card prompt')).not.toHaveAttribute(
 			'readonly',
 		)
 		// A real anchor, so middle-click and open-in-new-tab still work.
@@ -335,7 +236,7 @@ describe('v2 app setup', () => {
 		const secondCard: Card = {
 			...card,
 			_id: 'card-2' as Id<'cards'>,
-			primaryText: 'What is a discriminated union?',
+			prompt: 'What is a discriminated union?',
 		}
 		const { router } = renderRoute('/review/new', {
 			newCards: [card, secondCard],
@@ -369,12 +270,12 @@ describe('v2 app setup', () => {
 		const secondCard: Card = {
 			...card,
 			_id: 'card-2' as Id<'cards'>,
-			primaryText: 'What is a discriminated union?',
+			prompt: 'What is a discriminated union?',
 		}
 		const thirdCard: Card = {
 			...card,
 			_id: 'card-3' as Id<'cards'>,
-			primaryText: 'What is type narrowing?',
+			prompt: 'What is type narrowing?',
 		}
 		renderRoute('/review/new', {
 			newCards: [card, secondCard, thirdCard],
@@ -409,7 +310,8 @@ describe('v2 app setup', () => {
 		const secondCard: Card = {
 			...card,
 			_id: 'card-2' as Id<'cards'>,
-			primaryText: 'What is a discriminated union?',
+			prompt: 'What is a discriminated union?',
+			flaggedAt: 1,
 		}
 		renderRoute('/review/new', { newCards: [card, secondCard] })
 
@@ -427,7 +329,7 @@ describe('v2 app setup', () => {
 
 		await user.click(
 			within(secondCardButton.closest('tr')!).getByRole('button', {
-				name: 'Remove as flashcard',
+				name: 'Unflag',
 			}),
 		)
 
@@ -459,7 +361,7 @@ describe('v2 app setup', () => {
 		const secondCard: Card = {
 			...card,
 			_id: 'card-2' as Id<'cards'>,
-			primaryText: 'What is a discriminated union?',
+			prompt: 'What is a discriminated union?',
 		}
 		renderRoute('/review/new', { newCards: [card, secondCard] })
 
@@ -486,12 +388,12 @@ describe('v2 app setup', () => {
 		const secondCard: Card = {
 			...card,
 			_id: 'card-2' as Id<'cards'>,
-			primaryText: 'What is a discriminated union?',
+			prompt: 'What is a discriminated union?',
 		}
 		const thirdCard: Card = {
 			...card,
 			_id: 'card-3' as Id<'cards'>,
-			primaryText: 'What is type narrowing?',
+			prompt: 'What is type narrowing?',
 		}
 		renderRoute('/review/new', {
 			newCards: [card, secondCard, thirdCard],
@@ -532,7 +434,7 @@ describe('v2 app setup', () => {
 		const secondCard: Card = {
 			...card,
 			_id: 'card-2' as Id<'cards'>,
-			primaryText: 'What is a discriminated union?',
+			prompt: 'What is a discriminated union?',
 		}
 		renderRoute('/review/new', { newCards: [card, secondCard] })
 
@@ -544,9 +446,9 @@ describe('v2 app setup', () => {
 		expect(overviewTab).toHaveFocus()
 
 		await user.click(overviewTab)
-		const primaryText = screen.getByLabelText('Card primary text')
-		await user.click(primaryText)
-		fireEvent.keyDown(primaryText, { key: 'j' })
+		const prompt = screen.getByLabelText('Card prompt')
+		await user.click(prompt)
+		fireEvent.keyDown(prompt, { key: 'j' })
 		expect(
 			screen.getByDisplayValue('What problem do generics solve?'),
 		).toBeInTheDocument()
@@ -557,7 +459,7 @@ describe('v2 app setup', () => {
 		const secondCard: Card = {
 			...card,
 			_id: 'card-2' as Id<'cards'>,
-			primaryText: 'What is a discriminated union?',
+			prompt: 'What is a discriminated union?',
 		}
 		renderRoute('/review/new', { newCards: [card, secondCard] })
 
@@ -603,7 +505,7 @@ describe('v2 app setup', () => {
 		const secondCard: Card = {
 			...card,
 			_id: 'card-2' as Id<'cards'>,
-			primaryText: 'What is a discriminated union?',
+			prompt: 'What is a discriminated union?',
 		}
 		renderRoute('/review/new', { newCards: [card, secondCard] })
 
@@ -625,12 +527,12 @@ describe('v2 app setup', () => {
 		const secondCard: Card = {
 			...card,
 			_id: 'card-2' as Id<'cards'>,
-			primaryText: 'What is a discriminated union?',
+			prompt: 'What is a discriminated union?',
 		}
 		const thirdCard: Card = {
 			...card,
 			_id: 'card-3' as Id<'cards'>,
-			primaryText: 'What is type narrowing?',
+			prompt: 'What is type narrowing?',
 		}
 		const { queryClient } = renderRoute('/review/new', {
 			newCards: [card, secondCard, thirdCard],
@@ -912,7 +814,7 @@ describe('v2 app setup', () => {
 		const sectionedCard: Card = {
 			...card,
 			_id: 'card-sectioned' as Id<'cards'>,
-			primaryText: 'What does a constraint do?',
+			prompt: 'What does a constraint do?',
 			sectionId,
 		}
 
@@ -931,16 +833,14 @@ describe('v2 app setup', () => {
 		expect(
 			within(unsectioned).getByRole('heading', { name: 'Cards' }),
 		).toBeInTheDocument()
-		expect(
-			within(unsectioned).getByText(card.primaryText),
-		).toBeInTheDocument()
+		expect(within(unsectioned).getByText(card.prompt)).toBeInTheDocument()
 		expect(
 			within(typeParameters).getByRole('button', {
 				name: 'Type parameters',
 			}),
 		).toBeInTheDocument()
 		expect(
-			within(typeParameters).getByText(sectionedCard.primaryText),
+			within(typeParameters).getByText(sectionedCard.prompt),
 		).toBeInTheDocument()
 		expect(
 			within(untitled).getByRole('button', { name: 'Untitled section' }),
@@ -966,7 +866,7 @@ describe('v2 app setup', () => {
 			...card,
 			_id: 'card-2' as Id<'cards'>,
 			_creationTime: 1,
-			primaryText: 'What is a type parameter?',
+			prompt: 'What is a type parameter?',
 			rank: 'a1',
 		}
 		const firstCard: Card = { ...card, rank: 'a0' }
@@ -990,7 +890,7 @@ describe('v2 app setup', () => {
 			const user = userEvent.setup()
 			const { router } = renderCollection()
 			const link = await screen.findByRole('link', {
-				name: firstCard.primaryText,
+				name: firstCard.prompt,
 			})
 
 			await user.click(link)
@@ -1010,7 +910,7 @@ describe('v2 app setup', () => {
 			const { mutation } = renderCollection()
 			await user.click(
 				await screen.findByRole('link', {
-					name: firstCard.primaryText,
+					name: firstCard.prompt,
 				}),
 			)
 
@@ -1025,7 +925,7 @@ describe('v2 app setup', () => {
 			// and from there down crosses into the section below.
 			await user.keyboard('{ArrowDown}')
 			expect(
-				screen.getByRole('link', { name: secondCard.primaryText }),
+				screen.getByRole('link', { name: secondCard.prompt }),
 			).toHaveFocus()
 			await user.keyboard('{Control>}{ArrowDown}{/Control}')
 			expect(mutation).toHaveBeenLastCalledWith(
@@ -1043,10 +943,10 @@ describe('v2 app setup', () => {
 			const user = userEvent.setup()
 			const { mutation } = renderCollection()
 			const first = await screen.findByRole('link', {
-				name: firstCard.primaryText,
+				name: firstCard.prompt,
 			})
 			const second = screen.getByRole('link', {
-				name: secondCard.primaryText,
+				name: secondCard.prompt,
 			})
 
 			await user.click(first)
@@ -1112,7 +1012,7 @@ describe('v2 app setup', () => {
 			const user = userEvent.setup()
 			renderCollection()
 			const first = await screen.findByRole('link', {
-				name: firstCard.primaryText,
+				name: firstCard.prompt,
 			})
 
 			// Arrows typed in a field keep moving its caret.
@@ -1141,7 +1041,7 @@ describe('v2 app setup', () => {
 			const user = userEvent.setup()
 			renderCollection()
 			const first = await screen.findByRole('link', {
-				name: firstCard.primaryText,
+				name: firstCard.prompt,
 			})
 
 			await user.click(
@@ -1164,7 +1064,7 @@ describe('v2 app setup', () => {
 			const { router, mutation } = renderCollection()
 			await user.click(
 				await screen.findByRole('link', {
-					name: secondCard.primaryText,
+					name: secondCard.prompt,
 				}),
 			)
 
@@ -1174,14 +1074,14 @@ describe('v2 app setup', () => {
 
 			// So does a click on empty page space.
 			await user.click(
-				screen.getByRole('link', { name: secondCard.primaryText }),
+				screen.getByRole('link', { name: secondCard.prompt }),
 			)
 			await user.click(screen.getByText('Subcollections'))
 			await user.keyboard('{Control>}{ArrowUp}{/Control}')
 			expect(mutation).not.toHaveBeenCalled()
 
 			await user.click(
-				screen.getByRole('link', { name: secondCard.primaryText }),
+				screen.getByRole('link', { name: secondCard.prompt }),
 			)
 			await user.keyboard('{Enter}')
 			await waitFor(() =>
@@ -1256,10 +1156,10 @@ describe('v2 app setup', () => {
 
 		renderRoute(`/cards/${cardId}`, { ancestors: [root] })
 
-		const primaryText = await screen.findByLabelText('Card primary text')
-		expect(primaryText).toHaveValue('What problem do generics solve?')
-		expect(primaryText).toHaveAttribute('placeholder', 'Prompt')
-		expect(screen.getByLabelText('Card secondary text')).toHaveAttribute(
+		const prompt = await screen.findByLabelText('Card prompt')
+		expect(prompt).toHaveValue('What problem do generics solve?')
+		expect(prompt).toHaveAttribute('placeholder', 'Prompt')
+		expect(screen.getByLabelText('Card answer')).toHaveAttribute(
 			'placeholder',
 			'Answer',
 		)
@@ -1279,20 +1179,6 @@ describe('v2 app setup', () => {
 		expect(
 			screen.queryByRole('navigation', { name: 'Collection tree' }),
 		).not.toBeInTheDocument()
-	})
-
-	it('uses practice-specific card placeholders', async () => {
-		renderRoute(`/cards/${cardId}`, {
-			cardType: 'practice',
-		})
-
-		expect(
-			await screen.findByLabelText('Card primary text'),
-		).toHaveAttribute('placeholder', 'Title')
-		expect(screen.getByLabelText('Card secondary text')).toHaveAttribute(
-			'placeholder',
-			'Add description...',
-		)
 	})
 
 	it('renders the shared error page when a card does not exist', async () => {

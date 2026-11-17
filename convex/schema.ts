@@ -1,6 +1,6 @@
 import { defineSchema, defineTable } from 'convex/server'
 
-import { cardBase } from './validators/cards'
+import { cardDocument } from './validators/cards'
 import { collectionBase } from './validators/collections'
 import { reviewBase } from './validators/reviews'
 import { sectionBase } from './validators/sections'
@@ -19,7 +19,7 @@ export default defineSchema({
 		'rank',
 	]),
 
-	cards: defineTable(cardBase)
+	cards: defineTable(cardDocument)
 		.index('by_collectionId_ownerId', ['collectionId', 'ownerId'])
 		// One list per section, plus the unsectioned cards under an
 		// `undefined` sectionId, each in display order.

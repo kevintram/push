@@ -110,9 +110,8 @@ const card: Card = {
 	_creationTime: 0,
 	collectionId: 'collection-1' as Card['collectionId'],
 	ownerId: 'user-1',
-	type: 'flashcard',
-	primaryText: 'Question',
-	secondaryText: 'Answer',
+	prompt: 'Question',
+	answer: 'Answer',
 	notes: '',
 	state: 'LEARNING',
 	lastReview: undefined,
@@ -154,7 +153,6 @@ describe('CardActions', () => {
 	it.each([
 		['f', { flaggedAt: expect.any(Number) }],
 		['e', { retiredAt: expect.any(Number) }],
-		['t', { type: 'practice' }],
 	])(
 		'scopes %s to the open card menu while several cards are selected',
 		async (key, patch) => {
@@ -248,22 +246,6 @@ describe('CardActions', () => {
 		expect(
 			screen.getByRole('link', { name: 'Go to card' }),
 		).toHaveAttribute('href', '/cards/card-1')
-	})
-
-	it('turns a flashcard into a practice card', async () => {
-		render(<CardActions card={card} />)
-
-		await openMenu()
-		await userEvent
-			.setup()
-			.click(
-				screen.getByRole('menuitem', { name: 'Remove as flashcard' }),
-			)
-
-		expect(updateMutate).toHaveBeenCalledWith({
-			cardIds: [card._id],
-			type: 'practice',
-		})
 	})
 
 	it('flags an unflagged card with the current time', async () => {

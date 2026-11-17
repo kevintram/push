@@ -41,7 +41,7 @@ function singleItemText(contents: SelectionContents): string | undefined {
 		return sections[0]!.title.trim() || 'Untitled section'
 	}
 	if (sections.length === 0 && cards.length === 1) {
-		return cards[0]!.primaryText.trim() || 'Untitled card'
+		return cards[0]!.prompt.trim() || 'Untitled card'
 	}
 	return undefined
 }

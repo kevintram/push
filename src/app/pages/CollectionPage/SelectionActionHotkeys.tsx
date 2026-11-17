@@ -4,11 +4,10 @@ import { appHotkeys } from '~/modules/shortcuts/appHotkeys'
 
 type SelectionActionHotkeysProps = {
 	menuElement: HTMLDivElement | null
-	/** Whether the selection covers any cards, which flag, retire, and type need. */
+	/** Whether the selection covers any cards, which flag and retire need. */
 	hasCards: boolean
 	onToggleFlag: () => void
 	onToggleRetire: () => void
-	onToggleType: () => void
 	onMove: () => void
 	onDelete: () => void
 }
@@ -22,7 +21,6 @@ export function SelectionActionHotkeys({
 	hasCards,
 	onToggleFlag,
 	onToggleRetire,
-	onToggleType,
 	onMove,
 	onDelete,
 }: SelectionActionHotkeysProps) {
@@ -37,11 +35,6 @@ export function SelectionActionHotkeys({
 		{
 			hotkey: appHotkeys.toggleSelectionRetire,
 			callback: onToggleRetire,
-			options: withCards,
-		},
-		{
-			hotkey: appHotkeys.toggleSelectionType,
-			callback: onToggleType,
 			options: withCards,
 		},
 		{

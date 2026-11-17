@@ -33,8 +33,8 @@ const cardId = 'card-1' as Id<'cards'>
 const removedCard = {
 	_id: cardId,
 	collectionId,
-	primaryText: 'A card',
-} satisfies Pick<Card, '_id' | 'collectionId' | 'primaryText'>
+	prompt: 'A card',
+} satisfies Pick<Card, '_id' | 'collectionId' | 'prompt'>
 
 function wrapper({ children }: { children: ReactNode }) {
 	return (
@@ -51,7 +51,7 @@ describe('useDeleteCards', () => {
 
 	it.each([
 		[[removedCard], 'Deleted **A card**'],
-		[[{ ...removedCard, primaryText: ' ' }], 'Deleted **Untitled card**'],
+		[[{ ...removedCard, prompt: ' ' }], 'Deleted **Untitled card**'],
 		[
 			[removedCard, { ...removedCard, _id: 'card-2' as Id<'cards'> }],
 			'Deleted 2 cards',
@@ -158,10 +158,9 @@ describe('useUpdateCards undo', () => {
 	it("puts back each card's own value for the patched field only", async () => {
 		const addToast = vi.spyOn(toast, 'add')
 		convexMutation.mockResolvedValue(null)
-		const flagged = { _id: cardId, flaggedAt: 5, type: 'practice' } as Card
+		const flagged = { _id: cardId, flaggedAt: 5, prompt: 'Flagged' } as Card
 		const unflagged = {
 			_id: 'card-2' as Id<'cards'>,
-			type: 'flashcard',
 		} as Card
 		const { result } = renderHook(() => useUpdateCards(), { wrapper })
 

@@ -24,7 +24,7 @@ const created = {
 		stabilityBefore: 3,
 		stabilityAfter: 9,
 	},
-	card: { primaryText: 'Gracias', dueDate: '2026-11-08' },
+	card: { prompt: 'Gracias', dueDate: '2026-11-08' },
 }
 
 vi.mock('@convex-dev/react-query', () => ({
@@ -136,7 +136,7 @@ describe('ReviewComposer', () => {
 		const addToast = vi.spyOn(toast, 'add')
 		createReview.mockResolvedValue({
 			review: { _id: 'review-1' },
-			card: { primaryText: 'Gracias' },
+			card: { prompt: 'Gracias' },
 		})
 		renderComposer()
 

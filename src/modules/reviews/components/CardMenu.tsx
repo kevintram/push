@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { HotkeysProvider } from '@tanstack/react-hotkeys'
-import { Archive, Ellipsis, Flag, Zap } from 'lucide-react'
+import { Archive, Ellipsis, Flag } from 'lucide-react'
 import { useId, useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
@@ -43,20 +43,17 @@ export function CardMenu({
 	const [isOpen, setIsOpen] = useState(false)
 	const [menuElement, setMenuElement] = useState<HTMLDivElement | null>(null)
 	const [dialog, setDialog] = useState<'move' | 'delete' | null>(null)
-	const { isDeleting, remove, toggleFlag, toggleRetire, toggleType } =
-		useCardActions()
+	const { isDeleting, remove, toggleFlag, toggleRetire } = useCardActions()
 	const closeOnDismiss = (open: boolean) => {
 		if (!open) setDialog(null)
 	}
 
-	const isFlashcard = card.type === 'flashcard'
 	const isFlagged = card.flaggedAt !== undefined
 	const isRetired = card.retiredAt !== undefined
 	const hotkeys = (
 		<CardActionHotkeys
 			onToggleFlag={() => toggleFlag([card])}
 			onToggleRetire={() => toggleRetire([card])}
-			onToggleType={() => toggleType([card])}
 			onMove={() => setDialog('move')}
 			onDelete={() => setDialog('delete')}
 		/>
@@ -99,24 +96,6 @@ export function CardMenu({
 					>
 						{hotkeys}
 					</HotkeysProvider>
-					<DropdownMenuItem
-						closeOnClick={false}
-						icon={
-							<Zap
-								aria-hidden='true'
-								size={iconSizes.sm}
-								{...stylex.props(
-									isFlashcard && cardStatusStyles.flashcardOn,
-								)}
-							/>
-						}
-						onClick={() => toggleType([card])}
-						{...hotkeyItemProps(appHotkeys.toggleCardType)}
-					>
-						{isFlashcard
-							? 'Remove as flashcard'
-							: 'Mark as flashcard'}
-					</DropdownMenuItem>
 					<DropdownMenuItem
 						closeOnClick={false}
 						icon={
@@ -183,7 +162,7 @@ export function CardMenu({
 				onConfirm={() => remove([card], () => setDialog(null))}
 				onOpenChange={closeOnDismiss}
 				open={dialog === 'delete'}
-				title={`Delete “${card.primaryText.trim() || 'Untitled card'}”?`}
+				title={`Delete “${card.prompt.trim() || 'Untitled card'}”?`}
 			/>
 		</>
 	)

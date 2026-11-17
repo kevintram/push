@@ -23,7 +23,7 @@ describe('migrations.backfillRanks', () => {
 			const insertSection = (title: string) =>
 				ctx.db.insert('sections', { collectionId, ownerId, title })
 			const insertCard = (
-				primaryText: string,
+				prompt: string,
 				sectionId?: Id<'sections'>,
 				rank?: string,
 			) =>
@@ -32,12 +32,11 @@ describe('migrations.backfillRanks', () => {
 					...(sectionId && { sectionId }),
 					...(rank && { rank }),
 					ownerId,
-					type: 'practice',
-					primaryText,
-					secondaryText: '',
+					prompt,
+					answer: '',
 					notes: '',
 					state: 'LEARNING',
-					searchText: primaryText,
+					searchText: prompt,
 				})
 
 			const first = await insertSection('First')
@@ -103,18 +102,17 @@ describe('migrations.replayAllCardSrs', () => {
 				searchText: 'Collection',
 			})
 			// Derived fields left over from an older retention target.
-			const insertCard = (primaryText: string) =>
+			const insertCard = (prompt: string) =>
 				ctx.db.insert('cards', {
 					collectionId,
 					ownerId,
-					type: 'practice',
-					primaryText,
-					secondaryText: '',
+					prompt,
+					answer: '',
 					notes: '',
 					state: 'REVIEW',
 					step: undefined,
 					dueDate: '2030-01-01',
-					searchText: primaryText,
+					searchText: prompt,
 				})
 			const insertReview = (
 				cardId: Id<'cards'>,
@@ -184,6 +182,77 @@ describe('migrations.replayAllCardSrs', () => {
 			const unreviewed = await ctx.db.get('cards', ids.unreviewed)
 			expect(unreviewed?.state).toBe('LEARNING')
 			expect(unreviewed?.dueDate).toBeUndefined()
+		})
+	})
+})
+
+describe('migrations.flashcardsOnly', () => {
+	afterEach(() => {
+		vi.useRealTimers()
+	})
+
+	it('moves legacy cards to prompt and answer and drops their type', async () => {
+		vi.useFakeTimers()
+		const t = convexTest(schema, modules)
+		const ids = await t.run(async ctx => {
+			const collectionId = await ctx.db.insert('collections', {
+				title: 'Collection',
+				description: '',
+				ownerId,
+				path: [],
+				searchText: 'Collection',
+			})
+			const base = {
+				collectionId,
+				ownerId,
+				notes: '',
+				state: 'LEARNING',
+				searchText: '',
+			} as const
+			return {
+				practice: await ctx.db.insert('cards', {
+					...base,
+					type: 'practice',
+					primaryText: 'Title',
+					secondaryText: 'Description',
+				}),
+				flashcard: await ctx.db.insert('cards', {
+					...base,
+					type: 'flashcard',
+					primaryText: 'Prompt',
+					secondaryText: '',
+				}),
+				current: await ctx.db.insert('cards', {
+					...base,
+					prompt: 'Current',
+					answer: 'Answer',
+				}),
+			}
+		})
+
+		await t.mutation(internal.migrations.flashcardsOnly, {})
+		await t.finishAllScheduledFunctions(vi.runAllTimers)
+
+		await t.run(async ctx => {
+			const practice = await ctx.db.get('cards', ids.practice)
+			expect(practice).toMatchObject({
+				prompt: 'Title',
+				answer: 'Description',
+			})
+			expect(await ctx.db.get('cards', ids.flashcard)).toMatchObject({
+				prompt: 'Prompt',
+				answer: '',
+			})
+			expect(await ctx.db.get('cards', ids.current)).toMatchObject({
+				prompt: 'Current',
+				answer: 'Answer',
+			})
+			for (const cardId of Object.values(ids)) {
+				const card = await ctx.db.get('cards', cardId)
+				expect(card).not.toHaveProperty('type')
+				expect(card).not.toHaveProperty('primaryText')
+				expect(card).not.toHaveProperty('secondaryText')
+			}
 		})
 	})
 })

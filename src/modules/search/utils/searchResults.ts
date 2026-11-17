@@ -51,7 +51,7 @@ export function buildCardResults(
 	const normalizedQuery = query.trim().toLocaleLowerCase()
 
 	return cards.map(card => {
-		const title = card.primaryText.trim() || UNTITLED
+		const title = card.prompt.trim() || UNTITLED
 		return {
 			id: card._id,
 			kind: 'card',
@@ -60,7 +60,7 @@ export function buildCardResults(
 				normalizedQuery !== '' &&
 				card.notes.toLocaleLowerCase().includes(normalizedQuery)
 					? card.notes.trim()
-					: card.secondaryText.trim(),
+					: card.answer.trim(),
 			title,
 		}
 	})

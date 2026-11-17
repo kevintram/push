@@ -20,8 +20,8 @@ describe('searchResults', () => {
 			_id: 'card-1' as Id<'cards'>,
 			notes: '',
 			pathTitles: ['Science', 'Biology'],
-			primaryText: 'What is mitosis?',
-			secondaryText: 'Cell division',
+			prompt: 'What is mitosis?',
+			answer: 'Cell division',
 		}
 
 		expect(buildCollectionResults([collection])).toMatchObject([
@@ -45,8 +45,8 @@ describe('searchResults', () => {
 			_id: 'card-notes' as Id<'cards'>,
 			notes: 'Compare cytokinesis after mitosis.',
 			pathTitles: [],
-			primaryText: 'Cell division detail',
-			secondaryText: 'Unrelated answer',
+			prompt: 'Cell division detail',
+			answer: 'Unrelated answer',
 		}
 
 		expect(buildCardResults([card], 'cytokinesis')).toMatchObject([
@@ -65,8 +65,8 @@ describe('searchResults', () => {
 			_id: 'card-root' as Id<'cards'>,
 			notes: '',
 			pathTitles: ['Root'],
-			primaryText: 'Card',
-			secondaryText: '',
+			prompt: 'Card',
+			answer: '',
 		}
 
 		expect(buildCollectionResults([rootCollection])).toMatchObject([
@@ -82,8 +82,8 @@ describe('searchResults', () => {
 			_id: 'card-blank' as Id<'cards'>,
 			notes: '',
 			pathTitles: ['  ', 'Biology'],
-			primaryText: 'Card',
-			secondaryText: '',
+			prompt: 'Card',
+			answer: '',
 		}
 
 		expect(buildCardResults([card], '')).toMatchObject([

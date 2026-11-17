@@ -51,7 +51,7 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 })
 
 const card = (id: string) =>
-	({ _id: id as Id<'cards'>, primaryText: `Card ${id}` }) as Card
+	({ _id: id as Id<'cards'>, prompt: `Card ${id}` }) as Card
 const section = { _id: 'A' as Id<'sections'>, title: 'A section' } as Section
 
 describe('SelectionDialogs', () => {
@@ -60,15 +60,14 @@ describe('SelectionDialogs', () => {
 			cards: [
 				{
 					...card('a'),
-					primaryText:
-						'A full card prompt that stays visible in the confirmation',
+					prompt: 'A full card prompt that stays visible in the confirmation',
 				},
 			],
 			sections: [],
 			title: 'Delete “A full card prompt that stays visible in the confirmation”?',
 		},
 		{
-			cards: [{ ...card('a'), primaryText: '  ' }],
+			cards: [{ ...card('a'), prompt: '  ' }],
 			sections: [],
 			title: 'Delete “Untitled card”?',
 		},
@@ -125,8 +124,8 @@ describe('SelectionDialogs', () => {
 			'permanently deleted.',
 		)
 		expect(dialog).not.toHaveTextContent(section.title)
-		expect(dialog).not.toHaveTextContent(child.primaryText)
-		expect(dialog).not.toHaveTextContent(loose.primaryText)
+		expect(dialog).not.toHaveTextContent(child.prompt)
+		expect(dialog).not.toHaveTextContent(loose.prompt)
 	})
 
 	it("names a move by the selection, counting a selected section's cards", async () => {

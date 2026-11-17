@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { Archive, Flag, Zap } from 'lucide-react'
+import { Archive, Flag } from 'lucide-react'
 import { DateTime } from 'luxon'
 import { useCallback } from 'react'
 
@@ -14,8 +14,6 @@ const idsOf = (cards: ReadonlyArray<Card>) => cards.map(card => card._id)
 
 type UseCardActionsReturn = {
 	isDeleting: boolean
-	/** Makes every card a flashcard, or practice cards when all already are. */
-	toggleType: (cards: ReadonlyArray<Card>) => void
 	/** Flags every card, or clears the flags when all are already flagged. */
 	toggleFlag: (cards: ReadonlyArray<Card>) => void
 	/**
@@ -39,30 +37,6 @@ export function useCardActions(): UseCardActionsReturn {
 	const navigate = useNavigate()
 	const updateCards = useUpdateCards()
 	const deleteCards = useDeleteCards()
-
-	const toggleType = useCallback(
-		(cards: ReadonlyArray<Card>) => {
-			const type = cards.every(card => card.type === 'flashcard')
-				? 'practice'
-				: 'flashcard'
-			updateCards.mutate({
-				cardIds: idsOf(cards),
-				type,
-				...(cards.length > 1 && {
-					undo: {
-						icon: Zap,
-						iconXstyle:
-							type === 'flashcard'
-								? cardStatusStyles.flashcardOn
-								: undefined,
-						title: `Made ${pluralize(cards.length, 'card')} ${type === 'flashcard' ? 'flashcards' : 'practice cards'}`,
-						cards,
-					},
-				}),
-			})
-		},
-		[updateCards],
-	)
 
 	const toggleFlag = useCallback(
 		(cards: ReadonlyArray<Card>) => {
@@ -106,7 +80,7 @@ export function useCardActions(): UseCardActionsReturn {
 			// A bulk action counts the cards it changed, even just one.
 			const name =
 				cards.length === 1
-					? toastName(cards[0]!.primaryText)
+					? toastName(cards[0]!.prompt)
 					: pluralize(changed.length, 'card')
 			updateCards.mutate({
 				cardIds: idsOf(changed),
@@ -144,6 +118,5 @@ export function useCardActions(): UseCardActionsReturn {
 		remove,
 		toggleFlag,
 		toggleRetire,
-		toggleType,
 	}
 }
