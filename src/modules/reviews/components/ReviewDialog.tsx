@@ -241,8 +241,8 @@ type ReviewDialogProps = {
 	/** Closes the dialog, e.g. when a breadcrumb navigates away. */
 	onClose: () => void
 	onDelete: () => void
-	onSetDate: (value: DateString | null) => void
-	onSetRating: (rating: Rating | null) => void
+	onSetDate: (value: DateString) => void
+	onSetRating: (rating: Rating) => void
 	review: Review
 }
 
@@ -364,11 +364,6 @@ export function ReviewDialog({
 				<div {...stylex.props(styles.footerMetadata)}>
 					<ReviewDatePicker
 						date={(review.date ?? null) as DateString | null}
-						kind={
-							review.rating === undefined
-								? 'scheduled'
-								: 'completed'
-						}
 						onDateChange={onSetDate}
 						size='medium'
 					/>

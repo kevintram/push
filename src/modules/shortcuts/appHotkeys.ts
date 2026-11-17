@@ -62,7 +62,6 @@ export const appHotkeys = defineAppHotkeys({
 	rateHard: { hotkey: '2', meta: { name: 'Hard', group: 'Rating' } },
 	rateGood: { hotkey: '3', meta: { name: 'Good', group: 'Rating' } },
 	rateEasy: { hotkey: '4', meta: { name: 'Easy', group: 'Rating' } },
-	rateTodo: { hotkey: '0', meta: { name: 'Todo', group: 'Rating' } },
 	reveal: {
 		hotkey: 'R',
 		meta: { name: 'Reveal answer, then notes', group: 'Card' },

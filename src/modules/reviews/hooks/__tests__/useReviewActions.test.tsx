@@ -1,6 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
-import { DateTime, Settings } from 'luxon'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import type { Review } from '../../types/review.types'
 import { useReviewActions } from '../useReviewActions'
@@ -13,54 +12,35 @@ vi.mock('../../api/reviewQueries', () => ({
 	useDeleteReview: () => ({ isPending: false, mutate: deleteMutate }),
 }))
 
-const baseReview: Review = {
+const review: Review = {
 	_id: 'review-1' as Review['_id'],
 	_creationTime: 0,
+	cardId: 'card-1' as Review['cardId'],
+	date: '2026-08-08',
 	description: '',
 	notes: '',
 	ownerId: 'user-1',
-	cardId: 'card-1' as Review['cardId'],
+	rating: 'good',
 }
 
 describe('useReviewActions', () => {
-	const originalZone = Settings.defaultZone
+	it('re-rates without touching the completion day', () => {
+		const { result } = renderHook(() => useReviewActions(review))
 
-	afterEach(() => {
-		Settings.defaultZone = originalZone
-		vi.useRealTimers()
-	})
-
-	it('submits the local today with a first completion only', () => {
-		vi.useFakeTimers()
-		vi.setSystemTime(DateTime.fromISO('2026-08-09T01:00:00Z').toJSDate())
-		Settings.defaultZone = 'America/Los_Angeles'
-
-		const { result, rerender } = renderHook(
-			({ review }: { review: Review }) => useReviewActions(review),
-			{ initialProps: { review: baseReview } },
-		)
-
-		act(() => result.current.setRating('good'))
-		expect(updateMutate).toHaveBeenLastCalledWith({
-			date: '2026-08-08',
-			rating: 'good',
-			reviewId: baseReview._id,
-		})
-
-		rerender({
-			review: { ...baseReview, date: '2026-08-08', rating: 'good' },
-		})
-		// Re-rating leaves the stored completion day alone.
 		act(() => result.current.setRating('easy'))
 		expect(updateMutate).toHaveBeenLastCalledWith({
 			rating: 'easy',
-			reviewId: baseReview._id,
+			reviewId: review._id,
 		})
+	})
 
-		act(() => result.current.setRating(null))
+	it('moves the completion day without touching the rating', () => {
+		const { result } = renderHook(() => useReviewActions(review))
+
+		act(() => result.current.setDate('2026-08-07'))
 		expect(updateMutate).toHaveBeenLastCalledWith({
-			rating: null,
-			reviewId: baseReview._id,
+			date: '2026-08-07',
+			reviewId: review._id,
 		})
 	})
 })

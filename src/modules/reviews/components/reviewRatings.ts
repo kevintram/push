@@ -14,25 +14,14 @@ export const ratings = {
 	easy: { label: 'Easy', Icon: CheckCheck, hotkey: appHotkeys.rateEasy },
 } as const
 
-/** The choice for a review with no rating yet. */
-export const todoRating = {
-	label: 'Todo',
-	Icon: Circle,
-	hotkey: appHotkeys.rateTodo,
-} as const
+/** What a rating control shows before a new review has been rated. */
+export const unrated = { label: 'Rate', Icon: Circle } as const
 
-/** Radio values are strings, so Todo, a review without a rating, is ''. */
-export const TODO_VALUE = ''
-
-/** Every choice a rating control offers: the ratings, then Todo. */
-export const ratingChoices = [
-	...Object.entries(ratings).map(([value, rating]) => ({ value, ...rating })),
-	{ value: TODO_VALUE, ...todoRating },
-]
-
-export function ratingFromChoice(value: string): Rating | null {
-	return value === TODO_VALUE ? null : (value as Rating)
-}
+/** Every choice a rating control offers, in order. */
+export const ratingChoices = Object.entries(ratings).map(([value, rating]) => ({
+	value: value as Rating,
+	...rating,
+}))
 
 export function getRating(value: Rating | undefined) {
 	return value === undefined ? null : ratings[value]

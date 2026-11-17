@@ -6,7 +6,7 @@ import { ReviewQueueWorkspace } from '~/modules/reviews/components/review-queue/
 
 export function ReviewLatePage() {
 	const today = useToday()
-	const { data: cards } = useSuspenseQuery(dueQueries.listLateCards(today))
+	const { data: cards } = useSuspenseQuery(dueQueries.listLate(today))
 
 	return <ReviewQueueWorkspace cards={cards} title='Late' today={today} />
 }

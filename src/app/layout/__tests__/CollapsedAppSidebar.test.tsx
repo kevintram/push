@@ -1,5 +1,4 @@
 import type { Card } from '@convex/validators/cards'
-import type { DueEntry } from '@convex/validators/due'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -52,33 +51,26 @@ describe('CollapsedAppSidebar', () => {
 		due = 0,
 		newCards = 0,
 		late = 0,
-		lateEntries,
 		flagged = 0,
 	}: {
 		due?: number
 		newCards?: number
 		late?: number
-		lateEntries?: Array<DueEntry>
 		flagged?: number
 	} = {}) {
 		const queryClient = createTestQueryClient()
 		const today = todayIso()
 		queryClient.setQueryData(
 			dueQueries.listDue(today).queryKey,
-			Array.from({ length: due }, () => ({}) as DueEntry),
+			Array.from({ length: due }, () => ({}) as Card),
 		)
 		queryClient.setQueryData(
 			dueQueries.listNew().queryKey,
-			Array.from({ length: newCards }, () => ({}) as DueEntry),
+			Array.from({ length: newCards }, () => ({}) as Card),
 		)
 		queryClient.setQueryData(
 			dueQueries.listLate(today).queryKey,
-			lateEntries ??
-				Array.from(
-					{ length: late },
-					(_, index) =>
-						({ card: { _id: `late-${index}` } }) as DueEntry,
-				),
+			Array.from({ length: late }, () => ({}) as Card),
 		)
 		queryClient.setQueryData(
 			cardQueries.listFlagged().queryKey,
@@ -200,17 +192,12 @@ describe('CollapsedAppSidebar', () => {
 		}
 	})
 
-	it('uses plural counts and deduplicates late cards for its count', async () => {
+	it('uses plural counts', async () => {
 		const user = userEvent.setup()
 		renderSidebar({
 			due: 2,
 			newCards: 3,
-			lateEntries: [
-				{ card: { _id: 'late-1' } } as DueEntry,
-				{ card: { _id: 'late-1' } } as DueEntry,
-				{ card: { _id: 'late-2' } } as DueEntry,
-				{ card: { _id: 'late-2' } } as DueEntry,
-			],
+			late: 2,
 			flagged: 5,
 		})
 

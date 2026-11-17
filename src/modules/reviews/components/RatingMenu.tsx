@@ -6,34 +6,27 @@ import {
 	DropdownMenuContent,
 	DropdownMenuRadioGroup,
 	DropdownMenuRadioItem,
-	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '~/components/ui'
 import { hotkeyItemProps } from '~/modules/shortcuts/hotkeyItemProps'
 import { iconSizes } from '~/styles/tokens.stylex'
 
 import type { Rating } from '../types/review.types'
-import {
-	getRating,
-	ratingChoices,
-	ratingFromChoice,
-	TODO_VALUE,
-	todoRating,
-} from './reviewRatings'
+import { getRating, ratingChoices, unrated } from './reviewRatings'
 
 type RatingMenuProps = {
 	/** The trigger's content. */
 	children: React.ReactNode
 	disabled?: boolean
-	onSetRating: (rating: Rating | null) => void
+	onSetRating: (rating: Rating) => void
 	rating: Rating | undefined
 	/** The trigger element, which receives `children`. */
 	trigger: React.ReactElement
 }
 
 /**
- * Every rating choice as a menu, with Todo last after a separator. While the
- * menu is open, each choice's key picks it, like a click.
+ * Every rating choice as a menu. While the menu is open, each choice's key
+ * picks it, like a click.
  */
 export function RatingMenu({
 	children,
@@ -46,9 +39,8 @@ export function RatingMenu({
 	// State, not a ref, so the keys register once the menu mounts.
 	const [menu, setMenu] = useState<HTMLDivElement | null>(null)
 
-	const value = rating ?? TODO_VALUE
-	const pick = (next: string) => {
-		if (next !== value) onSetRating(ratingFromChoice(next))
+	const pick = (next: Rating) => {
+		if (next !== rating) onSetRating(next)
 		setIsOpen(false)
 	}
 
@@ -65,7 +57,7 @@ export function RatingMenu({
 	return (
 		<DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
 			<DropdownMenuTrigger
-				aria-label={(getRating(rating) ?? todoRating).label}
+				aria-label={(getRating(rating) ?? unrated).label}
 				disabled={disabled}
 				render={trigger}
 			>
@@ -73,13 +65,11 @@ export function RatingMenu({
 			</DropdownMenuTrigger>
 			<DropdownMenuContent ref={setMenu}>
 				<DropdownMenuRadioGroup
-					value={value}
-					onValueChange={next => pick(next as string)}
+					// An unrated review matches no choice, so none is checked.
+					value={rating ?? ''}
+					onValueChange={next => pick(next as Rating)}
 				>
-					{ratingChoices.map(({ value, label, Icon, hotkey }) => [
-						value === TODO_VALUE && (
-							<DropdownMenuSeparator key='separator' />
-						),
+					{ratingChoices.map(({ value, label, Icon, hotkey }) => (
 						<DropdownMenuRadioItem
 							key={value}
 							closeOnClick
@@ -90,8 +80,8 @@ export function RatingMenu({
 							{...hotkeyItemProps(hotkey)}
 						>
 							{label}
-						</DropdownMenuRadioItem>,
-					])}
+						</DropdownMenuRadioItem>
+					))}
 				</DropdownMenuRadioGroup>
 			</DropdownMenuContent>
 		</DropdownMenu>

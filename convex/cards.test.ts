@@ -727,14 +727,20 @@ describe('cards', () => {
 			collectionId,
 		})
 		await asUserA.mutation(api.reviews.create, {
+			date: '2026-01-01',
+			rating: 'good',
 			cardId: removedCardId,
 		})
 		await asUserA.mutation(api.reviews.create, {
+			date: '2026-01-01',
+			rating: 'good',
 			cardId: removedCardId,
 		})
 		const {
 			review: { _id: keptReviewId },
 		} = await asUserA.mutation(api.reviews.create, {
+			date: '2026-01-01',
+			rating: 'good',
 			cardId: keptCardId,
 		})
 
@@ -1023,14 +1029,20 @@ describe('cards', () => {
 			collectionId: unrelatedId,
 		})
 		await asUserA.mutation(api.reviews.create, {
+			date: '2026-01-01',
+			rating: 'good',
 			cardId: rootCardId,
 		})
 		await asUserA.mutation(api.reviews.create, {
+			date: '2026-01-01',
+			rating: 'good',
 			cardId: childCardId,
 		})
 		const {
 			review: { _id: keptReviewId },
 		} = await asUserA.mutation(api.reviews.create, {
+			date: '2026-01-01',
+			rating: 'good',
 			cardId: keptCardId,
 		})
 

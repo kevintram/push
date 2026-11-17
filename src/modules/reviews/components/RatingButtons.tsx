@@ -18,13 +18,7 @@ import {
 
 import type { Rating } from '../types/review.types'
 import { RatingMenu } from './RatingMenu'
-import {
-	getRating,
-	ratingChoices,
-	ratingFromChoice,
-	TODO_VALUE,
-	todoRating,
-} from './reviewRatings'
+import { getRating, ratingChoices, unrated } from './reviewRatings'
 
 // The tray's height (a 32px segment plus 4px padding on each side), so the
 // badge's well and the collapsed pill match it.
@@ -274,7 +268,7 @@ type RatingButtonsProps = {
 	 * Typing in a text field inside it never picks a rating.
 	 */
 	hotkeyTarget: HTMLElement | React.RefObject<HTMLElement | null> | null
-	onSetRating: (rating: Rating | null) => void
+	onSetRating: (rating: Rating) => void
 	rating: Rating | undefined
 	/**
 	 * Focuses the selected option, the group's tab stop, or the menu's trigger
@@ -286,8 +280,8 @@ type RatingButtonsProps = {
 
 /**
  * The current rating as a badge in its own well, then every choice as a
- * segment of one tray, divided like tabs, with Todo last. Clicking the badge
- * steps to the next choice, wrapping from Todo to Miss. Narrow, the
+ * segment of one tray, divided like tabs. Clicking the badge steps to the
+ * next choice, wrapping from Easy to Miss. Narrow, the
  * segments drop their keys, then their icons, and below that the whole tray
  * collapses into a menu. While focus is in `hotkeyTarget`, each choice's key
  * picks it.
@@ -300,15 +294,15 @@ export function RatingButtons({
 	ref,
 	xstyle,
 }: RatingButtonsProps) {
-	const value = rating ?? TODO_VALUE
 	const current = getRating(rating)
 
-	const pick = (next: string) => {
-		if (next !== value) onSetRating(ratingFromChoice(next))
+	const pick = (next: Rating) => {
+		if (next !== rating) onSetRating(next)
 	}
 
+	// Unrated, `findIndex` is -1, so the first step lands on Miss.
 	const step = () => {
-		const index = ratingChoices.findIndex(choice => choice.value === value)
+		const index = ratingChoices.findIndex(choice => choice.value === rating)
 		const next = ratingChoices[(index + 1) % ratingChoices.length]
 		if (next) pick(next.value)
 	}
@@ -331,7 +325,7 @@ export function RatingButtons({
 			<current.Icon size={BADGE_ICON_SIZE} strokeWidth={2.5} />
 		</span>
 	) : (
-		<todoRating.Icon aria-hidden='true' size={iconSizes.sm} />
+		<unrated.Icon aria-hidden='true' size={iconSizes.sm} />
 	)
 
 	useHotkeys(
@@ -366,8 +360,9 @@ export function RatingButtons({
 				<RadioGroup
 					aria-label='Rating'
 					disabled={disabled}
-					onValueChange={next => pick(next as string)}
-					value={value}
+					onValueChange={next => pick(next as Rating)}
+					// An unrated review matches no choice, so none is checked.
+					value={rating ?? ''}
 					{...stylex.props(styles.tray)}
 				>
 					{ratingChoices.map(
@@ -375,9 +370,13 @@ export function RatingButtons({
 							{ value: optionValue, label, Icon, hotkey },
 							index,
 						) => {
-							const checked = optionValue === value
+							const checked = optionValue === rating
 							const previousChecked =
-								ratingChoices[index - 1]?.value === value
+								ratingChoices[index - 1]?.value === rating
+							// The group's tab stop: the checked choice, or
+							// the first while unrated.
+							const isTabStop =
+								checked || (rating === undefined && index === 0)
 							return [
 								index > 0 && (
 									<span
@@ -393,7 +392,7 @@ export function RatingButtons({
 								<Radio.Root
 									aria-keyshortcuts={ariaKeyShortcuts(hotkey)}
 									key={optionValue}
-									ref={checked ? checkedRef : undefined}
+									ref={isTabStop ? checkedRef : undefined}
 									value={optionValue}
 									{...stylex.props(
 										styles.segment,
@@ -432,7 +431,7 @@ export function RatingButtons({
 			>
 				{badge}
 				<span {...stylex.props(styles.pillLabel)}>
-					{(current ?? todoRating).label}
+					{(current ?? unrated).label}
 				</span>
 				<ChevronDown aria-hidden='true' size={iconSizes.sm} />
 			</RatingMenu>

@@ -1,6 +1,5 @@
 import type { Doc, Id } from '@convex/_generated/dataModel'
 import type { Card } from '@convex/validators/cards'
-import type { DueEntry } from '@convex/validators/due'
 import { QueryClientProvider } from '@tanstack/react-query'
 import {
 	createMemoryHistory,
@@ -65,17 +64,12 @@ export const review: Review = {
 	date: '2026-07-28',
 }
 
-/** A card with no `dueDate` surfaces as a dateless, SRS-scheduled entry. */
-export function toNewEntry(newCard: Card): DueEntry {
-	return { card: newCard, scheduledReviews: [], srsScheduled: true }
-}
-
 export function renderRoute(
 	path: string,
 	{
 		ancestors = [],
-		dueEntries = [],
-		lateEntries = [],
+		dueCards = [],
+		lateCards = [],
 		flaggedCards = [],
 		missingCard = false,
 		missingCollection = false,
@@ -85,8 +79,8 @@ export function renderRoute(
 		sections = [],
 	}: {
 		ancestors?: Array<Doc<'collections'>>
-		dueEntries?: Array<DueEntry>
-		lateEntries?: Array<DueEntry>
+		dueCards?: Array<Card>
+		lateCards?: Array<Card>
 		flaggedCards?: Array<Card>
 		missingCard?: boolean
 		missingCollection?: boolean
@@ -135,12 +129,9 @@ export function renderRoute(
 			entry => entry.parentId === collectionId,
 		),
 	)
-	queryClient.setQueryData(dueQueries.listDue(today).queryKey, dueEntries)
-	queryClient.setQueryData(dueQueries.listLate(today).queryKey, lateEntries)
-	queryClient.setQueryData(
-		dueQueries.listNew().queryKey,
-		newCards.map(toNewEntry),
-	)
+	queryClient.setQueryData(dueQueries.listDue(today).queryKey, dueCards)
+	queryClient.setQueryData(dueQueries.listLate(today).queryKey, lateCards)
+	queryClient.setQueryData(dueQueries.listNew().queryKey, newCards)
 	queryClient.setQueryData(cardQueries.listFlagged().queryKey, flaggedCards)
 	// Every reader of `detail` expands, and `expandPath` keys its own cache
 	// entry, so only the expanded shape is seeded. Its ancestors resolve

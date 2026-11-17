@@ -48,9 +48,9 @@ export function ReviewComposerProvider({
 			const undone: ReviewDraft = {
 				description: review.description ?? '',
 				notes: review.notes ?? '',
-				rating: review.rating ?? null,
+				rating: review.rating,
 				// The composer only ever submits a `DateString`.
-				date: (review.date as DateString | undefined) ?? null,
+				date: review.date as DateString,
 			}
 			if (isMounted.current) {
 				setDraft(undone)
@@ -65,6 +65,7 @@ export function ReviewComposerProvider({
 		draft.notes !== '' ||
 		draft.rating !== null ||
 		draft.date !== null
+	const canSubmit = draft.rating !== null && !isPending
 	const state = useMemo<ReviewComposerState>(() => {
 		const moveDock = (next: ReviewComposerDock) => {
 			setLocalDock(next)
@@ -74,6 +75,7 @@ export function ReviewComposerProvider({
 			draft,
 			isPending,
 			isDirty,
+			canSubmit,
 			dock,
 			setDockState: value =>
 				moveDock(
@@ -92,28 +94,25 @@ export function ReviewComposerProvider({
 			setDescription: value =>
 				setDraft(p => ({ ...p, description: value })),
 			setNotes: value => setDraft(p => ({ ...p, notes: value })),
+			// A first rating completes the review today unless a day was
+			// already picked.
 			setRating: value =>
 				setDraft(p => ({
 					...p,
 					rating: value,
-					date:
-						value !== null && p.rating === null
-							? todayIso()
-							: p.date,
+					date: p.date ?? todayIso(),
 				})),
 			setDate: value => setDraft(p => ({ ...p, date: value })),
 			resetDraft: () => setDraft(emptyReviewDraft),
 			submit: () => {
-				if (!isDirty || isPending) return
+				if (!canSubmit || draft.rating === null) return
 				mutate(
 					{
 						cardId,
 						description: draft.description,
 						notes: draft.notes,
-						...(draft.rating === null
-							? {}
-							: { rating: draft.rating }),
-						...(draft.date === null ? {} : { date: draft.date }),
+						rating: draft.rating,
+						date: draft.date ?? todayIso(),
 					},
 					{
 						onSuccess: () => {
@@ -125,6 +124,7 @@ export function ReviewComposerProvider({
 			},
 		}
 	}, [
+		canSubmit,
 		cardId,
 		dock,
 		draft,

@@ -1,5 +1,4 @@
 import type { Card } from '@convex/validators/cards'
-import type { DueEntry } from '@convex/validators/due'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -26,7 +25,7 @@ vi.mock('@tanstack/react-router', async importOriginal => ({
 	),
 }))
 
-const entryFor = (id: string) => ({ card: { _id: id } }) as DueEntry
+const cardFor = (id: string) => ({ _id: id }) as Card
 const STORAGE_KEY = 'reviewNavigationOpen'
 const queueCounts = () =>
 	Array.from(
@@ -42,29 +41,31 @@ describe('ReviewNavigation', () => {
 	function renderNavigation({
 		due = 0,
 		newCards = 0,
-		lateEntries = [],
+		late = 0,
 		flagged = 0,
 	}: {
 		due?: number
 		newCards?: number
-		lateEntries?: Array<DueEntry>
+		late?: number
 		flagged?: number
 	} = {}) {
 		const queryClient = createTestQueryClient()
 		const today = todayIso()
 		queryClient.setQueryData(
 			dueQueries.listDue(today).queryKey,
-			Array.from({ length: due }, (_, index) => entryFor(`due-${index}`)),
+			Array.from({ length: due }, (_, index) => cardFor(`due-${index}`)),
 		)
 		queryClient.setQueryData(
 			dueQueries.listNew().queryKey,
 			Array.from({ length: newCards }, (_, index) =>
-				entryFor(`new-${index}`),
+				cardFor(`new-${index}`),
 			),
 		)
 		queryClient.setQueryData(
 			dueQueries.listLate(today).queryKey,
-			lateEntries,
+			Array.from({ length: late }, (_, index) =>
+				cardFor(`late-${index}`),
+			),
 		)
 		queryClient.setQueryData(
 			cardQueries.listFlagged().queryKey,
@@ -87,7 +88,7 @@ describe('ReviewNavigation', () => {
 	it('shows singular count labels and counts for each nonempty queue', () => {
 		renderNavigation({
 			due: 1,
-			lateEntries: [entryFor('late-1')],
+			late: 1,
 			newCards: 1,
 			flagged: 1,
 		})
@@ -103,15 +104,11 @@ describe('ReviewNavigation', () => {
 		expect(queueCounts()).toEqual(['1', '1', '1', '1'])
 	})
 
-	it('shows plural count labels and counts, deduplicating late cards', () => {
+	it('shows plural count labels and counts', () => {
 		renderNavigation({
 			due: 2,
 			newCards: 3,
-			lateEntries: [
-				entryFor('late-1'),
-				entryFor('late-1'),
-				entryFor('late-2'),
-			],
+			late: 2,
 			flagged: 4,
 		})
 
@@ -136,10 +133,10 @@ describe('ReviewNavigation', () => {
 
 		queryClient.setQueryData(dueQueries.listDue(today).queryKey, [])
 		queryClient.setQueryData(dueQueries.listNew().queryKey, [
-			{ card: { _id: 'new-1' } } as DueEntry,
+			cardFor('new-1'),
 		])
 		queryClient.setQueryData(dueQueries.listLate(today).queryKey, [
-			{ card: { _id: 'late-1' } } as DueEntry,
+			cardFor('late-1'),
 		])
 		queryClient.setQueryData(cardQueries.listFlagged().queryKey, [
 			{ _id: 'flagged-1' } as Card,

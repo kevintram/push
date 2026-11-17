@@ -45,6 +45,5 @@ export default defineSchema({
 
 	reviews: defineTable(reviewBase)
 		.index('by_cardId_ownerId', ['cardId', 'ownerId'])
-		.index('by_cardId_date', ['cardId', 'date'])
-		.index('by_ownerId_rating_date', ['ownerId', 'rating', 'date']),
+		.index('by_cardId_date', ['cardId', 'date']),
 })

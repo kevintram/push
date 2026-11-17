@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 
 import type { DateString } from '~/types/date'
-import { todayIso } from '~/utils/date'
 
 import { useDeleteReview, useUpdateReview } from '../api/reviewQueries'
 import type { Rating, Review } from '../types/review.types'
@@ -9,15 +8,10 @@ import type { Rating, Review } from '../types/review.types'
 type UseReviewActionsReturn = {
 	isDeleteDialogOpen: boolean
 	isDeleting: boolean
-	/**
-	 * Note: first rating a review completes it on the user's local today.
-	 */
-	setRating: (rating: Rating | null) => void
-	/**
-	 * Note: the date can only be cleared while the review is uncompleted, since
-	 * a completed review has to have happened on some day.
-	 */
-	setDate: (value: DateString | null) => void
+	/** Re-rates the review, keeping its completion day. */
+	setRating: (rating: Rating) => void
+	/** Moves the review to another completion day. */
+	setDate: (value: DateString) => void
 	setIsDeleteDialogOpen: (open: boolean) => void
 	confirmDelete: () => void
 }
@@ -34,25 +28,14 @@ export function useReviewActions(review: Review): UseReviewActionsReturn {
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
 	const setRating = useCallback(
-		(rating: Rating | null) => {
-			// The first completion carries today's date; a re-rating leaves the
-			// stored completion day alone.
-			const date =
-				rating !== null && review.rating === undefined
-					? todayIso()
-					: undefined
-
-			updateReview.mutate({
-				...(date === undefined ? {} : { date }),
-				rating,
-				reviewId: review._id,
-			})
+		(rating: Rating) => {
+			updateReview.mutate({ rating, reviewId: review._id })
 		},
-		[review._id, review.rating, updateReview],
+		[review._id, updateReview],
 	)
 
 	const setDate = useCallback(
-		(value: DateString | null) => {
+		(value: DateString) => {
 			updateReview.mutate({ date: value, reviewId: review._id })
 		},
 		[review._id, updateReview],
