@@ -42,19 +42,6 @@ export const cardBase = v.object({
 	searchText: v.string(),
 })
 
-// What the `cards` table stores while `migrations.flashcardsOnly` runs: a card
-// written before every card became a flashcard has `type`, `primaryText`, and
-// `secondaryText` instead of `prompt` and `answer`. `Cards.toCard` reads either
-// shape as a `Card`.
-// TODO(1): once the migration has run on every deployment, store `cardBase`.
-export const cardDocument = cardBase.omit('prompt', 'answer').extend({
-	prompt: v.optional(v.string()),
-	answer: v.optional(v.string()),
-	type: v.optional(v.union(v.literal('practice'), v.literal('flashcard'))),
-	primaryText: v.optional(v.string()),
-	secondaryText: v.optional(v.string()),
-})
-
 export const cardRead = cardBase.extend({
 	_id: v.id('cards'),
 	_creationTime: v.number(),

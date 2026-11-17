@@ -469,43 +469,6 @@ describe('cards', () => {
 		).resolves.toMatchObject({ collectionId })
 	})
 
-	it('reads and rewrites a card stored before every card was a flashcard', async () => {
-		const t = convexTest(schema, modules)
-		const asUserA = t.withIdentity(userAIdentity)
-		const collectionId = await asUserA.mutation(api.collections.create, {})
-		const cardId = await t.run(ctx =>
-			ctx.db.insert('cards', {
-				collectionId,
-				ownerId: userAIdentity.subject,
-				type: 'practice',
-				primaryText: 'Legacy prompt',
-				secondaryText: 'Legacy answer',
-				notes: '',
-				state: 'LEARNING',
-				searchText: 'Legacy prompt\nLegacy answer',
-			}),
-		)
-
-		const card = await asUserA.query(api.cards.get, { cardId })
-		expect(card).toMatchObject({
-			prompt: 'Legacy prompt',
-			answer: 'Legacy answer',
-		})
-		expect(card).not.toHaveProperty('type')
-
-		await asUserA.mutation(api.cards.update, { cardId, notes: 'Notes' })
-
-		const stored = await t.run(ctx => ctx.db.get('cards', cardId))
-		expect(stored).toMatchObject({
-			prompt: 'Legacy prompt',
-			answer: 'Legacy answer',
-			notes: 'Notes',
-		})
-		expect(stored).not.toHaveProperty('type')
-		expect(stored).not.toHaveProperty('primaryText')
-		expect(stored).not.toHaveProperty('secondaryText')
-	})
-
 	it('applies a separate patch to each card', async () => {
 		const t = convexTest(schema, modules)
 		const asUserA = t.withIdentity(userAIdentity)

@@ -15,21 +15,6 @@ import type { Section } from '../validators/sections'
 import * as Collections from './collections'
 import * as Sections from './sections'
 
-/**
- * Reads a stored card as a `Card`, whether it was written before or after
- * every card became a flashcard; see `cardDocument`.
- * TODO(1): delete once `migrations.flashcardsOnly` has run everywhere.
- */
-export function toCard(doc: Doc<'cards'>): Card {
-	const { type: _type, primaryText, secondaryText, ...card } = doc
-
-	return {
-		...card,
-		prompt: card.prompt ?? primaryText ?? '',
-		answer: card.answer ?? secondaryText ?? '',
-	}
-}
-
 export async function requireUserOwns(
 	ctx: QueryCtx,
 	userId: string,
@@ -41,7 +26,7 @@ export async function requireUserOwns(
 		throw new ConvexError('Card not found')
 	}
 
-	return toCard(card)
+	return card
 }
 
 /**
@@ -80,29 +65,25 @@ export async function listByCollection(
 ): Promise<Array<Card>> {
 	await Collections.requireUserOwns(ctx, userId, collectionId)
 
-	const cards = await ctx.db
+	return await ctx.db
 		.query('cards')
 		.withIndex('by_collectionId_ownerId', q =>
 			q.eq('collectionId', collectionId).eq('ownerId', userId),
 		)
 		.collect()
-
-	return cards.map(toCard)
 }
 
 export async function listFlagged(
 	ctx: QueryCtx,
 	userId: string,
 ): Promise<Array<Card>> {
-	const cards = await ctx.db
+	return await ctx.db
 		.query('cards')
 		.withIndex('by_ownerId_flaggedAt', q =>
 			q.eq('ownerId', userId).gt('flaggedAt', undefined),
 		)
 		.order('desc')
 		.collect()
-
-	return cards.map(toCard)
 }
 
 export async function get(
@@ -199,14 +180,6 @@ export async function update(
 
 	await ctx.db.patch('cards', cardId, {
 		...fields,
-		// Written in full so a card from before the flashcards-only change
-		// leaves the old shape; see `toCard`.
-		// TODO(1): drop with `toCard`.
-		prompt,
-		answer,
-		type: undefined,
-		primaryText: undefined,
-		secondaryText: undefined,
 		searchText: [prompt, answer, notes].filter(Boolean).join('\n'),
 		...(collectionId !== undefined && { collectionId }),
 		// Clearing in Convex means patching an explicit `undefined`.
@@ -463,7 +436,7 @@ export async function search(
 		]),
 	)
 
-	return hits.map(toCard).map(hit => {
+	return hits.map(hit => {
 		const containingCollection = containingCollectionsById.get(
 			hit.collectionId,
 		)
