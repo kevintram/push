@@ -19,7 +19,7 @@ import { useToday } from '~/hooks/useToday'
 import { ariaKeyShortcuts } from '~/modules/shortcuts/ariaKeyShortcuts'
 import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
-import { iconSizes, spacing } from '~/styles/tokens.stylex'
+import { iconSizes } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 import {
 	formatAbsoluteDate,
@@ -30,47 +30,31 @@ import {
 
 const styles = stylex.create({
 	today: { color: colorsSemantic.textToday },
-	overdue: { color: colorsSemantic.textDanger },
-	content: {
-		display: 'flex',
-		flexDirection: 'column',
-		rowGap: spacing.lg,
-	},
 })
 
-interface ReviewDatePickerCommonProps {
+type ReviewDatePickerProps = {
+	/** The review's completion day; `null` until a new review is rated. */
+	date: DateString | null
 	disabled?: boolean
 	/** The shortcut that opens it, shown on the button and in its tooltip. */
 	hotkey?: AppHotkey
 	/** Controls whether the calendar is open; it manages itself when omitted. */
 	open?: boolean
+	onDateChange: (date: DateString) => void
 	onOpenChange?: (open: boolean) => void
 	size?: ButtonSize
 }
 
-type ReviewDatePickerProps = ReviewDatePickerCommonProps &
-	(
-		| {
-				date: DateString | null
-				emptyLabel?: string | null
-				kind: 'scheduled'
-				onDateChange: (date: DateString | null) => void
-		  }
-		| {
-				date: DateString | null
-				kind: 'completed'
-				onDateChange: (date: DateString | null) => void
-		  }
-	)
-
-export function ReviewDatePicker(props: ReviewDatePickerProps) {
-	const {
-		disabled = false,
-		hotkey,
-		open,
-		onOpenChange,
-		size = 'medium',
-	} = props
+/** Picks the day a review was completed, today or earlier. */
+export function ReviewDatePicker({
+	date,
+	disabled = false,
+	hotkey,
+	open,
+	onDateChange,
+	onOpenChange,
+	size = 'medium',
+}: ReviewDatePickerProps) {
 	const [uncontrolledOpen, setUncontrolledOpen] = useState(false)
 	const isOpen = open ?? uncontrolledOpen
 	const setIsOpen = (next: boolean) => {
@@ -78,39 +62,18 @@ export function ReviewDatePicker(props: ReviewDatePickerProps) {
 		onOpenChange?.(next)
 	}
 	const today = useToday()
-	const relativeDate = formatRelativeDate(props.date, today)
-	const isCompleted = props.kind === 'completed'
-	const dateTone = getDueDateTone(props.date, isCompleted, today)
+	// A completed review is never late, so only today stands out.
 	const dateToneStyle =
-		dateTone === 'overdue'
-			? styles.overdue
-			: dateTone === 'today'
-				? styles.today
-				: null
-	const absoluteDate =
-		props.date === null ? null : formatAbsoluteDate(props.date)
+		getDueDateTone(date, true, today) === 'today' ? styles.today : null
+	const absoluteDate = date === null ? null : formatAbsoluteDate(date)
 	const triggerLabel =
-		props.date === null && props.kind === 'scheduled'
-			? props.emptyLabel === undefined
-				? relativeDate
-				: props.emptyLabel
-			: props.date === null && props.kind === 'completed'
-				? 'Add completion date'
-				: relativeDate
-	const accessibleTriggerLabel = triggerLabel ?? relativeDate
+		date === null ? 'Add completion date' : formatRelativeDate(date, today)
 	// react-day-picker uses native Date, so convert at this library boundary.
-	const selectedDate =
-		props.date === null ? undefined : parseDate(props.date).toJSDate()
+	const selectedDate = date === null ? undefined : parseDate(date).toJSDate()
 
-	const selectDate = (date: Date | undefined) => {
-		if (!date) return
-		props.onDateChange(DateTime.fromJSDate(date).toISODate() as DateString)
-		setIsOpen(false)
-	}
-
-	const clearDate = () => {
-		if (props.kind !== 'scheduled') return
-		props.onDateChange(null)
+	const selectDate = (selected: Date | undefined) => {
+		if (!selected) return
+		onDateChange(DateTime.fromJSDate(selected).toISODate() as DateString)
 		setIsOpen(false)
 	}
 
@@ -120,7 +83,7 @@ export function ReviewDatePicker(props: ReviewDatePickerProps) {
 			render={
 				<Button
 					aria-keyshortcuts={hotkey && ariaKeyShortcuts(hotkey)}
-					aria-label={`Change review date, ${accessibleTriggerLabel}`}
+					aria-label={`Change review date, ${triggerLabel}`}
 					disabled={disabled}
 					size={size}
 					shape='round'
@@ -140,38 +103,18 @@ export function ReviewDatePicker(props: ReviewDatePickerProps) {
 			<Tooltip>
 				<TooltipTrigger render={trigger} />
 				<TooltipContent>
-					{absoluteDate ??
-						(props.kind === 'completed'
-							? 'Add completion date'
-							: 'Add due date')}
+					{absoluteDate ?? 'Add completion date'}
 					{hotkey && <ShortcutKeys aria-hidden hotkey={hotkey} />}
 				</TooltipContent>
 			</Tooltip>
 			<PopoverContent align='center'>
-				<div {...stylex.props(styles.content)}>
-					<Calendar
-						defaultMonth={
-							selectedDate ?? parseDate(today).toJSDate()
-						}
-						disabled={
-							isCompleted
-								? { after: parseDate(today).toJSDate() }
-								: undefined
-						}
-						mode='single'
-						onSelect={selectDate}
-						selected={selectedDate}
-					/>
-					{props.kind === 'scheduled' && (
-						<Button
-							onClick={clearDate}
-							size='small'
-							variant='outline'
-						>
-							Clear
-						</Button>
-					)}
-				</div>
+				<Calendar
+					defaultMonth={selectedDate ?? parseDate(today).toJSDate()}
+					disabled={{ after: parseDate(today).toJSDate() }}
+					mode='single'
+					onSelect={selectDate}
+					selected={selectedDate}
+				/>
 			</PopoverContent>
 		</Popover>
 	)

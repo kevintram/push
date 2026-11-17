@@ -30,14 +30,14 @@ export function useReviewQueueCounts() {
 	const today = useToday()
 	// TODO(3): Replace these full-list subscriptions with count queries.
 	// TODO(2): Handle query errors instead of showing failed queues as empty.
-	const { data: dueEntries } = useQuery(dueQueries.listDue(today))
-	const { data: newEntries } = useQuery(dueQueries.listNew())
-	const { data: lateCards } = useQuery(dueQueries.listLateCards(today))
+	const { data: dueCards } = useQuery(dueQueries.listDue(today))
+	const { data: newCards } = useQuery(dueQueries.listNew())
+	const { data: lateCards } = useQuery(dueQueries.listLate(today))
 	const { data: flaggedCards } = useQuery(cardQueries.listFlagged())
 
 	return {
-		due: toQueueCount(dueEntries?.length ?? 0, 'card due', 'cards due'),
-		new: toQueueCount(newEntries?.length ?? 0, 'new card', 'new cards'),
+		due: toQueueCount(dueCards?.length ?? 0, 'card due', 'cards due'),
+		new: toQueueCount(newCards?.length ?? 0, 'new card', 'new cards'),
 		late: toQueueCount(lateCards?.length ?? 0, 'late card', 'late cards'),
 		flagged: toQueueCount(
 			flaggedCards?.length ?? 0,

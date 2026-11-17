@@ -3,7 +3,6 @@ import type { Id } from '@convex/_generated/dataModel'
 import type { ReviewCreate } from '@convex/validators/reviews'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { useMutation } from '@tanstack/react-query'
-import { Calendar } from 'lucide-react'
 import { createElement } from 'react'
 
 import {
@@ -13,8 +12,6 @@ import {
 	toastTitle,
 	toastUndo,
 } from '~/components/ui/Toast'
-import type { DateString } from '~/types/date'
-import { formatRelativeDate } from '~/utils/date'
 
 import { ratings } from '../components/reviewRatings'
 import { ReviewToastDescription } from '../components/ReviewToastDescription'
@@ -31,11 +28,7 @@ type UseCreateReviewOptions = {
 	onUndone?: (review: ReviewCreate) => void
 }
 
-/**
- * Creates a review, offering to undo it, which restores the card's schedule.
- * A review with neither a rating nor a date changes no schedule, so it shows
- * up on the card without a toast.
- */
+/** Creates a review, offering to undo it, which restores the card's schedule. */
 export function useCreateReview({ onUndone }: UseCreateReviewOptions = {}) {
 	const mutationFn = useConvexMutation(api.reviews.create)
 	const remove = useConvexMutation(api.reviews.remove)
@@ -47,29 +40,16 @@ export function useCreateReview({ onUndone }: UseCreateReviewOptions = {}) {
 				await remove({ reviewId: review._id })
 				onUndone?.(created)
 			}
-			if (review.rating !== undefined) {
-				toastUndo({
-					icon: ratings[review.rating].Icon,
-					title: toastTitle(
-						ratings[review.rating].label,
-						' on ',
-						toastName(card.prompt),
-					),
-					description: createElement(ReviewToastDescription, {
-						review,
-						card,
-					}),
-					undo,
-				})
-			} else if (review.date !== undefined) {
-				toastUndo({
-					icon: Calendar,
-					title: 'Review scheduled',
-					// The composer only ever submits a `DateString`.
-					description: `Due ${formatRelativeDate(review.date as DateString)}`,
-					undo,
-				})
-			}
+			const { Icon, label } = ratings[created.rating]
+			toastUndo({
+				icon: Icon,
+				title: toastTitle(label, ' on ', toastName(card.prompt)),
+				description: createElement(ReviewToastDescription, {
+					review,
+					card,
+				}),
+				undo,
+			})
 		},
 	})
 }

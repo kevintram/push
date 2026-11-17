@@ -8,7 +8,9 @@ import type { Rating } from '../types/review.types'
 export type ReviewDraft = {
 	description: string
 	notes: string
+	/** Required to submit. */
 	rating: Rating | null
+	/** Set to today on the first rating unless already picked. */
 	date: DateString | null
 }
 export const emptyReviewDraft: ReviewDraft = {
@@ -40,6 +42,8 @@ export type ReviewComposerState = {
 	draft: ReviewDraft
 	isPending: boolean
 	isDirty: boolean
+	/** Whether the draft is rated and nothing is in flight. */
+	canSubmit: boolean
 	dock: ReviewComposerDock
 	setDockState: (value: ReviewComposerDockState) => void
 	/**
@@ -54,8 +58,8 @@ export type ReviewComposerState = {
 	setExpanded: (value: boolean) => void
 	setDescription: (value: string) => void
 	setNotes: (value: string) => void
-	setRating: (value: Rating | null) => void
-	setDate: (value: DateString | null) => void
+	setRating: (value: Rating) => void
+	setDate: (value: DateString) => void
 	resetDraft: () => void
 	submit: () => void
 }

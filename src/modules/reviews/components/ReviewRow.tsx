@@ -176,7 +176,7 @@ const styles = stylex.create({
 type ReviewRowProps = {
 	onDelete: () => void
 	onOpen: () => void
-	onSetRating: (rating: Rating | null) => void
+	onSetRating: (rating: Rating) => void
 	review: Review
 }
 

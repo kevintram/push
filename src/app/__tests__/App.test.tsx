@@ -15,8 +15,6 @@ import {
 	collection,
 	collectionId,
 	renderRoute,
-	review,
-	toNewEntry,
 } from './renderRoute'
 
 vi.mock('@clerk/react', () => ({
@@ -76,17 +74,9 @@ describe('v2 app setup', () => {
 		expect(screen.getByText('No cards.')).toBeInTheDocument()
 	})
 
-	it('renders today’s due entry', async () => {
-		const today = todayIso()
+	it('renders today’s due card', async () => {
 		renderRoute('/review/due', {
-			dueEntries: [
-				{
-					card: card,
-					date: today,
-					scheduledReviews: [{ ...review, rating: undefined }],
-					srsScheduled: true,
-				},
-			],
+			dueCards: [{ ...card, dueDate: todayIso() }],
 		})
 
 		expect(
@@ -94,34 +84,6 @@ describe('v2 app setup', () => {
 				name: 'Select What problem do generics solve?',
 			}),
 		).toBeInTheDocument()
-	})
-
-	it('deduplicates late entries for the same card on different days', async () => {
-		renderRoute('/review/late', {
-			lateEntries: [
-				{
-					card: card,
-					date: '2020-01-02',
-					scheduledReviews: [],
-					srsScheduled: true,
-				},
-				{
-					card: card,
-					date: '2020-01-01',
-					scheduledReviews: [{ ...review, rating: undefined }],
-					srsScheduled: false,
-				},
-			],
-		})
-
-		const lateQueue = await screen.findByRole('complementary', {
-			name: 'Queue',
-		})
-		expect(
-			within(lateQueue).getAllByRole('button', {
-				name: 'Select What problem do generics solve?',
-			}),
-		).toHaveLength(1)
 	})
 
 	it('renders new cards without due-entry context', async () => {
@@ -543,30 +505,27 @@ describe('v2 app setup', () => {
 		)
 
 		act(() => {
-			queryClient.setQueryData(
-				dueQueries.listNew().queryKey,
-				[secondCard, thirdCard].map(toNewEntry),
-			)
+			queryClient.setQueryData(dueQueries.listNew().queryKey, [
+				secondCard,
+				thirdCard,
+			])
 		})
 		expect(
 			await screen.findByDisplayValue('What is a discriminated union?'),
 		).toBeInTheDocument()
 
 		act(() => {
-			queryClient.setQueryData(
-				dueQueries.listNew().queryKey,
-				[thirdCard].map(toNewEntry),
-			)
+			queryClient.setQueryData(dueQueries.listNew().queryKey, [thirdCard])
 		})
 		expect(
 			await screen.findByDisplayValue('What is type narrowing?'),
 		).toBeInTheDocument()
 
 		act(() => {
-			queryClient.setQueryData(
-				dueQueries.listNew().queryKey,
-				[card, thirdCard].map(toNewEntry),
-			)
+			queryClient.setQueryData(dueQueries.listNew().queryKey, [
+				card,
+				thirdCard,
+			])
 		})
 		expect(
 			await screen.findByDisplayValue('What is type narrowing?'),

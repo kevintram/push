@@ -6,13 +6,7 @@ import { ReviewQueueWorkspace } from '~/modules/reviews/components/review-queue/
 
 export function ReviewDuePage() {
 	const today = useToday()
-	const { data: entries } = useSuspenseQuery(dueQueries.listDue(today))
+	const { data: cards } = useSuspenseQuery(dueQueries.listDue(today))
 
-	return (
-		<ReviewQueueWorkspace
-			cards={entries.map(entry => entry.card)}
-			title='Due'
-			today={today}
-		/>
-	)
+	return <ReviewQueueWorkspace cards={cards} title='Due' today={today} />
 }

@@ -6,7 +6,7 @@ import { iconSizes, radii } from '~/styles/tokens.stylex'
 
 import type { Rating } from '../types/review.types'
 import { RatingMenu } from './RatingMenu'
-import { getRating, todoRating } from './reviewRatings'
+import { getRating, unrated } from './reviewRatings'
 
 const styles = stylex.create({
 	ratingBadge: {
@@ -23,13 +23,13 @@ const styles = stylex.create({
 })
 
 type RatingPickerProps = {
-	onSetRating: (rating: Rating | null) => void
+	onSetRating: (rating: Rating) => void
 	rating: Rating | undefined
 }
 
 export function RatingPicker({ onSetRating, rating }: RatingPickerProps) {
 	const current = getRating(rating)
-	const RatingIcon = current?.Icon ?? todoRating.Icon
+	const RatingIcon = current?.Icon ?? unrated.Icon
 
 	return (
 		<RatingMenu

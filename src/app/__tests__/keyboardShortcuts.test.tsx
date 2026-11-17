@@ -144,11 +144,11 @@ describe('keyboard shortcuts', () => {
 			screen.queryByRole('form', { name: 'Add review' }),
 		).not.toBeInTheDocument()
 
-		// C opens the composer on its selected rating.
+		// C opens the composer on its ratings, the first while unrated.
 		await user.keyboard('c')
 		const composer = screen.getByRole('region', { name: 'New review' })
 		expect(
-			within(composer).getByRole('radio', { name: 'Todo' }),
+			within(composer).getByRole('radio', { name: 'Miss' }),
 		).toHaveFocus()
 
 		// Escape minimizes it, leaving focus on the button that restores it.
@@ -162,7 +162,7 @@ describe('keyboard shortcuts', () => {
 
 		await user.keyboard('c')
 		expect(
-			within(composer).getByRole('radio', { name: 'Todo' }),
+			within(composer).getByRole('radio', { name: 'Miss' }),
 		).toHaveFocus()
 	})
 

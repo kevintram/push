@@ -29,50 +29,26 @@ export const reviewRead = reviewBase.extend({
 	_creationTime: v.number(),
 })
 
+// A review records a completed recall, so it always carries its rating and
+// the client's local calendar day it happened on.
 export const reviewCreate = v.object({
-	...reviewBase
-		.omit(
-			'ownerId',
-			'cardId',
-			'stabilityBefore',
-			'difficultyBefore',
-			'stateBefore',
-			'stepBefore',
-			'dueDateBefore',
-			'stabilityAfter',
-			'difficultyAfter',
-			'stateAfter',
-			'stepAfter',
-			'dueDateAfter',
-		)
-		.partial().fields,
 	cardId: v.id('cards'),
+	rating,
+	date: v.string(), // YYYY-MM-DD
+	description: v.optional(v.string()),
+	notes: v.optional(v.string()),
 })
 
-export const reviewPatch = reviewBase
-	.omit(
-		'ownerId',
-		'cardId',
-		'rating',
-		'date',
-		'stabilityBefore',
-		'difficultyBefore',
-		'stateBefore',
-		'stepBefore',
-		'dueDateBefore',
-		'stabilityAfter',
-		'difficultyAfter',
-		'stateAfter',
-		'stepAfter',
-		'dueDateAfter',
-	)
-	.extend({
-		rating: v.union(rating, v.null()),
-		date: v.union(v.string(), v.null()),
-	})
-	.partial()
+// A completed review can be re-rated or re-dated, but never reopened, so
+// neither field is clearable.
+export const reviewPatch = v.object({
+	rating: v.optional(rating),
+	date: v.optional(v.string()), // YYYY-MM-DD
+	description: v.optional(v.string()),
+	notes: v.optional(v.string()),
+})
 
-// A new review and its card, both as they stand once the review is scheduled.
+// A new review and its card, both as they stand once SRS has run.
 export const reviewCreated = v.object({
 	review: reviewRead,
 	card: cardRead,

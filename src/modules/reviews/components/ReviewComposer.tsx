@@ -122,7 +122,7 @@ export function ReviewComposer({
 		clearFocusRequest,
 		draft,
 		focusRequest,
-		isDirty,
+		canSubmit,
 		isPending,
 		setDescription,
 		setNotes,
@@ -130,7 +130,7 @@ export function ReviewComposer({
 		setDate,
 		submit,
 	} = useReviewComposerState()
-	const isSubmitDisabled = !isDirty || isPending
+	const isSubmitDisabled = !canSubmit
 
 	useEffect(() => {
 		if (autoFocus === 'description') descriptionRef.current?.focus()
@@ -197,9 +197,7 @@ export function ReviewComposer({
 					<ReviewDatePicker
 						date={draft.date}
 						disabled={isPending}
-						emptyLabel='Date'
 						hotkey={appHotkeys.openDatePicker}
-						kind={draft.rating === null ? 'scheduled' : 'completed'}
 						onDateChange={setDate}
 						onOpenChange={setIsDatePickerOpen}
 						open={isDatePickerOpen}

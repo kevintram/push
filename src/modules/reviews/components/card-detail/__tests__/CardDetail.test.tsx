@@ -305,6 +305,7 @@ describe('CardDetail review composer', () => {
 		// Creating a review closes the dock without hiding it for later cards.
 		onDockChange.mockClear()
 		fireEvent.change(description(), { target: { value: 'Submit me' } })
+		fireEvent.click(ratingPicker())
 		fireEvent.click(submitButton())
 		act(() => mutation.mutate.mock.calls[0]?.[1].onSuccess())
 		expect(queryDock()).not.toBeInTheDocument()
@@ -574,6 +575,7 @@ describe('CardDetail review composer', () => {
 		render(detail('overview'))
 		openDock()
 		fireEvent.change(description(), { target: { value: 'Submit me' } })
+		fireEvent.click(ratingPicker())
 		fireEvent.click(submitButton())
 
 		const callbacks = mutation.mutate.mock.calls[0]?.[1]
@@ -621,6 +623,7 @@ describe('CardDetail review composer', () => {
 		fireEvent.change(description(), {
 			target: { value: 'Submit across tabs' },
 		})
+		fireEvent.click(ratingPicker())
 		fireEvent.click(submitButton())
 		const callbacks = mutation.mutate.mock.calls[0]?.[1]
 		mutation.isPending = true
@@ -635,7 +638,7 @@ describe('CardDetail review composer', () => {
 		expect(description()).toHaveValue('')
 	})
 
-	it('submits rating and date, including a rating-only review', () => {
+	it('submits a rating-only review with its date', () => {
 		render(detail('overview'))
 		openDock()
 		fireEvent.click(screen.getByRole('button', { name: 'Rating none' }))

@@ -10,6 +10,7 @@ import { TooltipProvider } from '~/components/ui'
 import { toast } from '~/components/ui/Toast'
 import { createTestQueryClient } from '~/testing/createTestQueryClient'
 import { toastTitleText } from '~/testing/toastTitleText'
+import { todayIso } from '~/utils/date'
 
 import { ReviewComposer } from '../ReviewComposer'
 import { ReviewComposerProvider } from '../ReviewComposerProvider'
@@ -33,8 +34,15 @@ vi.mock('@convex-dev/react-query', () => ({
 }))
 
 vi.mock('../RatingButtons', () => ({
-	RatingButtons: () => <button type='button'>Rating</button>,
+	RatingButtons: ({ onSetRating }: { onSetRating: (r: 'good') => void }) => (
+		<button onClick={() => onSetRating('good')} type='button'>
+			Rate Good
+		</button>
+	),
 }))
+
+const rateGood = () =>
+	fireEvent.click(screen.getByRole('button', { name: 'Rate Good' }))
 
 vi.mock('../ReviewDatePicker', () => ({
 	ReviewDatePicker: () => <button type='button'>Date</button>,
@@ -69,6 +77,7 @@ describe('ReviewComposer', () => {
 			renderComposer()
 
 			const field = screen.getByRole('textbox', { name: fieldName })
+			rateGood()
 			fireEvent.change(field, { target: { value: 'A review' } })
 			fireEvent.keyDown(field, { key: 'Enter', ctrlKey: true })
 
@@ -78,20 +87,27 @@ describe('ReviewComposer', () => {
 					description:
 						fieldName === 'Review description' ? 'A review' : '',
 					notes: fieldName === 'Review notes' ? 'A review' : '',
+					// A first rating completes the review today.
+					rating: 'good',
+					date: todayIso(),
 				}),
 			)
 		},
 	)
 
-	it('does not submit an empty draft with Mod+Enter', () => {
+	it('does not submit an unrated draft', () => {
 		renderComposer()
 
 		const description = screen.getByRole('textbox', {
 			name: 'Review description',
 		})
+		fireEvent.change(description, { target: { value: 'A review' } })
 		fireEvent.keyDown(description, { key: 'Enter', ctrlKey: true })
 
 		expect(createReview).not.toHaveBeenCalled()
+		expect(
+			screen.getByRole('button', { name: 'Create review' }),
+		).toBeDisabled()
 	})
 
 	it('shows its shortcut inside the Create button', () => {
@@ -110,6 +126,7 @@ describe('ReviewComposer', () => {
 			name: 'Review description',
 		})
 		fireEvent.change(description, { target: { value: 'A review' } })
+		rateGood()
 		await user.click(screen.getByRole('button', { name: 'Create review' }))
 
 		await waitFor(() => expect(description).toHaveValue(''))
@@ -124,30 +141,12 @@ describe('ReviewComposer', () => {
 			screen.getByRole('textbox', { name: 'Review description' }),
 			{ target: { value: 'A review' } },
 		)
+		rateGood()
 		await user.click(screen.getByRole('button', { name: 'Create review' }))
 
 		await waitFor(() => expect(addToast).toHaveBeenCalled())
 		const [{ title }] = addToast.mock.lastCall!
 		expect(toastTitleText(title)).toBe('Good on **Gracias**')
-	})
-
-	it('skips the toast for a review with neither a rating nor a date', async () => {
-		const user = userEvent.setup()
-		const addToast = vi.spyOn(toast, 'add')
-		createReview.mockResolvedValue({
-			review: { _id: 'review-1' },
-			card: { prompt: 'Gracias' },
-		})
-		renderComposer()
-
-		const description = screen.getByRole('textbox', {
-			name: 'Review description',
-		})
-		fireEvent.change(description, { target: { value: 'A note' } })
-		await user.click(screen.getByRole('button', { name: 'Create review' }))
-
-		await waitFor(() => expect(description).toHaveValue(''))
-		expect(addToast).not.toHaveBeenCalled()
 	})
 
 	it('preserves the draft when creation fails', async () => {
@@ -160,6 +159,7 @@ describe('ReviewComposer', () => {
 			name: 'Review description',
 		})
 		fireEvent.change(description, { target: { value: 'Keep this draft' } })
+		rateGood()
 		await user.click(screen.getByRole('button', { name: 'Create review' }))
 
 		await waitFor(() =>
@@ -181,6 +181,7 @@ describe('ReviewComposer', () => {
 			name: 'Review description',
 		})
 		fireEvent.change(description, { target: { value: 'Undo me' } })
+		rateGood()
 		await user.click(screen.getByRole('button', { name: 'Create review' }))
 		await waitFor(() => expect(description).toHaveValue(''))
 		await undoLastToast(addToast)
@@ -203,6 +204,7 @@ describe('ReviewComposer', () => {
 			screen.getByRole('textbox', { name: 'Review description' }),
 			{ target: { value: 'Undo me' } },
 		)
+		rateGood()
 		await user.click(screen.getByRole('button', { name: 'Create review' }))
 		await waitFor(() => expect(addToast).toHaveBeenCalled())
 		unmount()
@@ -212,8 +214,8 @@ describe('ReviewComposer', () => {
 			expect(onReviewUndone).toHaveBeenCalledWith({
 				description: 'Undo me',
 				notes: '',
-				rating: null,
-				date: null,
+				rating: 'good',
+				date: todayIso(),
 			}),
 		)
 	})

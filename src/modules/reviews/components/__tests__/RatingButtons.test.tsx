@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { RatingButtons } from '../RatingButtons'
 
 describe('RatingButtons', () => {
-	it('lists the ratings, then Todo, with Todo checked when unrated', () => {
+	it('lists the ratings, with none checked when unrated', () => {
 		render(
 			<RatingButtons
 				hotkeyTarget={null}
@@ -21,12 +21,11 @@ describe('RatingButtons', () => {
 			'Hard2',
 			'Good3',
 			'Easy4',
-			'Todo0',
 		])
-		expect(screen.getByRole('radio', { name: 'Todo' })).toBeChecked()
+		for (const radio of radios) expect(radio).not.toBeChecked()
 	})
 
-	it('picks a rating on click, and clears it with Todo', async () => {
+	it('picks a rating on click', async () => {
 		const user = userEvent.setup()
 		const onSetRating = vi.fn()
 		render(
@@ -39,12 +38,9 @@ describe('RatingButtons', () => {
 
 		await user.click(screen.getByRole('radio', { name: 'Easy' }))
 		expect(onSetRating).toHaveBeenLastCalledWith('easy')
-
-		await user.click(screen.getByRole('radio', { name: 'Todo' }))
-		expect(onSetRating).toHaveBeenLastCalledWith(null)
 	})
 
-	it('steps to the next choice from the badge, wrapping from Todo to Miss', async () => {
+	it('steps to the next rating from the badge, wrapping from Easy to Miss', async () => {
 		const user = userEvent.setup()
 		const onSetRating = vi.fn()
 		const { rerender } = render(
@@ -60,8 +56,9 @@ describe('RatingButtons', () => {
 		})
 
 		await user.click(stepper)
-		expect(onSetRating).toHaveBeenLastCalledWith(null)
+		expect(onSetRating).toHaveBeenLastCalledWith('miss')
 
+		// Unrated, the first step lands on Miss too.
 		rerender(
 			<RatingButtons
 				hotkeyTarget={null}
@@ -141,7 +138,5 @@ describe('RatingButtons', () => {
 
 		await user.keyboard('4')
 		expect(onSetRating).toHaveBeenLastCalledWith('easy')
-		await user.keyboard('0')
-		expect(onSetRating).toHaveBeenLastCalledWith(null)
 	})
 })

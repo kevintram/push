@@ -153,7 +153,7 @@ parallel worktrees overwrite each other. Run it from one worktree at a time.
 
 - In `src/`, a `DateString` is a calendar date in the user's current local timezone. Use `todayIso()` for the current day and `parseDate()` for local-midnight parsing.
 - In `shared/srs/` and `convex/model/srs/`, date strings are opaque day indexes. Parse them at UTC midnight so replay and elapsed-day calculations do not depend on the process timezone.
-- `date` and `dueDate` are date-only values (`YYYY-MM-DD`). Clients submit the local completion date only when re-rating an already-completed review; a first completion with no date falls back to the review's scheduled day.
+- `date` and `dueDate` are date-only values (`YYYY-MM-DD`). Every review is completed: clients create it with a rating and their local completion date, since the backend does not know the user's timezone.
 
 ## Generated Files
 
