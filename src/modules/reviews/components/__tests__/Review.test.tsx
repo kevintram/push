@@ -111,14 +111,6 @@ describe('Review', () => {
 
 	// Happy DOM evaluates no container queries, so this checks the table's
 	// dash; the stacked layout hides it with CSS.
-	it('shows a dash for an unscheduled date', () => {
-		renderReview(review({ date: undefined, rating: undefined }))
-
-		expect(screen.queryByText('Unscheduled')).not.toBeInTheDocument()
-		expect(document.querySelector('time')).toBeNull()
-		expect(screen.getByRole('cell', { name: '—' })).toBeInTheDocument()
-	})
-
 	it('names the row and hides the placeholder when there is no description', () => {
 		renderReview(review({ description: '  ' }))
 
@@ -130,8 +122,8 @@ describe('Review', () => {
 
 	// Happy DOM evaluates no container queries, so this checks the dash is
 	// still rendered for the table; the stacked layout hides it with CSS.
-	it('keeps the strength dash for a pending review', () => {
-		renderReview(review({ rating: undefined, stabilityAfter: undefined }))
+	it('keeps the strength dash for a review without strength', () => {
+		renderReview(review({ stabilityAfter: undefined }))
 
 		expect(screen.getByText('—', { exact: false })).toBeInTheDocument()
 	})

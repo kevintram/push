@@ -194,7 +194,6 @@ describe('ReviewDialog', () => {
 				onDelete={vi.fn()}
 				review={{
 					...baseReview,
-					rating: undefined,
 					stabilityAfter: undefined,
 				}}
 			/>,

@@ -21,12 +21,7 @@ import { ShortcutKeys } from '~/modules/shortcuts/components/ShortcutKeys'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import { iconSizes } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
-import {
-	formatAbsoluteDate,
-	formatRelativeDate,
-	getDueDateTone,
-	parseDate,
-} from '~/utils/date'
+import { formatAbsoluteDate, formatRelativeDate, parseDate } from '~/utils/date'
 
 const styles = stylex.create({
 	today: { color: colorsSemantic.textToday },
@@ -63,8 +58,7 @@ export function ReviewDatePicker({
 	}
 	const today = useToday()
 	// A completed review is never late, so only today stands out.
-	const dateToneStyle =
-		getDueDateTone(date, true, today) === 'today' ? styles.today : null
+	const dateToneStyle = date === today ? styles.today : null
 	const absoluteDate = date === null ? null : formatAbsoluteDate(date)
 	const triggerLabel =
 		date === null ? 'Add completion date' : formatRelativeDate(date, today)

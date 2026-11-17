@@ -8,8 +8,10 @@ export { rating }
 export const reviewBase = v.object({
 	ownerId: v.string(),
 	cardId: v.id('cards'),
-	rating: v.optional(rating),
-	date: v.optional(v.string()), // YYYY-MM-DD
+	// Every review is a completed recall: how it went, and the client's local
+	// calendar day it happened on.
+	rating,
+	date: v.string(), // YYYY-MM-DD
 	description: v.string(),
 	notes: v.string(),
 	stabilityBefore: v.optional(v.number()),
@@ -29,24 +31,17 @@ export const reviewRead = reviewBase.extend({
 	_creationTime: v.number(),
 })
 
-// A review records a completed recall, so it always carries its rating and
-// the client's local calendar day it happened on.
-export const reviewCreate = v.object({
-	cardId: v.id('cards'),
-	rating,
-	date: v.string(), // YYYY-MM-DD
-	description: v.optional(v.string()),
-	notes: v.optional(v.string()),
-})
+// The text fields start empty when omitted. `ownerId` comes from the caller's
+// identity and the SRS snapshots from replay.
+export const reviewCreate = reviewBase
+	.pick('cardId', 'rating', 'date')
+	.extend(reviewBase.pick('description', 'notes').partial().fields)
 
-// A completed review can be re-rated or re-dated, but never reopened, so
-// neither field is clearable.
-export const reviewPatch = v.object({
-	rating: v.optional(rating),
-	date: v.optional(v.string()), // YYYY-MM-DD
-	description: v.optional(v.string()),
-	notes: v.optional(v.string()),
-})
+// A review can be re-rated or re-dated but never reopened, so no field is
+// clearable and every field is optional.
+export const reviewPatch = reviewBase
+	.pick('rating', 'date', 'description', 'notes')
+	.partial()
 
 // A new review and its card, both as they stand once SRS has run.
 export const reviewCreated = v.object({

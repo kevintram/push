@@ -70,16 +70,9 @@ export async function listByCard(
 		.order('desc')
 		.collect()
 
-	return reviews
-		.sort((a, b) => {
-			// nulls first
-			if (a.date == undefined && b.date == undefined) return 0
-			if (a.date == undefined) return -1
-			if (b.date == undefined) return 1
-			// date descending
-			return b.date.localeCompare(a.date)
-		})
-		.map(toReview)
+	// Newest day first. The sort is stable, so same-day reviews keep the
+	// index's newest-first creation order.
+	return reviews.sort((a, b) => b.date.localeCompare(a.date)).map(toReview)
 }
 
 export async function get(
@@ -140,11 +133,6 @@ export async function update(
 		return
 	}
 
-	// TODO(1): drop once `migrations.deleteIncompleteReviews` has run and
-	// `rating` and `date` are required in the schema.
-	if (review.rating === undefined || review.date === undefined) {
-		throw new ConvexError('Review is not completed')
-	}
 	if (date !== undefined) assertCompletionDateIsValid(date)
 
 	await ctx.db.patch('reviews', reviewId, patch)
@@ -168,11 +156,7 @@ export async function remove(
 			: await ctx.db.get('cards', review.cardId)
 	await ctx.db.delete('reviews', reviewId)
 
-	if (
-		review.rating !== undefined &&
-		review.date !== undefined &&
-		card?.ownerId === userId
-	) {
+	if (card?.ownerId === userId) {
 		await updateCardSrs(ctx, card, review.date)
 	}
 

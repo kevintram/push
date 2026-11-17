@@ -191,14 +191,14 @@ export function ReviewRow({
 	review,
 }: ReviewRowProps) {
 	const description = review.description.trim()
-	const date = (review.date ?? null) as DateString | null
+	// Reviews store the client's local `DateString`.
+	const date = review.date as DateString
 
 	const hasDescription = description.length > 0
 	const hasNotes = review.notes.trim().length > 0
-	const isCompleted = review.rating !== undefined
-	// A pending review has no strength yet. The table keeps its dash so the
-	// column stays readable, but the details line drops it.
-	const hasStrength = isCompleted && review.stabilityAfter != null
+	// A review whose replay hasn't run has no strength. The table keeps its
+	// dash so the column stays readable, but the details line drops it.
+	const hasStrength = review.stabilityAfter != null
 
 	const metadataCell = [styles.cell, styles.gap, styles.column, styles.raised]
 
@@ -247,9 +247,7 @@ export function ReviewRow({
 					{hasNotes ? (
 						<ReviewNotesIndicator notes={review.notes} />
 					) : null}
-					{date !== null ? (
-						<ReviewDate date={date} isCompleted={isCompleted} />
-					) : null}
+					<ReviewDate date={date} />
 					{hasStrength ? (
 						<span {...stylex.props(styles.detailsStrength)}>
 							<ReviewStrength
@@ -272,12 +270,7 @@ export function ReviewRow({
 			</td>
 
 			<td onClick={onOpen} {...stylex.props(metadataCell)}>
-				{date === null ? (
-					// Like a pending strength, a missing date shows a dash.
-					<span {...stylex.props(styles.muted)}>—</span>
-				) : (
-					<ReviewDate date={date} isCompleted={isCompleted} />
-				)}
+				<ReviewDate date={date} />
 			</td>
 
 			<td onClick={onOpen} {...stylex.props(metadataCell)}>

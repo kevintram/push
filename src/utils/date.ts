@@ -48,17 +48,16 @@ export function formatRelativeDate(
 		: formatAbsoluteDate(value)
 }
 
-/** Tone for a scheduled date: late unless the review is already done. */
+/** Tone for a card's due date: late before today, highlighted on it. */
 export function getDueDateTone(
 	value: DateString | null,
-	isCompleted: boolean,
 	today: DateString = todayIso(),
 ): DueDateTone {
 	if (value === null) return 'default'
 
 	const difference = calendarDaysBetween(today, value)
 
-	if (!isCompleted && difference < 0) return 'overdue'
+	if (difference < 0) return 'overdue'
 	if (difference === 0) return 'today'
 	return 'default'
 }

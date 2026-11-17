@@ -34,7 +34,7 @@ vi.mock('../../ReviewList', () => ({
 	),
 }))
 
-function review(id: string, date?: string): Partial<Review> {
+function review(id: string, date: string): Partial<Review> {
 	return { _id: id as Id<'reviews'>, date }
 }
 
@@ -45,7 +45,6 @@ const dated = [
 	review('d2', '2026-02-01'),
 	review('d1', '2026-01-01'),
 ]
-const undated = review('undated')
 
 function renderPanel(onSeeAll?: () => void) {
 	render(
@@ -61,8 +60,8 @@ function shownIds() {
 }
 
 describe('CardReviewsPanel', () => {
-	it('shows the three most recent dated reviews', () => {
-		query.data = [undated, ...dated]
+	it('shows the three most recent reviews', () => {
+		query.data = dated
 		renderPanel()
 
 		expect(shownIds()).toEqual(['d4', 'd3', 'd2'])
@@ -89,16 +88,6 @@ describe('CardReviewsPanel', () => {
 
 		expect(shownIds()).toEqual(['d3', 'd2', 'd1'])
 		expect(screen.queryByText('See all')).not.toBeInTheDocument()
-	})
-
-	it('shows "See all" when only undated reviews are hidden', () => {
-		query.data = [undated, ...dated.slice(3)]
-		renderPanel()
-
-		expect(shownIds()).toEqual(['d1'])
-		expect(
-			screen.getByRole('link', { name: 'See all' }),
-		).toBeInTheDocument()
 	})
 
 	it('shows all reviews in place instead of navigating', () => {

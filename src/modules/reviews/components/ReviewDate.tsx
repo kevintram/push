@@ -6,11 +6,7 @@ import { useToday } from '~/hooks/useToday'
 import { a11y } from '~/styles/a11y'
 import { colorsSemantic } from '~/styles/colors/colorsSemantic.stylex'
 import type { DateString } from '~/types/date'
-import {
-	formatAbsoluteDate,
-	formatRelativeDate,
-	getDueDateTone,
-} from '~/utils/date'
+import { formatAbsoluteDate, formatRelativeDate } from '~/utils/date'
 
 const styles = stylex.create({
 	date: {
@@ -18,12 +14,10 @@ const styles = stylex.create({
 		whiteSpace: 'nowrap',
 	},
 	today: { color: colorsSemantic.textToday },
-	overdue: { color: colorsSemantic.textDanger },
 })
 
 type ReviewDateProps = {
 	date: DateString
-	isCompleted: boolean
 	xstyle?: StyleXStyles
 }
 
@@ -31,9 +25,8 @@ type ReviewDateProps = {
  * A review's date as read-only text, toned like `ReviewDatePicker`, with the
  * full date on hover.
  */
-export function ReviewDate({ date, isCompleted, xstyle }: ReviewDateProps) {
+export function ReviewDate({ date, xstyle }: ReviewDateProps) {
 	const today = useToday()
-	const tone = getDueDateTone(date, isCompleted, today)
 	const relativeDate = formatRelativeDate(date, today)
 	const absoluteDate = formatAbsoluteDate(date)
 
@@ -44,8 +37,7 @@ export function ReviewDate({ date, isCompleted, xstyle }: ReviewDateProps) {
 					<span
 						{...stylex.props(
 							styles.date,
-							tone === 'today' && styles.today,
-							tone === 'overdue' && styles.overdue,
+							date === today && styles.today,
 							xstyle,
 						)}
 					/>
@@ -59,9 +51,7 @@ export function ReviewDate({ date, isCompleted, xstyle }: ReviewDateProps) {
 					</span>
 				)}
 			</TooltipTrigger>
-			<TooltipContent>
-				{isCompleted ? 'Completed' : 'Due'} {absoluteDate}
-			</TooltipContent>
+			<TooltipContent>Completed {absoluteDate}</TooltipContent>
 		</Tooltip>
 	)
 }

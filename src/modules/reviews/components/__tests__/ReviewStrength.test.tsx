@@ -62,7 +62,6 @@ describe('ReviewStrength', () => {
 	it('shows a dash without a strength', () => {
 		renderStrength(
 			review({
-				rating: undefined,
 				stabilityAfter: undefined,
 				stabilityBefore: undefined,
 			}),

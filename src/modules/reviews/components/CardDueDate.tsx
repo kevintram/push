@@ -61,7 +61,7 @@ export function CardDueDate({
 		return <span {...stylex.props(styles.date, styles.muted)}>—</span>
 	}
 
-	const tone = getDueDateTone(date, false, today)
+	const tone = getDueDateTone(date, today)
 	const relativeDate = formatRelativeDate(date, today)
 
 	return (
